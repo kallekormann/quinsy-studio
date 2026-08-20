@@ -1,19 +1,27 @@
-/* Quinsy Studio — Design Tokens (CSS Custom Properties) */
+/**
+ * Quinsy Studio Library — canonical CSS custom properties.
+ * Tailwind-default scale. Projects map their brand in local ui/tokens/ only.
+ * Import in app: @import '@studio/tokens/design-tokens.css' (after pull) or copy path.
+ */
 
-:root {
-  /* Colors - Primary */
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
+:root,
+[data-theme='light'] {
+  color-scheme: light;
 
-  /* Colors - Neutral */
+  /* Primary (blue — Tailwind default) */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  /* Neutral (zinc) */
   --color-neutral-50: #fafafa;
   --color-neutral-100: #f4f4f5;
   --color-neutral-200: #e4e4e7;
@@ -24,59 +32,59 @@
   --color-neutral-700: #3f3f46;
   --color-neutral-800: #27272a;
   --color-neutral-900: #18181b;
+  --color-neutral-950: #09090b;
 
-  /* Colors - Semantic */
-  --color-success: #22c55e;
-  --color-warning: #f59e0b;
-  --color-error: #ef4444;
+  /* Semantic */
+  --color-success-500: #22c55e;
+  --color-warning-500: #f59e0b;
+  --color-error-500: #ef4444;
+
+  /* Surfaces (semantic aliases — components use these, not brand colors) */
+  --color-bg: var(--color-neutral-50);
+  --color-surface: #ffffff;
+  --color-surface-muted: var(--color-neutral-100);
+  --color-border: var(--color-neutral-200);
+  --color-text: var(--color-neutral-900);
+  --color-text-muted: var(--color-neutral-500);
 
   /* Typography */
-  --font-family-sans: 'Inter', system-ui, sans-serif;
-  --font-family-mono: 'JetBrains Mono', monospace;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Spacing */
-  --spacing-0: 0;
-  --spacing-1: 0.25rem;
-  --spacing-2: 0.5rem;
-  --spacing-3: 0.75rem;
-  --spacing-4: 1rem;
-  --spacing-5: 1.25rem;
-  --spacing-6: 1.5rem;
-  --spacing-8: 2rem;
-  --spacing-10: 2.5rem;
-  --spacing-12: 3rem;
-  --spacing-16: 4rem;
-
-  /* Border Radius */
-  --radius-none: 0;
-  --radius-sm: 0.25rem;
+  /* Radius (Tailwind scale) */
+  --radius-sm: 0.125rem;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
   --radius-full: 9999px;
 
-  /* Shadows */
+  /* Shadow */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-/* Dark Mode */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: var(--color-neutral-950);
+  --color-surface: var(--color-neutral-900);
+  --color-surface-muted: var(--color-neutral-800);
+  --color-border: var(--color-neutral-700);
+  --color-text: var(--color-neutral-50);
+  --color-text-muted: var(--color-neutral-400);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: var(--color-neutral-900);
-    --color-text: var(--color-neutral-50);
-    --color-border: var(--color-neutral-700);
-  }
-}
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
 
-/* Light Mode */
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg: var(--color-neutral-50);
-    --color-text: var(--color-neutral-900);
-    --color-border: var(--color-neutral-200);
+    --color-bg: var(--color-neutral-950);
+    --color-surface: var(--color-neutral-900);
+    --color-surface-muted: var(--color-neutral-800);
+    --color-border: var(--color-neutral-700);
+    --color-text: var(--color-neutral-50);
+    --color-text-muted: var(--color-neutral-400);
   }
 }

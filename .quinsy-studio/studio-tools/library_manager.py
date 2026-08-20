@@ -20,10 +20,17 @@ REGISTRY_FILE = STUDIO_LIBRARY / "library_registry.json"
 MANIFEST_FILE = STUDIO_LIBRARY / "manifest.json"
 
 STUDIO_HEADER = """/**
- * Studio Library — base artifact (functional + neutral defaults).
- * Promoted from a project; adapt in projects via local config/tokens.
+ * Studio Library — generic reusable artifact.
+ * Token values come from studio-library/ui/tokens/; projects override locally.
  */
 """
+
+# Project paths that must never overwrite studio-library (studio-owned generics).
+STUDIO_OWNED_BLOCK_PREFIXES = (
+    "ui/tokens/",
+    "ui/tokens/design-tokens.json",
+    "ui/tokens/design-tokens.css",
+)
 
 
 def _slug(name: str) -> str:
@@ -283,7 +290,7 @@ def promote_path(
     force: bool = False,
     ticket_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Promote a project path to studio-library."""
+    """Promote a project path to studio-library (packages only — not tokens/UI)."""
     project_dir = PROJECTS_DIR / project
     src = project_dir / asset_path.rstrip("/")
     if not src.exists():
@@ -291,6 +298,28 @@ def promote_path(
 
     promoted: List[str] = []
     asset_path_norm = asset_path.rstrip("/")
+
+    if any(asset_path_norm.startswith(p) or asset_path_norm == p.rstrip("/") for p in STUDIO_OWNED_BLOCK_PREFIXES):
+        return {
+            "error": (
+                "Studio library tokens and base UI are studio-owned generics. "
+                "Edit .quinsy-studio/studio-library/ directly (LO-* ticket). "
+                "Project design stays in projects/<name>/ui/tokens/."
+            ),
+            "promoted": [],
+        }
+
+    if asset_path_norm.startswith("ui/components") or (
+        asset_path.endswith(".tsx") and "ui/components" in asset_path
+    ):
+        return {
+            "error": (
+                "Project UI components are not promoted to studio-library. "
+                "Pull library → adapt in project. Add generic patterns to "
+                ".quinsy-studio/studio-library/ui/components/ via studio ticket."
+            ),
+            "promoted": [],
+        }
 
     if asset_path_norm.startswith("packages/"):
         name = asset_path_norm.split("/")[1]
@@ -313,29 +342,7 @@ def promote_path(
         _log_project_promotion(project, promoted, ticket_id, f"library promote {asset_path}")
         return {"promoted": promoted, "version": ver}
 
-    if asset_path.endswith(".tsx") and "ui/components" in asset_path:
-        f = src if src.is_file() else None
-        if not f:
-            return {"error": "Expected .tsx file", "promoted": []}
-        slug = _slug(f.stem)
-        dest_dir = STUDIO_LIBRARY / "ui" / "components" / slug
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        dest_file = dest_dir / f.name
-        content = f.read_text(encoding="utf-8")
-        if "Studio Library" not in content:
-            content = STUDIO_HEADER + content
-        dest_file.write_text(content)
-        level = "ui-atom"
-        if "/molecules/" in asset_path:
-            level = "ui-molecule"
-        elif "/organisms/" in asset_path:
-            level = "ui-organism"
-        ver = _update_manifest_entry(slug, level, f"ui/components/{slug}/", project, force, ticket_id)
-        promoted.append(str(dest_file.relative_to(STUDIO_LIBRARY)))
-        _log_project_promotion(project, [asset_path], ticket_id, f"library promote {asset_path}")
-        return {"promoted": promoted, "version": ver}
-
-    # Fallback: mirror path under library
+    # Fallback: mirror path under library (packages, hooks, lib)
     dest = STUDIO_LIBRARY / asset_path_norm
     if dest.exists() and not force:
         return {"error": f"Exists (use --force): {asset_path_norm}", "promoted": []}
@@ -358,91 +365,55 @@ def _deep_merge(base: Dict, incoming: Dict) -> Dict:
 
 
 def promote_design_to_library(project: str, force: bool = False, dry_run: bool = False) -> Dict[str, Any]:
-    """Gate 2 design promotion: tokens, atomic UI, page-types, sticker sheet."""
-    project_dir = PROJECTS_DIR / project
-    result: Dict[str, Any] = {"project": project, "promoted": [], "skipped": []}
+    """
+    Gate 2 library sync — validate project design exists; refresh studio sticker catalog.
 
-    checks = [
+    Studio library tokens and UI are **studio-owned generics** (Tailwind-default).
+    Project gate-2 design (brand tokens, domain components) stays in projects/<name>/ only.
+    """
+    project_dir = PROJECTS_DIR / project
+    result: Dict[str, Any] = {
+        "project": project,
+        "promoted": [],
+        "skipped": [],
+        "validated": [],
+        "note": "Library tokens/UI are studio-owned; project design is not merged into studio-library.",
+    }
+
+    required = [
         project_dir / "ui" / "tokens" / "design-tokens.json",
         project_dir / "design" / "prototype" / "app" / "sticker-sheet" / "page.tsx",
     ]
+    for path in required:
+        rel = str(path.relative_to(project_dir))
+        if path.exists():
+            result["validated"].append(rel)
+        else:
+            result["skipped"].append(f"missing:{rel}")
+
     if dry_run:
-        for c in checks:
-            (result["promoted"] if c.exists() else result["skipped"]).append(
-                str(c.relative_to(project_dir)) if c.exists() else str(c.relative_to(project_dir))
-            )
         return result
 
-    # Tokens
-    tok_src = project_dir / "ui" / "tokens" / "design-tokens.json"
-    if tok_src.exists():
-        dest = STUDIO_LIBRARY / "ui" / "tokens" / "design-tokens.json"
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        incoming = json.loads(tok_src.read_text())
-        if dest.exists() and not force:
-            merged = _deep_merge(json.loads(dest.read_text()), incoming)
-        else:
-            merged = incoming if not dest.exists() else _deep_merge(json.loads(dest.read_text()), incoming)
-        dest.write_text(json.dumps(merged, indent=2) + "\n")
-        _update_manifest_entry("design-tokens", "ui-token", "ui/tokens/design-tokens.json", project, force)
-        result["promoted"].append("ui/tokens/design-tokens.json")
+    if result["skipped"]:
+        return result
 
-    # Atomic components
-    for level, kind in [("atoms", "ui-atom"), ("molecules", "ui-molecule"), ("organisms", "ui-organism")]:
-        src_dir = project_dir / "ui" / "components" / level
-        if not src_dir.exists():
-            continue
-        for f in src_dir.glob("*.tsx"):
-            slug = _slug(f.stem)
-            dest_dir = STUDIO_LIBRARY / "ui" / "components" / slug
-            dest_dir.mkdir(parents=True, exist_ok=True)
-            dest_file = dest_dir / f.name
-            if dest_file.exists() and not force:
-                result["skipped"].append(str(f.relative_to(project_dir)))
-                continue
-            content = f.read_text(encoding="utf-8")
-            if "Studio Library" not in content:
-                content = STUDIO_HEADER + content
-            dest_file.write_text(content)
-            _update_manifest_entry(slug, kind, f"ui/components/{slug}/", project, force)
-            result["promoted"].append(f"ui/components/{slug}/{f.name}")
-
-    # Page types
-    page_types = project_dir / "ui" / "page-types"
-    if page_types.exists():
-        for pt_dir in page_types.iterdir():
-            if not pt_dir.is_dir():
-                continue
-            dest = STUDIO_LIBRARY / "ui" / "page-types" / pt_dir.name
-            if dest.exists() and not force:
-                result["skipped"].append(f"ui/page-types/{pt_dir.name}/")
-                continue
-            _copy_tree(pt_dir, dest, force=True)
-            _update_manifest_entry(pt_dir.name, "ui-page-type", f"ui/page-types/{pt_dir.name}/", project, force)
-            result["promoted"].append(f"ui/page-types/{pt_dir.name}/")
-
-    # Sticker sheet
-    sticker_src = project_dir / "design" / "prototype" / "app" / "sticker-sheet" / "page.tsx"
-    if sticker_src.exists():
-        dest_dir = STUDIO_LIBRARY / "ui" / "sticker-sheet"
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        dest_page = dest_dir / "page.tsx"
-        content = sticker_src.read_text(encoding="utf-8")
-        if "Studio Library" not in content:
-            content = STUDIO_HEADER + content
-        dest_page.write_text(content)
-        components = sorted(p.parent.name for p in (STUDIO_LIBRARY / "ui" / "components").glob("*/*.tsx"))
-        catalog = dest_dir / "catalog.md"
-        catalog.write_text(
-            f"# Studio Library — Sticker Sheet Catalog\n\n"
-            f"Updated: {datetime.now().strftime('%Y-%m-%d')}\n"
-            f"Source project: `{project}`\n\n"
-            "## Components\n\n"
-            + "\n".join(f"- `{c}`" for c in components)
-            + "\n"
-        )
-        _update_manifest_entry("sticker-sheet", "sticker-sheet", "ui/sticker-sheet/", project, force)
-        result["promoted"].extend(["ui/sticker-sheet/page.tsx", "ui/sticker-sheet/catalog.md"])
+    # Refresh sticker-sheet catalog from studio library components (not project copies)
+    dest_dir = STUDIO_LIBRARY / "ui" / "sticker-sheet"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    components = sorted(
+        p.parent.name for p in (STUDIO_LIBRARY / "ui" / "components").glob("*/*.tsx")
+    )
+    catalog = dest_dir / "catalog.md"
+    catalog.write_text(
+        f"# Studio Library — Sticker Sheet Catalog\n\n"
+        f"Updated: {datetime.now().strftime('%Y-%m-%d')}\n"
+        f"Gate 2 validated project: `{project}`\n"
+        f"**Components listed are studio-owned generics.**\n\n"
+        "## Components\n\n"
+        + "\n".join(f"- `{c}`" for c in components)
+        + "\n"
+    )
+    result["promoted"].append("ui/sticker-sheet/catalog.md")
 
     return result
 

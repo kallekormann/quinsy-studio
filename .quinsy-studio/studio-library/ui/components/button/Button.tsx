@@ -1,43 +1,49 @@
-import type { ReactNode, ButtonHTMLAttributes } from 'react';
+/**
+ * Studio Library — generic button (token-based primary/neutral).
+ * Projects remap --color-primary-* in local ui/tokens/design-tokens.css.
+ */
+import type { ComponentProps, ReactNode } from 'react';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps extends Omit<ComponentProps<'button'>, 'size'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
   children: ReactNode;
 }
 
-/** Studio Library base button — neutral Tailwind; projects remap via tokens. */
+const variantClass: Record<ButtonVariant, string> = {
+  primary:
+    'bg-primary-600 text-white hover:bg-primary-700 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
+  secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200',
+  outline: 'border border-neutral-300 bg-surface text-neutral-900 hover:bg-neutral-50',
+  ghost: 'text-neutral-700 hover:bg-neutral-100',
+  destructive:
+    'bg-error-500 text-white hover:bg-error-700 focus-visible:ring-2 focus-visible:ring-error-500',
+};
+
+const sizeClass: Record<ButtonSize, string> = {
+  sm: 'px-3 py-1.5 text-sm',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-5 py-2.5 text-base',
+};
+
 export function Button({
   variant = 'primary',
   size = 'md',
   loading = false,
-  disabled,
   className = '',
   children,
+  type = 'button',
+  disabled,
   ...props
 }: ButtonProps) {
-  const base =
-    'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50';
-  const variants: Record<ButtonVariant, string> = {
-    primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-600',
-    secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300',
-    outline: 'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50',
-    ghost: 'text-slate-700 hover:bg-slate-100',
-    destructive: 'bg-red-600 text-white hover:bg-red-700',
-  };
-  const sizes: Record<ButtonSize, string> = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-5 py-2.5 text-base',
-  };
   return (
     <button
-      type="button"
-      className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+      type={type}
+      className={`inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none disabled:opacity-50 ${variantClass[variant]} ${sizeClass[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

@@ -1,55 +1,127 @@
 {
   "assets": [
     {
-      "name": "button",
-      "kind": "component",
+      "name": "design-tokens",
+      "kind": "ui-token",
+      "path": "ui/tokens/",
+      "version": "2.0.0",
       "source_project": "studio",
-      "promoted": "2026-08-19",
-      "title": "Generischer Button (token-basiert, Varianten)"
+      "promoted": "2026-08-20",
+      "title": "Tailwind-default design tokens (JSON + CSS + preset)"
+    },
+    {
+      "name": "button",
+      "kind": "ui-atom",
+      "path": "ui/components/button/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Generic Button"
+    },
+    {
+      "name": "input",
+      "kind": "ui-atom",
+      "path": "ui/components/input/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Generic Input"
+    },
+    {
+      "name": "badge",
+      "kind": "ui-atom",
+      "path": "ui/components/badge/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Generic Badge"
+    },
+    {
+      "name": "icon",
+      "kind": "ui-atom",
+      "path": "ui/components/icon/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Generic SVG icons"
+    },
+    {
+      "name": "inline-form",
+      "kind": "ui-molecule",
+      "path": "ui/components/inline-form/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "InlineForm (input + button row)"
+    },
+    {
+      "name": "checklist-item",
+      "kind": "ui-molecule",
+      "path": "ui/components/checklist-item/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "ChecklistItem (toggle row)"
+    },
+    {
+      "name": "pageshell",
+      "kind": "ui-organism",
+      "path": "ui/components/pageshell/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "PageShell (header + content)"
+    },
+    {
+      "name": "sticker-sheet",
+      "kind": "sticker-sheet",
+      "path": "ui/sticker-sheet/",
+      "version": "2.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Studio library sticker sheet"
     },
     {
       "name": "comparison",
-      "kind": "page-type",
+      "kind": "ui-page-type",
+      "path": "ui/page-types/comparison/",
+      "version": "1.0.0",
       "source_project": "studio",
       "promoted": "2026-08-19",
-      "title": "Seitentyp: Vergleich/Alternativen"
+      "title": "Comparison / alternatives page type"
     },
     {
       "name": "auth",
-      "kind": "package",
+      "kind": "package-auth",
+      "path": "packages/auth/",
+      "version": "1.0.0",
       "source_project": "studio",
       "promoted": "2026-08-19",
-      "title": "Auth-Bausteine (Sanctum/Session, RBAC-Hooks)"
+      "title": "Auth package stub"
     },
     {
       "name": "billing",
       "kind": "package-billing",
       "path": "packages/billing/",
       "version": "1.0.1",
-      "source_project": "nudge",
+      "source_project": "studio",
       "promoted": "2026-08-20",
-      "promoted_at": "2026-08-20T11:36:14.335432",
-      "title": "billing (promoted from nudge)",
-      "ticket_id": "TEST-0001"
+      "title": "Billing provider stubs"
     },
     {
       "name": "feature-gating",
-      "kind": "package",
+      "kind": "package-feature-gating",
+      "path": "packages/feature-gating/",
+      "version": "1.0.0",
       "source_project": "studio",
       "promoted": "2026-08-19",
-      "title": "Feature-Gating (Flags, Rollout, Segmente)"
-    },
-    {
-      "name": "testbtn",
-      "kind": "component",
-      "source_project": "testproj",
-      "promoted": "2026-08-20",
-      "title": "testbtn (promoted from testproj)"
+      "title": "Feature gating stub"
     }
   ],
   "last_promotion": {
-    "project": "nudge",
-    "at": "2026-08-20T11:36:14.335541"
+    "project": "studio",
+    "at": "2026-08-20T13:30:00.000000",
+    "note": "Reset to generic Tailwind-default library; project tokens/components no longer merged on gate 2"
   },
   "schema_version": 2
 }

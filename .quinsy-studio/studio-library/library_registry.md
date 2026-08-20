@@ -3,12 +3,19 @@
 > Canonical paths, kinds, and promotion rules for reusable UI + code artifacts.
 > Machine-readable copy: `library_registry.json` (same folder).
 
-## Philosophy: library-first
+## Philosophy: library-first, studio-owned generics
+
+| Layer | Owner | Location |
+|-------|--------|----------|
+| **Studio library** | Quinsy Studio | `.quinsy-studio/studio-library/` — Tailwind-default tokens, generic UI, package stubs |
+| **Project design** | Each project | `projects/<name>/ui/tokens/`, `ui/components/` — brand + domain |
+
+**Rule:** Gate 2 and `./studio library promote` **never merge project tokens or UI into studio-library.**
 
 1. **Before writing new code** → `./studio library list` / `./studio library suggest <project> <topic>`
-2. **Pull boilerplate** → `./studio library pull <project> auth billing button`
-3. **Adapt in project** — project tokens, provider keys, business rules stay local
-4. **After ticket done** → review: generic enough? → `./studio library promote <project> <path>`
+2. **Pull boilerplate** → `./studio library pull <project> tokens button input`
+3. **Adapt in project** — map `--color-primary-*` to brand; keep domain components local
+4. **Improve generics** → edit `.quinsy-studio/studio-library/` via **LO-* studio ticket** (not project promotion)
 
 ---
 
@@ -20,84 +27,72 @@
 | `ui-molecule` | `ui/components/molecules/<Name>.tsx` | `ui/components/<slug>/` | component name |
 | `ui-organism` | `ui/components/organisms/<Name>.tsx` | `ui/components/<slug>/` | component name |
 | `ui-page-type` | `ui/page-types/<name>/` | `ui/page-types/<name>/` | page-type name |
-| `ui-token` | `ui/tokens/design-tokens.json` | `ui/tokens/design-tokens.json` | `tokens` |
+| `ui-token` | `ui/tokens/design-tokens.json` + `.css` | `ui/tokens/` | `tokens` |
 | `ui-hook` | `hooks/<name>.ts` | `ui/hooks/<name>.ts` | hook name |
 | `package-auth` | `packages/auth/` | `packages/auth/` | `auth` |
 | `package-billing` | `packages/billing/` | `packages/billing/` | `billing` |
 | `package-feature-gating` | `packages/feature-gating/` | `packages/feature-gating/` | `feature-gating`, `gating` |
-| `sticker-sheet` | `design/prototype/app/sticker-sheet/` | `ui/sticker-sheet/` | (gate 2 only) |
+| `sticker-sheet` | `design/prototype/app/sticker-sheet/` | `ui/sticker-sheet/` | (reference only) |
 
 ---
 
-## Auto-promotion (gate 2)
+## Gate 2 (design approval)
 
 On `./studio approve <project> --gate 2`:
 
-- `ui-token`, `ui-atom`, `ui-molecule`, `ui-organism`, `ui-page-type`, `sticker-sheet`
-- Command: `./studio promote-library <project>` or `./studio library promote-design <project>`
+- **Validates** project has `ui/tokens/design-tokens.json` + prototype sticker sheet
+- **Refreshes** studio-library sticker catalog (lists studio-owned components)
+- **Does not copy** project tokens, CSS, or components into studio-library
 
-## Manual promotion (code + overrides)
+Command: `./studio promote-library <project>` — same validate-only behavior
+
+---
+
+## Manual promotion (packages only)
 
 ```bash
-./studio library promote nudge packages/billing
-./studio library promote nudge packages/billing --force   # bump version, overwrite
-./studio library promote nudge ui/components/atoms/Badge.tsx
+./studio library promote nudge packages/billing   # OK — generic package stub
+./studio library promote nudge ui/tokens/...      # BLOCKED — studio-owned
+./studio library promote nudge ui/components/...  # BLOCKED — adapt via pull, not promote
 ```
 
-Requires ticket reuse review (see `./studio move … done` warnings).
+Generic library UI/tokens are edited in `.quinsy-studio/studio-library/` directly.
 
 ---
 
 ## Pull into project
 
 ```bash
-./studio library pull nudge auth billing tokens button
+./studio library pull nudge tokens button input pageshell
 ```
 
 - Copies **library → project** (never overwrites without `--force`)
 - Logs to `projects/<p>/docs/library-usage.json`
-- Agent rule: **search library before implementing**
+- Project then **extends** local `ui/tokens/design-tokens.json` / `.css` for brand (e.g. Nudge soft SaaS)
+
+---
+
+## Token stack (Tailwind standard)
+
+| File | Role |
+|------|------|
+| `design-tokens.json` | Schema: primary/neutral/semantic scales |
+| `design-tokens.css` | `--color-primary-*`, `--color-surface`, dark mode |
+| `tailwind.preset.ts` | `theme.extend` → CSS variables |
+
+Components use **semantic Tailwind classes** (`primary-600`, `surface`, `neutral-*`) so projects remap tokens without changing component code.
 
 ---
 
 ## Versioning
 
-Each asset in `manifest.json` has:
-
-```json
-{
-  "name": "billing",
-  "kind": "package-billing",
-  "version": "1.0.0",
-  "path": "packages/billing",
-  "source_project": "nudge",
-  "promoted": "2026-08-20"
-}
-```
-
-- New promotion: `1.0.0`
-- `--force` on existing: patch bump (`1.0.0` → `1.0.1`)
+Each asset in `manifest.json` has `source_project: "studio"` for generics. Project-specific design is not versioned in the library manifest.
 
 ---
 
 ## Reuse enforcement
 
-When moving a ticket to `done`, studio compares files under registry paths to snapshot at `implement`:
+When moving a ticket to `done`, studio compares files under registry watch paths to snapshot at `implement`:
 
-- If changed and not logged in `docs/library-promotions.json` → **warning**
-- Agent must run `./studio library promote` or document why it stays project-local
-
----
-
-## Provider layout (billing)
-
-```
-packages/billing/
-  index.ts                 # BillingProvider interface
-  types.ts
-  providers/
-    stripe.ts              # Stripe adapter stub
-    lemon-squeezy.ts       # Lemon Squeezy adapter stub
-```
-
-Projects implement provider config; library stays provider-agnostic.
+- Changes under `projects/<name>/ui/` are **project-local** — no library promotion required
+- Warnings apply only if you changed `packages/` without logging promotion

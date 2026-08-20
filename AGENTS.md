@@ -32,6 +32,8 @@ After the ticket is done, if changes are generic:
 On `./studio move <project> <ID> implement` you get a library hint.  
 On `./studio move … done` → warns if registry paths changed without promotion.
 
+**Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally.
+
 **Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. Pause for `./studio review --approve` when sprint tickets are done.
 
 ## Two worlds — never mix
@@ -52,7 +54,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 | 2 | Design + mocks | Yes + **design → library** |
 
 ```bash
-./studio approve <p> --gate 2    # also runs promote-library
+./studio approve <p> --gate 2    # validates design + refreshes library catalog (no project → library merge)
 ./studio library promote-design <p> [--force]
 ```
 
