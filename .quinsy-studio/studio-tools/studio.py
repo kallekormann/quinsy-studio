@@ -2025,10 +2025,72 @@ What does this decision mean for the project?
             status = status_match.group(1) if status_match else "unknown"
             print(f"  - {dr.stem} [{status}]")
     
+    def _docker_dir(self, project: str) -> Path:
+        return PROJECTS_DIR / project / "docker"
+
+    def _ensure_docker_env_file(self, docker_dir: Path) -> None:
+        env_file = docker_dir / ".env"
+        env_example = docker_dir / ".env.example"
+        if not env_file.exists() and env_example.exists():
+            shutil.copy(env_example, env_file)
+            rel = env_file.relative_to(PROJECTS_DIR)
+            print(f"  ℹ️  Created {rel} from .env.example")
+
+    def _run_docker_compose(
+        self,
+        project: str,
+        *compose_args: str,
+        attach: bool = False,
+    ) -> bool:
+        """Run docker compose with project name (-p) so containers are <project>-*, not docker-*."""
+        docker_dir = self._docker_dir(project)
+        compose_file = docker_dir / "docker-compose.yml"
+        if not compose_file.exists():
+            rel = compose_file.relative_to(PROJECTS_DIR)
+            print(f"\n  ❌ Missing {rel}")
+            print(f"  Run: ./studio env {project} init")
+            return False
+
+        self._ensure_docker_env_file(docker_dir)
+
+        cmd = [
+            "docker",
+            "compose",
+            "-p",
+            project,
+            "--project-directory",
+            str(docker_dir),
+            "-f",
+            str(compose_file),
+            *compose_args,
+        ]
+        print(f"  → {' '.join(cmd)}")
+        try:
+            result = subprocess.run(
+                cmd,
+                cwd=str(docker_dir),
+                check=False,
+                capture_output=not attach,
+                text=True,
+            )
+            if not attach:
+                if result.stdout:
+                    print(result.stdout.rstrip())
+                if result.stderr:
+                    print(result.stderr.rstrip())
+            if result.returncode != 0:
+                print(f"\n  ❌ docker compose failed (exit {result.returncode})")
+                return False
+            return True
+        except FileNotFoundError:
+            print("\n  ❌ Docker CLI not found.")
+            print("  Install Docker Desktop: https://docs.docker.com/get-docker/")
+            return False
+
     def cmd_env(self, project: str, action: str):
-        """Manage the Docker environment."""
+        """Manage the Docker environment (runs docker compose -p <project>)."""
         
-        docker_dir = PROJECTS_DIR / project / "docker"
+        docker_dir = self._docker_dir(project)
         
         print_header(f"DOCKER ENV: {project}")
         
@@ -2050,26 +2112,37 @@ What does this decision mean for the project?
             print(f"\n  Docker environment initialized: {docker_dir}")
             print(f"  Base template: {template_dir}")
             print(f"  → docker-compose.yml, .env.example (project-parametrized)")
-            print(f"\n  Add project-specific services (Mailpit, Worker, ...) here:")
+            print(f"\n  Add project-specific services (Mailpit, MinIO, ...) here:")
             print(f"    {docker_dir}/docker-compose.yml")
             print(f"\n  Next step:")
-            print(f"    cd {docker_dir} && cp .env.example .env && docker-compose up -d")
+            print(f"    ./studio env {project} up")
         
         elif action == "up":
-            print(f"\n  Starting docker environment...")
-            print(f"  (cd {docker_dir} && docker-compose up -d)")
+            print(f"\n  Starting backing services (Postgres, Redis, …) as project **{project}**…")
+            if not self._run_docker_compose(project, "up", "-d"):
+                return False
+            print(f"\n  Status:")
+            self._run_docker_compose(project, "ps")
+            print(f"\n  Next: cd projects/{project} && npm run dev")
+            return True
         
         elif action == "down":
-            print(f"\n  Stopping docker environment...")
-            print(f"  (cd {docker_dir} && docker-compose down)")
+            print(f"\n  Stopping backing services for **{project}**…")
+            return self._run_docker_compose(project, "down")
         
         elif action == "status":
-            print(f"\n  Checking docker status...")
-            print(f"  (cd {docker_dir} && docker-compose ps)")
+            return self._run_docker_compose(project, "ps")
         
         elif action == "logs":
-            print(f"\n  Showing docker logs...")
-            print(f"  (cd {docker_dir} && docker-compose logs -f)")
+            print(f"\n  Streaming logs for **{project}** (Ctrl+C to exit)…")
+            return self._run_docker_compose(project, "logs", "-f", "--tail", "100", attach=True)
+        
+        else:
+            print(f"\n  ⚠️  Unknown action: {action}")
+            print(f"  Usage: ./studio env {project} init|up|down|status|logs")
+            return False
+        
+        return True
     
     def cmd_repo(self, project: str, action: str, url: str = ""):
         """Manage the project GitHub repository (project world — not studio HQ)."""

@@ -2,6 +2,14 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.9.1] — 2026-08-20
+
+### Docker env runs compose with project name
+
+- ✅ `./studio env <project> up|down|status|logs` **executes** `docker compose -p <project>` (no longer print-only)
+- ✅ Auto-creates `docker/.env` from `.env.example` on first `up`
+- ✅ Studio template: `name: {{PROJECT_NAME}}` + `container_name: {{PROJECT_NAME}}-*` so containers are not prefixed `docker-`
+
 ## [1.9.0] — 2026-08-20
 
 ### Milestone execution planning (post gate 2)

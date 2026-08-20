@@ -13,8 +13,12 @@ version: '3.8'
 # in projects/<name>/docker/ — NEVER in this template.
 # =============================================================================
 
+# Compose project name → containers prefixed {{PROJECT_NAME}}-* (not docker-*)
+name: {{PROJECT_NAME}}
+
 services:
   db:
+    container_name: {{PROJECT_NAME}}-postgres
     image: postgres:15-alpine
     environment:
       POSTGRES_DB: ${PROJECT_NAME}
@@ -31,6 +35,7 @@ services:
       retries: 5
 
   redis:
+    container_name: {{PROJECT_NAME}}-redis
     image: redis:7-alpine
     ports:
       - "6379:6379"
