@@ -14,8 +14,13 @@ Gate 2 validated project: `moody`
 - `input`
 - `pageshell`
 - `palette-strip`
+- `search-command`
+- `item-inspector`
 
 ## Packages
 
 - `color-extraction` — dominant-color palette from images (browser + vitest)
 - `qa-smoke` — Playwright smoke-routes runner + JSON config template
+- `item-tags` — parse/normalize tags in contentJson
+- `item-search` — metadata search over canvas items
+- `canvas-export` — Konva PNG/PDF export helpers

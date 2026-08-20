@@ -143,12 +143,57 @@
       "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "Horizontal color swatch strip"
+    },
+    {
+      "name": "item-tags",
+      "kind": "package-item-tags",
+      "path": "packages/item-tags/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-20",
+      "title": "contentJson tag parse/normalize helpers"
+    },
+    {
+      "name": "item-search",
+      "kind": "package-item-search",
+      "path": "packages/item-search/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-20",
+      "title": "Canvas item metadata search (CMD-K)"
+    },
+    {
+      "name": "canvas-export",
+      "kind": "package-canvas-export",
+      "path": "packages/canvas-export/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-20",
+      "title": "Konva stage PNG/PDF export"
+    },
+    {
+      "name": "search-command",
+      "kind": "ui-molecule",
+      "path": "ui/components/search-command/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-20",
+      "title": "CMD-K search command dialog"
+    },
+    {
+      "name": "item-inspector",
+      "kind": "ui-molecule",
+      "path": "ui/components/item-inspector/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-20",
+      "title": "Selected item metadata / tags panel"
     }
   ],
   "last_promotion": {
-    "project": "studio",
-    "at": "2026-08-20T13:30:00.000000",
-    "note": "Reset to generic Tailwind-default library; project tokens/components no longer merged on gate 2"
+    "project": "moody",
+    "at": "2026-08-20T22:30:00.000000",
+    "note": "SPRINT-05 generics: item-tags, item-search, canvas-export, search-command, item-inspector"
   },
   "schema_version": 2
 }

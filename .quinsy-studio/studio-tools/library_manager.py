@@ -325,7 +325,17 @@ def promote_path(
         name = asset_path_norm.split("/")[1]
         kind = (
             f"package-{name}"
-            if name in ("auth", "billing", "feature-gating", "color-extraction", "qa-smoke")
+            if name
+            in (
+                "auth",
+                "billing",
+                "feature-gating",
+                "color-extraction",
+                "qa-smoke",
+                "item-tags",
+                "item-search",
+                "canvas-export",
+            )
             else "package"
         )
         dest = STUDIO_LIBRARY / asset_path_norm

@@ -65,6 +65,21 @@
       "library_path": "packages/qa-smoke/",
       "aliases": ["qa-smoke", "smoke-routes", "smoke"]
     },
+    "package-item-tags": {
+      "project_path": "packages/item-tags/",
+      "library_path": "packages/item-tags/",
+      "aliases": ["item-tags", "tags"]
+    },
+    "package-item-search": {
+      "project_path": "packages/item-search/",
+      "library_path": "packages/item-search/",
+      "aliases": ["item-search", "search", "discover"]
+    },
+    "package-canvas-export": {
+      "project_path": "packages/canvas-export/",
+      "library_path": "packages/canvas-export/",
+      "aliases": ["canvas-export", "board-export", "export"]
+    },
     "sticker-sheet": {
       "project_path": "design/prototype/app/sticker-sheet/",
       "library_path": "ui/sticker-sheet/",

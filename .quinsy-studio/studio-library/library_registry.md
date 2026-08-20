@@ -34,6 +34,9 @@
 | `package-feature-gating` | `packages/feature-gating/` | `packages/feature-gating/` | `feature-gating`, `gating` |
 | `package-color-extraction` | `packages/color-extraction/` | `packages/color-extraction/` | `color-extraction`, `palette`, `extract-palette` |
 | `package-qa-smoke` | `scripts/qa/` | `packages/qa-smoke/` | `qa-smoke`, `smoke-routes`, `smoke` |
+| `package-item-tags` | `packages/item-tags/` | `packages/item-tags/` | `item-tags`, `tags` |
+| `package-item-search` | `packages/item-search/` | `packages/item-search/` | `item-search`, `search`, `discover` |
+| `package-canvas-export` | `packages/canvas-export/` | `packages/canvas-export/` | `canvas-export`, `board-export`, `export` |
 | `sticker-sheet` | `design/prototype/app/sticker-sheet/` | `ui/sticker-sheet/` | (reference only) |
 
 ---
