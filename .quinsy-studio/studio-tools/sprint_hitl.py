@@ -138,6 +138,10 @@ def get_sprint_hitl(status: Dict) -> Dict:
         "review_pending_since": None,
         "last_review_at": None,
         "last_review_notes": None,
+        "groom_status": None,
+        "groom_validated_at": None,
+        "groom_approved_at": None,
+        "backlog_validation": None,
     })
 
 

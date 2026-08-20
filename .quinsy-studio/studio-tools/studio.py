@@ -50,7 +50,7 @@ Commands:
   ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
-  ./studio groom <project>                       Run grooming
+  ./studio groom <project> [--approve]              Validate sprint backlog + grooming
 
   # Phase 4: Implementation
   ./studio gate <project> [--level N]            Run QA gate
@@ -109,6 +109,11 @@ from library_manager import (
     pull_assets,
     snapshot_registry_files,
     suggest_assets,
+)
+from sprint_backlog_validate import (
+    format_validation_brief,
+    validate_sprint_backlog,
+    write_validation_report,
 )
 from sprint_hitl import (
     add_feedback,
@@ -1050,10 +1055,24 @@ class StudioOrchestrator:
         hitl["review_pending_since"] = None
         save_status(project, status)
         
+        validation = validate_sprint_backlog(project, sprint_name)
+        report = write_validation_report(project, validation)
+        print(f"\n  Backlog validation: {report.relative_to(PROJECTS_DIR / project)}")
+        print(format_validation_brief(validation))
+        hitl = get_sprint_hitl(status)
+        hitl["groom_status"] = "pending"
+        hitl["groom_validated_at"] = validation.get("validated_at")
+        hitl["backlog_validation"] = validation.get("summary", {})
+        save_status(project, status)
+
         print(f"\n  Sprint created: {sprint_name}")
         print(f"  Tickets assigned: {len(assigned)}")
         print(f"  Directory: {sprint_dir}")
-        print(f"\n  Next step:")
+        print(f"\n  Next step (required before implement):")
+        print(f"    ./studio groom {project}   # review backlog-validation.md")
+        if validation.get("summary", {}).get("errors"):
+            print(f"    Fix validation errors, edit plan.md, then:")
+        print(f"    ./studio groom {project} --approve")
         print(f"    ./studio move {project} {assigned[0]['id'] if assigned else 'TICKET-ID'} implement")
         
         return True
@@ -1307,6 +1326,19 @@ class StudioOrchestrator:
         if not ticket_file:
             print(f"  Ticket {ticket_id} not found in project {project}")
             return False
+
+        if new_status == "implement":
+            status_pre = load_status(project)
+            hitl = get_sprint_hitl(status_pre)
+            sprint = status_pre.get("current_sprint")
+            content_pre = ticket_file.read_text()
+            sprint_match = re.search(r"^sprint:\s*(\S+)", content_pre, re.MULTILINE)
+            ticket_sprint = sprint_match.group(1) if sprint_match else None
+            if sprint and ticket_sprint == sprint and hitl.get("groom_status") != "approved":
+                print(f"\n  ⚠️  Sprint backlog not groomed/approved for {sprint}.")
+                print(f"    ./studio groom {project}")
+                print(f"    ./studio groom {project} --approve")
+                return False
         
         # Determine new directory (within project)
         new_dir = get_project_backlog_dir(project, new_status)
@@ -1710,13 +1742,38 @@ What next steps result?
             elif status in ("open", "done"):
                 print(f"\n  {status.upper()}: 0")
     
-    def cmd_groom(self, project: str):
-        """Run a grooming session."""
+    def cmd_groom(self, project: str, approve: bool = False):
+        """Run a grooming session with sprint backlog validation."""
         
         status = load_status(project)
         sprint = status.get("current_sprint", "SPRINT-01")
         
         print_header(f"GROOMING: {project} ({sprint})")
+
+        validation = validate_sprint_backlog(project, sprint)
+        report = write_validation_report(project, validation)
+        print(f"\n  Backlog validation: {report.relative_to(PROJECTS_DIR / project)}")
+        print(format_validation_brief(validation))
+
+        hitl = get_sprint_hitl(status)
+        hitl["groom_validated_at"] = validation.get("validated_at")
+        hitl["backlog_validation"] = validation.get("summary", {})
+
+        if approve:
+            if validation.get("summary", {}).get("errors", 0) > 0:
+                print(f"\n  ⚠️  Validation has errors — fix backlog-validation.md / plan.md first.")
+                print(f"  Re-run: ./studio groom {project} --approve")
+                hitl["groom_status"] = "pending"
+                save_status(project, status)
+                return False
+            hitl["groom_status"] = "approved"
+            hitl["groom_approved_at"] = datetime.now().isoformat()
+            save_status(project, status)
+            print(f"\n  ✅ Sprint backlog grooming approved — safe to ./studio move … implement")
+            return True
+
+        hitl["groom_status"] = "pending"
+        save_status(project, status)
         
         project_backlog = PROJECTS_DIR / project / "backlog"
         
@@ -2027,7 +2084,7 @@ Commands:
   ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
-  ./studio groom <project>                       Run grooming
+  ./studio groom <project> [--approve]              Validate sprint backlog + grooming
 
   # Phase 4-5: QA
   ./studio gate <project> [--level N]            Run QA gate
@@ -2302,7 +2359,9 @@ def main():
         orchestrator.cmd_board(args[0])
     
     elif command == "groom" and len(args) >= 1:
-        orchestrator.cmd_groom(args[0])
+        project = args[0]
+        approve = "--approve" in args
+        orchestrator.cmd_groom(project, approve=approve)
     
     elif command == "decide" and len(args) >= 2:
         orchestrator.cmd_decide(args[0], args[1])

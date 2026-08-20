@@ -146,15 +146,16 @@ CLI: `./studio design <project> --scope journey|core-views`
 
 ### Flow
 
-1. `./studio sprint <project>` — create a sprint
-2. Prioritize tickets (RICE, MoSCoW)
-3. Identify dependencies
-4. Estimate capacity
-5. Assign tickets to the sprint
-6. Fill out `plan.md`
-7. Run a blocked review
-8. Write the grooming protocol
-9. Check gate 3
+1. `./studio sprint <project>` — create a sprint + **backlog validation** report
+2. `./studio groom <project>` — human reviews validation + plan.md
+3. `./studio groom <project> --approve` — **required** before `./studio move … implement`
+4. Prioritize tickets (RICE, MoSCoW) — move deferrals out of sprint in plan.md
+5. Identify dependencies
+6. Estimate capacity
+7. Assign tickets to the sprint
+8. Fill out `plan.md`
+9. Run a blocked review
+10. Write the grooming protocol
 
 ---
 

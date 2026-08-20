@@ -49,7 +49,7 @@ Sprint work → ./studio review (human) → feedback → clarify → ticket → 
 | **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket** |
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
 | **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
-| **Grooming** | **Human** + agent | `./studio groom <p>` — prioritize clarified tickets |
+| **Grooming** | **Human** + agent | `./studio groom <p>` — validate backlog vs blueprint; `--approve` before implement |
 | **Retro** | **Human** + agent | `./studio retro <p>` → `sprints/SPRINT-NN/retro.md` |
 
 **Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.

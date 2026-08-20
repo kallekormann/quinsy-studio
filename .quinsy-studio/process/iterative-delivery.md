@@ -79,6 +79,10 @@ Every sprint has:
 ./studio sprint <project>
 ```
 
+Creates `sprints/SPRINT-NN/plan.md`, tags open tickets, and writes `backlog-validation.md`.
+
+**Next (required):** `./studio groom <project>` → edit plan → `./studio groom <project> --approve` before implement.
+
 Creates `sprints/SPRINT-NN/plan.md` with template:
 
 ```markdown
@@ -114,12 +118,23 @@ Creates `sprints/SPRINT-NN/plan.md` with template:
 ## Grooming
 
 ```bash
-./studio groom <project>
+./studio groom <project>           # validate sprint vs blueprint + write report
+./studio groom <project> --approve # human sign-off (required before implement)
 ```
 
-Grooming is the weekly board meeting:
+Grooming is the **sprint backlog validation** ceremony before coding:
 
-### Grooming agenda
+### Validation checks (automated)
+
+- Sprint tickets vs **P0 blueprint** (e.g. auth tickets when P0 is local-only)
+- **ADR stack** alignment (e.g. Dexie vs SQL migration wording)
+- Unsatisfied **dependencies**
+- **Capacity** (too many tickets)
+- Overlapping tickets (design tokens + color concept)
+
+Artifact: `sprints/SPRINT-NN/backlog-validation.md`
+
+### Grooming agenda (human + agent)
 
 1. **Check blocked tickets**
    - Can the blocker be resolved?
