@@ -1,124 +1,124 @@
 # Quinsy Studio — Human-in-the-Loop
 
-> Manche Entscheidungen sind zu wichtig, um sie allein dem Agenten zu überlassen.
-> Human-in-the-Loop stellt sicher, dass irreversible Aktionen menschliche Freigabe erhalten.
+> Some decisions are too important to leave to the agent alone.
+> Human-in-the-loop ensures that irreversible actions receive human approval.
 
-## Grundprinzip
+## Core principle
 
 ```
-Agent: "Ich kann das nicht allein entscheiden."
-Mensch: "Ich entscheide."
-Agent: "Umgesetzt."
+Agent: "I cannot decide this alone."
+Human: "I decide."
+Agent: "Implemented."
 ```
 
 ---
 
-## Wann ist HITL nötig?
+## When is HITL needed?
 
-| Kategorie | Aktionen | HITL? |
-|-----------|----------|-------|
-| **Budget** | Kosten über X €/Monat | **Ja** |
-| **Recht** | Verträge, Lizenzen, DSGVO-Ausnahmen | **Ja** |
-| **Irreversibel** | Daten löschen, Production-Deploy, DNS-Änderungen | **Ja** |
-| **Sicherheit** | Security-Exceptions, Zugriffsrechte | **Ja** |
-| **Architektur** | Große Architektur-Änderungen | **Ja** |
-| **Release** | Production-Release | **Ja** |
-| **Feature** | Neue Features (inkrementell) | Nein |
-| **Bugfix** | Fehlerbehebung | Nein |
-| **Doku** | Dokumentation | Nein |
+| Category | Actions | HITL? |
+|----------|---------|-------|
+| **Budget** | costs above X €/month | **Yes** |
+| **Legal** | contracts, licenses, GDPR exceptions | **Yes** |
+| **Irreversible** | deleting data, production deploy, DNS changes | **Yes** |
+| **Security** | security exceptions, access rights | **Yes** |
+| **Architecture** | large architecture changes | **Yes** |
+| **Release** | production release | **Yes** |
+| **Feature** | new features (incremental) | No |
+| **Bugfix** | fixing bugs | No |
+| **Docs** | documentation | No |
 
 ---
 
-## Decision-Record-Template
+## Decision record template
 
 ```markdown
 # Decision Record — DR-NNNN
 
 **Status:** pending | approved | rejected
-**Datum:** YYYY-MM-DD
-**Angefordert von:** <Rolle/Agent>
-**Entscheidung durch:** <Mensch>
+**Date:** YYYY-MM-DD
+**Requested by:** <role/agent>
+**Decision by:** <human>
 
-## Entscheidung
-Was soll entschieden werden?
+## Decision
+What needs to be decided?
 
-## Kontext
-Warum ist diese Entscheidung nötig?
+## Context
+Why is this decision necessary?
 
-## Optionen
+## Options
 
-### Option A: <Name>
-- Vorteile: ...
-- Nachteile: ...
-- Kosten: ...
+### Option A: <name>
+- Pros: ...
+- Cons: ...
+- Costs: ...
 
-### Option B: <Name>
-- Vorteile: ...
-- Nachteile: ...
-- Kosten: ...
+### Option B: <name>
+- Pros: ...
+- Cons: ...
+- Costs: ...
 
-## Empfehlung
-Welche Option empfiehlt der Agent und warum?
+## Recommendation
+Which option does the agent recommend and why?
 
-## Risiken
-Was kann schiefgehen?
+## Risks
+What can go wrong?
 
-## Konsequenzen
-Was bedeutet die Entscheidung für das Projekt?
+## Consequences
+What does the decision mean for the project?
 ```
 
 ---
 
-## HITL-Workflow
+## HITL workflow
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │               HUMAN-IN-THE-LOOP WORKFLOW                │
 └─────────────────────────────────────────────────────────┘
 
- 1. Agent erkennt HITL- Situation
+ 1. Agent recognizes a HITL situation
        │
- 2. Decision Record anlegen
+ 2. Create a decision record
        │
- 3. Decision Record vorlegen
+ 3. Present the decision record
        │
  4. ┌─────────────────┐
-    │  WARTEN AUF     │
-    │  ENTSCHEIDUNG   │
+    │  WAIT FOR      │
+    │  DECISION      │
     └─────────────────┘
        │
- 5. Mensch entscheidet
+ 5. Human decides
        │
- 6. Decision Record aktualisieren
+ 6. Update the decision record
        │
- 7. Entscheidung umsetzen
+ 7. Implement the decision
 ```
 
 ---
 
-## Befehle
+## Commands
 
 ```bash
-# Decision Record anlegen
-./studio decide <project> "<Titel>"
+# Create a decision record
+./studio decide <project> "<title>"
 
-# Übersicht aller Decision Records
+# Overview of all decision records
 ./studio decisions <project>
 
-# Decision Record als genehmigt markieren
+# Mark a decision record as approved
 ./studio decide <project> DR-NNNN --approve
 
-# Decision Record als abgelehnt markieren
+# Mark a decision record as rejected
 ./studio decide <project> DR-NNNN --reject
 ```
 
 ---
 
-## Decision-Record-Verzeichnis
+## Decision record directory
 
 ```
 <project>/docs/decisions/
-├── README.md              # Übersicht aller DRs
+├── README.md              # overview of all DRs
 ├── DR-0001-...
 ├── DR-0002-...
 ```
@@ -128,145 +128,145 @@ Was bedeutet die Entscheidung für das Projekt?
 ```markdown
 # Decision Records
 
-| DR | Titel | Status | Datum | Entscheider |
-|----|-------|--------|-------|-------------|
+| DR | Title | Status | Date | Decision-maker |
+|----|-------|--------|------|----------------|
 | DR-0001 | ... | approved | YYYY-MM-DD | ... |
 | DR-0002 | ... | pending | YYYY-MM-DD | — |
 
-## Legende
-- **pending:** Wartet auf Entscheidung
-- **approved:** Genehmigt
-- **rejected:** Abgelehnt
+## Legend
+- **pending:** waiting for a decision
+- **approved:** approved
+- **rejected:** rejected
 ```
 
 ---
 
-## HITL-Beispiele
+## HITL examples
 
-### Beispiel 1: Deployment-Kosten
+### Example 1: Deployment costs
 
 ```markdown
 # Decision Record — DR-0001
 
 **Status:** pending
-**Datum:** 2026-08-20
-**Angefordert von:** Platform Engineering
+**Date:** 2026-08-20
+**Requested by:** Platform Engineering
 
-## Entscheidung
-Soll für das Projekt ein Managed Kubernetes Cluster (€150/Monat) oder ein simpler Docker-Host (€30/Monat) verwendet werden?
+## Decision
+Should the project use a managed Kubernetes cluster (€150/month) or a simpler docker host (€30/month)?
 
-## Kontext
-Das Projekt erwartet 10k User im ersten Jahr. Performance-Anforderungen sind moderat.
+## Context
+The project expects 10k users in the first year. Performance requirements are moderate.
 
-## Optionen
+## Options
 
 ### Option A: Managed Kubernetes
-- Vorteile: Auto-Scaling, High Availability
-- Nachteile: Komplexität, Kosten
-- Kosten: €150/Monat
+- Pros: auto-scaling, high availability
+- Cons: complexity, costs
+- Costs: €150/month
 
-### Option B: Docker-Host
-- Vorteile: Einfach, Günstig
-- Nachteile: Manueller Scale-Up
-- Kosten: €30/Monat
+### Option B: Docker host
+- Pros: simple, cheap
+- Cons: manual scale-up
+- Costs: €30/month
 
-## Empfehlung
-Option B (Docker-Host) — ausreichend für die erwartete Last, spart €1440/Jahr.
+## Recommendation
+Option B (docker host) — sufficient for the expected load, saves €1440/year.
 
-## Risiken
-- Bei plötzlichem Traffic-Spike: mögliche Ausfallzeit
-- Manuelles Skalieren nötig
+## Risks
+- On sudden traffic spikes: possible downtime
+- Manual scaling required
 ```
 
 ---
 
-### Beispiel 2: Lizenz-Entscheidung
+### Example 2: License decision
 
 ```markdown
 # Decision Record — DR-0002
 
 **Status:** pending
-**Datum:** 2026-08-20
-**Angefordert von:** Product Management
+**Date:** 2026-08-20
+**Requested by:** Product Management
 
-## Entscheidung
-Soll eine kommerzielle UI-Lizenz (€500/Jahr) erworben werden oder eine Open-Source-Alternative verwendet werden?
+## Decision
+Should a commercial UI license (€500/year) be purchased or should an open-source alternative be used?
 
-## Kontext
-Das Projekt benötigt eine fortgeschrittene Data-Grid-Komponente.
+## Context
+The project needs an advanced data-grid component.
 
-## Optionen
+## Options
 
-### Option A: Kommerzielle Lizenz
-- Vorteile: Support, Features
-- Nachteile: Kosten, Vendor Lock-In
-- Kosten: €500/Jahr
+### Option A: Commercial license
+- Pros: support, features
+- Cons: costs, vendor lock-in
+- Costs: €500/year
 
-### Option B: Open-Source
-- Vorteile: Kostenlos, Flexibilität
-- Nachteile: Weniger Features, kein Support
-- Kosten: €0
+### Option B: Open source
+- Pros: free, flexibility
+- Cons: fewer features, no support
+- Costs: €0
 
-## Empfehlung
-Option B — die benötigten Features sind in der Open-Source-Version verfügbar.
+## Recommendation
+Option B — the needed features are available in the open-source version.
 
-## Risiken
-- Bei Bedarf an erweiterten Features: manuelle Implementierung nötig
+## Risks
+- If advanced features are needed: manual implementation required
 ```
 
 ---
 
-## Automatisierte HITL-Erkennung
+## Automated HITL detection
 
-Der Agent erkennt automatisch HITL-Situationen:
+The agent automatically recognizes HITL situations:
 
 ```yaml
-# In der Agent-Konfiguration
+# In the agent configuration
 hitl_triggers:
-  - pattern: "kosten.*€[0-9]+"
+  - pattern: "costs.*€[0-9]+"
     category: budget
-  - pattern: "daten.*lösch"
-    category: irreversibel
+  - pattern: "delete.*data"
+    category: irreversible
   - pattern: "production.*deploy"
     category: release
-  - pattern: "vertrag.*unterschrift"
-    category: recht
-  - pattern: "dsgvo.*ausnahme"
+  - pattern: "contract.*signature"
+    category: legal
+  - pattern: "gdpr.*exception"
     category: compliance
 ```
 
 ---
 
-## HITL-Report
+## HITL report
 
 ```markdown
-# HITL-Report — Monatlich
+# HITL Report — Monthly
 
-## Entscheidungen im Monat
+## Decisions this month
 
-| DR | Titel | Status | Entscheider | Datum |
-|----|-------|--------|-------------|-------|
+| DR | Title | Status | Decision-maker | Date |
+|----|-------|--------|----------------|------|
 | DR-0001 | ... | approved | Max | 2026-08-15 |
 | DR-0002 | ... | rejected | Max | 2026-08-18 |
 
-## Ausstehende Entscheidungen
+## Pending decisions
 
-| DR | Titel | Angefordert | Wartet seit |
-|----|-------|-------------|-------------|
+| DR | Title | Requested by | Waiting since |
+|----|-------|--------------|---------------|
 | DR-0003 | ... | Agent | 2026-08-20 |
 
-## Statistiken
-- Genehmigt: 5
-- Abgelehnt: 1
-- Ausstehend: 1
-- Durchschnittliche Entscheidungszeit: 2 Tage
+## Statistics
+- Approved: 5
+- Rejected: 1
+- Pending: 1
+- Average decision time: 2 days
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `.quinsy-studio/process/gates.md` — Gates
-- `./studio decide <project> "<Titel>"` — Decision Record anlegen
-- `./studio decisions <project>` — Übersicht anzeigen
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `.quinsy-studio/process/gates.md` — gates
+- `./studio decide <project> "<title>"` — create a decision record
+- `./studio decisions <project>` — show the overview

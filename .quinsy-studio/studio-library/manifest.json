@@ -23,10 +23,14 @@
     },
     {
       "name": "billing",
-      "kind": "package",
-      "source_project": "studio",
-      "promoted": "2026-08-19",
-      "title": "Billing-Bausteine (Subscription, Metering, Steuer)"
+      "kind": "package-billing",
+      "path": "packages/billing/",
+      "version": "1.0.1",
+      "source_project": "nudge",
+      "promoted": "2026-08-20",
+      "promoted_at": "2026-08-20T11:36:14.335432",
+      "title": "billing (promoted from nudge)",
+      "ticket_id": "TEST-0001"
     },
     {
       "name": "feature-gating",
@@ -42,5 +46,10 @@
       "promoted": "2026-08-20",
       "title": "testbtn (promoted from testproj)"
     }
-  ]
+  ],
+  "last_promotion": {
+    "project": "nudge",
+    "at": "2026-08-20T11:36:14.335541"
+  },
+  "schema_version": 2
 }

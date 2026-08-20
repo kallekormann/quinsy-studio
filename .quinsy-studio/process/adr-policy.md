@@ -1,226 +1,226 @@
-# Quinsy Studio — ADR-Regelwerk
+# Quinsy Studio — ADR Rulebook
 
-> Jede architektonische Entscheidung wird als Architecture Decision Record (ADR) dokumentiert.
-> ADRs sind das Gedächtnis des Projekts — sie erklären das "Warum" hinter dem "Was".
+> Every architectural decision is documented as an Architecture Decision Record (ADR).
+> ADRs are the project's memory — they explain the "why" behind the "what".
 
-## Grundprinzip
+## Core principle
 
 ```
-Keine Entscheidung ohne Dokumentation.
-Keine Dokumentation ohne Begründung.
-Keine Begründung ohne Alternative.
+No decision without documentation.
+No documentation without rationale.
+No rationale without an alternative.
 ```
 
 ---
 
-## Wann wird ein ADR angelegt?
+## When is an ADR created?
 
-| Situation | ADR Pflicht? |
-|-----------|-------------|
-| Technologie-Wechsel (z.B. Framework, DB) | **Ja** |
-| Architektur-Muster (z.B. Monolith → Microservices) | **Ja** |
-| API-Design-Entscheidung | **Ja** |
-| UI/UX-Grundsatzentscheidung | **Ja** |
-| Security-Architektur | **Ja** |
-| Deployment-Strategie | **Ja** |
-| Code-Convention (neue Regel) | Empfohlen |
-| Bugfix mit Architektur-Auswirkung | Empfohlen |
-| Kleiner Bugfix ohne Auswirkung | Nein |
+| Situation | ADR required? |
+|-----------|---------------|
+| Technology change (e.g. framework, DB) | **Yes** |
+| Architecture pattern (e.g. monolith → microservices) | **Yes** |
+| API design decision | **Yes** |
+| UI/UX fundamental decision | **Yes** |
+| Security architecture | **Yes** |
+| Deployment strategy | **Yes** |
+| Code convention (new rule) | Recommended |
+| Bugfix with architectural impact | Recommended |
+| Small bugfix without impact | No |
 
 ---
 
-## ADR-Template
+## ADR template
 
-Jedes ADR folgt diesem Template:
+Every ADR follows this template:
 
 ```markdown
-# ADR-XXXX: [Titel der Entscheidung]
+# ADR-XXXX: [Title of the decision]
 
 **Status:** proposed | accepted | deprecated | superseded
-**Datum:** YYYY-MM-DD
-**Entscheider:** [Rolle / Name]
-**Betroffene Phasen:** [Phase(n)]
+**Date:** YYYY-MM-DD
+**Decision-maker:** [Role / Name]
+**Affected phases:** [Phase(s)]
 
-## Kontext
-Was ist die Situation? Welches Problem soll gelöst werden?
+## Context
+What is the situation? Which problem needs to be solved?
 
-## Entscheidung
-Was wurde entschieden?
+## Decision
+What was decided?
 
-## Begründung
-Warum wurde diese Entscheidung getroffen?
+## Rationale
+Why was this decision made?
 
-## Alternativen
-Welche Alternativen wurden erwogen?
+## Alternatives
+Which alternatives were considered?
 
 ### Alternative A: [Name]
-- Vorteile: ...
-- Nachteile: ...
+- Pros: ...
+- Cons: ...
 
 ### Alternative B: [Name]
-- Vorteile: ...
-- Nachteile: ...
+- Pros: ...
+- Cons: ...
 
-## Konsequenzen
-Was bedeutet diese Entscheidung für das Projekt?
+## Consequences
+What does this decision mean for the project?
 
-### Positiv
+### Positive
 - ...
 
-### Negativ
+### Negative
 - ...
 
-### Risiken
+### Risks
 - ...
 
-## Metriken
-Wie wird der Erfolg dieser Entscheidung gemessen?
+## Metrics
+How is the success of this decision measured?
 
 ## Follow-up
-Welche nächsten Schritte ergeben sich?
+Which next steps arise from this?
 ```
 
 ---
 
-## ADR-Nummerierung
+## ADR numbering
 
 ```
 ADR-0001, ADR-0002, ADR-0003, ...
 ```
 
-- fortlaufend
-- nie recyceln
-- Superseded-ADRs behalten ihre Nummer
+- sequential
+- never recycled
+- superseded ADRs keep their number
 
 ---
 
-## ADR-Status
+## ADR status
 
-| Status | Bedeutung |
-|--------|-----------|
-| `proposed` | Vorgeschlagen, noch nicht entschieden |
-| `accepted` | Angenommen, gilt als verbindlich |
-| `deprecated` | Nicht mehr gültig (durch neues ADR ersetzt) |
-| `superseded` | Ersetzt durch ADR-XXXX |
+| Status | Meaning |
+|--------|---------|
+| `proposed` | suggested, not yet decided |
+| `accepted` | accepted, binding |
+| `deprecated` | no longer valid (replaced by a new ADR) |
+| `superseded` | replaced by ADR-XXXX |
 
 ---
 
-## Speicherort
+## Storage location
 
 ```
 <project>/docs/adr/
-├── README.md              # Übersicht aller ADRs
+├── README.md              # overview of all ADRs
 ├── ADR-0001-...
 ├── ADR-0002-...
 └── ...
 ```
 
-### ADR-README.md
+### ADR README.md
 
 ```markdown
 # Architecture Decision Records
 
-| ADR | Titel | Status | Datum |
-|-----|-------|--------|-------|
-| ADR-0001 | [Titel] | accepted | YYYY-MM-DD |
-| ADR-0002 | [Titel] | proposed | YYYY-MM-DD |
+| ADR | Title | Status | Date |
+|-----|-------|--------|------|
+| ADR-0001 | [Title] | accepted | YYYY-MM-DD |
+| ADR-0002 | [Title] | proposed | YYYY-MM-DD |
 
-## Legende
-- **accepted:** Verbindliche Entscheidung
-- **proposed:** Noch in Diskussion
-- **deprecated:** Nicht mehr gültig
-- **superseded:** Ersetzt durch neueres ADR
+## Legend
+- **accepted:** binding decision
+- **proposed:** still in discussion
+- **deprecated:** no longer valid
+- **superseded:** replaced by a newer ADR
 ```
 
 ---
 
-## ADR-Workflow
+## ADR workflow
 
 ```bash
-# Neues ADR anlegen
-./studio adr <project> "<Titel>"
+# Create a new ADR
+./studio adr <project> "<title>"
 
-# ADR-Datei wird erstellt mit:
-# - Template
-# - Nächste freie Nummer
-# - Status: proposed
+# The ADR file is created with:
+# - template
+# - next free number
+# - status: proposed
 
-# ADR bearbeiten
-# 1. Datei manuell ausfüllen
-# 2. Status auf "accepted" setzen
-# 3. Commit mit ADR-Referenz
+# Edit an ADR
+# 1. fill out the file manually
+# 2. set status to "accepted"
+# 3. commit with ADR reference
 ```
 
 ---
 
-## ADR-Review
+## ADR review
 
-Jedes ADR wird mindestens einmalig geprüft:
+Every ADR is reviewed at least once:
 
-1. **Erstellung:** Project Manager legt ADR an
-2. **Review:** Betroffene Rollen prüfen
-3. **Entscheidung:** Mensch oder Project Manager (je nach Gewicht)
-4. **Archivierung:** ADR wird committed
+1. **Creation:** the Project Manager creates the ADR
+2. **Review:** affected roles review it
+3. **Decision:** human or Project Manager (depending on weight)
+4. **Archiving:** the ADR is committed
 
 ---
 
-## ADR-Pflichten je Phase
+## ADR obligations per phase
 
-| Phase | ADR-Pflicht |
-|-------|-------------|
-| Phase 0 | Archetyp, Komplexitäts-Level |
-| Phase 1 | Go/No-Go, Technologie-Stack |
-| Phase 2 | Alle Architektur-Entscheidungen |
-| Phase 3 | Design-System-Grundsatz |
-| Phase 4 | Bei Abweichung von Phase-2-ADR |
+| Phase | ADR obligation |
+|-------|----------------|
+| Phase 0 | archetype, complexity level |
+| Phase 1 | go/no-go, technology stack |
+| Phase 2 | all architecture decisions |
+| Phase 3 | design system principle |
+| Phase 4 | on deviation from phase-2 ADRs |
 | Phase 5 | — |
-| Phase 6 | Deployment-Strategie |
-| Phase 7 | Optimierungs-Entscheidungen |
+| Phase 6 | deployment strategy |
+| Phase 7 | optimization decisions |
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Kein ADR für Architects-Entscheidung
+### ❌ No ADR for an architect decision
 ```bash
-# Schlecht:
-"Wir nutzen jetzt PostgreSQL statt MySQL"
-# (Keine Dokumentation warum)
+# Bad:
+"We now use PostgreSQL instead of MySQL"
+# (no documentation why)
 
-# Gut:
-# ADR-0003: Wechsel zu PostgreSQL
+# Good:
+# ADR-0003: Switch to PostgreSQL
 # Status: accepted
-# Begründung: JSONb-Support, bessere Full-Text-Search, ...
+# Rationale: JSONb support, better full-text search, ...
 ```
 
-### ❌ ADR ohne Alternativen
+### ❌ ADR without alternatives
 ```markdown
-# Schlecht:
-## Entscheidung: Wir nutzen Next.js
-## Begründung: Weil es gut ist
+# Bad:
+## Decision: We use Next.js
+## Rationale: Because it is good
 
-# Gut:
-## Alternativen
-### A: Next.js - Vorteile: SSR, React-Ökosystem, Vercel-Integration
-### B: Remix - Vorteile: Web-Standards, simples Loader-Modell
-### C: Astro - Vorteile: Insel-Architektur, Performance
-## Entscheidung: Next.js (wegen SSR + Large-Scale-Features)
+# Good:
+## Alternatives
+### A: Next.js - Pros: SSR, React ecosystem, Vercel integration
+### B: Remix - Pros: web standards, simple loader model
+### C: Astro - Pros: island architecture, performance
+## Decision: Next.js (because of SSR + large-scale features)
 ```
 
-### ❌ Veraltetes ADR nicht markieren
+### ❌ Outdated ADR not marked
 ```markdown
-# Schlecht:
-ADR-0001: "Wir nutzen jQuery" (nie aktualisiert)
+# Bad:
+ADR-0001: "We use jQuery" (never updated)
 
-# Gut:
-ADR-0001: "Wir nutzen jQuery"
-Status: superseded (durch ADR-0015: React Migration)
+# Good:
+ADR-0001: "We use jQuery"
+Status: superseded (by ADR-0015: React migration)
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `docs/adr/README.md` — ADR-Übersicht im Projekt
-- `.quinsy-studio/process/lifecycle.md` — Phasen, in denen ADRs entstehen
-- `./studio adr <project> "<Titel>"` — ADR anlegen
+- `docs/adr/README.md` — ADR overview in the project
+- `.quinsy-studio/process/lifecycle.md` — phases in which ADRs arise
+- `./studio adr <project> "<title>"` — create an ADR

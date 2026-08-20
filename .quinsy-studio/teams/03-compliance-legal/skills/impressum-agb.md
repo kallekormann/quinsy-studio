@@ -1,125 +1,125 @@
-# Skill: Impressum & AGB
+# Skill: Imprint & ToS
 
-> Impressum, AGB, Haftungsausschlüsse, EU-Streitschlichtung
+> Imprint, terms of service, disclaimers, EU dispute resolution
 
 ## Metadata
 
 ```
 skill_id: CL-003
-name: Impressum & AGB
+name: Imprint & ToS
 team: 03-compliance-legal
 lead_role: Legal & Privacy Officer
 support_roles: []
 phases: [3, 4, 5]
 activation_triggers:
-  - Ticket enthält "Impressum", "AGB", "Nutzungsbedingungen"
-  - Phase 3: Rechtliche Seiten werden geplant
-  - Phase 4: Rechtliche Seiten werden implementiert
-  - Phase 5: Legal-Check im QA-Gate
+  - Ticket contains "imprint", "terms of service", "ToS"
+  - Phase 3: legal pages are planned
+  - Phase 4: legal pages are implemented
+  - Phase 5: legal check in the QA gate
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Impressum (Pflichtangaben)
+### 1. Imprint (mandatory information)
 
 ```markdown
-Für alle Webseiten/Dienste:
-  1. Name/Firma des Betreibers
-  2. Vollständige Adresse
-  3. E-Mail-Kontakt
-  4. Telefon (falls vorhanden)
-  5. USt-IdNr. (falls vorhanden)
-  6. Verantwortlich für Inhalte (§ 55 Abs. 2 RStV)
-  7. EU-Streitschlichtung (Link zur ODR-Plattform)
+For all websites/services:
+  1. Name/company of the operator
+  2. Full address
+  3. Email contact
+  4. Phone (if available)
+  5. VAT ID (if available)
+  6. Responsible for content (§ 55(2) RStV)
+  7. EU dispute resolution (link to the ODR platform)
 
-Platzierung:
-  - Direkt erreichbar (1 Klick vom Footer)
-  - Keine Login-Pflicht
-  - Keine Versteckung in AGB
+Placement:
+  - Directly reachable (1 click from the footer)
+  - No login required
+  - Not hidden in the ToS
 ```
 
-### 2. AGB (Allgemeine Geschäftsbedingungen)
+### 2. ToS (terms of service)
 
 ```markdown
-Pflicht-Inhalte:
-  1. Geltungsbereich
-  2. Vertragsgegenstand
-  3. Registrierung / Account
-  4. Preise und Zahlung
-  5. Widerrufsrecht (14 Tage bei Verbrauchern)
-  6. Gewährleistung
-  7. Haftungsausschluss
-  8. Salvatorische Klausel
-  9. Gerichtsstand
-  10. Anwendbares Recht (DE oder AT)
+Mandatory content:
+  1. Scope of application
+  2. Subject of the contract
+  3. Registration / account
+  4. Prices and payment
+  5. Withdrawal right (14 days for consumers)
+  6. Warranty
+  7. Disclaimer
+  8. Severability clause
+  9. Place of jurisdiction
+  10. Applicable law (DE or AT)
 
-Für SaaS:
-  - Kündigungsfristen
-  - SLA (Service Level Agreement)
-  - Datenexport bei Kündigung
-  - Features und Änderungen
+For SaaS:
+  - Notice periods
+  - SLA (service level agreement)
+  - Data export on termination
+  - Features and changes
 ```
 
-### 3. Widerrufsrecht
+### 3. Withdrawal right
 
 ```markdown
-Bei Verbrauchern (B2C):
-  - 14 Tage Widerrufsrecht
-  - Kein Grund nötig
-  - Form: Text (E-Mail, Brief, Formular)
-  - Fristbeginn: Erhalt der Ware/Dienstleistung
-  - Ausnahmen: Verderbliche Waren, digitale Inhalte (nach Download)
+For consumers (B2C):
+  - 14 days withdrawal right
+  - No reason needed
+  - Form: text (email, letter, form)
+  - Start of period: receipt of goods/service
+  - Exceptions: perishable goods, digital content (after download)
 
-Bei B2B:
-  - Kein gesetzliches Widerrufsrecht
-  - Kann in AGB frei vereinbart werden
+For B2B:
+  - No statutory withdrawal right
+  - Can be freely agreed in the ToS
 ```
 
-### 4. Haftungsausschluss
+### 4. Disclaimer
 
 ```markdown
-Typische Formulierung:
-  "Die Haftung für Inhalte externer Links übernehmen wir nicht.
-   Für den Inhalt der verlinkten Seiten sind ausschließlich
-   deren Betreiber verantwortlich."
+Typical wording:
+  "We assume no liability for the content of external links.
+   Only the operators of the linked pages are responsible
+   for their content."
 
-Für SaaS:
-  - Haftung auf Vorsatz und grobe Fahrlässigkeit beschränken
-  - Haftungshöchstbetrag definieren
-  - Ausschluss für mittelbare Schäden
-```
-
----
-
-## Anti-Patterns
-
-### ❌ Verboten
-
-```markdown
-- Impressum nicht erreichbar
-- Unvollständige Pflichtangaben
-- Fehlende EU-Streitschlichtung
-- Kein Widerrufsrecht (B2C)
-- Haftungsausschluss zu weit gefasst
-- Impressum nur als PDF (statt HTML-Seite)
-```
-
-### ✅ Stattdessen
-
-```markdown
-- Direkt im Footer verlinkt
-- Alle Pflichtangaben vorhanden
-- EU-Streitschlichtung Link korrekt
-- 14 Tage Widerrufsrecht korrekt umgesetzt
-- Haftungsausschluss juristisch geprüft
-- Als eigene HTML-Seite
+For SaaS:
+  - Limit liability to intent and gross negligence
+  - Define a liability cap
+  - Exclude indirect damages
 ```
 
 ---
 
-## Referenzen
+## Anti-patterns
 
-- `.quinsy-studio/knowledge-base/compliance_playbook.md` — Compliance-Regeln
-- `.quinsy-studio/process/gates.md` — Legal-Check im Gate 5
+### ❌ Forbidden
+
+```markdown
+- Imprint not reachable
+- Incomplete mandatory information
+- Missing EU dispute resolution
+- No withdrawal right (B2C)
+- Disclaimer too broad
+- Imprint only as PDF (instead of an HTML page)
+```
+
+### ✅ Instead
+
+```markdown
+- Directly linked in the footer
+- All mandatory information present
+- EU dispute resolution link correct
+- 14 days withdrawal right correctly implemented
+- Disclaimer legally reviewed
+- As its own HTML page
+```
+
+---
+
+## References
+
+- `.quinsy-studio/knowledge-base/compliance_playbook.md` — compliance rules
+- `.quinsy-studio/process/gates.md` — legal check in gate 5

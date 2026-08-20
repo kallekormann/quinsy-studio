@@ -1,117 +1,117 @@
-# Konflikt-Matrix: Externe Skills vs. Anti-Slop-Protocol
+# Conflict Matrix: External Skills vs. Anti-Slop Protocol
 
-> Diese Matrix prüft jede importierte externe Skill-Quelle gegen die verbindlichen
-> internen Regeln (`.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md`,
+> This matrix checks every imported external skill source against the binding
+> internal rules (`.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md`,
 > `zero-data-architecture`, `compliance_playbook`).
 >
-> **Grundsatz:** Eigene Regeln überschreiben externe Tendenzen zur Generik.
-> Externe Skills sind Werkzeuge, KEINE Autorität.
+> **Principle:** Our own rules override external tendencies toward genericity.
+> External skills are tools, NOT authority.
 
 ---
 
-## 1. Übersicht der Quellen
+## 1. Overview of sources
 
-| Quelle | Importiert als | Domains | Konflikt-Risiko |
-|--------|---------------|---------|-----------------|
-| `Nutlope/hallmark` | `external-skills/design` | Anti-Slop-Design | 🟢 Niedrig |
-| `bergside/awesome-design-skills` | `external-skills/design_awesome` | 67 Design-Stile | 🟡 Mittel |
-| `seb1n/awesome-ai-agent-skills` | `external-skills/all_domains` | 103 Domains | 🟡 Mittel |
-| `coreyhaines31/marketingskills` | `external-skills/marketing_aeo` | Marketing, Copy, SEO, AEO | 🟡 Mittel |
-| `gamedev-skills/awesome-gamedev-agent-skills` | `external-skills/gamedev` | Game-Dev | 🟢 Niedrig |
-| `samir-abis/cookiecomply-skills` | `external-skills/compliance_cookies` | DSGVO/Cookies | 🟢 Niedrig |
-| `bloomprotocol/agent-visibility-skill` | `external-skills/geo_visibility` | GEO/AI-Visibility | 🟡 Mittel |
-
----
-
-## 2. Konflikt-Matrix (Check → Quelle → Bewertung)
-
-Legende: ✅ konform · ⚠️ Konfliktpotenzial · ❌ Konflikt (Blockade)
-
-### Anti-Slop Text-Floskeln (T1–T10)
-
-| Regel | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
-|-------|----------|----------------|-------------|---------------|---------|--------------|----------------|
-| T1 "This function does X" | ✅ (lehnt Floskeln ab) | ⚠️ (Style-Guides können generisch sein) | ⚠️ | ⚠️ (Copy-Skills nutzen Überzeugungs-Sprache) | ✅ | ✅ | ⚠️ |
-| T2–T10 Conversation-Floskeln | ✅ | ✅ | ⚠️ (einige Skripte) | ⚠️ (Marketing-Ton) | ✅ | ✅ | ✅ |
-
-**Entscheidung:** Die internen `validate_anti_slop.py`-Checks gelten für ALLEN generierten
-Code — unabhängig von der externen Quelle. Text-Floskeln werden immer abgelehnt.
-
-### Code-Muster (C1–C10)
-
-| Regel | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
-|-------|----------|----------------|-------------|---------------|---------|--------------|----------------|
-| C1 Swallowed Errors | ✅ | ✅ | ✅ (skriptbasiert, konform) | ✅ | ✅ | ✅ | ✅ |
-| C6 God Function | ✅ | ✅ | ✅ | ✅ | ⚠️ (Game-Code kann monolithisch sein) | ✅ | ✅ |
-| C8 `any`/`unknown` | ✅ | ✅ | ✅ | ✅ | ⚠️ (GDScript/C# weniger strikt) | ✅ | ✅ |
-
-**Entscheidung:** Game-Dev (GDScript, C#, Lua) unterliegt der internen Typpflicht nur
-dort, wo die Sprache es unterstützt. Ausnahmen → ADR.
-
-### UI-Muster (U1–U10)
-
-| Regel | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
-|-------|----------|----------------|-------------|---------------|---------|--------------|----------------|
-| U1 Inline-Styles | ✅ (Token-Pflicht) | ⚠️ (jeder Stil hat eigene Regeln) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| U2 Hardcoded Farben | ✅ | ⚠️ (Stile definieren eigene Paletten) | ✅ | ✅ | ⚠️ (Game-Art) | ✅ | ✅ |
-| U6 Semantische Elemente | ✅ | ⚠️ (Web-Stile) | ✅ | ✅ | ✅ (kein HTML) | ✅ | ✅ |
-| U10 WCAG-Kontrast | ✅ | ⚠️ (Design-Stile können niedrigen Kontrast haben) | ✅ | ✅ | ✅ | ✅ | ✅ |
-
-**Entscheidung:** Design-Stile aus `design_awesome` werden NUR als Ausgangspunkt genutzt.
-Token-Hierarchie (`.quinsy-studio/studio-library/ui/tokens/`), WCAG-AA und die
-Anti-Slop-UI-Regeln haben Vorrang. Stil-spezifische Paletten werden in Token übersetzt.
-
-### Backend-Muster (B1–B8)
-
-| Regel | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
-|-------|----------|----------------|-------------|---------------|---------|--------------|----------------|
-| B1 Secrets im Code | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (SKILL.md enthält API-Key-Flows) |
-| B2 SQL-Injection | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| B6 Rate-Limiting | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (empfiehlt externe API-Nutzung) |
-
-**Entscheidung:** `geo_visibility` (Bloom) empfiehlt MCP-Server und API-Keys — das ist
-ein **Tooling-Referenz**, keine Codepflicht. Keys gehören in Secret-Manager, nie in Code.
-
-### Zero-Data & DSGVO
-
-| Regel | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
-|-------|----------|----------------|-------------|---------------|---------|--------------|----------------|
-| Zero-Data-Pipelines | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (sendet URLs an Bloom-API) |
-| DSGVO-konform | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (Daten an Drittanbieter) |
-
-**Entscheidung:** Bloom (`geo_visibility`) NUR als **offline-Referenz** für
-llms.txt/JSON-LD-Muster nutzen. Der MCP-Server/API-Teil wird NICHT in Projekte
-eingebunden ohne explizite DSGVO-Freigabe (Human-in-the-Loop).
+| Source | Imported as | Domains | Conflict risk |
+|--------|-------------|---------|---------------|
+| `Nutlope/hallmark` | `external-skills/design` | anti-slop design | 🟢 Low |
+| `bergside/awesome-design-skills` | `external-skills/design_awesome` | 67 design styles | 🟡 Medium |
+| `seb1n/awesome-ai-agent-skills` | `external-skills/all_domains` | 103 domains | 🟡 Medium |
+| `coreyhaines31/marketingskills` | `external-skills/marketing_aeo` | marketing, copy, SEO, AEO | 🟡 Medium |
+| `gamedev-skills/awesome-gamedev-agent-skills` | `external-skills/gamedev` | game dev | 🟢 Low |
+| `samir-abis/cookiecomply-skills` | `external-skills/compliance_cookies` | GDPR/cookies | 🟢 Low |
+| `bloomprotocol/agent-visibility-skill` | `external-skills/geo_visibility` | GEO/AI visibility | 🟡 Medium |
 
 ---
 
-## 3. Prioritäten-Reihenfolge (Konfliktfall)
+## 2. Conflict matrix (check → source → rating)
+
+Legend: ✅ conformant · ⚠️ conflict potential · ❌ conflict (blocked)
+
+### Anti-slop text clichés (T1–T10)
+
+| Rule | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
+|------|----------|----------------|-------------|---------------|---------|--------------|----------------|
+| T1 "This function does X" | ✅ (rejects clichés) | ⚠️ (style guides can be generic) | ⚠️ | ⚠️ (copy skills use persuasion language) | ✅ | ✅ | ⚠️ |
+| T2–T10 conversation clichés | ✅ | ✅ | ⚠️ (some scripts) | ⚠️ (marketing tone) | ✅ | ✅ | ✅ |
+
+**Decision:** the internal `validate_anti_slop.py` checks apply to ALL generated
+code — regardless of the external source. Text clichés are always rejected.
+
+### Code patterns (C1–C10)
+
+| Rule | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
+|------|----------|----------------|-------------|---------------|---------|--------------|----------------|
+| C1 swallowed errors | ✅ | ✅ | ✅ (script-based, conformant) | ✅ | ✅ | ✅ | ✅ |
+| C6 god function | ✅ | ✅ | ✅ | ✅ | ⚠️ (game code can be monolithic) | ✅ | ✅ |
+| C8 `any`/`unknown` | ✅ | ✅ | ✅ | ✅ | ⚠️ (GDScript/C# less strict) | ✅ | ✅ |
+
+**Decision:** game dev (GDScript, C#, Lua) is subject to the internal typing obligation only
+where the language supports it. Exceptions → ADR.
+
+### UI patterns (U1–U10)
+
+| Rule | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
+|------|----------|----------------|-------------|---------------|---------|--------------|----------------|
+| U1 inline styles | ✅ (token obligation) | ⚠️ (each style has its own rules) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| U2 hardcoded colors | ✅ | ⚠️ (styles define their own palettes) | ✅ | ✅ | ⚠️ (game art) | ✅ | ✅ |
+| U6 semantic elements | ✅ | ⚠️ (web styles) | ✅ | ✅ | ✅ (no HTML) | ✅ | ✅ |
+| U10 WCAG contrast | ✅ | ⚠️ (design styles can have low contrast) | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+**Decision:** design styles from `design_awesome` are used ONLY as a starting point.
+Token hierarchy (`.quinsy-studio/studio-library/ui/tokens/`), WCAG-AA and the
+anti-slop UI rules take precedence. Style-specific palettes are translated into tokens.
+
+### Backend patterns (B1–B8)
+
+| Rule | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
+|------|----------|----------------|-------------|---------------|---------|--------------|----------------|
+| B1 secrets in code | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (SKILL.md contains API-key flows) |
+| B2 SQL injection | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| B6 rate limiting | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (recommends external API use) |
+
+**Decision:** `geo_visibility` (Bloom) recommends MCP servers and API keys — that is
+a **tooling reference**, not a code obligation. Keys belong in secret managers, never in code.
+
+### Zero-data & GDPR
+
+| Rule | hallmark | design_awesome | all_domains | marketing_aeo | gamedev | cookiecomply | geo_visibility |
+|------|----------|----------------|-------------|---------------|---------|--------------|----------------|
+| Zero-data pipelines | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (sends URLs to the Bloom API) |
+| GDPR conformant | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ (data to third parties) |
+
+**Decision:** use Bloom (`geo_visibility`) ONLY as an **offline reference** for
+llms.txt/JSON-LD patterns. The MCP server/API part is NOT integrated into projects
+without an explicit GDPR approval (human-in-the-loop).
+
+---
+
+## 3. Priority order (in case of conflict)
 
 ```
-1. internes anti_ai_slop_protocol.md        ← immer gewinnt
-2. Zero-Data-Architecture / compliance_playbook
-3. interne Team-Skills (.quinsy-studio/teams/)
-4. studio-library Assets (geprüft, promoted)
-5. externe Skills (nur als Werkzeug/Referenz)
+1. internal anti_ai_slop_protocol.md        ← always wins
+2. zero-data architecture / compliance_playbook
+3. internal team skills (.quinsy-studio/teams/)
+4. studio-library assets (checked, promoted)
+5. external skills (only as tool/reference)
 ```
 
 ---
 
-## 4. Konkrete Konflikt-Beispiele
+## 4. Concrete conflict examples
 
-| Situation | Externe Tendenz | Interne Regel | Lösung |
-|-----------|----------------|---------------|--------|
-| `design_awesome/glassmorphism` will freie Farben | Eigene Palette | Token-Pflicht (U2) | Stil-Farben → Design-Tokens übersetzen |
-| `marketing_aeo/copywriting` will "revolutionize" | Buzzwords | Blacklist T1-T10 | Copy prüfen lassen mit `validate_anti_slop.py` |
-| `all_domains` Script will `catch(e){}` | Swallowed Error | C1 | Stub-Blocker: Fehler immer behandeln |
-| `geo_visibility` will MCP + API-Key | Externe API | B1, Zero-Data | Nur Markdown-Muster nutzen, keine API-Anbindung |
-| `gamedev` GDScript ohne Typen | Ungeprüfte Variablen | C8 | Typisierung wo GDScript es kann, sonst ADR |
-| `cookiecomply` will Third-Party-CMP | Externer Banner-Dienst | Zero-Data | Eigenen Banner bauen (Studio-Library) |
+| Situation | External tendency | Internal rule | Solution |
+|-----------|-------------------|---------------|----------|
+| `design_awesome/glassmorphism` wants free colors | own palette | token obligation (U2) | translate style colors → design tokens |
+| `marketing_aeo/copywriting` wants "revolutionize" | buzzwords | blacklist T1-T10 | have copy checked with `validate_anti_slop.py` |
+| `all_domains` script wants `catch(e){}` | swallowed error | C1 | stub blocker: always handle errors |
+| `geo_visibility` wants MCP + API key | external API | B1, zero-data | use only the markdown patterns, no API integration |
+| `gamedev` GDScript without types | unchecked variables | C8 | typing where GDScript allows it, otherwise ADR |
+| `cookiecomply` wants a third-party CMP | external banner service | zero-data | build own banner (studio library) |
 
 ---
 
-## 5. Wartung
+## 5. Maintenance
 
-- Matrix nach jedem `./studio update-skills` prüfen (neue Quellen hinzufügen).
-- Neue Quelle OHNE Zeile in dieser Matrix wird NICHT aktiviert (SO-002 Process Guard).
-- Konflikte werden als Learning Items gemeldet (`./studio learn ... --signal conflict`).
+- Check the matrix after every `./studio update-skills` (add new sources).
+- A new source WITHOUT a row in this matrix is NOT activated (SO-002 Process Guard).
+- Conflicts are reported as learning items (`./studio learn ... --signal conflict`).

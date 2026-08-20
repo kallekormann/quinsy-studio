@@ -1,22 +1,22 @@
 # Team 09 — Studio Operations & Evolution (Self-Learning Core)
 
-> Verantwortlich für die Wartung und Evolution des Studios selbst — unabhängig von laufenden Kundenprojekten. Dies ist das Herz des Dual-Loop Learning Systems.
+> Responsible for the maintenance and evolution of the studio itself — independent of running client projects. This is the heart of the dual-loop learning system.
 
-## Director-Level Rollen
+## Director-level roles
 
-| Rolle | Level | Verantwortlichkeiten |
-|-------|-------|---------------------|
-| **Studio Automation Engineer** | Director | Wartung der Python-Skripte und Tools im Studio-HQ |
-| **Process Guard** | Director | Überwachung der Sprint-Disziplin und Optimierung der Studio-Abläufe unabhängig vom Projektgeschäft |
-| **Agile Coach** | Director | Optimierung der Studio-Prozesse, Retrospektiven, Team-Performance |
-| **Documentation Writer** | Lead | Pflegt strikt die Trennung zwischen Studio-Playbooks und Projekt-Dokumentationen |
+| Role | Level | Responsibilities |
+|------|-------|------------------|
+| **Studio Automation Engineer** | Director | maintenance of the Python scripts and tools in the studio HQ |
+| **Process Guard** | Director | monitoring sprint discipline and optimizing studio flows independently of the project business |
+| **Agile Coach** | Director | optimizing studio processes, retrospectives, team performance |
+| **Documentation Writer** | Lead | strictly maintaining the separation between studio playbooks and project documentation |
 
 ---
 
 ## Skills
 
-| ID | Skill | Lead-Rolle | Datei |
-|----|-------|------------|-------|
+| ID | Skill | Lead role | File |
+|----|-------|-----------|------|
 | SO-001 | Studio Tooling Maintenance | Studio Automation Engineer | `skills/studio-tooling-maintenance.md` |
 | SO-002 | Process Optimization | Process Guard | `skills/process-optimization.md` |
 | SO-003 | Dual-Loop Learning | Process Guard + Agile Coach | `skills/dual-loop-learning.md` |
@@ -24,74 +24,74 @@
 
 ---
 
-## Verantwortlichkeiten
+## Responsibilities
 
-### Studio-HQ Wartung
-- Python-Tools in `.quinsy-studio/studio-tools/` pflegen
-- Playbooks in `.quinsy-studio/knowledge-base/` aktualisieren
-- Templates in `.quinsy-studio/studio-templates/` verbessern
-- Skill-Registry aktuell halten
+### Studio HQ maintenance
+- Maintain the Python tools in `.quinsy-studio/studio-tools/`
+- Update the playbooks in `.quinsy-studio/knowledge-base/`
+- Improve the templates in `.quinsy-studio/studio-templates/`
+- Keep the skill registry current
 
-### Dual-Loop Learning
+### Dual-loop learning
 
 ```
-LOCAL LOOP (Projekt-Welt)           GLOBAL LOOP (Studio-Welt)
-────────────────────────            ──────────────────────────
-• Projektspezifische Bugs           • Universelle Playbooks
-• Nischen-Erkenntnisse              • Python-Tooling-Updates
-• Workarounds                       • Anti-Slop-Regel-Updates
-• Ablage: projects/[name]/          • Ablage: .quinsy-studio/
-  docs/local_learnings.md             knowledge-base/
+LOCAL LOOP (project world)            GLOBAL LOOP (studio world)
+────────────────────────             ──────────────────────────
+• Project-specific bugs               • Universal playbooks
+• Niche insights                      • Python tooling updates
+• Workarounds                         • Anti-slop rule updates
+• Storage: projects/[name]/           • Storage: .quinsy-studio/
+  docs/local_learnings.md              knowledge-base/
 
-⚠️ Beeinflusst NICHT andere         ✅ Gilt für ALLE zukünftigen
-   Projekte                            Projekte
+⚠️ Does NOT affect other             ✅ Applies to ALL future
+   projects                              projects
 ```
 
-### Prozess-Optimierung
-- Sprint-Disziplin überwachen
-- Studio-Abläufe unabhängig vom Projektgeschäft optimieren
-- Anti-Patterns im Studio-Prozess erkennen und beheben
-- Metriken sammeln und analysieren
+### Process optimization
+- Monitor sprint discipline
+- Optimize studio flows independently of the project business
+- Detect and fix anti-patterns in the studio process
+- Collect and analyze metrics
 
-### Dokumentations-Governance
-- Strikte Trennung zwischen Studio-Playbooks und Projekt-Dokumentationen
-- CHANGELOG pflegen
-- READMEs aktuell halten
-- Wissenstransfer sicherstellen
+### Documentation governance
+- Strict separation between studio playbooks and project documentation
+- Maintain the CHANGELOG
+- Keep READMEs current
+- Ensure knowledge transfer
 
 ---
 
-## Phasen-Beteiligung
+## Phase participation
 
-| Phase | Lead-Rollen | Support-Rollen |
-|-------|-------------|----------------|
+| Phase | Lead roles | Support roles |
+|-------|------------|---------------|
 | Phase 0 | — | Documentation Writer |
 | Phase 1 | — | Documentation Writer |
-| Phase 2 | — | Process Guard (Prozess-Check) |
+| Phase 2 | — | Process Guard (process check) |
 | Phase 3 | Process Guard | Studio Automation Engineer |
-| Phase 4 | — | Studio Automation Engineer (Tooling) |
+| Phase 4 | — | Studio Automation Engineer (tooling) |
 | Phase 5 | Process Guard | Documentation Writer |
 | Phase 6 | **Process Guard, Agile Coach** | Documentation Writer, Studio Automation Engineer |
 | Phase 7 | Studio Automation Engineer | Process Guard |
 
 ---
 
-## Studio-Evolution Command
+## Studio evolution command
 
 ```bash
-# Studio in autonomen Wartungs-Sprint versetzen
+# Put the studio into an autonomous maintenance sprint
 ./studio evolve
 
-# Nur eigene Tools refactored, kein Kundenprojekt
-# Playbooks verbessert, Skills aktualisiert
-# Python-Scripts optimiert
+# Only refactors its own tools, no client project
+# Improved playbooks, updated skills
+# Optimized Python scripts
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/learning-loop.md` — Dual-Loop Learning
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `.quinsy-studio/studio-tools/` — Python-Automation
-- `.quinsy-studio/knowledge-base/` — Playbooks
+- `.quinsy-studio/process/learning-loop.md` — dual-loop learning
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `.quinsy-studio/studio-tools/` — python automation
+- `.quinsy-studio/knowledge-base/` — playbooks

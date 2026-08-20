@@ -1,6 +1,6 @@
 # Skill: Accessibility
 
-> WCAG 2.1 AA, Screenreader, Keyboard-Navigation, ARIA, Focus-Management
+> WCAG 2.1 AA, screen readers, keyboard navigation, ARIA, focus management
 
 ## Metadata
 
@@ -12,144 +12,144 @@ lead_role: QA Specialist
 support_roles: [Frontend Engineer, UI/Interaction Designer]
 phases: [3, 4, 5]
 activation_triggers:
-  - Ticket enthält "a11y", "Barrierefreiheit", "Accessibility"
-  - Phase 5 QA-Gate prüft Accessibility
-  - Neue Komponente wird erstellt
-  - Nutzer beschwert sich über Bedienbarkeit
+  - Ticket contains "a11y", "accessibility"
+  - Phase 5 QA gate checks accessibility
+  - New component is being created
+  - User complains about usability
 ```
 
 ---
 
 ## Verhaltensregeln
 
-### 1. WCAG 2.1 AA Compliance
+### 1. WCAG 2.1 AA compliance
 
 ```markdown
-Pflicht-Level (AA):
-1. Wahrnehmbar: Alt-Texte, Kontraste, Skalierbar
-2. Bedienbar: Keyboard-Navigation, keine Zeitlimits
-3. Verständlich: Klare Labels, Fehlermeldungen
-4. Robust: Semantische HTML, ARIA korrekt
+Required level (AA):
+1. Perceivable: alt texts, contrasts, scalable
+2. Operable: keyboard navigation, no time limits
+3. Understandable: clear labels, error messages
+4. Robust: semantic HTML, correct ARIA
 
-Metriken:
-  - Farbkontrast: min. 4.5:1 (Text), 3:1 (Large Text)
-  - Text skalierbar bis 200% ohne horizontal Scroll
-  - Alle interaktiven Elemente per Tastatur erreichbar
-  - Focus-Indikator immer sichtbar
+Metrics:
+  - color contrast: min. 4.5:1 (text), 3:1 (large text)
+  - text scalable to 200% without horizontal scroll
+  - all interactive elements reachable by keyboard
+  - focus indicator always visible
 ```
 
-### 2. Semantische HTML
+### 2. Semantic HTML
 
 ```markdown
-Immer nutzen:
-  - <nav> für Navigation
-  - <main> für Hauptinhalt
-  - <section> für inhaltliche Bereiche
-  - <article> für eigenständige Inhalte
-  - <header>, <footer> für Seitenbereiche
-  - <button> für Aktionen (nicht <div onClick>)
-  - <a> für Links (nicht <span onClick>)
-  - <h1>-<h6> für Hierarchie (nicht überspringen!)
-  - <ul>/<ol> für Listen
-  - <table> für Tabellen mit <th>, <caption>
+Always use:
+  - <nav> for navigation
+  - <main> for main content
+  - <section> for content areas
+  - <article> for standalone content
+  - <header>, <footer> for page areas
+  - <button> for actions (not <div onClick>)
+  - <a> for links (not <span onClick>)
+  - <h1>-<h6> for hierarchy (don't skip!)
+  - <ul>/<ol> for lists
+  - <table> for tables with <th>, <caption>
 ```
 
-### 3. ARIA Labels
+### 3. ARIA labels
 
 ```markdown
-Wann ARIA braucht:
-  - Icon-Only Buttons: aria-label="Speichern"
-  - Komplexe Widgets: aria-expanded, aria-selected
-  - Live Regions: aria-live="polite" für dynamische Inhalte
-  - Form-Fehler: aria-describedby für Fehlermeldungen
+When ARIA is needed:
+  - Icon-only buttons: aria-label="Save"
+  - Complex widgets: aria-expanded, aria-selected
+  - Live regions: aria-live="polite" for dynamic content
+  - Form errors: aria-describedby for error messages
 
-Niemals:
-  - role="button" auf <div> (stattdessen <button>)
-  - aria-label auf nicht-interaktiven Elementen
-  - ARIA für Sachen die semantische HTML schon lösen
+Never:
+  - role="button" on <div> (use <button> instead)
+  - aria-label on non-interactive elements
+  - ARIA for things semantic HTML already solves
 ```
 
-### 4. Keyboard-Navigation
+### 4. Keyboard navigation
 
 ```markdown
-Tastatur-Shortcuts:
-  - Tab: Zum nächsten interaktiven Element
-  - Shift+Tab: Zum vorherigen Element
-  - Enter/Space: Aktivieren von Buttons/Links
-  - Escape: Modal schließen, Dropdown schließen
-  - Pfeiltasts: Navigation in Listen/Menus
+Keyboard shortcuts:
+  - Tab: to the next interactive element
+  - Shift+Tab: to the previous element
+  - Enter/Space: activate buttons/links
+  - Escape: close modal, close dropdown
+  - Arrow keys: navigation in lists/menus
 
-Focus-Management:
-  - Focus-Indikator: sichtbar (min. 2px, kontrastreich)
-  - Focus-Trap in Modals
-  - Skip-Links für long pages
-  - Focus-Reset nach Navigation
+Focus management:
+  - focus indicator: visible (min. 2px, high contrast)
+  - focus trap in modals
+  - skip links for long pages
+  - focus reset after navigation
 ```
 
-### 5. Screenreader-Unterstützung
+### 5. Screen reader support
 
 ```markdown
-Prüfpunkte:
-  - Alle Bilder haben alt-Text (oder alt="" für dekorativ)
-  - Formulare haben assoziierte Labels
-  - Fehlermeldungen sind per Screenreader hörbar
-  - Dynamische Inhalte nutzen aria-live
-  - Tabellen haben caption und th
-  - Links haben aussagekräftigen Text (nicht "hier klicken")
-  - Reihenfolge im DOM entspricht visueller Reihenfolge
+Checkpoints:
+  - All images have alt text (or alt="" for decorative)
+  - Forms have associated labels
+  - Error messages are audible via screen reader
+  - Dynamic content uses aria-live
+  - Tables have caption and th
+  - Links have meaningful text (not "click here")
+  - DOM order matches the visual order
 ```
 
 ### 6. Testing
 
 ```markdown
 Tools:
-  - axe-core (automatisiert)
-  - Lighthouse Accessibility Audit
-  - Screenreader-Testing (VoiceOver/NVDA)
-  - Keyboard-only Navigation Test
-  - Colour Contrast Analyser
+  - axe-core (automated)
+  - Lighthouse accessibility audit
+  - screen reader testing (VoiceOver/NVDA)
+  - keyboard-only navigation test
+  - color contrast analyser
 
-Manuelle Checks:
-  - Nur Tastatur: Alle Funktionen nutzbar?
-  - Screenreader: Alle Inhalte verständlich?
-  - Zoom 200%: Layout funktioniert?
-  - High Contrast Mode: Alles sichtbar?
+Manual checks:
+  - keyboard only: are all functions usable?
+  - screen reader: is all content understandable?
+  - zoom 200%: does the layout work?
+  - high contrast mode: is everything visible?
 ```
 
 ---
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- <div onClick> statt <button onClick>
-- Fehlende alt-Texte bei Bildern
-- Kein aria-label bei Icon-Buttons
-- Fehlende Keyboard-Navigation
-- Focus-Indikator nicht sichtbar (outline: none ohne Ersatz)
-- Farbe als einzige Informationsquelle
-- Zeitlimits ohne Möglichkeit zu verlängern
-- Flackern (mehr als 3x pro Sekunde)
+- <div onClick> instead of <button onClick>
+- Missing alt texts on images
+- No aria-label on icon buttons
+- Missing keyboard navigation
+- Focus indicator not visible (outline: none without replacement)
+- Color as the only source of information
+- Time limits without the possibility to extend
+- Flashing (more than 3x per second)
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Semantische HTML-Elemente
-- Aussagekräftige alt-Texte
-- ARIA-Labels wo nötig
-- Vollständige Keyboard-Support
-- Sichtbarer Focus-Indikator
-- Farbe + Icon/Text als Information
-- Zeitlimits mit Verlängerungsmöglichkeit
-- Keine Flackern-Animationen
+- Semantic HTML elements
+- Meaningful alt texts
+- ARIA labels where needed
+- Complete keyboard support
+- Visible focus indicator
+- Color + icon/text as information
+- Time limits with extension option
+- No flashing animations
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/frontend_playbook.md` — Frontend-Regeln
-- `.quinsy-studio/knowledge-base/design_playbook.md` — Design-Regeln
-- `.quinsy-studio/process/gates.md` — a11y im Gate 5
+- `.quinsy-studio/knowledge-base/frontend_playbook.md` — frontend rules
+- `.quinsy-studio/knowledge-base/design_playbook.md` — design rules
+- `.quinsy-studio/process/gates.md` — a11y in gate 5

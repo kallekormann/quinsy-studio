@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-process_intake.py — Intake-Logik für Quinsy Studio
+process_intake.py — Intake logic for Quinsy Studio
 
-Liest rohes User-Input (Notizen, Ideen, Feature-Requests) und strukturiert
-dies in ein sauberes, validiertes PRD gemäß dem PRD-Template.
+Reads raw user input (notes, ideas, feature requests) and structures it
+into a clean, validated PRD following the PRD template.
 
-Verwendung:
+Usage:
   python3 process_intake.py <project> <input-file>
   python3 process_intake.py nudge intake/nudge-raw.md
-  python3 process_intake.py nudge --from-text "Ich will eine ToDo-App mit gamification"
+  python3 process_intake.py nudge --from-text "I want a to-do app with gamification"
 
 Output:
-  projects/<project>/docs/intake/prd.md (validiertes PRD)
-  projects/<project>/docs/intake/validation.json (Validierungs-Report)
+  projects/<project>/docs/intake/prd.md (validated PRD)
+  projects/<project>/docs/intake/validation.json (validation report)
 """
 
 import sys
@@ -39,67 +39,67 @@ PROJECTS_DIR = STUDIO_ROOT / "projects"
 PRD_SECTIONS = {
     "title": {
         "required": True,
-        "description": "Projektname und kurze Beschreibung",
+        "description": "Project name and short description",
         "min_length": 10,
         "max_length": 200
     },
     "problem": {
         "required": True,
-        "description": "Welches Problem wird gelöst?",
+        "description": "Which problem is solved?",
         "min_length": 50,
         "max_length": 2000
     },
     "target_audience": {
         "required": True,
-        "description": "Wer sind die Nutzer?",
+        "description": "Who are the users?",
         "min_length": 20,
         "max_length": 1000
     },
     "goals": {
         "required": True,
-        "description": "Was sind die Ziele und Erfolgskriterien?",
+        "description": "What are the goals and success criteria?",
         "min_length": 30,
         "max_length": 1500
     },
     "scope_in": {
         "required": True,
-        "description": "Was ist im Scope (P0)?",
+        "description": "What is in scope (P0)?",
         "min_length": 20,
         "max_length": 2000
     },
     "scope_out": {
         "required": False,
-        "description": "Was ist out of scope?",
+        "description": "What is out of scope?",
         "min_length": 10,
         "max_length": 1000
     },
     "requirements_functional": {
         "required": True,
-        "description": "Funktionale Anforderungen",
+        "description": "Functional requirements",
         "min_length": 30,
         "max_length": 3000
     },
     "requirements_non_functional": {
         "required": False,
-        "description": "Nicht-funktionale Anforderungen",
+        "description": "Non-functional requirements",
         "min_length": 20,
         "max_length": 1500
     },
     "monetization": {
         "required": False,
-        "description": "Monetarisierungsmodell",
+        "description": "Monetization model",
         "min_length": 10,
         "max_length": 1000
     },
     "compliance": {
         "required": False,
-        "description": "Compliance & rechtliche Anforderungen",
+        "description": "Compliance & legal requirements",
         "min_length": 10,
         "max_length": 1000
     },
     "risks": {
         "required": False,
-        "description": "Risiken und offene Fragen",
+        "description": "Risks and open questions",
         "min_length": 10,
         "max_length": 1500
     }
@@ -111,8 +111,8 @@ PRD_SECTIONS = {
 
 def parse_raw_text(text: str) -> Dict[str, str]:
     """
-    Parst rohen Text und extrahiert PRD-Sektionen.
-    Erkennt Markdown-Headings oder freien Text.
+    Parse raw text and extract PRD sections.
+    Recognizes markdown headings or free text.
     """
     sections = {}
     current_section = None
@@ -121,8 +121,8 @@ def parse_raw_text(text: str) -> Dict[str, str]:
     lines = text.strip().split('\n')
     
     for line in lines:
-        # Check for Markdown headings
-        heading_match = re.match(r'^#{1,3}\s+(.+)', line)
+        # Check for Markdown headings (supports "## ## Title" double-hash style)
+        heading_match = re.match(r'^#{1,3}\s+(?:#{1,3}\s+)?(.+)', line)
         if heading_match:
             # Save previous section
             if current_section and current_content:
@@ -143,47 +143,68 @@ def parse_raw_text(text: str) -> Dict[str, str]:
 
 
 def map_heading_to_section(heading: str) -> Optional[str]:
-    """Mappt Markdown-Headings zu PRD-Sektionen."""
+    """Map markdown headings to PRD sections (English + German)."""
+    h = heading.strip().lower()
+    # Strip leading hashes if captured
+    h = re.sub(r'^#+\s*', '', h).strip()
+
     mappings = {
-        "titel": "title",
+        # English
         "title": "title",
-        "überblick": "title",
-        "übersicht": "title",
+        "overview": "title",
+        "summary": "title",
         "problem": "problem",
+        "target audience": "target_audience",
+        "users": "target_audience",
+        "audience": "target_audience",
+        "goals": "goals",
+        "success criteria": "goals",
+        "north star": "goals",
+        "scope": "scope_in",
+        "in scope": "scope_in",
+        "out of scope": "scope_out",
+        "requirements": "requirements_functional",
+        "functional": "requirements_functional",
+        "features": "requirements_functional",
+        "non-functional": "requirements_non_functional",
+        "performance": "requirements_non_functional",
+        "monetization": "monetization",
+        "pricing": "monetization",
+        "compliance": "compliance",
+        "legal": "compliance",
+        "gdpr": "compliance",
+        "risks": "risks",
+        "open questions": "risks",
+        # German
+        "titel": "title",
+        "überblick": "title",
+        "ueberblick": "title",
         "zielgruppe": "target_audience",
         "nutzer": "target_audience",
         "ziele": "goals",
         "erfolgskriterien": "goals",
-        "north star": "goals",
         "umfang": "scope_in",
-        "scope": "scope_in",
-        "in scope": "scope_in",
-        "out of scope": "scope_out",
         "anforderungen": "requirements_functional",
         "funktionale": "requirements_functional",
-        "features": "requirements_functional",
         "nicht-funktionale": "requirements_non_functional",
-        "performance": "requirements_non_functional",
         "monetarisierung": "monetization",
-        "preise": "monetization",
-        "compliance": "compliance",
         "recht": "compliance",
         "dsgvo": "compliance",
         "risiken": "risks",
         "offene fragen": "risks",
     }
-    
-    for key, value in mappings.items():
-        if key in heading:
-            return value
-    
+
+    for key in sorted(mappings.keys(), key=len, reverse=True):
+        if key in h:
+            return mappings[key]
+
     return None
 
 
 def extract_sections_from_structured_text(text: str) -> Dict[str, str]:
     """
-    Extrahiert Sektionen aus strukturiertem Text (PRD-Format).
-    Sucht nach bekannten Patterns wie "**Problem**:" oder "## Problem".
+    Extract sections from structured text (PRD format).
+    Looks for known patterns like "**Problem**:" or "## Problem".
     """
     sections = {}
     
@@ -191,7 +212,7 @@ def extract_sections_from_structured_text(text: str) -> Dict[str, str]:
     patterns = [
         r'\*\*([^*]+)\*\*[:\s]*\n(.*?)(?=\n\*\*|\n##|\Z)',
         r'##\s+([^#\n]+)\n(.*?)(?=\n##|\Z)',
-        r'^([A-Z][a-zäöü]+(?:\s+[a-zäöü]+)*)[:\s]*\n(.*?)(?=\n[A-Z][a-zäöü]+:|\Z)',
+        r'^([A-Z][a-z]+(?:\s+[a-z]+)*)[:\s]*\n(.*?)(?=\n[A-Z][a-z]+:|\Z)',
     ]
     
     for pattern in patterns:
@@ -207,23 +228,22 @@ def extract_sections_from_structured_text(text: str) -> Dict[str, str]:
 
 
 def parse_input_file(filepath: str) -> Dict[str, str]:
-    """Liest eine Datei und parst den Inhalt."""
+    """Read a file and parse its content."""
     with open(filepath, 'r', encoding='utf-8') as f:
         text = f.read()
     
-    # Try structured parsing first
     sections = extract_sections_from_structured_text(text)
     
-    # If not enough sections found, try raw text parsing
     if len(sections) < 3:
         raw_sections = parse_raw_text(text)
         sections.update(raw_sections)
     
+    sections["_source_text"] = text
     return sections
 
 
 def parse_text_input(text: str) -> Dict[str, str]:
-    """Parst einen Text-Input direkt."""
+    """Parse a text input directly."""
     sections = extract_sections_from_structured_text(text)
     if len(sections) < 3:
         sections = parse_raw_text(text)
@@ -235,8 +255,8 @@ def parse_text_input(text: str) -> Dict[str, str]:
 
 def validate_prd(sections: Dict[str, str]) -> Tuple[bool, List[Dict]]:
     """
-    Validiert ob das PRD vollständig ist.
-    Gibt (ist_valide, liste_der_probleme) zurück.
+    Validate whether the PRD is complete.
+    Returns (is_valid, list_of_problems).
     """
     problems = []
     
@@ -247,7 +267,7 @@ def validate_prd(sections: Dict[str, str]) -> Tuple[bool, List[Dict]]:
             problems.append({
                 "section": section_key,
                 "type": "missing",
-                "message": f"Pflicht-Sektion '{section_key}' fehlt",
+                "message": f"Required section '{section_key}' is missing",
                 "severity": "critical"
             })
         elif content:
@@ -255,14 +275,14 @@ def validate_prd(sections: Dict[str, str]) -> Tuple[bool, List[Dict]]:
                 problems.append({
                     "section": section_key,
                     "type": "too_short",
-                    "message": f"Sektion '{section_key}' ist zu kurz ({len(content)} < {section_def['min_length']})",
+                    "message": f"Section '{section_key}' is too short ({len(content)} < {section_def['min_length']})",
                     "severity": "warning"
                 })
             if len(content) > section_def.get("max_length", 999999):
                 problems.append({
                     "section": section_key,
                     "type": "too_long",
-                    "message": f"Sektion '{section_key}' ist zu lang ({len(content)} > {section_def['max_length']})",
+                    "message": f"Section '{section_key}' is too long ({len(content)} > {section_def['max_length']})",
                     "severity": "warning"
                 })
     
@@ -270,73 +290,82 @@ def validate_prd(sections: Dict[str, str]) -> Tuple[bool, List[Dict]]:
     return not has_critical, problems
 
 
-def detect_archetype(sections: Dict[str, str]) -> str:
-    """Erkennt den Projekt-Archetyp basierend auf dem PRD-Inhalt."""
-    text = json.dumps(sections).lower()
-    
-    # Check SaaS FIRST as it's more specific than generic "app"
-    # SaaS indicators are weighted higher
-    saas_score = sum(1 for s in ["saas", "subscription", "abo", "freemium",
-                                   "pro-tier", "free-tier", "monatlich", "pro pass"]
+def detect_archetype(sections: Dict[str, str], full_text: str = "") -> str:
+    """Detect the project archetype based on the PRD content."""
+    text = (full_text or json.dumps(sections)).lower()
+
+    # Explicit archetype in PRD header (e.g. "Archetyp: SaaS-Application")
+    explicit = re.search(
+        r'archetyp[:\s]*([\w\s-]+(?:saas|application|e-?commerce|game|api|mobile|content|internal|marketplace|prototype)[\w\s-]*)',
+        text, re.IGNORECASE
+    )
+    if explicit:
+        arch = explicit.group(1).strip().lower()
+        if 'saas' in arch or 'micro-saas' in arch:
+            return "saas-application"
+        if 'e-commerce' in arch or 'ecommerce' in arch or 'shop' in arch:
+            return "e-commerce"
+        if 'game' in arch and 'gamification' not in arch:
+            return "game"
+        if 'api' in arch:
+            return "api-service"
+        if 'mobile' in arch:
+            return "mobile-app"
+        if 'content' in arch:
+            return "content-platform"
+        return arch.replace(' ', '-')
+
+    saas_score = sum(1 for s in ["saas", "subscription", "freemium",
+                                   "pro-tier", "free-tier", "monthly", "pro pass", "freemium"]
                     if s in text)
-    
-    if saas_score >= 2:
+
+    if saas_score >= 1:
         return "saas-application"
-    
+
     archetype_signals = {
         "e-commerce": [
-            "shop", "warenkorb", "bestellung", "zahlung", "produkt",
-            "preis", "katalog", "versand"
+            "shop", "cart", "checkout", "warenkorb", "produkt", "shipping"
         ],
         "content-platform": [
-            "blog", "artikel", "content", "publishing", "redaktion",
-            "newsletter", "beitrag"
+            "blog", "article", "content", "publishing", "editorial", "newsletter"
         ],
         "mobile-app": [
-            "ios", "android", "push-notification",
-            "app store", "native app"
+            "ios", "android", "push-notification", "app store", "native app"
         ],
         "api-service": [
-            "api", "webhook", "endpoint", "integration", "rest",
-            "graphql", "microservice"
+            "webhook", "endpoint", "graphql", "microservice"
         ],
         "internal-tool": [
-            "intern", "dashboard", "admin", "backoffice",
-            "workflow", "automatisierung"
+            "internal", "dashboard", "admin", "backoffice", "back-office"
         ],
         "game": [
-            "game", "spiel", "godot", "unity", "unreal", "platformer",
-            "level", "player", "engine", "tilemap", "phaser", "pygame"
+            "godot", "unity", "unreal", "platformer", "tilemap", "phaser", "pygame", "game engine"
         ]
     }
-    
+
     scores = {}
     for archetype, signals in archetype_signals.items():
         score = sum(1 for signal in signals if signal in text)
         scores[archetype] = score
-    
+
     if scores:
         best = max(scores, key=scores.get)
         if scores[best] > 0:
             return best
-    
-    # Fallback: check for generic "app" but prefer SaaS
-    if "app" in text and saas_score >= 1:
-        return "saas-application"
-    
-    return "saas-application"  # Default
+
+    return "saas-application"
 
 # =============================================================================
 # PRD GENERATION
 # =============================================================================
 
 def generate_prd(sections: Dict[str, str], archetype: str) -> str:
-    """Generiert ein vollständiges PRD im Markdown-Format."""
+    """Generate a complete PRD in markdown format."""
     
     now = datetime.now().strftime("%Y-%m-%d")
     
     # Extract a short title (first sentence or first 100 chars)
-    full_title = sections.get('title', 'Unbekannt')
+    full_title = sections.get('title', 'Unknown')
     # Try to get just the project name (first sentence)
     title_match = re.match(r'^(.+?\.\s|.{10,60})', full_title)
     if title_match:
@@ -346,76 +375,76 @@ def generate_prd(sections: Dict[str, str], archetype: str) -> str:
     
     prd = f"""# PRD — "{short_title}"
 
-> **Archetyp & Komplexität**
-> * **Archetyp:** {archetype.replace('-', ' ').title()}
-> * **Generiert:** {now}
+> **Archetype & complexity**
+> * **Archetype:** {archetype.replace('-', ' ').title()}
+> * **Generated:** {now}
 > * **Status:** draft
 
 ---
 
-## Titel / Überblick
+## Title / Overview
 
-{sections.get('title', '_Noch nicht definiert_')}
+{sections.get('title', '_Not defined yet_')}
 
 ---
 
 ## Problem
 
-{sections.get('problem', '_Noch nicht definiert_')}
+{sections.get('problem', '_Not defined yet_')}
 
 ---
 
-## Zielgruppe & Nutzer
+## Target audience & users
 
-{sections.get('target_audience', '_Noch nicht definiert_')}
-
----
-
-## Ziele & Erfolgskriterien
-
-{sections.get('goals', '_Noch nicht definiert_')}
+{sections.get('target_audience', '_Not defined yet_')}
 
 ---
 
-## Umfang
+## Goals & success criteria
+
+{sections.get('goals', '_Not defined yet_')}
+
+---
+
+## Scope
 
 ### In Scope (P0)
 
-{sections.get('scope_in', '_Noch nicht definiert_')}
+{sections.get('scope_in', '_Not defined yet_')}
 
 ### Out of Scope
 
-{sections.get('scope_out', '_Noch nicht definiert_')}
+{sections.get('scope_out', '_Not defined yet_')}
 
 ---
 
-## Anforderungen
+## Requirements
 
-### Funktionale Anforderungen
+### Functional requirements
 
-{sections.get('requirements_functional', '_Noch nicht definiert_')}
+{sections.get('requirements_functional', '_Not defined yet_')}
 
-### Nicht-funktionale Anforderungen
+### Non-functional requirements
 
-{sections.get('requirements_non_functional', '_Noch nicht definiert_')}
-
----
-
-## Monetarisierung
-
-{sections.get('monetization', '_Noch nicht definiert_')}
+{sections.get('requirements_non_functional', '_Not defined yet_')}
 
 ---
 
-## Compliance & Recht
+## Monetization
 
-{sections.get('compliance', '_Noch nicht definiert_')}
+{sections.get('monetization', '_Not defined yet_')}
 
 ---
 
-## Risiken & offene Fragen
+## Compliance & legal
 
-{sections.get('risks', '_Noch nicht definiert_')}
+{sections.get('compliance', '_Not defined yet_')}
+
+---
+
+## Risks & open questions
+
+{sections.get('risks', '_Not defined yet_')}
 """
     return prd
 
@@ -425,7 +454,7 @@ def generate_prd(sections: Dict[str, str], archetype: str) -> str:
 
 def main():
     if len(sys.argv) < 3:
-        print("Verwendung:")
+        print("Usage:")
         print("  python3 process_intake.py <project> <input-file>")
         print("  python3 process_intake.py <project> --from-text \"...\"")
         sys.exit(1)
@@ -439,20 +468,21 @@ def main():
     else:
         input_file = sys.argv[2]
         if not os.path.exists(input_file):
-            print(f"Fehler: Datei nicht gefunden: {input_file}")
+            print(f"Error: file not found: {input_file}")
             sys.exit(1)
         sections = parse_input_file(input_file)
     
     if not sections:
-        print("Fehler: Keine Sektionen im Input erkannt.")
-        print("Tipp: Verwende Markdown-Headings (## Problem, ## Zielgruppe, etc.)")
+        print("Error: no sections recognized in the input.")
+        print("Tip: use markdown headings (## Problem, ## Target audience, etc.)")
         sys.exit(1)
     
     # Validate
+    source_text = sections.pop("_source_text", "")
     is_valid, problems = validate_prd(sections)
     
     # Detect archetype
-    archetype = detect_archetype(sections)
+    archetype = detect_archetype(sections, source_text)
     
     # Generate PRD
     prd_content = generate_prd(sections, archetype)
@@ -482,28 +512,42 @@ def main():
     
     # Report
     print(f"\n{'='*60}")
-    print(f"  INTAKE VERARBEITET: {project}")
+    print(f"  INTAKE PROCESSED: {project}")
     print(f"{'='*60}")
-    print(f"\n  Archetyp:     {archetype}")
-    print(f"  Sektionen:    {len(sections)} von {len(PRD_SECTIONS)}")
-    print(f"  Validiert:    {'✅ Ja' if is_valid else '❌ Nein'}")
+    print(f"\n  Archetype:    {archetype}")
+    print(f"  Sections:     {len(sections)} of {len(PRD_SECTIONS)}")
+    print(f"  Validated:    {'✅ Yes' if is_valid else '❌ No'}")
     
     if problems:
-        print(f"\n  Probleme:")
+        print(f"\n  Problems:")
         for p in problems:
             icon = "❌" if p["severity"] == "critical" else "⚠️"
             print(f"    {icon} {p['message']}")
     
     print(f"\n  Output:")
-    print(f"    PRD:        {prd_file}")
-    print(f"    Validierung: {validation_file}")
+    print(f"    PRD:          {prd_file}")
+    print(f"    Validation:   {validation_file}")
     
     if not is_valid:
-        print(f"\n  ⚠️  PRD ist unvollständig. Fehlende Pflicht-Sektionen müssen")
-        print(f"     manuell ergänzt werden bevor Phase 2 starten kann.")
-    
-    print(f"\n  Nächster Schritt:")
-    print(f"    1. PRD prüfen und ggf. ergänzen")
+        print(f"\n  ⚠️  PRD is incomplete. Missing required sections must be")
+        print(f"     added manually before phase 2 can start.")
+        sys.exit(1)
+
+    # Persist archetype to status.json
+    status_file = project_dir / "status.json"
+    if status_file.exists():
+        try:
+            status = json.loads(status_file.read_text())
+        except json.JSONDecodeError:
+            status = {}
+    else:
+        status = {"name": project}
+    status["archetype"] = archetype
+    status["last_update"] = datetime.now().strftime("%Y-%m-%d")
+    status_file.write_text(json.dumps(status, indent=2, ensure_ascii=False))
+
+    print(f"\n  Next step:")
+    print(f"    1. Review the PRD and complete it if needed")
     print(f"    2. ./studio start {project} --mode core")
     print()
 

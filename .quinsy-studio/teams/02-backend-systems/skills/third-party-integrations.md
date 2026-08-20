@@ -1,6 +1,6 @@
 # Skill: Third-Party Integrations
 
-> API-Integration, Webhooks, Queues, Payment, Email, Analytics
+> API integration, webhooks, queues, payment, email, analytics
 
 ## Metadata
 
@@ -12,150 +12,150 @@ lead_role: Backend Architect
 support_roles: [Backend Engineer, Data Engineer]
 phases: [3, 4, 5]
 activation_triggers:
-  - Ticket enthält "Integration", "API", "Webhook", "Stripe", "SendGrid"
-  - Phase 3: Externe Services werden geplant
-  - Phase 4: Integrationen werden implementiert
-  - Payment, Email, Analytics Features
+  - Ticket contains "integration", "API", "webhook", "Stripe", "SendGrid"
+  - Phase 3: external services are planned
+  - Phase 4: integrations are implemented
+  - Payment, email, analytics features
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Integration-Checkliste
+### 1. Integration checklist
 
 ```markdown
-Vor jeder Integration:
-  [ ] API-Dokumentation gelesen
-  [ ] Rate Limits notiert
-  [ ] Auth-Methode verstanden
-  [ ] Error-Codes dokumentiert
-  [ ] Webhook-Events verstanden
-  [ ] Fallback-Strategie definiert
-  [ ] Monitoring eingerichtet
-  [ ] Secrets in Environment Variables
+Before every integration:
+  [ ] read the API documentation
+  [ ] note the rate limits
+  [ ] understand the auth method
+  [ ] document the error codes
+  [ ] understand the webhook events
+  [ ] define the fallback strategy
+  [ ] set up monitoring
+  [ ] secrets in environment variables
 ```
 
 ### 2. Payment (Stripe)
 
 ```markdown
-Architektur:
-  - Frontend: Stripe.js / Stripe Elements (PCI-konform)
-  - Backend: Stripe SDK für Server-Side
-  - Webhooks für Payment-Events
+Architecture:
+  - Frontend: Stripe.js / Stripe Elements (PCI compliant)
+  - Backend: Stripe SDK for server side
+  - Webhooks for payment events
 
-Events die wir handlen:
-  payment_intent.succeeded   → Order bestätigen
-  payment_intent.failed      → User informieren
-  subscription.created       → Zugang aktivieren
-  subscription.deleted       → Zugang deaktivieren
-  invoice.payment_failed     → Zahlungserinnerung
+Events we handle:
+  payment_intent.succeeded   → confirm the order
+  payment_intent.failed      → inform the user
+  subscription.created       → activate access
+  subscription.deleted       → deactivate access
+  invoice.payment_failed     → payment reminder
 
-Sicherheit:
-  - Webhook-Signatur verifizieren
-  - Idempotency Keys für Mappings
-  - Keine Secrets im Frontend
+Security:
+  - Verify the webhook signature
+  - Idempotency keys for mappings
+  - No secrets in the frontend
 ```
 
 ### 3. Email (SendGrid/Resend)
 
 ```markdown
-Architektur:
-  - Transaktionale E-Mails: Server-Side
-  - Marketing: Third-Party (nicht selbst bauen)
+Architecture:
+  - Transactional emails: server side
+  - Marketing: third-party (don't build it yourself)
 
 Templates:
-  - Willkommen
-  - Passwort-Reset
-  - E-Mail-Verifizierung
-  - Zahlungs-Bestätigung
+  - Welcome
+  - Password reset
+  - Email verification
+  - Payment confirmation
   - Newsletter
 
-Regeln:
-  - Immer mit User-ID tracken
-  - Unsubscribe-Link immer dabei
-  - SPF/DKIM/DMARC konfigurieren
+Rules:
+  - Always track with the user ID
+  - Unsubscribe link always included
+  - Configure SPF/DKIM/DMARC
 ```
 
 ### 4. Webhooks
 
 ```markdown
-Eingehende Webhooks:
-  - Signatur-Verifizierung (immer!)
-  - Idempotency-Check (Event-ID)
-  - Queue für Verarbeitung
-  - Retry mit Backoff
-  - Logging aller Events
+Incoming webhooks:
+  - Signature verification (always!)
+  - Idempotency check (event ID)
+  - Queue for processing
+  - Retry with backoff
+  - Logging of all events
 
-Ausgehende Webhooks:
-  - User kann URL konfigurieren
-  - Signatur mit Secret
-  - Retry bei 5xx/Timeout
-  - Event-History für Debugging
+Outgoing webhooks:
+  - User can configure the URL
+  - Signature with secret
+  - Retry on 5xx/timeout
+  - Event history for debugging
 ```
 
-### 5. Queue-System
+### 5. Queue system
 
 ```markdown
-Wann Queues nutzen:
-  - Langlaufende Operationen (>5s)
-  - E-Mail-Versand
-  - PDF-Generierung
-  - Bulk-Operationen
-  - Webhook-Verarbeitung
+When to use queues:
+  - Long-running operations (>5s)
+  - Email sending
+  - PDF generation
+  - Bulk operations
+  - Webhook processing
 
-Implementierung:
+Implementation:
   - Redis/RabbitMQ/Inngest
-  - Dead-Letter-Queue für fehlgeschlagene Jobs
-  - Retry mit Backoff
-  - Job-Monitoring
+  - Dead-letter queue for failed jobs
+  - Retry with backoff
+  - Job monitoring
 ```
 
-### 6. Fallback-Strategien
+### 6. Fallback strategies
 
 ```markdown
-Wenn Service ausfällt:
-  1. Versuche Alternative (z.B. anderes Payment-Provider)
-  2. Deaktiviere Feature graceful
-  3. User informiere klar
-  4. Alle Anfragen pufere
-  5. Monitoring alarmiere
+When a service fails:
+  1. Try an alternative (e.g. another payment provider)
+  2. Disable the feature gracefully
+  3. Inform the user clearly
+  4. Buffer all requests
+  5. Alert monitoring
 
-Beispiel:
-  Stripe down → "Zahlung momentan nicht möglich. Bitte später versuchen."
-  SendGrid down → E-Mail-Queue → wird versendet sobald Service wieder da
+Example:
+  Stripe down → "Payment currently unavailable. Please try later."
+  SendGrid down → email queue → will be sent as soon as the service is back
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Secrets im Code/Repository
-- Keine Webhook-Signatur-Verifizierung
-- Synchroner API-Call in Request-Handler (>5s)
-- Kein Retry/Backoff
-- Kein Fallback bei Service-Ausfall
-- API-Tokens in URLs
+- Secrets in code/repository
+- No webhook signature verification
+- Synchronous API call in the request handler (>5s)
+- No retry/backoff
+- No fallback on service failure
+- API tokens in URLs
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Secrets in Environment Variables
-- Immer Signatur-Verifizierung
-- Asynchron via Queue
-- Exponential Backoff mit Max Retries
-- Graceful Degradation + User-Meldung
-- Tokens in Headers
+- Secrets in environment variables
+- Always signature verification
+- Asynchronous via queue
+- Exponential backoff with max retries
+- Graceful degradation + user message
+- Tokens in headers
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend-Regeln
-- `studio-library/packages/billing/` — Billing-Package
-- `studio-library/packages/feature-gating/` — Feature-Gating
+- `.quinsy-studio/knowledge-base/backend_playbook.md` — backend rules
+- `studio-library/packages/billing/` — billing package
+- `studio-library/packages/feature-gating/` — feature gating

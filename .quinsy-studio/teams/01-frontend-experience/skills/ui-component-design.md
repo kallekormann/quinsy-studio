@@ -1,6 +1,6 @@
 # Skill: UI Component Design
 
-> Atomic Design, TypeScript, Props-API, Storybook-Dokumentation
+> Atomic design, TypeScript, props API, Storybook documentation
 
 ## Metadata
 
@@ -12,169 +12,169 @@ lead_role: Frontend Engineer
 support_roles: [UI/Interaction Designer, QA Specialist]
 phases: [3, 4, 5]
 activation_triggers:
-  - Ticket enthält "Komponente", "Component", "UI-Element"
-  - Neues UI-Feature wird implementiert
-  - Design System wird erweitert
-  - Reuse-Review identifiziert wiederverwendbare Komponente
+  - Ticket contains "component", "UI element"
+  - New UI feature is being implemented
+  - Design system is being extended
+  - Reuse review identifies a reusable component
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Atomic Design Hierarchie
+### 1. Atomic design hierarchy
 
 ```markdown
-Jede Komponente wird dem richtigen Level zugeordnet:
+Every component is assigned to the correct level:
 
-ATOMS (kleinste Einheit):
+ATOMS (smallest unit):
   - Button, Input, Badge, Icon, Avatar, Checkbox, Radio, Switch
   - Props: variant, size, disabled, loading, icon
-  - Keine internen Abhängigkeiten zu anderen Komponenten
+  - No internal dependencies on other components
 
-MOLECULES (Kombination aus Atoms):
+MOLECULES (combination of atoms):
   - Card, Form, Modal, Dropdown, SearchBar, FormField
-  - Bestehen aus 2+ Atoms
-  - Haben eine spezifische Funktion
+  - Consist of 2+ atoms
+  - Have a specific function
 
-ORGANISMS (komplexe Bereiche):
+ORGANISMS (complex areas):
   - Header, Footer, Sidebar, Navigation, DataTable, Hero
-  - Bestehen aus Molecules + Atoms
-  - Erobern einen ganzen View-Bereich
+  - Consist of molecules + atoms
+  - Cover a whole view area
 
-TEMPLATES (Seiten-Layouts):
-  - Seiten-Layouts ohne konkrete Inhalte
-  - Definieren die Informationsarchitektur
+TEMPLATES (page layouts):
+  - Page layouts without concrete content
+  - Define the information architecture
 
-PAGES (konkrete Implementierungen):
-  - Templates befüllt mit echten Daten
+PAGES (concrete implementations):
+  - Templates filled with real data
 ```
 
-### 2. Komponenten-Spezifikation
+### 2. Component specification
 
 ```markdown
-Jede Komponente MUSS folgende Dateien erhalten:
+Every component MUST have the following files:
 
 src/components/{name}/
-  ├── index.ts              # Public API (Named Exports)
-  ├── {name}.tsx            # Implementierung
-  ├── {name}.test.tsx       # Unit-Tests
-  ├── {name}.stories.tsx    # Storybook-Dokumentation
-  └── {name}.types.ts       # TypeScript-Typen (falls komplex)
+  ├── index.ts              # public API (named exports)
+  ├── {name}.tsx            # implementation
+  ├── {name}.test.tsx       # unit tests
+  ├── {name}.stories.tsx    # Storybook documentation
+  └── {name}.types.ts       # TypeScript types (if complex)
 ```
 
-### 3. Props-Design
+### 3. Props design
 
 ```markdown
-Regeln für Props:
+Rules for props:
 
-1. Konsistente Naming:
-   - Boolean props: is{State} oder has{Property} (isDisabled, hasIcon)
+1. Consistent naming:
+   - Boolean props: is{State} or has{Property} (isDisabled, hasIcon)
    - Event handlers: on{Event} (onClick, onChange)
-   - Content props: children oder spezifisch (label, title)
+   - Content props: children or specific (label, title)
    - Layout props: align, direction, gap
 
-2. Sensible Defaults:
-   - Alle props mit Ausnahme von children haben Defaults
-   - Defaults sind in der Dokumentation sichtbar
+2. Sensible defaults:
+   - All props except children have defaults
+   - Defaults are visible in the documentation
 
 3. TypeScript:
-   - Props sind explizit getypt (keine any)
-   - Union Types für Varianten
-   - Optional props mit ? markiert
+   - Props are explicitly typed (no any)
+   - Union types for variants
+   - Optional props marked with ?
 
 4. Ref forwarding:
-   - Komponenten die auf DOM-Elemente zugreifen, leiten refs weiter
+   - Components that access DOM elements forward refs
 ```
 
-### 4. Styling Rules
+### 4. Styling rules
 
 ```markdown
-1. Tailwind CSS als Primär-Styling
-2. CSS Custom Properties für Theme-Variablen
-3. Keine Inline-Styles (außer dynamische Werte)
-4. Responsive: Mobile-First (sm:, md:, lg:, xl:)
-5. Dark Mode: über CSS Custom Properties / Theme
-6. Animationen: nur GPU-beschleunigt (transform, opacity)
+1. Tailwind CSS as primary styling
+2. CSS custom properties for theme variables
+3. No inline styles (except dynamic values)
+4. Responsive: mobile-first (sm:, md:, lg:, xl:)
+5. Dark mode: via CSS custom properties / theme
+6. Animations: only GPU-accelerated (transform, opacity)
 ```
 
-### 5. Storybook Rules
+### 5. Storybook rules
 
 ```markdown
-Jede Komponente hat:
-- Default Story
-- Alle Varianten als eigene Stories
-- Empty State Story (falls relevant)
-- Disabled State Story
-- Loading State Story
-- Mobile Viewport Story
+Every component has:
+- Default story
+- All variants as separate stories
+- Empty state story (if relevant)
+- Disabled state story
+- Loading state story
+- Mobile viewport story
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Inline-Styles statt Tailwind
-- div statt semantischer HTML-Elemente (button, nav, main, section)
-- Fehlende aria-Labels bei interaktiven Elementen
-- Hardcoded Farben statt Design Tokens
-- Komponente mit >20 Props (zu komplex — aufteilen!)
-- Keine TypeScript-Typen
-- Kein Default Export (nur Named Exports)
-- CSS-in-JS ohne zwingenden Grund
--任何 styles die nicht responsive sind
+- Inline styles instead of Tailwind
+- div instead of semantic HTML elements (button, nav, main, section)
+- Missing aria labels on interactive elements
+- Hardcoded colors instead of design tokens
+- Component with >20 props (too complex — split it!)
+- No TypeScript types
+- No default export (only named exports)
+- CSS-in-JS without a compelling reason
+- Any styles that are not responsive
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Tailwind + CSS Custom Properties
-- Semantische HTML-Elemente
-- ARIA-Labels wo nötig
-- Design Tokens (.quinsy-studio/studio-library/ui/tokens/)
-- Props aufteilen in Sub-Komponenten
-- Volle TypeScript-Typisierung
-- Named Exports (barrel exports via index.ts)
-- Tailwind für Fast-Path, CSS Modules für komplexe Animationen
-- Mobile-First Responsive Design
+- Tailwind + CSS custom properties
+- Semantic HTML elements
+- ARIA labels where needed
+- Design tokens (.quinsy-studio/studio-library/ui/tokens/)
+- Split props into sub-components
+- Full TypeScript typing
+- Named exports (barrel exports via index.ts)
+- Tailwind for the fast path, CSS modules for complex animations
+- Mobile-first responsive design
 ```
 
 ---
 
-## Qualitäts-Checkliste
+## Quality checklist
 
-- [ ] Komponente ist generisch und konfigurierbar
-- [ ] TypeScript-Typen sind vollständig
-- [ ] Props haben sinnvolle Defaults
-- [ ] Storybook-Dokumentation vorhanden
-- [ ] Unit-Tests vorhanden
-- [ ] Barrierefreiheit geprüft (a11y)
-- [ ] Responsive (Mobile-First)
-- [ ] Dark/Light Mode unterstützt
-- [ ] Performance im Budget (kein unnötiges Re-Rendering)
-- [ ] Kein AI-Slop im Code
-- [ ] Semantische HTML-Elemente verwendet
-- [ ] Ref-Forwarding implementiert (bei Bedarf)
+- [ ] Component is generic and configurable
+- [ ] TypeScript types are complete
+- [ ] Props have sensible defaults
+- [ ] Storybook documentation present
+- [ ] Unit tests present
+- [ ] Accessibility checked (a11y)
+- [ ] Responsive (mobile-first)
+- [ ] Dark/light mode supported
+- [ ] Performance within budget (no unnecessary re-rendering)
+- [ ] No AI slop in the code
+- [ ] Semantic HTML elements used
+- [ ] Ref forwarding implemented (when needed)
 
 ---
 
-## Externe Skill-Unterstützung
+## External skill support
 
-> Vor der Umsetzung die importierten Best-in-Class-Skills laden (`./studio update-skills`):
+> Before implementation load the imported best-in-class skills (`./studio update-skills`):
 
-- **`design/skills/`** (Nutlope/hallmark) — `hallmark audit` vor UI-Review, `hallmark build` für neue Entwürfe (57 Slop-Gates).
-- **`design_awesome/skills/<stil>/SKILL.md`** (bergside) — konkrete Stil-Guides für Komponenten (Corporate, Minimal, ...)
-- **`all_domains/design-and-ui-ux/frontend-design`** — generischer Frontend-Design-Workflow
+- **`design/skills/`** (Nutlope/hallmark) — run `hallmark audit` before UI review, `hallmark build` for new drafts (57 slop gates).
+- **`design_awesome/skills/<style>/SKILL.md`** (bergside) — concrete style guides for components (corporate, minimal, ...)
+- **`all_domains/design-and-ui-ux/frontend-design`** — generic frontend design workflow
 
-Ablauf: Komponente bauen → `hallmark audit` laufen lassen → Slop-Verstöße fixen → Storybook + Tests.
+Flow: build the component → run `hallmark audit` → fix slop violations → Storybook + tests.
 
-## Referenzen
+## References
 
-- `.quinsy-studio/studio-library/ui/tokens/` — Design Tokens
-- `.quinsy-studio/studio-library/ui/components/` — Bestehende Komponenten
-- `.quinsy-studio/knowledge-base/design_playbook.md` — Design-Regeln
-- `.quinsy-studio/knowledge-base/frontend_playbook.md` — Frontend-Regeln
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — Anti-Slop
+- `.quinsy-studio/studio-library/ui/tokens/` — design tokens
+- `.quinsy-studio/studio-library/ui/components/` — existing components
+- `.quinsy-studio/knowledge-base/design_playbook.md` — design rules
+- `.quinsy-studio/knowledge-base/frontend_playbook.md` — frontend rules
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — anti-slop

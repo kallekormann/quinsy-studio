@@ -1,6 +1,6 @@
 # Skill: Infrastructure
 
-> Docker, Cloud-Auswahl, CDN, SSL/TLS, DNS, IaC
+> Docker, Cloud Selection, CDN, SSL/TLS, DNS, IaC
 
 ## Metadata
 
@@ -12,97 +12,97 @@ lead_role: Platform Architect
 support_roles: [Backend Security Engineer, DevOps Engineer]
 phases: [1, 2, 3, 4, 6, 7]
 activation_triggers:
-  - Ticket enthält "Infrastructure", "Docker", "Cloud", "Deploy"
-  - Phase 1: Cloud-Evaluierung
-  - Phase 2: Infrastruktur-Architektur
-  - Phase 3: Docker-Setup
+  - Ticket contains "Infrastructure", "Docker", "Cloud", "Deploy"
+  - Phase 1: Cloud evaluation
+  - Phase 2: Infrastructure architecture
+  - Phase 3: Docker setup
   - Phase 6/7: Deployment
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavioral Rules
 
 ### 1. Docker
 
 ```markdown
-Standard-Setup:
-  - docker-compose.yml für lokale Entwicklung
-  - Multi-Stage Builds für Produktion
-  - Health-Checks für jeden Service
-  - Volumes für persistente Daten
-  - Networks für Service-Isolation
+Standard setup:
+  - docker-compose.yml for local development
+  - Multi-stage builds for production
+  - Health checks for every service
+  - Volumes for persistent data
+  - Networks for service isolation
 
 Services:
   - app (Next.js / Laravel)
   - db (PostgreSQL)
-  - redis (Cache/Queue)
-  - worker (Background-Jobs)
+  - redis (cache/queue)
+  - worker (background jobs)
 ```
 
-### 2. Cloud-Auswahl
+### 2. Cloud Selection
 
 ```markdown
-Standard:
-  - Vercel → Next.js Hosting (einfach, schnell)
+Default:
+  - Vercel → Next.js hosting (simple, fast)
   - Supabase → Database + Auth + Storage
-  - Railway / Fly.io → Backend-Services
+  - Railway / Fly.io → Backend services
 
 Enterprise:
-  - AWS → Volle Kontrolle
-  - GCP → ML/AI-Workloads
-  - Azure → Microsoft-Ökosystem
+  - AWS → Full control
+  - GCP → ML/AI workloads
+  - Azure → Microsoft ecosystem
 
-Entscheidungskriterien:
-  - Kosten
-  - Skalierbarkeit
-  - Region (EU-Datenschutz!)
-  - Managed Services
-  - Team-Kompetenz
+Decision criteria:
+  - Cost
+  - Scalability
+  - Region (EU data protection!)
+  - Managed services
+  - Team expertise
 ```
 
 ### 3. CDN & Caching
 
 ```markdown
 CDN:
-  - Vercel Edge Network (automatisch)
-  - Cloudflare (bei Bedarf)
-  - Bilder: Image-CDN (Vercel/Image Optimization)
+  - Vercel Edge Network (automatic)
+  - Cloudflare (if needed)
+  - Images: Image CDN (Vercel/Image Optimization)
 
-Caching-Strategie:
-  - Static Assets: immutable, 1 year
+Caching strategy:
+  - Static assets: immutable, 1 year
   - API: stale-while-revalidate
-  - HTML: short-cache + revalidation
+  - HTML: short cache + revalidation
 ```
 
 ### 4. SSL/TLS & DNS
 
 ```markdown
 SSL:
-  - Automatisch via Vercel/Cloudflare
-  - Let's Encrypt für selbst-gehostete
-  - HSTS-Header aktivieren
+  - Automatic via Vercel/Cloudflare
+  - Let's Encrypt for self-hosted
+  - Enable HSTS header
 
 DNS:
-  - Cloudflare oder Route53
-  - DNS-SEC aktivieren
-  - MX für E-Mail
-  - CNAME für WWW
+  - Cloudflare or Route53
+  - Enable DNSSEC
+  - MX for email
+  - CNAME for WWW
 ```
 
 ### 5. Infrastructure as Code
 
 ```markdown
 Tools:
-  - Terraform (bei AWS/GCP)
-  - Pulumi (programmatisch)
-  - Docker Compose (lokal)
+  - Terraform (for AWS/GCP)
+  - Pulumi (programmatic)
+  - Docker Compose (local)
   - Vercel/Supabase (managed)
 
-Regeln:
-  - Alles in Git versioniert
-  - Keine manuellen Änderungen in Production
-  - State-Backend für Terraform
+Rules:
+  - Everything versioned in Git
+  - No manual changes in production
+  - State backend for Terraform
   - Plan before apply
 ```
 
@@ -110,30 +110,30 @@ Regeln:
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Prohibited
 
 ```markdown
-- Manuelle Server-Konfiguration
-  - Kein Docker für lokale Entwicklung
-  - Secrets im Code
-  - Kein SSL
-  - US-Server für EU-User (DSGVO!)
+- Manual server configuration
+  - No Docker for local development
+  - Secrets in code
+  - No SSL
+  - US servers for EU users (GDPR!)
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
 - Infrastructure as Code
-  - Docker-Compose für alle
-  - Secrets in Secret-Manager
-  - SSL überall
-  - EU-Server für EU-User
+  - Docker Compose for everyone
+  - Secrets in Secret Manager
+  - SSL everywhere
+  - EU servers for EU users
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend-Regeln
-- `templates/docker/` — Docker-Templates
-- `.quinsy-studio/process/project-archetypes.md` — Stack-Empfehlungen
+- `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend rules
+- `templates/docker/` — Docker templates
+- `.quinsy-studio/process/project-archetypes.md` — Stack recommendations

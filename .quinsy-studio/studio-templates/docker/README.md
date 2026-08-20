@@ -1,31 +1,31 @@
-# Docker-Basis-Template
+# Docker Base Template
 
-Dieses Verzeichnis enthält das **Basis-Docker-Template** des Studios mit den Essentials
-(PostgreSQL, Redis, optionaler App-Service). Es wird beim Projekt-Setup als Grundlage
-in den Projektordner kopiert und dort projektspezifisch erweitert.
+This directory contains the studio's **base docker template** with the essentials
+(PostgreSQL, Redis, optional app service). During project setup it is copied into
+the project folder as the foundation and extended there per project.
 
-## Ablauf (Base → Project)
+## Flow (Base → Project)
 
-1. **Studio hält die Essentials:** `docker-compose.yml`, `.env.example` — generisch,
-   parametrisiert mit `{{PROJECT_NAME}}`.
-2. **Projekt-Setup kopiert die Basis:** `./studio env <project> init` (oder
+1. **Studio holds the essentials:** `docker-compose.yml`, `.env.example` — generic,
+   parameterized with `{{PROJECT_NAME}}`.
+2. **Project setup copies the base:** `./studio env <project> init` (or
    `python3 .quinsy-studio/studio-tools/init_project_env.py <project>`)
-   → Ergebnis: `projects/<name>/docker/docker-compose.yml` + `.env.example`
-   mit dem echten Projektnamen.
-3. **Projekt erweitert NUR im Projektordner:** Zusätzliche Services (Mailpit, MinIO,
-   Queue-Worker), Build-Kontexte, eigene Volumes gehören nach
-   `projects/<name>/docker/` — das Template bleibt generisch.
+   → result: `projects/<name>/docker/docker-compose.yml` + `.env.example`
+   with the real project name.
+3. **Project extends ONLY in the project folder:** additional services (Mailpit, MinIO,
+   queue workers), build contexts, custom volumes belong in
+   `projects/<name>/docker/` — the template stays generic.
 
-## Platzhalter
+## Placeholders
 
-| Platzhalter       | Ersetzt durch          |
-|-------------------|------------------------|
-| `{{PROJECT_NAME}}` | Projektname            |
+| Placeholder        | Replaced by        |
+|--------------------|--------------------|
+| `{{PROJECT_NAME}}` | project name       |
 
-## Regeln
+## Rules
 
-- **NIEMALS** projektspezifische Config ins Template committen.
-- **Keine** festen Passwörter/Secrets im Template (nur Dev-Defaults, via `.env` überschreibbar).
-- Wenn ein Projekt eine Verbesserung braucht, die *universell* nützlich ist
-  (z.B. ein Healthcheck, ein neuer Basis-Service) → Template aktualisieren
-  (Global Loop), nicht nur das Projekt (Local Loop).
+- **NEVER** commit project-specific config into the template.
+- **No** fixed passwords/secrets in the template (only dev defaults, overridable via `.env`).
+- If a project needs an improvement that is *universally* useful
+  (e.g. a healthcheck, a new base service) → update the template
+  (global loop), not just the project (local loop).

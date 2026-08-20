@@ -1,6 +1,6 @@
 # Skill: Cookie Banner Implementation
 
-> Cookie-Banner, Consent-Management, Kategorien, Opt-in, Widerruf
+> Cookie banner, consent management, categories, opt-in, withdrawal
 
 ## Metadata
 
@@ -12,128 +12,128 @@ lead_role: Legal & Privacy Officer
 support_roles: [Frontend Engineer, Backend Engineer]
 phases: [3, 4, 5]
 activation_triggers:
-  - Ticket enthält "Cookie", "Consent", "Banner", "Tracking"
-  - Phase 3: Cookie-Strategie wird geplant
-  - Phase 4: Banner wird implementiert
-  - Phase 5: Cookie-Check im QA-Gate
+  - Ticket contains "cookie", "consent", "banner", "tracking"
+  - Phase 3: cookie strategy is planned
+  - Phase 4: banner is implemented
+  - Phase 5: cookie check in the QA gate
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Cookie-Kategorien
+### 1. Cookie categories
 
 ```markdown
-NOTWENDIG (immer aktiv):
-  - Session-Cookies (Login)
-  - CSRF-Token
-  - Cookie-Banner-Entscheidung
-  - Load-Balancer-Session
-  → Kein Consent nötig (berechtigtes Interesse)
+NECESSARY (always active):
+  - Session cookies (login)
+  - CSRF token
+  - Cookie banner decision
+  - Load-balancer session
+  → No consent needed (legitimate interest)
 
 ANALYTICS (opt-in):
   - Google Analytics / Plausible
   - Heatmaps (Hotjar)
-  - Performance-Monitoring
-  → Nur mit explizitem Consent
+  - Performance monitoring
+  → Only with explicit consent
 
 MARKETING (opt-in):
-  - Facebook Pixel
+  - Facebook pixel
   - Google Ads
   - Retargeting
-  → Nur mit explizitem Consent
+  → Only with explicit consent
 ```
 
-### 2. Banner-Design
+### 2. Banner design
 
 ```markdown
-UI-Anforderungen:
-  - Vollständig sichtbar (nicht versteckt)
-  - Gleiche Prominenz für "Alle akzeptieren" und "Auswahl"
-  - Kein "weiter = akzeptieren" Tricker
-  - Explizite Buttons: "Alle akzeptieren", "Nur notwendige", "Auswahl anpassen"
+UI requirements:
+  - Fully visible (not hidden)
+  - Same prominence for "Accept all" and "Selection"
+  - No "continue = accept" trick
+  - Explicit buttons: "Accept all", "Only necessary", "Customize selection"
 
-Platzierung:
-  - Modal/Overlay (nicht nur Footer-Link)
-  - Blockiert Interaktion bis Entscheidung
-  - Remember: Entscheidung in Cookie/Cookie-Consent speichern
+Placement:
+  - Modal/overlay (not just a footer link)
+  - Blocks interaction until a decision
+  - Remember: store the decision in a cookie/cookie consent
 ```
 
-### 3. Consent-Speicherung
+### 3. Consent storage
 
 ```markdown
-Cookie-Namen:
+Cookie names:
   - cookie_consent: { necessary: true, analytics: false, marketing: false }
   - cookie_consent_date: 2026-08-20T10:30:00Z
-  - cookie_consent_version: 1 (für aktualisierte Kategorien)
+  - cookie_consent_version: 1 (for updated categories)
 
-Ablauf: 365 Tage
-Widerruf: Link im Footer "Cookie-Einstellungen"
+Expiry: 365 days
+Withdrawal: link in the footer "Cookie settings"
 ```
 
 ### 4. Implementation
 
 ```markdown
 Frontend:
-  1. Vor Consent: Kein Analytics/Marketing Script laden!
-  2. Banner Component (React/Vue)
-  3. Consent State in Cookie speichern
-  4. Scripts dynamisch laden nach Consent
+  1. Before consent: do NOT load analytics/marketing scripts!
+  2. Banner component (React/Vue)
+  3. Store consent state in a cookie
+  4. Load scripts dynamically after consent
 
 Backend:
-  1. Consent-Status in User-Profil speichern (bei Login)
-  2. API für Consent-Änderung
-  3. Audit-Log für Consent-Änderungen
+  1. Store consent status in the user profile (on login)
+  2. API for consent changes
+  3. Audit log for consent changes
 ```
 
-### 5. Widerruf
+### 5. Withdrawal
 
 ```markdown
-Immer erreichbar:
-  - Link im Footer: "Cookie-Einstellungen"
-  - Öffnet erneut den Banner
-  - Änderungen werden sofort wirksam
-  - Bereits gesetzte Cookies werden gelöscht
+Always reachable:
+  - Link in the footer: "Cookie settings"
+  - Reopens the banner
+  - Changes take effect immediately
+  - Already set cookies are deleted
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Tracking Script BEFORE Consent
-- "Weiter = Akzeptieren"
-- Nur Opt-out (Checkbox die standardmäßig aktiv ist)
-- Kein Widerruf-Möglichkeit
-- Third-Party Cookies ohne Consent
-- Banner der nur "OK" Button hat
+- Tracking scripts BEFORE consent
+- "Continue = Accept"
+- Only opt-out (checkbox active by default)
+- No withdrawal option
+- Third-party cookies without consent
+- Banner that only has an "OK" button
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Scripts erst NACH Consent laden
-- Klare Wahlmöglichkeiten
-- Opt-in als Default (Checkbox = unchecked)
-- Footer-Link für Widerruf
-- Nur notwendige Cookies ohne Consent
-- Drei Buttons: Alle / Nur notwendige / Anpassen
+- Load scripts only AFTER consent
+- Clear choices
+- Opt-in as default (checkbox = unchecked)
+- Footer link for withdrawal
+- Only necessary cookies without consent
+- Three buttons: All / Only necessary / Customize
 ```
 
 ---
 
-## Externe Skill-Unterstützung
+## External skill support
 
-> Vor der Umsetzung die importierten Best-in-Class-Skills laden (`./studio update-skills`):
+> Before implementation load the imported best-in-class skills (`./studio update-skills`):
 
-- **`compliance_cookies/skills/cookiecomply`** (samir-abis/cookiecomply-skills) — vollständige DSGVO-Cookie-Compliance-Workflows (Banner, Consent-Management, CMP). **Primäre Quelle für diese Skill.**
+- **`compliance_cookies/skills/cookiecomply`** (samir-abis/cookiecomply-skills) — complete GDPR cookie compliance workflows (banner, consent management, CMP). **Primary source for this skill.**
 
-Ablauf: `cookiecomply` lesen → Kategorien/Consent-Flows übernehmen → mit internen DSGVO-Regeln abgleichen.
+Flow: read `cookiecomply` → adopt the categories/consent flows → align with the internal GDPR rules.
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/compliance_playbook.md` — Compliance-Regeln
-- `.quinsy-studio/studio-library/packages/feature-gating/` — Feature-Gating
+- `.quinsy-studio/knowledge-base/compliance_playbook.md` — compliance rules
+- `.quinsy-studio/studio-library/packages/feature-gating/` — feature gating

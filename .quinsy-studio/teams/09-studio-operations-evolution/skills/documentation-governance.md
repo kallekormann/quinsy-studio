@@ -1,6 +1,6 @@
 # Skill: Documentation Governance
 
-> Strikte Trennung Studio/Projekt, CHANGELOG-Pflege, README-Aktualität, Wissenstransfer
+> Strict separation of Studio/Project, CHANGELOG maintenance, README currency, Knowledge Transfer
 
 ## Metadata
 
@@ -12,113 +12,113 @@ lead_role: Documentation Writer
 support_roles: [Process Guard]
 phases: [6, 7]
 activation_triggers:
-  - Ticket enthält "Doku", "Documentation", "README", "CHANGELOG"
-  - Phase 6: Dokumentation wird aktualisiert
-  - Phase 7: Release-Doku
-  - /studio evolve Befehl
+  - Ticket contains "Docs", "Documentation", "README", "CHANGELOG"
+  - Phase 6: Documentation is being updated
+  - Phase 7: Release documentation
+  - /studio evolve command
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavioral Rules
 
-### 1. Strikte Trennung Studio/Projekt
+### 1. Strict Separation of Studio/Project
 
 ```markdown
-Studio-HQ (.quinsy-studio/):
-  - Enthält NUR universell anwendbare Inhalte
-  - Keine projektspezifischen Details
-  - Playbooks, Tools, Templates, Skills
+Studio HQ (.quinsy-studio/):
+  - Contains ONLY universally applicable content
+  - No project-specific details
+  - Playbooks, tools, templates, skills
 
-Projekt (projects/[name]/):
-  - Enthält NUR projektspezifische Inhalte
-  - Lokale Learnings
-  - Projekt-spezifische Doku
-  - Status, Tickets, Sprints
+Project (projects/[name]/):
+  - Contains ONLY project-specific content
+  - Local learnings
+  - Project-specific documentation
+  - Status, tickets, sprints
 
-Regel:
-  - Studio-Dateien dürfen KEINE Projekt-Referenzen enthalten
-  - Projekt-Dateien dürfen Studio-Inhalte REFERENZIEREN (nicht kopieren)
+Rule:
+  - Studio files must NOT contain project references
+  - Project files may REFERENCE studio content (not copy it)
 ```
 
-### 2. CHANGELOG-Pflege
+### 2. CHANGELOG Maintenance
 
 ```markdown
 Format (Keep a Changelog):
   ## [Version] - YYYY-MM-DD
   ### Added
-  - Neues Feature
+  - New feature
   ### Changed
-  - Geändertes Feature
+  - Changed feature
   ### Fixed
-  - Bug-Fix
+  - Bug fix
   ### Removed
-  - Entferntes Feature
+  - Removed feature
 
-Wann aktualisieren:
-  - Bei jeder Promotion
-  - Bei jeder Tool-Änderung
-  - Bei jeder Prozess-Änderung
-  - Bei jedem Release
+When to update:
+  - On every promotion
+  - On every tool change
+  - On every process change
+  - On every release
 ```
 
-### 3. README-Pflege
+### 3. README Maintenance
 
 ```markdown
-Für jede Komponente:
-  - Kurze Beschreibung
-  - Installation/Setup
-  - Nutzung
-  - Referenzen
-  - Aktualität: Bei jeder Änderung
+For each component:
+  - Brief description
+  - Installation/setup
+  - Usage
+  - References
+  - Currency: On every change
 
-Stardard-READMEs:
-  - .quinsy-studio/README.md (Studio-HQ)
-  - Jedes Team-README.md
-  - Jedes Skill-README.md (im Skill selbst)
+Standard READMEs:
+  - .quinsy-studio/README.md (Studio HQ)
+  - Each team README.md
+  - Each skill README.md (in the skill itself)
 ```
 
-### 4. Wissenstransfer
+### 4. Knowledge Transfer
 
 ```markdown
-Sicherstellen:
-  - Neue Team-Mitglieder finden alle Infos
-  - Entscheidungen sind dokumentiert (ADRs)
-  - Learnings sind zugänglich
-  - Prozesse sind beschreiben
+Ensure:
+  - New team members find all information
+  - Decisions are documented (ADRs)
+  - Learnings are accessible
+  - Processes are described
 
 Tools:
-  - ADRs für Architektur-Entscheidungen
-  - Learning Logs für Erkenntnisse
-  - Decision Records für HITL-Entscheidungen
+  - ADRs for architecture decisions
+  - Learning logs for insights
+  - Decision records for HITL decisions
 ```
 
 ---
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Prohibited
 
 ```markdown
-- Studio-Dateien mit Projekt-Referenzen
-  - Veraltete READMEs
-  - Kein CHANGELOG
-  - Dokumentation nur als Optional
+- Studio files with project references
+  - Outdated READMEs
+  - No CHANGELOG
+  - Documentation treated as optional
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Strikte Trennung Studio/Projekt
-  - Regelmäßige README-Updates
-  - CHANGELOG bei jeder Änderung
-  - Dokumentation als Pflicht
+- Strict separation Studio/Project
+  - Regular README updates
+  - CHANGELOG on every change
+  - Documentation as mandatory
 ```
 
 ---
 
-## Referenzen
+## References
 
 - `.quinsy-studio/process/learning-loop.md` — Dual-Loop Learning
-- `CHANGELOG.md` — Studio-Changelog
-- `README.md` — Studio-README
+- `CHANGELOG.md` — Studio Changelog
+- `README.md` — Studio README

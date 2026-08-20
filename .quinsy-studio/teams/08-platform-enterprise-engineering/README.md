@@ -1,19 +1,19 @@
 # Team 08 — Platform & Enterprise Engineering
 
-> Verantwortlich für Infrastruktur, DevOps, CI/CD, Sicherheit, wiederverwendbare Studio-Assets und Enterprise-Integrationen.
+> Responsible for infrastructure, DevOps, CI/CD, security, reusable studio assets and enterprise integrations.
 
-## Director-Level Rollen
+## Director-level roles
 
-| Rolle | Level | Verantwortlichkeiten |
-|-------|-------|---------------------|
-| **Platform Architect** | Director | Entwicklung wiederverwendbarer globaler Studio-Assets (Auth, Billing, UI-Libraries) |
+| Role | Level | Responsibilities |
+|------|-------|------------------|
+| **Platform Architect** | Director | development of reusable global studio assets (auth, billing, UI libraries) |
 
 ---
 
 ## Skills
 
-| ID | Skill | Lead-Rolle | Datei |
-|----|-------|------------|-------|
+| ID | Skill | Lead role | File |
+|----|-------|-----------|------|
 | PE-001 | Infrastructure Design | Platform Architect | `skills/infrastructure.md` |
 | PE-002 | CI/CD Pipelines | DevOps Engineer | `skills/ci-cd-pipelines.md` |
 | PE-003 | Security Audit | Backend Security Engineer | `skills/security-audit.md` |
@@ -21,11 +21,11 @@
 
 ---
 
-## Phasen-Beteiligung
+## Phase participation
 
-| Phase | Lead-Rollen | Support-Rollen |
-|-------|-------------|----------------|
-| Phase 0 | — | Platform Architect (Infra-Machbarkeit) |
+| Phase | Lead roles | Support roles |
+|-------|------------|---------------|
+| Phase 0 | — | Platform Architect (infra feasibility) |
 | Phase 1 | Platform Architect | Backend Security Engineer |
 | Phase 2 | Platform Architect | Backend Security Engineer |
 | Phase 3 | Platform Architect | DevOps Engineer |
@@ -36,9 +36,9 @@
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/gates.md` — Gate-Definitionen
-- `.quinsy-studio/process/project-archetypes.md` — Stack-Empfehlungen
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `templates/docker/` — Docker-Templates
+- `.quinsy-studio/process/gates.md` — gate definitions
+- `.quinsy-studio/process/project-archetypes.md` — stack recommendations
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `templates/docker/` — docker templates

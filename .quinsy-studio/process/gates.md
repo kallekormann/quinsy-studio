@@ -1,224 +1,238 @@
 # Quinsy Studio — Gates
 
-> Jedes Gate ist ein Qualitäts-Schleusentor. Kein Gate wird manuell auf "grün" gesetzt — es wird automatisch geprüft.
+> Every gate is a quality checkpoint. No gate is manually set to "green" — it is checked automatically.
 
-## Gate-Philosophie
+## Terminology: Phase Gates vs QA Levels
+
+Quinsy Studio uses **two separate gate systems**. Do not conflate them.
+
+| System | CLI | Purpose | Docs |
+|--------|-----|---------|------|
+| **Phase Gates** | `./studio approve --gate N` | Human checkpoints in the 7-phase lifecycle | This file (Phase Gate 0–6) |
+| **QA Levels** | `./studio gate --level N` | Automated tooling checks (lint, types, tests, build) | `run_qa_gate.py` |
+
+- **Phase Gate 1** = human approval after concept/design blueprint (`./studio approve --gate 1`)
+- **QA Level 5** = automated full QA run (`./studio gate --level 5`) — not the same as Phase Gate 5
+
+## Gate philosophy
 
 ```
-Gate = automatisierte Prüfung + menschliche Bestätigung
+Gate = automated check + human confirmation
 ```
 
-- **Automatisiert:** So viel wie möglich wird durch Tooling geprüft
-- **Menschlich:** Irreversible Entscheidungen warten auf Freigabe
-- **Kein bypass:** Ein Gate kann nicht übersprungen werden
+- **Automated:** as much as possible is checked by tooling
+- **Human:** irreversible decisions wait for approval
+- **No bypass:** a gate cannot be skipped
 
 ---
 
-## Gate 0 — Konzeptions-Gate
+## Gate 0 — Conception Gate
 
 ```bash
 ./studio gate <project> --level 0
 ```
 
-### Prüfpunkte
+> **Note:** `--level` runs **QA Levels** (automated checks). Phase Gate 0 checkpoints below are the lifecycle conception gate; implement via `./studio gate --level 0` plus manual ADR/definitions review until fully automated.
 
-| # | Prüfung | Methode | Gewicht |
-|---|---------|---------|---------|
-| 0.1 | PRD vorhanden | Datei-Check | Pflicht |
-| 0.2 | PRD enthält: Problem, Zielgruppe, Scope, KPIs | Struktur-Check | Pflicht |
-| 0.3 | Archetyp bestimmt | Feld-Check | Pflicht |
-| 0.4 | Komplexitäts-Level geschätzt | Feld-Check | Pflicht |
-| 0.5 | Mindestens 1 ADR vorhanden | Datei-Check | Pflicht |
-| 0.6 | Offene Fragen dokumentiert | Inhalt-Check | Empfohlen |
+### Checkpoints
 
-### Gate-Ausgabe
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 0.1 | PRD present | file check | required |
+| 0.2 | PRD contains: problem, target audience, scope, KPIs | structure check | required |
+| 0.3 | Archetype determined | field check | required |
+| 0.4 | Complexity level estimated | field check | required |
+| 0.5 | At least 1 ADR present | file check | required |
+| 0.6 | Open questions documented | content check | recommended |
+
+### Gate output
 ```
-Gate 0: Konzeption
+Gate 0: Conception
 ━━━━━━━━━━━━━━━━━━
-[✓] PRD vorhanden (docs/intake/prd.md)
-[✓] Problem definiert
-[✓] Zielgruppe definiert
-[✓] Scope definiert (P0/P1/P2)
-[✓] KPIs definiert
-[✓] Archetyp: saas-application
-[✓] Komplexität: P1
-[✓] ADRs: 1 vorhanden
-[~] Offene Fragen: 3 (dokumentiert)
+[✓] PRD present (docs/intake/prd.md)
+[✓] Problem defined
+[✓] Target audience defined
+[✓] Scope defined (P0/P1/P2)
+[✓] KPIs defined
+[✓] Archetype: saas-application
+[✓] Complexity: P1
+[✓] ADRs: 1 present
+[~] Open questions: 3 (documented)
 ━━━━━━━━━━━━━━━━━━
-Ergebnis: GRÜN ✓
+Result: GREEN ✓
 ```
 
 ---
 
-## Gate 1 — Validierungs-Gate
+## Gate 1 — Validation Gate
 
 ```bash
 ./studio gate <project> --level 1
 ```
 
-### Prüfpunkte
+### Checkpoints
 
-| # | Prüfung | Methode | Gewicht |
-|---|---------|---------|---------|
-| 1.1 | Technisches Spike vorhanden | Datei-Check | Pflicht |
-| 1.2 | Wettbewerbsanalyse vorhanden | Datei-Check | Pflicht |
-| 1.3 | Technologie-Stack definiert | Feld-Check | Pflicht |
-| 1.4 | Annahmen validiert | Inhalt-Check | Pflicht |
-| 1.5 | Go/No-Go-Entscheidung dokumentiert | ADR-Check | Pflicht |
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 1.1 | Technical spike present | file check | required |
+| 1.2 | Competitive analysis present | file check | required |
+| 1.3 | Technology stack defined | field check | required |
+| 1.4 | Assumptions validated | content check | required |
+| 1.5 | Go/no-go decision documented | ADR check | required |
 
 ---
 
-## Gate 2 — Architektur-Gate
+## Gate 2 — Architecture Gate
 
 ```bash
 ./studio gate <project> --level 2
 ```
 
-### Prüfpunkte
+### Checkpoints
 
-| # | Prüfung | Methode | Gewicht |
-|---|---------|---------|---------|
-| 2.1 | Architektur-Diagramm vorhanden | Datei-Check | Pflicht |
-| 2.2 | Datenmodell definiert | Datei-Check | Pflicht |
-| 2.3 | API-Spezifikation vorhanden | Datei-Check | Pflicht |
-| 2.4 | Infrastruktur-Plan vorhanden | Datei-Check | Pflicht |
-| 2.5 | Sicherheits-Architektur definiert | Inhalt-Check | Pflicht |
-| 2.6 | Alle ADRs vorhanden | Datei-Count | Pflicht |
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 2.1 | Architecture diagram present | file check | required |
+| 2.2 | Data model defined | file check | required |
+| 2.3 | API specification present | file check | required |
+| 2.4 | Infrastructure plan present | file check | required |
+| 2.5 | Security architecture defined | content check | required |
+| 2.6 | All ADRs present | file count | required |
 
 ---
 
-## Gate 3 — Design-Gate
+## Gate 3 — Design Gate
 
 ```bash
 ./studio gate <project> --level 3
 ```
 
-### Prüfpunkte
+### Checkpoints
 
-| # | Prüfung | Methode | Gewicht |
-|---|---------|---------|---------|
-| 3.1 | DESIGN.md vorhanden | Datei-Check | Pflicht |
-| 3.2 | Design-Tokens definiert | Datei-Check | Pflicht |
-| 3.3 | UI-Komponenten vorhanden | Verzeichnis-Check | Pflicht |
-| 3.4 | Seitentypen definiert | Datei-Check | Pflicht |
-| 3.5 | Farbmodus (dark/light) definiert | Inhalt-Check | Empfohlen |
-| 3.6 | Animation-Definiert | Inhalt-Check | Empfohlen |
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 3.1 | DESIGN.md present | file check | required |
+| 3.2 | Design tokens defined | file check | required |
+| 3.3 | UI components present | directory check | required |
+| 3.4 | Page types defined | file check | required |
+| 3.5 | Color mode (dark/light) defined | content check | recommended |
+| 3.6 | Animation defined | content check | recommended |
 
 ---
 
-## Gate 4 — Implementierungs-Gate
+## Gate 4 — Implementation Gate
 
 ```bash
 ./studio gate <project> --level 4
 ```
 
-### Prüfpunkte
+### Checkpoints
 
-| # | Prüfung | Methode | Gewicht |
-|---|---------|---------|---------|
-| 4.1 | Tests grün (`pnpm test` / `npm test`) | Shell-Check | Pflicht |
-| 4.2 | Build erfolgreich (`pnpm build`) | Shell-Check | Pflicht |
-| 4.3 | Keine Critical/High Security-Issues | Dependency-Scan | Pflicht |
-| 4.4 | TypeScript/ESLint ohne Errors | Linter-Check | Pflicht |
-| 4.5 | Code-Review durchgeführt | Feld-Check | Empfohlen |
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 4.1 | Tests green (`pnpm test` / `npm test`) | shell check | required |
+| 4.2 | Build successful (`pnpm build`) | shell check | required |
+| 4.3 | No critical/high security issues | dependency scan | required |
+| 4.4 | TypeScript/ESLint without errors | linter check | required |
+| 4.5 | Code review done | field check | recommended |
 
-### Shell-Checks
+### Shell checks
 ```bash
-# Test-Check
+# Test check
 pnpm test -- --reporter=json 2>/dev/null | jq '.numFailedTests == 0'
 
-# Build-Check
+# Build check
 pnpm build 2>&1 | tail -1 | grep -q "Successfully"
 
-# Lint-Check
+# Lint check
 pnpm lint 2>&1 | grep -q "0 errors"
 ```
 
 ---
 
-## Gate 5 — QA-Gate (Das strengste Gate)
+## Gate 5 — QA Gate (the strictest gate)
 
 ```bash
 ./studio gate <project> --level 5
 ```
 
-### Prüfpunkte
+### Checkpoints
 
-| # | Prüfung | Methode | Gewicht |
-|---|---------|---------|---------|
-| 5.1 | Alle E2E-Tests grün | Shell-Check | Pflicht |
-| 5.2 | Core Web Vitals im Budget | Performance-Check | Pflicht |
-| 5.3 | Lighthouse Score ≥ 90 | Shell-Check | Pflicht |
-| 5.4 | Keine Critical/High Security-Issues | OWASP-Scan | Pflicht |
-| 5.5 | DSGVO-konform | Compliance-Check | Pflicht |
-| 5.6 | Anti-Slop-Audit: 0 Verstöße | Anti-Slop-Check | Pflicht |
-| 5.7 | Barrierefreiheit geprüft | a11y-Check | Pflicht |
-| 5.8 | Cross-Browser getestet | Feld-Check | Empfohlen |
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 5.1 | All E2E tests green | shell check | required |
+| 5.2 | Core web vitals in budget | performance check | required |
+| 5.3 | Lighthouse score ≥ 90 | shell check | required |
+| 5.4 | No critical/high security issues | OWASP scan | required |
+| 5.5 | GDPR compliant | compliance check | required |
+| 5.6 | Anti-slop audit: 0 violations | anti-slop check | required |
+| 5.7 | Accessibility checked | a11y check | required |
+| 5.8 | Cross-browser tested | field check | recommended |
 
-### Anti-Slop-Audit (Detail)
+### Anti-slop audit (detail)
 ```bash
 ./studio gate <project> --anti-slop
 ```
 
-Prüft auf:
-- Überflüssige Variablen, unnötige Imports
-- Dead Code
-- Übermäßige Kommentare (AI-typical verbose patterns)
-- Ungewöhnliche Code-Muster (z.B. `// This function does X`)
-- Fehlende Error-Handling
-- Ungenutzte Dependencies
+Checks for:
+- Redundant variables, unnecessary imports
+- Dead code
+- Excessive comments (AI-typical verbose patterns)
+- Unusual code patterns (e.g. `// This function does X`)
+- Missing error handling
+- Unused dependencies
 
 ---
 
-## Gate 6 — Release-Gate
+## Gate 6 — Release Gate
 
 ```bash
 ./studio gate <project> --level 6
 ```
 
-### Prüfpunkte
+### Checkpoints
 
-| # | Prüfung | Methode | Gewicht |
-|---|---------|---------|---------|
-| 6.1 | Deployment erfolgreich | Feld-Check | Pflicht |
-| 6.2 | Monitoring aktiv | Feld-Check | Pflicht |
-| 6.3 | Rollback-Strategie vorhanden | Datei-Check | Pflicht |
-| 6.4 | Release-Notes vorhanden | Datei-Check | Pflicht |
-| 6.5 | Smoke-Tests bestanden | Feld-Check | Pflicht |
-
----
-
-## Gate-Status
-
-Jedes Gate hat einen von vier Status:
-
-| Status | Bedeutung |
-|--------|-----------|
-| `offen` | Noch nicht geprüft |
-| `rot` | Prüfung fehlgeschlagen (Fix nötig) |
-| `grün` | Prüfung bestanden |
-| `blockiert` | Wartet auf menschliche Entscheidung |
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 6.1 | Deployment successful | field check | required |
+| 6.2 | Monitoring active | field check | required |
+| 6.3 | Rollback strategy present | file check | required |
+| 6.4 | Release notes present | file check | required |
+| 6.5 | Smoke tests passed | field check | required |
 
 ---
 
-## Gate-History
+## Gate status
 
-Die Gate-Historie wird in `status.json` des Projekts protokolliert:
+Every gate has one of four statuses:
+
+| Status | Meaning |
+|--------|---------|
+| `open` | Not checked yet |
+| `red` | Check failed (fix needed) |
+| `green` | Check passed |
+| `blocked` | Waiting for a human decision |
+
+---
+
+## Gate history
+
+The gate history is logged in the project's `status.json`:
 
 ```json
 {
   "gate_history": [
     {
       "gate": 0,
-      "status": "grün",
+      "status": "green",
       "passed_at": "2026-08-19T10:00:00Z",
       "checked_by": "studio-cli"
     },
     {
       "gate": 1,
-      "status": "rot",
+      "status": "red",
       "failed_at": "2026-08-19T11:00:00Z",
-      "reason": "Wettbewerbsanalyse fehlt"
+      "reason": "Competitive analysis missing"
     }
   ]
 }
@@ -226,8 +240,8 @@ Die Gate-Historie wird in `status.json` des Projekts protokolliert:
 
 ---
 
-##Referenzen
+## References
 
-- `.quinsy-studio/process/anti-slop.md` — Anti-Slop-Audit im Detail
-- `.quinsy-studio/process/lifecycle.md` — Überblick über alle Phasen
-- `./studio gate <project>` — Gate ausführen
+- `.quinsy-studio/process/anti-slop.md` — anti-slop audit in detail
+- `.quinsy-studio/process/lifecycle.md` — overview of all phases
+- `./studio gate <project>` — run the gate

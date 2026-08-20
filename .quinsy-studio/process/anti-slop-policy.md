@@ -1,139 +1,139 @@
-# Quinsy Studio — Anti-Slop-Policy
+# Quinsy Studio — Anti-Slop Policy
 
-> AI-generierter Code hat charakteristische Muster, die manually geschriebenen Code schlechter machen.
-> Diese Policy definiert die verbindlichen Regeln zur Vermeidung von AI-Slop.
+> AI-generated code has characteristic patterns that make it worse than manually written code.
+> This policy defines the binding rules for avoiding AI slop.
 
-## Grundprinzip
+## Core principle
 
 ```
-Kein AI-Slop im Production-Code.
-Anti-Slop-Audit muss grün sein, bevor ein Gate bestanden gilt.
+No AI slop in production code.
+The anti-slop audit must be green before a gate counts as passed.
 ```
 
 ---
 
-## Registrierung von Slop-Mustern
+## Registry of slop patterns
 
-### Kategorie 1: Code-Slop (Schwere: Error)
+### Category 1: Code slop (severity: error)
 
-| Regel | Muster | Erkennung |
-|-------|--------|-----------|
-| S1 | Unbenutzte Imports | `import .* from` ohne Nachweis |
-| S2 | Unbenutzte Variablen | Deklariert aber nie referenziert |
-| S3 | Dead Code | Unerreichbarer Code nach return/throw |
-| S4 | Überflüssige Funktionen | Nie aufgerufen |
-| S5 | Redundante Bedingungen | `if (x === true)` statt `if (x)` |
-| S6 | Ungenutzte Parameter | Funktionsparameter ohne Nutzung |
-| S7 | Übermäßige Verschachtelung | >4 Ebenen |
+| Rule | Pattern | Detection |
+|------|---------|-----------|
+| S1 | Unused imports | `import .* from` without evidence |
+| S2 | Unused variables | declared but never referenced |
+| S3 | Dead code | unreachable code after return/throw |
+| S4 | Redundant functions | never called |
+| S5 | Redundant conditions | `if (x === true)` instead of `if (x)` |
+| S6 | Unused parameters | function parameters without use |
+| S7 | Excessive nesting | >4 levels |
 
-### Kategorie 2: Kommentar-Slop (Schwere: Warning)
+### Category 2: Comment slop (severity: warning)
 
-| Regel | Muster | Erkennung |
-|-------|--------|-----------|
-| C1 | AI-typical Comments | "This function does X", "Here we..." |
-| C2 | TODO ohne Owner/Datum | `// TODO` ohne `@name YYYY-MM-DD` |
-| C3 | Auskommentierter Code | `// ... (alter Code)` |
-| C4 | Überkommentierte Trivialitäten | Kommentar für `const x = 1` |
+| Rule | Pattern | Detection |
+|------|---------|-----------|
+| C1 | AI-typical comments | "This function does X", "Here we..." |
+| C2 | TODO without owner/date | `// TODO` without `@name YYYY-MM-DD` |
+| C3 | Commented-out code | `// ... (old code)` |
+| C4 | Over-commented trivialities | comment for `const x = 1` |
 
-### Kategorie 3: Error-Handling-Slop (Schwere: Error)
+### Category 3: Error-handling slop (severity: error)
 
-| Regel | Muster | Erkennung |
-|-------|--------|-----------|
-| E1 | Catch-all | `catch (e) {}` oder `catch (e) { console.log(e) }` |
-| E2 | Fehlende Error-Handling | Async-Funktion ohne try/catch |
-| E3 | Swallowed Errors | Catch ohne throw/logging |
-| E4 | Generic Messages | "An error occurred" ohne Details |
+| Rule | Pattern | Detection |
+|------|---------|-----------|
+| E1 | Catch-all | `catch (e) {}` or `catch (e) { console.log(e) }` |
+| E2 | Missing error handling | async function without try/catch |
+| E3 | Swallowed errors | catch without throw/logging |
+| E4 | Generic messages | "An error occurred" without details |
 
-### Kategorie 4: Architectural-Slop (Schwere: Warning)
+### Category 4: Architectural slop (severity: warning)
 
-| Regel | Muster | Erkennung |
-|-------|--------|-----------|
-| A1 | Fehlende Abstraktion | Alles in einer Datei |
-| A2 | Zirkuläre Abhängigkeiten | A → B → A |
-| A3 | God-Functions | >100 Zeilen |
-| A4 | Fehlende Typisierung | `any`/`unknown` ohne Notwendigkeit |
-| A5 | Inconsistent Naming | camelCase und snake_case gemischt |
+| Rule | Pattern | Detection |
+|------|---------|-----------|
+| A1 | Missing abstraction | everything in one file |
+| A2 | Circular dependencies | A → B → A |
+| A3 | God functions | >100 lines |
+| A4 | Missing typing | `any`/`unknown` without need |
+| A5 | Inconsistent naming | camelCase and snake_case mixed |
 
 ---
 
-## Audit-Modus
+## Audit mode
 
 ```bash
-# Full Audit
+# Full audit
 ./studio gate <project> --anti-slop
 
-# Nur Code-Slop
+# Only code slop
 ./studio gate <project> --anti-slop --category code
 
-# Output als JSON
+# Output as JSON
 ./studio gate <project> --anti-slop --json
 ```
 
 ---
 
-## Vermeidungsstrategien
+## Prevention strategies
 
-### Für Agenten
+### For agents
 
-1. **Spezifische Anweisungen**
+1. **Specific instructions**
    ```
-   ❌ "Schreibe eine Funktion die X macht"
-   ✅ "Schreibe eine Funktion die X macht, mit Error-Handling für Y und Z"
-   ```
-
-2. **Code-Review einfordern**
-   ```
-   ❌ "Schreibe den Code"
-   ✅ "Schreibe den Code und prüfe dann auf AI-Slop Muster"
+   ❌ "Write a function that does X"
+   ✅ "Write a function that does X, with error handling for Y and Z"
    ```
 
-3. **Best Practices nennen**
+2. **Demand a code review**
    ```
-   ❌ (keine Vorgaben)
-   ✅ "Nutze spezifische Error-Messages, vermeide catch-all"
+   ❌ "Write the code"
+   ✅ "Write the code and then check it for AI slop patterns"
    ```
 
-### Für Humans
+3. **Name best practices**
+   ```
+   ❌ (no constraints)
+   ✅ "Use specific error messages, avoid catch-all"
+   ```
 
-1. **PR-Review Checkliste**
-   - [ ] Sind alle Imports benutzt?
-   - [ ] Sind alle Variablen benutzt?
-   - [ ] Gibt es unerreichbaren Code?
-   - [ ] Sind Fehler spezifisch behandelt?
-   - [ ] Sind Kommentare informativ (nicht triviell)?
+### For humans
 
-2. **Automatisierung**
-   - ESLint mit Custom Rules
+1. **PR review checklist**
+   - [ ] Are all imports used?
+   - [ ] Are all variables used?
+   - [ ] Is there unreachable code?
+   - [ ] Are errors handled specifically?
+   - [ ] Are comments informative (not trivial)?
+
+2. **Automation**
+   - ESLint with custom rules
    - TypeScript strict mode
    - Pre-commit hooks
 
 ---
 
-## Integration mit Gates
+## Integration with gates
 
-Das Anti-Slop-Audit ist ein **verpflichtender Teil** von Gate 5 (QA-Gate):
+The anti-slop audit is a **mandatory part** of gate 5 (QA gate):
 
 ```bash
 ./studio gate <project> --level 5
-# Führt automatisch Anti-Slop-Audit durch
+# Runs the anti-slop audit automatically
 ```
 
-**Regel:** Ein Gate kann nicht grün sein, wenn das Anti-Slop-Audit Error-Verstöße hat.
+**Rule:** a gate cannot be green if the anti-slop audit has error violations.
 
 ---
 
-## Änderungspolitik
+## Change policy
 
-Anti-Slop-Regeln können geändert werden:
-1. Learning Item anlegen: `./studio learn "Regel X ist zu streng" --signal tooling-gap`
-2. Im Meta-Retro besprechen
-3. Entscheidung dokumentieren
-4. CHANGELOG-Eintrag erstellen
+Anti-slop rules can be changed:
+1. Create a learning item: `./studio learn "Rule X is too strict" --signal tooling-gap`
+2. Discuss it in the meta-retro
+3. Document the decision
+4. Create a CHANGELOG entry
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/gates.md` — Gate-Definitionen
-- `.quinsy-studio/process/learning-loop.md` — Learning Loop
-- `.quinsy-studio/teams/07-ai-autonomous-systems/` — Anti-Slop Team
+- `.quinsy-studio/process/gates.md` — gate definitions
+- `.quinsy-studio/process/learning-loop.md` — learning loop
+- `.quinsy-studio/teams/07-ai-autonomous-systems/` — anti-slop team

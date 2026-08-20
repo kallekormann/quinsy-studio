@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "kinds": {
+    "ui-atom": {
+      "project_glob": "ui/components/atoms/*.tsx",
+      "library_pattern": "ui/components/{slug}/",
+      "aliases": []
+    },
+    "ui-molecule": {
+      "project_glob": "ui/components/molecules/*.tsx",
+      "library_pattern": "ui/components/{slug}/",
+      "aliases": []
+    },
+    "ui-organism": {
+      "project_glob": "ui/components/organisms/*.tsx",
+      "library_pattern": "ui/components/{slug}/",
+      "aliases": []
+    },
+    "ui-page-type": {
+      "project_pattern": "ui/page-types/{name}/",
+      "library_pattern": "ui/page-types/{name}/",
+      "aliases": []
+    },
+    "ui-token": {
+      "project_path": "ui/tokens/design-tokens.json",
+      "library_path": "ui/tokens/design-tokens.json",
+      "aliases": ["tokens", "design-tokens"]
+    },
+    "ui-hook": {
+      "project_glob": "hooks/*.{ts,tsx}",
+      "library_pattern": "ui/hooks/{name}",
+      "aliases": ["hooks"]
+    },
+    "package-auth": {
+      "project_path": "packages/auth/",
+      "library_path": "packages/auth/",
+      "aliases": ["auth"]
+    },
+    "package-billing": {
+      "project_path": "packages/billing/",
+      "library_path": "packages/billing/",
+      "aliases": ["billing"]
+    },
+    "package-feature-gating": {
+      "project_path": "packages/feature-gating/",
+      "library_path": "packages/feature-gating/",
+      "aliases": ["feature-gating", "gating", "feature-gating"]
+    },
+    "sticker-sheet": {
+      "project_path": "design/prototype/app/sticker-sheet/",
+      "library_path": "ui/sticker-sheet/",
+      "aliases": ["sticker-sheet"]
+    }
+  },
+  "watch_paths": [
+    "packages/",
+    "ui/components/",
+    "ui/page-types/",
+    "hooks/",
+    "lib/"
+  ]
+}

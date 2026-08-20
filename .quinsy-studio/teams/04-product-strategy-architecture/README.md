@@ -1,20 +1,20 @@
 # Team 04 — Product Strategy & Architecture
 
-> Verantwortlich für Produktstrategie, Architektur-Entscheidungen, Technologie-Evaluierung und Go-to-Market.
+> Responsible for product strategy, architecture decisions, technology evaluation and go-to-market.
 
-## Director-Level Rollen
+## Director-level roles
 
-| Rolle | Level | Verantwortlichkeiten |
-|-------|-------|---------------------|
-| **Product Manager** | Director | PRD-Analyse, Roadmap, Meilenstein-Downsizing |
-| **Systems Architect** | Director | End-to-End-Datenflüsse, Gesamtarchitektur |
+| Role | Level | Responsibilities |
+|------|-------|------------------|
+| **Product Manager** | Director | PRD analysis, roadmap, milestone downsizing |
+| **Systems Architect** | Director | end-to-end data flows, overall architecture |
 
 ---
 
 ## Skills
 
-| ID | Skill | Lead-Rolle | Datei |
-|----|-------|------------|-------|
+| ID | Skill | Lead role | File |
+|----|-------|-----------|------|
 | PS-001 | Product Strategy | Product Manager | `skills/product-strategy.md` |
 | PS-002 | Architecture Decisions | Systems Architect | `skills/architecture-decisions.md` |
 | PS-003 | Technology Evaluation | Systems Architect | `skills/technology-evaluation.md` |
@@ -22,23 +22,23 @@
 
 ---
 
-## Phasen-Beteiligung
+## Phase participation
 
-| Phase | Lead-Rollen | Support-Rollen |
-|-------|-------------|----------------|
+| Phase | Lead roles | Support roles |
+|-------|------------|---------------|
 | Phase 0 | Product Manager, Systems Architect | — |
 | Phase 1 | Product Manager, Systems Architect | — |
 | Phase 2 | Systems Architect | Product Manager |
 | Phase 3 | Product Manager | Systems Architect |
-| Phase 4 | — | Systems Architect (Review) |
-| Phase 5 | — | Systems Architect (Audit) |
+| Phase 4 | — | Systems Architect (review) |
+| Phase 5 | — | Systems Architect (audit) |
 | Phase 6 | — | Documentation Writer |
 | Phase 7 | Product Manager | Systems Architect |
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/adr-policy.md` — ADR-Regelwerk
-- `.quinsy-studio/process/project-archetypes.md` — Archetypen
-- `.quinsy-studio/process/lifecycle.md` — Phasen
+- `.quinsy-studio/process/adr-policy.md` — ADR rulebook
+- `.quinsy-studio/process/project-archetypes.md` — archetypes
+- `.quinsy-studio/process/lifecycle.md` — phases

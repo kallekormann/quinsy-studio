@@ -1,65 +1,65 @@
-# ADR-[NNNN]: [Titel der Entscheidung]
+# ADR-[NNNN]: [Title of the Decision]
 
 **Status:** proposed | accepted | deprecated | superseded
-**Datum:** [YYYY-MM-DD]
-**Entscheider:** [Rolle / Name]
-**Betroffene Phasen:** [Phase(n)]
+**Date:** [YYYY-MM-DD]
+**Decision-maker:** [Role / Name]
+**Affected phases:** [Phase(s)]
 
 ---
 
-## Kontext
+## Context
 
-Was ist die Situation? Welches Problem soll gelöst werden?
-
----
-
-## Entscheidung
-
-Was wurde entschieden?
+What is the situation? Which problem needs to be solved?
 
 ---
 
-## Begründung
+## Decision
 
-Warum wurde diese Entscheidung getroffen?
+What was decided?
 
 ---
 
-## Alternativen
+## Rationale
 
-Welche Alternativen wurden erwogen?
+Why was this decision made?
+
+---
+
+## Alternatives
+
+Which alternatives were considered?
 
 ### Alternative A: [Name]
-- Vorteile: ...
-- Nachteile: ...
+- Pros: ...
+- Cons: ...
 
 ### Alternative B: [Name]
-- Vorteile: ...
-- Nachteile: ...
+- Pros: ...
+- Cons: ...
 
 ---
 
-## Konsequenzen
+## Consequences
 
-Was bedeutet diese Entscheidung für das Projekt?
+What does this decision mean for the project?
 
-### Positiv
+### Positive
 - ...
 
-### Negativ
+### Negative
 - ...
 
-### Risiken
+### Risks
 - ...
 
 ---
 
-## Metriken
+## Metrics
 
-Wie wird der Erfolg dieser Entscheidung gemessen?
+How is the success of this decision measured?
 
 ---
 
 ## Follow-up
 
-Welche nächsten Schritte ergeben sich?
+Which next steps arise from this?

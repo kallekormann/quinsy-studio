@@ -1,6 +1,6 @@
 # Skill: Roadmapping
 
-> Now/Next/Later, RICE/MoSCoW, Abhängigkeiten, Stakeholder-Alignment
+> Now/next/later, RICE/MoSCoW, dependencies, stakeholder alignment
 
 ## Metadata
 
@@ -12,111 +12,111 @@ lead_role: Product Manager
 support_roles: [Product Strategist, Systems Architect]
 phases: [1, 3, 7]
 activation_triggers:
-  - Ticket enthält "Roadmap", "Priorisierung", "Planning"
-  - Phase 1: Erste Roadmap wird erstellt
-  - Phase 3: Sprint-Roadmap
-  - Phase 7: Nächste Iteration
+  - Ticket contains "roadmap", "prioritization", "planning"
+  - Phase 1: first roadmap is created
+  - Phase 3: sprint roadmap
+  - Phase 7: next iteration
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Roadmap-Format
+### 1. Roadmap format
 
 ```markdown
-Now (0-3 Monate):
-  - Kritische Features für Launch
-  - Quick Wins (hoher Impact,低 Aufwand)
-  - Bug-Fixes die Users stören
+Now (0-3 months):
+  - Critical features for launch
+  - Quick wins (high impact, low effort)
+  - Bug fixes that bother users
 
-Next (3-6 Monate):
-  - Growth-Features
-  - Monetarisierung
-  - Performance-Optimierung
+Next (3-6 months):
+  - Growth features
+  - Monetization
+  - Performance optimization
 
-Later (6-12 Monate):
-  - Enterprise Features
-  - Internationalisierung
-  - Advanced Analytics
+Later (6-12 months):
+  - Enterprise features
+  - Internationalization
+  - Advanced analytics
 ```
 
-### 2. Priorisierung
+### 2. Prioritization
 
 ```markdown
-RICE Score:
+RICE score:
   Reach × Impact × Confidence / Effort
 
-  Reach:     Wie viele User betrifft es? (pro Quartal)
-  Impact:    Wie stark ist der Impact? (0.25, 0.5, 1, 2, 3)
-  Confidence: Wie sicher sind wir? (100%, 80%, 50%)
-  Effort:    Aufwand in Person-Monaten
+  Reach:     how many users does it affect? (per quarter)
+  Impact:    how strong is the impact? (0.25, 0.5, 1, 2, 3)
+  Confidence: how sure are we? (100%, 80%, 50%)
+  Effort:    effort in person-months
 
 MoSCoW:
-  Must:     Ohne kein MVP
-  Should:   Wichtig aber verzögerbar
-  Could:    Nice-to-have
-  Won't:    Nicht in diesem Release
+  Must:     without it no MVP
+  Should:   important but deferrable
+  Could:    nice-to-have
+  Won't:    not in this release
 ```
 
-### 3. Abhängigkeiten
+### 3. Dependencies
 
 ```markdown
-Für jede Epic/Feature:
-  - Vorherige Abhängigkeiten (was muss zuerst sein?)
-  - Nachfolgende Abhängigkeiten (was braucht das Feature?)
-  - Cross-Team Abhängigkeiten
-  - Externe Abhängigkeiten (APIs, Services)
+For every epic/feature:
+  - Upstream dependencies (what must come first?)
+  - Downstream dependencies (what does the feature need?)
+  - Cross-team dependencies
+  - External dependencies (APIs, services)
 
-Darstellung:
-  - Dependency Map
-  - Critical Path identifizieren
-  - Blockierer frühzeitig erkennen
+Visualization:
+  - Dependency map
+  - Identify the critical path
+  - Detect blockers early
 ```
 
-### 4. Stakeholder-Alignment
+### 4. Stakeholder alignment
 
 ```markdown
-Regelmäßiges Update:
-  - Was wurde geliefert?
-  - Was ist als nächstes?
-  - Was sind die Risiken?
-  - Brauchen wir Entscheidungen?
+Regular update:
+  - What was delivered?
+  - What is next?
+  - What are the risks?
+  - Do we need decisions?
 
 Format:
-  - Executive Summary (1 Seite)
-  - Feature-Status (Tabelle)
-  - Risiken und Blocker
-  - Nächste Schritte
+  - Executive summary (1 page)
+  - Feature status (table)
+  - Risks and blockers
+  - Next steps
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Alles ist "Priority 1"
-  - Keine Abhängigkeiten dokumentiert
-  - Roadmap ohne Zeitfenster
-  - Kein Stakeholder-Update
-  - Feature-Factory ( Outputs statt Outcomes)
+- Everything is "priority 1"
+- No dependencies documented
+- Roadmap without time windows
+- No stakeholder update
+- Feature factory (outputs instead of outcomes)
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Klare Priorisierung (RICE/MoSCoW)
-  - Abhängigkeiten dokumentiert
-  - Now/Next/Later mit Zeitfenster
-  - Regelmäßige Stakeholder-Updates
-  - Outcome-basierte Roadmap
+- Clear prioritization (RICE/MoSCoW)
+- Dependencies documented
+- Now/next/later with time windows
+- Regular stakeholder updates
+- Outcome-based roadmap
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/iterative-delivery.md` — Sprint/Grooming
-- `.quinsy-studio/process/lifecycle.md` — Phasen
+- `.quinsy-studio/process/iterative-delivery.md` — sprint/grooming
+- `.quinsy-studio/process/lifecycle.md` — phases

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-generate_ticket_manifest.py — Ticket-Generierung für Quinsy Studio
+generate_ticket_manifest.py — Ticket generation for Quinsy Studio
 
-Liest ein validiertes PRD und bricht es in verknüpfte Markdown/JSON-Tickets
-herunter, inkl. Akzeptanzkriterien, Abhängigkeiten und Schätzungen.
+Reads a validated PRD and breaks it down into linked Markdown/JSON tickets,
+including acceptance criteria, dependencies, and estimates.
 
-Verwendung:
+Usage:
   python3 generate_ticket_manifest.py <project>
   python3 generate_ticket_manifest.py nudge
 
@@ -22,7 +22,9 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 
-from ticket_helpers import render_ticket_markdown, role_for_skills
+from ticket_helpers import render_ticket_markdown
+from skill_matcher import match_skills, team_for_skills
+from ticket_ids import assign_sequential_ids
 
 # =============================================================================
 # CONFIGURATION
@@ -37,17 +39,19 @@ PROJECTS_DIR = STUDIO_ROOT / "projects"
 
 def extract_features_from_prd(prd_content: str) -> List[Dict]:
     """
-    Extrahiert Features aus dem PRD basierend auf:
-    - Aufzählungen in "In Scope" Sektion
-    - Funktionsanforderungen
-    - User Stories
+    Extract features from the PRD based on:
+    - Bullet lists in the "In Scope" section
+    - Functional requirements
+    - User stories
     """
     features = []
     
     # Find "In Scope" section - try multiple patterns
     scope_patterns = [
-        r'##\s+Umfang.*?###\s+In Scope.*?\n(.*?)(?=###|##|\Z)',
+        r'##\s+Scope.*?###\s+In Scope.*?\n(.*?)(?=###|##|\Z)',
         r'###\s+In Scope.*?\n(.*?)(?=###|##|\Z)',
+        r'##\s+Umfang.*?###\s+In Scope.*?\n(.*?)(?=###|##|\Z)',
+        r'###\s+In Scope.*?\n(.*?)(?=Out of Scope|###|##|\Z)',
         r'In Scope.*?\n(.*?)(?=Out of Scope|###|##|\Z)',
     ]
     
@@ -55,12 +59,19 @@ def extract_features_from_prd(prd_content: str) -> List[Dict]:
         scope_match = re.search(pattern, prd_content, re.DOTALL | re.IGNORECASE)
         if scope_match:
             scope_text = scope_match.group(1)
+            # Stop at inline "Out of Scope" markers within the section
+            scope_text = re.split(
+                r'\*?\*?\s*Out of Scope|Aus\s+Scope|Out\s+of\s+Scope',
+                scope_text, maxsplit=1, flags=re.IGNORECASE
+            )[0]
             features.extend(extract_bullet_features(scope_text, "scope"))
             if features:  # Stop if we found features
                 break
     
     # Find functional requirements
     req_patterns = [
+        r'##\s+Requirements.*?###\s+Functional.*?\n(.*?)(?=###|##|\Z)',
+        r'###\s+Functional requirements.*?\n(.*?)(?=###|##|\Z)',
         r'##\s+Anforderungen.*?###\s+Funktionale.*?\n(.*?)(?=###|##|\Z)',
         r'###\s+Funktionale.*?\n(.*?)(?=###|##|\Z)',
         r'Funktionale Anforderungen.*?\n(.*?)(?=Nicht-funktionale|###|##|\Z)',
@@ -132,7 +143,7 @@ def extract_features_from_prd(prd_content: str) -> List[Dict]:
 
 
 def extract_bullet_features(text: str, source: str) -> List[Dict]:
-    """Extrahiert Features aus Aufzählungen."""
+    """Extract features from bullet lists."""
     features = []
     
     lines = text.strip().split('\n')
@@ -141,6 +152,9 @@ def extract_bullet_features(text: str, source: str) -> List[Dict]:
         line = line.strip()
         if not line:
             continue
+
+        if re.search(r'out of scope|aus scope', line, re.IGNORECASE):
+            break
         
         # Skip category headers (e.g., "* **In Scope (P0):**")
         if re.match(r'^[\-\*]\s+\*\*[^*]+\*\*\s*:?\s*$', line):
@@ -148,8 +162,8 @@ def extract_bullet_features(text: str, source: str) -> List[Dict]:
         
         # Check for bullet point with content
         # Handle both * and - bullets, with optional **bold** text
-        # WICHTIG: (.+?) wäre non-greedy und matcht nur 1 Zeichen —
-        # deshalb Doppelpunkt-Split explizit (Name = Rest, nicht 1. Zeichen).
+        # IMPORTANT: (.+?) is non-greedy and matches only 1 character —
+        # therefore do an explicit colon-split (name = remainder, not 1st char).
         bullet_match = None
         bold_match = re.match(r'^[\-\*]\s+\*\*(.+?)\*\*\s*:?\s*(.*)', line)
         if bold_match:
@@ -169,11 +183,15 @@ def extract_bullet_features(text: str, source: str) -> List[Dict]:
                 continue
             
             # Skip Template-Platzhalter (keine echten Features)
-            if re.search(r'noch nicht definiert|_TODO_|\[Zu definieren\]', name, re.IGNORECASE):
+            if re.search(r'noch nicht definiert|_TODO_|\[Zu definieren\]|out of scope', name, re.IGNORECASE):
                 continue
             
             # Skip if name is just a label prefix like "P0:" or "P1:"
             if re.match(r'^[Pp]\d:\s*$', name):
+                continue
+
+            nfr_labels = {"performance", "usability", "plattformen", "platforms", "security", "scalability"}
+            if source == "requirement" and name.lower().split(":")[0].strip() in nfr_labels:
                 continue
             
             # Clean up name - remove leading/trailing punctuation and bold markers
@@ -204,23 +222,28 @@ def extract_bullet_features(text: str, source: str) -> List[Dict]:
 
 
 def extract_archetype_from_prd(prd_content: str) -> str:
-    """Extrahiert den Archetyp aus dem PRD."""
-    # First check for explicit archetype mention
-    match = re.search(r'Archetyp[:\s]*([\w\s-]+)', prd_content, re.IGNORECASE)
+    """Extract archetype from PRD content."""
+    match = re.search(
+        r'\*?\*?Archetype\*?\*?\s*[:\s]+([^\n*]+)',
+        prd_content, re.IGNORECASE
+    )
+    if not match:
+        match = re.search(r'Archetyp[:\s]+([^\n*]+)', prd_content, re.IGNORECASE)
     if match:
         archetype_text = match.group(1).strip().lower()
-        # Map common variations
         if 'saas' in archetype_text or 'micro-saas' in archetype_text:
             return "saas-application"
-        if 'mobile' in archetype_text or 'app' in archetype_text:
+        if 'mobile' in archetype_text:
             return "mobile-app"
-        if 'shop' in archetype_text or 'ecommerce' in archetype_text:
+        if 'shop' in archetype_text or 'ecommerce' in archetype_text or 'e-commerce' in archetype_text:
             return "e-commerce"
         if 'api' in archetype_text:
             return "api-service"
         if 'content' in archetype_text or 'blog' in archetype_text:
             return "content-platform"
-        return archetype_text.replace(' ', '-')
+        if 'game' in archetype_text:
+            return "game"
+        return re.sub(r'[^a-z0-9]+', '-', archetype_text).strip('-')
     
     # Fallback: detect from content (check SaaS FIRST as it's more specific)
     text = prd_content.lower()
@@ -294,23 +317,23 @@ def generate_tickets_from_features(
 
 
 def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
-    """Generiert Setup-Tickets für ein neues Projekt."""
+    """Generate setup tickets for a new project."""
     
     tickets = []
     
     # Ticket 1: Project Setup
     tickets.append({
         "id": f"{project[:4].upper()}-0001",
-        "title": "Projekt-Setup & Tooling",
-        "description": f"Monorepo, Dependencies, Linting, CI/CD für {archetype} aufsetzen",
+        "title": "Project Setup & Tooling",
+        "description": f"Set up monorepo, dependencies, linting, CI/CD for {archetype}",
         "phase": 2,
         "priority": "P0",
         "estimate": "M",
         "skills": ["PE-001", "PE-002"],
         "team": "08-platform-enterprise-engineering",
-        "ist_zustand": f"Kein Projekt-Setup vorhanden. Der Ordner `projects/{project}/` existiert, aber ohne Tooling (package.json, Linting, CI/CD).",
-        "soll_zustand": f"`projects/{project}/` hat ein lauffähiges Setup: package.json mit Scripts (dev/build/test/lint), TypeScript-Konfiguration, ESLint/Prettier, CI/CD-Grundlage (GitHub Actions).",
-        "value": "Jedes weitere Ticket arbeitet auf einer stabilen Basis — keine Tooling-Blockaden während der Implementierung.",
+        "ist_zustand": f"No project setup exists. The folder `projects/{project}/` exists but without tooling (package.json, linting, CI/CD).",
+        "soll_zustand": f"`projects/{project}/` has a working setup: package.json with scripts (dev/build/test/lint), TypeScript config, ESLint/Prettier, CI/CD baseline (GitHub Actions).",
+        "value": "Every other ticket works on a stable base — no tooling blockers during implementation.",
         "modification_files": [
             f"projects/{project}/package.json",
             f"projects/{project}/tsconfig.json",
@@ -318,24 +341,24 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
             f"projects/{project}/.github/workflows/ci.yml"
         ],
         "constraints": [
-            "Keine externen Packages installieren, die nicht im PRD gefordert sind",
-            "Package-Manager aus dem PRD verwenden (pnpm/npm/yarn)",
-            "Keine Secrets, keine festen Versionen ohne ADR"
+            "Do not install external packages that are not required by the PRD",
+            "Use the package manager from the PRD (pnpm/npm/yarn)",
+            "No secrets, no pinned versions without an ADR"
         ],
         "scenarios": [
             {
-                "name": "Projekt-Setup ist vollständig",
-                "given": f"Ein neues Projekt `{project}` wurde mit `./studio init` angelegt",
-                "when": "Das Setup-Ticket abgearbeitet und `npm run build` ausgeführt wird",
-                "then": "Der Build läuft fehlerfrei durch und `npm run lint` meldet 0 Fehler"
+                "name": "Project setup is complete",
+                "given": f"A new project `{project}` was created with `./studio init`",
+                "when": "The setup ticket is done and `npm run build` is executed",
+                "then": "The build completes without errors and `npm run lint` reports 0 errors"
             }
         ],
         "definition_of_done": [
-            "`package.json` existiert mit dev/build/test/lint Scripts",
-            "`npm run build` läuft fehlerfrei",
-            "`npm run lint` meldet 0 Fehler",
-            "CI-Workflow-Datei ist angelegt (`.github/workflows/ci.yml`)",
-            "QA-Gate grün (`./studio gate {project} --level 2`)"
+            "`package.json` exists with dev/build/test/lint scripts",
+            "`npm run build` completes without errors",
+            "`npm run lint` reports 0 errors",
+            "CI workflow file is created (`.github/workflows/ci.yml`)",
+            "QA gate green (`./studio gate {project} --level 2`)"
         ],
         "dependencies": []
     })
@@ -344,39 +367,39 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
     tickets.append({
         "id": f"{project[:4].upper()}-0002",
         "title": "Design System & Tokens",
-        "description": "Design Tokens, Farbpalette, Typografie, Spacing definieren",
+        "description": "Define design tokens, color palette, typography, spacing",
         "phase": 2,
         "priority": "P0",
         "estimate": "M",
         "skills": ["FE-002"],
         "team": "01-frontend-experience",
-        "ist_zustand": "Keine Design-Tokens definiert. UI-Code würde mit Hardcoded-Werten entstehen (Anti-Slop-Verstoß U1-U5).",
-        "soll_zustand": f"`projects/{project}/ui/tokens/` enthält design-tokens.json + .css mit Farbpalette, Typografie-Skala, Spacing (8px-Grid), Dark/Light Mode.",
-        "value": "Konsistente UI über alle Komponenten; verhindert generisches LLM-Styling; Basis für Studio-Library-Promotion.",
+        "ist_zustand": "No design tokens defined. UI code would be built with hardcoded values (anti-slop violation U1-U5).",
+        "soll_zustand": f"`projects/{project}/ui/tokens/` contains design-tokens.json + .css with color palette, typography scale, spacing (8px grid), dark/light mode.",
+        "value": "Consistent UI across all components; prevents generic LLM styling; basis for studio-library promotion.",
         "modification_files": [
             f"projects/{project}/ui/tokens/design-tokens.json",
             f"projects/{project}/ui/tokens/design-tokens.css"
         ],
         "constraints": [
-            "Nur Token-basierte Werte (keine Hardcoded Farben/Radii/Shadows)",
-            "8px-Grid für Spacing",
-            "Externen Skill `design/skills` (hallmark) laden und Slop-Gates anwenden",
-            "Dark Mode über CSS Custom Properties (kein separates Theme-Paket)"
+            "Token-based values only (no hardcoded colors/radii/shadows)",
+            "8px grid for spacing",
+            "Load the external `design/skills` (hallmark) skill and apply slop gates",
+            "Dark mode via CSS custom properties (no separate theme package)"
         ],
         "scenarios": [
             {
-                "name": "Tokens sind konsumierbar",
-                "given": "Ein frisches Projekt ohne Design-Tokens",
-                "when": "Die Token-Dateien erstellt und importiert wurden",
-                "then": "Jede UI-Komponente kann auf `var(--token)` zugreifen und Dark Mode funktioniert per Theme-Switch"
+                "name": "Tokens are consumable",
+                "given": "A fresh project without design tokens",
+                "when": "The token files are created and imported",
+                "then": "Every UI component can access `var(--token)` and dark mode works via theme switch"
             }
         ],
         "definition_of_done": [
-            "design-tokens.json + .css existieren unter `ui/tokens/`",
-            "Mindestens 5 Farbstufen + Typografie-Skala + 8px-Spacing definiert",
-            "Dark/Light Mode via CSS Custom Properties",
-            "Anti-Slop: kein Hardcoded-Wert in neuen Komponenten",
-            "QA-Gate grün (`./studio gate {project} --level 5`)"
+            "design-tokens.json + .css exist under `ui/tokens/`",
+            "At least 5 color steps + typography scale + 8px spacing defined",
+            "Dark/light mode via CSS custom properties",
+            "Anti-slop: no hardcoded values in new components",
+            "QA gate green (`./studio gate {project} --level 5`)"
         ],
         "dependencies": [f"{project[:4].upper()}-0001"]
     })
@@ -384,39 +407,39 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
     # Ticket 3: Database Schema
     tickets.append({
         "id": f"{project[:4].upper()}-0003",
-        "title": "Datenbank-Schema & Migrationen",
-        "description": "Primäre Datenbank-Tabellen und Migrationen definieren",
+        "title": "Database Schema & Migrations",
+        "description": "Define the primary database tables and migrations",
         "phase": 2,
         "priority": "P0",
         "estimate": "M",
         "skills": ["BE-002"],
         "team": "02-backend-systems",
-        "ist_zustand": "Kein Datenmodell definiert. Es existieren keine Tabellen, Migrationen oder Seeds.",
-        "soll_zustand": f"`projects/{project}/docs/definitions/` enthält das Datenmodell; Migrationen sind versioniert und reversibel; Seeds liefern Test-Daten.",
-        "value": "Datenintegrität von Beginn an; verhindert Schema-Rework in späteren Phasen.",
+        "ist_zustand": "No data model defined. No tables, migrations, or seeds exist.",
+        "soll_zustand": f"`projects/{project}/docs/definitions/` contains the data model; migrations are versioned and reversible; seeds provide test data.",
+        "value": "Data integrity from the start; prevents schema rework in later phases.",
         "modification_files": [
             f"projects/{project}/docs/definitions/schema.md",
             f"projects/{project}/database/migrations/"
         ],
         "constraints": [
-            "UUIDs für externe IDs (kein Auto-Increment)",
-            "Jede Migration reversibel (up + down)",
-            "Externen Skill `all_domains/database/database-schema-design` laden",
-            "GIN-Index für JSONb-Spalten (falls EAV-Modell)"
+            "UUIDs for external IDs (no auto-increment)",
+            "Every migration reversible (up + down)",
+            "Load the external `all_domains/database/database-schema-design` skill",
+            "GIN index for JSONb columns (if EAV model)"
         ],
         "scenarios": [
             {
-                "name": "Migration ist ausführbar",
-                "given": "Ein leeres Datenbankschema",
-                "when": "`migrate` ausgeführt wird",
-                "then": "Alle Tabellen entstehen ohne Fehler und `rollback` stellt den Ausgangszustand wieder her"
+                "name": "Migration is runnable",
+                "given": "An empty database schema",
+                "when": "`migrate` is executed",
+                "then": "All tables are created without errors and `rollback` restores the initial state"
             }
         ],
         "definition_of_done": [
-            "Datenmodell in `docs/definitions/schema.md` dokumentiert",
-            "Migrationen versioniert + reversibel",
-            "Seeds erzeugen konsistente Test-Daten",
-            "QA-Gate grün (`./studio gate {project} --level 5`)"
+            "Data model documented in `docs/definitions/schema.md`",
+            "Migrations versioned + reversible",
+            "Seeds produce consistent test data",
+            "QA gate green (`./studio gate {project} --level 5`)"
         ],
         "dependencies": [f"{project[:4].upper()}-0001"]
     })
@@ -424,46 +447,46 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
     # Ticket 4: Auth Setup
     tickets.append({
         "id": f"{project[:4].upper()}-0004",
-        "title": "Authentifizierung & Autorisierung",
-        "description": "Login, Registration, Session-Management, RBAC",
+        "title": "Authentication & Authorization",
+        "description": "Login, registration, session management, RBAC",
         "phase": 3,
         "priority": "P0",
         "estimate": "L",
         "skills": ["BE-003"],
         "team": "02-backend-systems",
-        "ist_zustand": "Keine Authentifizierung vorhanden. Alle Routen sind öffentlich zugänglich.",
-        "soll_zustand": "Login, Registration, Session-Management und RBAC sind implementiert; geschützte Routen verweigern unautorisierten Zugriff.",
-        "value": "Sicherheits-Basis für alle geschützten Features; verhindert IDOR und Broken Access Control (OWASP A01).",
+        "ist_zustand": "No authentication exists. All routes are publicly accessible.",
+        "soll_zustand": "Login, registration, session management, and RBAC are implemented; protected routes deny unauthorized access.",
+        "value": "Security baseline for all protected features; prevents IDOR and broken access control (OWASP A01).",
         "modification_files": [
             f"projects/{project}/backend/routes/auth.php",
             f"projects/{project}/backend/middleware/auth.php"
         ],
         "constraints": [
-            "Passwort-Hashing mit bcrypt/argon2 (kein Klartext, kein md5)",
-            "Externen Skill `all_domains/api-and-integration/oauth-2-0-setup` laden (falls OAuth nötig)",
-            "Keine Secrets im Code — Environment Variables",
-            "Rate-Limiting auf Login/Registration-Endpoints"
+            "Password hashing with bcrypt/argon2 (no plaintext, no md5)",
+            "Load the external `all_domains/api-and-integration/oauth-2-0-setup` skill (if OAuth is needed)",
+            "No secrets in code — environment variables",
+            "Rate limiting on login/registration endpoints"
         ],
         "scenarios": [
             {
-                "name": "Login mit gültigen Credentials",
-                "given": "Ein registrierter Nutzer mit korrekten Credentials",
-                "when": "Der Nutzer sich einloggt",
-                "then": "Eine gültige Session/JWT entsteht und geschützte Routen sind erreichbar"
+                "name": "Login with valid credentials",
+                "given": "A registered user with correct credentials",
+                "when": "The user logs in",
+                "then": "A valid session/JWT is created and protected routes are reachable"
             },
             {
-                "name": "Zugriff ohne Auth",
-                "given": "Ein nicht eingeloggter Nutzer",
-                "when": "Der Nutzer eine geschützte Route aufruft",
-                "then": "Die Route antwortet mit 401/403 und kein Datenleck entsteht"
+                "name": "Access without auth",
+                "given": "A user who is not logged in",
+                "when": "The user accesses a protected route",
+                "then": "The route responds with 401/403 and no data leak occurs"
             }
         ],
         "definition_of_done": [
-            "Login + Registration + Logout funktionieren",
-            "Passwort-Hashing (bcrypt/argon2) aktiv",
-            "RBAC für mindestens eine Rolle implementiert",
-            "Unautorisierter Zugriff → 401/403",
-            "QA-Gate grün (`./studio gate {project} --level 5`)"
+            "Login + registration + logout work",
+            "Password hashing (bcrypt/argon2) active",
+            "RBAC implemented for at least one role",
+            "Unauthorized access → 401/403",
+            "QA gate green (`./studio gate {project} --level 5`)"
         ],
         "dependencies": [
             f"{project[:4].upper()}-0001",
@@ -509,24 +532,24 @@ def create_ticket_from_feature(
     else:
         description = feature.get("description", title)
     
-    # Akzeptanzkriterien
+    # Acceptance criteria
     acceptance_criteria = generate_acceptance_criteria(feature)
     
-    # Strikter Kontext (Ist/Soll) + Constraints + BDD-Szenario
+    # Strict context (current/target) + constraints + BDD scenario
     feature_name = title.lower()
-    ist = f"Das Feature '{title}' existiert noch nicht in `projects/{project}/`."
-    soll = f"Das Feature '{title}' ist umgesetzt und über die vorgesehene UI/API erreichbar."
-    value = feature.get("benefit", f"'{title}' liefert sichtbaren Wert für die Zielgruppe.")
+    ist = f"The feature '{title}' does not exist yet in `projects/{project}/`."
+    soll = f"The feature '{title}' is implemented and reachable via the intended UI/API."
+    value = feature.get("benefit", f"'{title}' delivers visible value for the target audience.")
     constraints = [
-        "Keine unnötigen externen Packages ohne ADR installieren",
-        "Anti-Slop-Protocol einhalten (keine Floskeln, keine God-Functions)",
-        "Immer die zugeordneten Skill-Dateien laden (siehe `skills`)"
+        "Do not install unnecessary external packages without an ADR",
+        "Follow the Anti-Slop-Protocol (no clichés, no god functions)",
+        "Always load the assigned skill files (see `skills`)"
     ]
     scenarios = [{
-        "name": "Feature ist nutzbar",
-        "given": f"Ein Nutzer im Projekt {project}",
-        "when": f"Er das Feature '{title}' verwendet",
-        "then": acceptance_criteria[0] if acceptance_criteria else f"'{title}' funktioniert wie beschrieben"
+        "name": "Feature is usable",
+        "given": f"A user in project {project}",
+        "when": f"They use the feature '{title}'",
+        "then": acceptance_criteria[0] if acceptance_criteria else f"'{title}' works as described"
     }]
     
     return {
@@ -546,144 +569,58 @@ def create_ticket_from_feature(
         "scenarios": scenarios,
         "acceptance_criteria": acceptance_criteria,
         "definition_of_done": [
-            "Feature funktioniert (BDD-Szenario grün)",
-            "Tests vorhanden und grün",
-            "Anti-Slop-Audit: 0 Verstöße",
-            "QA-Gate grün (`./studio gate <project> --level 5`)"
+            "Feature works (BDD scenario green)",
+            "Tests present and green",
+            "Anti-Slop audit: 0 violations",
+            "QA gate green (`./studio gate <project> --level 5`)"
         ],
         "dependencies": []
     }
 
 
 def determine_skills_for_feature(text: str) -> List[str]:
-    """Bestimmt relevante Skills für ein Feature."""
-    
-    skill_mapping = {
-        "ui": ["FE-001", "FE-002"],
-        "component": ["FE-001"],
-        "button": ["FE-001"],
-        "card": ["FE-001"],
-        "modal": ["FE-001"],
-        "form": ["FE-001"],
-        "design": ["FE-002"],
-        "token": ["FE-002"],
-        "theme": ["FE-002"],
-        "performance": ["FE-003"],
-        "speed": ["FE-003"],
-        "cache": ["FE-003"],
-        "a11y": ["FE-004"],
-        "accessibility": ["FE-004"],
-        "pwa": ["FE-005"],
-        "offline": ["FE-005"],
-        "service worker": ["FE-005"],
-        "test": ["FE-006"],
-        "api": ["BE-001"],
-        "endpoint": ["BE-001"],
-        "rest": ["BE-001"],
-        "database": ["BE-002"],
-        "schema": ["BE-002"],
-        "migration": ["BE-002"],
-        "auth": ["BE-003"],
-        "login": ["BE-003"],
-        "jwt": ["BE-003"],
-        "session": ["BE-003"],
-        "error": ["BE-004"],
-        "retry": ["BE-004"],
-        "webhook": ["BE-005"],
-        "stripe": ["BE-005"],
-        "payment": ["BE-005"],
-        "dsgvo": ["CL-001"],
-        "gdpr": ["CL-001"],
-        "privacy": ["CL-001"],
-        "cookie": ["CL-002"],
-        "consent": ["CL-002"],
-        "seo": ["GM-001"],
-        "ranking": ["GM-001"],
-        "aeo": ["GM-002"],
-        "ai search": ["GM-002"],
-        "content": ["GM-003"],
-        "blog": ["GM-003"],
-        "security": ["PE-003"],
-        "owasp": ["PE-003"],
-        "monitoring": ["PE-004"],
-        "deploy": ["PE-001"],
-        "docker": ["PE-001"],
-        "ci/cd": ["PE-002"],
-        "pipeline": ["PE-002"]
-    }
-    
-    skills = []
-    for keyword, skill_ids in skill_mapping.items():
-        if keyword in text:
-            skills.extend(skill_ids)
-    
-    # Deduplicate while preserving order
-    seen = set()
-    unique_skills = []
-    for skill in skills:
-        if skill not in seen:
-            seen.add(skill)
-            unique_skills.append(skill)
-    
-    return unique_skills[:5]  # Max 5 skills per ticket
+    """Determine relevant skills for a feature (via skill_matcher)."""
+    return match_skills(text)
 
 
 def determine_team_for_skills(skills: List[str]) -> str:
-    """Bestimmt das Team basierend auf den Skills."""
-    
-    team_mapping = {
-        "FE": "01-frontend-experience",
-        "BE": "02-backend-systems",
-        "CL": "03-compliance-legal",
-        "PS": "04-product-strategy-architecture",
-        "GM": "05-growth-marketing-content",
-        "PM": "06-product-management-operating-model",
-        "AI": "07-ai-autonomous-systems",
-        "PE": "08-platform-enterprise-engineering",
-        "SO": "09-studio-operations-evolution"
-    }
-    
-    for skill in skills:
-        prefix = skill.split("-")[0]
-        if prefix in team_mapping:
-            return team_mapping[prefix]
-    
-    return "01-frontend-experience"  # Default
+    """Determine team from skills."""
+    return team_for_skills(skills)
 
 
 def generate_acceptance_criteria(feature: Dict) -> List[str]:
-    """Generiert Akzeptanzkriterien für ein Feature."""
+    """Generate acceptance criteria for a feature."""
     
     criteria = []
     
     if feature.get("type") == "user_story":
-        criteria.append(f"Feature ist für {feature.get('actor', 'Nutzer')} nutzbar")
-        criteria.append(f"{feature.get('action', 'Aktion')} funktioniert wie beschrieben")
-        criteria.append(f"{feature.get('benefit', 'Nutzen')} wird erreicht")
+        criteria.append(f"Feature is usable for {feature.get('actor', 'user')}")
+        criteria.append(f"{feature.get('action', 'action')} works as described")
+        criteria.append(f"{feature.get('benefit', 'benefit')} is achieved")
     else:
         name = feature.get("name", "Feature")
-        criteria.append(f"{name} ist implementiert")
-        criteria.append(f"{name} hat Unit-Tests")
-        criteria.append(f"{name} ist dokumentiert")
+        criteria.append(f"{name} is implemented")
+        criteria.append(f"{name} has unit tests")
+        criteria.append(f"{name} is documented")
     
     # Always add quality criteria
-    criteria.append("Code ist AI-slop-frei")
-    criteria.append("Barrierefreiheit geprüft (falls UI)")
+    criteria.append("Code is AI-slop-free")
+    criteria.append("Accessibility checked (if UI)")
     
     return criteria
 
 
 def estimate_effort(feature: Dict) -> str:
-    """Schätzt den Aufwand für ein Feature."""
+    """Estimate the effort for a feature."""
     
     text = json.dumps(feature).lower()
     
     # Simple heuristics
-    if any(w in text for w in ["komplex", "complex", "viel", "umfangreich"]):
+    if any(w in text for w in ["complex", "large", "extensive"]):
         return "XL"
-    if any(w in text for w in ["einfach", "simple", "klein", "quick"]):
+    if any(w in text for w in ["simple", "small", "quick"]):
         return "S"
-    if any(w in text for w in ["medium", "mittel", "moderat"]):
+    if any(w in text for w in ["medium", "moderate"]):
         return "M"
     
     return "M"  # Default
@@ -693,10 +630,10 @@ def estimate_effort(feature: Dict) -> str:
 # =============================================================================
 
 def resolve_dependencies(tickets: List[Dict]) -> List[Dict]:
-    """Verknüpft Tickets mit Abhängigkeiten basierend auf Phasen und Skills."""
+    """Link tickets with dependencies based on phases and skills."""
     
     for i, ticket in enumerate(tickets):
-        # Setup-Tickets haben keine Abhängigkeiten (außer intern)
+        # Setup tickets have no dependencies (except internal)
         if ticket["id"].endswith(("0001", "0002", "0003")):
             continue
         
@@ -725,50 +662,6 @@ def resolve_dependencies(tickets: List[Dict]) -> List[Dict]:
 # =============================================================================
 # TICKET FILE GENERATION
 # =============================================================================
-
-def get_ticket_counter(project: str) -> int:
-    """Liest den nächsten freien Ticket-Counter des Projekts."""
-    counter_file = PROJECTS_DIR / project / ".ticket_counter"
-    if counter_file.exists():
-        try:
-            return int(counter_file.read_text().strip())
-        except ValueError:
-            pass
-    return 0
-
-
-def set_ticket_counter(project: str, count: int):
-    """Setzt den Ticket-Counter des Projekts."""
-    counter_file = PROJECTS_DIR / project / ".ticket_counter"
-    counter_file.parent.mkdir(parents=True, exist_ok=True)
-    counter_file.write_text(str(count))
-
-
-def assign_sequential_ids(tickets: List[Dict], project: str) -> List[Dict]:
-    """Weist Tickets fortlaufende IDs ab dem bestehenden Counter zu und remappt
-    Abhängigkeiten. Verhindert Kollisionen mit manuell angelegten Tickets."""
-    prefix = project[:4].upper()
-    start = get_ticket_counter(project)
-    
-    # Alte → neue ID Zuordnung
-    id_map = {}
-    counter = start
-    for ticket in tickets:
-        old_id = ticket["id"]
-        counter += 1
-        new_id = f"{prefix}-{counter:04d}"
-        id_map[old_id] = new_id
-        ticket["id"] = new_id
-    
-    # Abhängigkeiten remappen
-    for ticket in tickets:
-        ticket["dependencies"] = [
-            id_map.get(dep, dep) for dep in ticket["dependencies"]
-        ]
-    
-    set_ticket_counter(project, counter)
-    return tickets
-
 
 def write_ticket_files(tickets: List[Dict], project: str):
     """Schreibt Ticket-Dateien in das Projekt-Backlog (striktes Studio-Schema)."""
@@ -852,19 +745,19 @@ def main():
     manifest_file.parent.mkdir(parents=True, exist_ok=True)
     manifest_file.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
     
-    print(f"\n  Tickets generiert: {ticket_count}")
+    print(f"\n  Tickets generated: {ticket_count}")
     print(f"  Manifest:          {manifest_file}")
     
     # Print ticket summary
     print(f"\n  {'='*50}")
-    print(f"  TICKET-ÜBERSICHT")
+    print(f"  TICKET OVERVIEW")
     print(f"  {'='*50}")
     
     for ticket in tickets:
-        deps = ", ".join(ticket["dependencies"][:2]) if ticket["dependencies"] else "keine"
+        deps = ", ".join(ticket["dependencies"][:2]) if ticket["dependencies"] else "none"
         print(f"  {ticket['id']} | P{ticket['priority'][-1]} | Phase {ticket['phase']} | {ticket['title'][:40]}")
     
-    print(f"\n  Nächster Schritt:")
+    print(f"\n  Next step:")
     print(f"    ./studio start {project} --mode core")
     print()
 

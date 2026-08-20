@@ -1,68 +1,68 @@
 ---
 id: [PROJ-NNNN | LO-NNNN]
-title: [Prägnante Handlungsanweisung, z.B. "Hash-Generierung für Tickets erzwingen"]
+title: [Concise action instruction, e.g. "Enforce hash generation for tickets"]
 type: [feature | bug | studio-evolution]
 status: open
 phase: [N]
 priority: [P0/P1/P2/P3]
 estimate: [S/M/L/XL]
-assignee_role: [Director-Rolle, z.B. "Studio Automation Engineer (Director)"]
-team: [Team-Ordner, z.B. "09-studio-operations-evolution"]
-skills: [Skill-IDs, z.B. ["SO-001"]]
-dependencies: [Ticket-IDs, z.B. ["LO-0001"]]
+assignee_role: [Director role, e.g. "Studio Automation Engineer (Director)"]
+team: [Team folder, e.g. "09-studio-operations-evolution"]
+skills: [Skill IDs, e.g. ["SO-001"]]
+dependencies: [Ticket IDs, e.g. ["LO-0001"]]
 created: [YYYY-MM-DD]
 ---
 
-# [ID] — [Titel]
+# [ID] — [Title]
 
 ## 1. Context & Value
 
-> Eindeutiger Kontext: Ist-Zustand vs. Soll-Zustand, damit Scope und Ziel präzise sind.
+> Unique context: current state vs. target state, so scope and goal are precise.
 
-- **Ist-Zustand:** [Was ist heute der Fall? Konkret, z.B. "Ticket-IDs werden manuell vergeben, was zu Duplikaten führt."]
-- **Soll-Zustand:** [Was soll nach Umsetzung gelten? Messbar, z.B. "Ein Skript generiert zwingend eindeutige IDs."]
-- **Value:** [Warum ist das wichtig? Welchen Verlust/Verzögerung verhindert es?]
+- **Current state:** [What is the case today? Concrete, e.g. "Ticket IDs are assigned manually, which leads to duplicates."]
+- **Target state:** [What should apply after implementation? Measurable, e.g. "A script strictly generates unique IDs."]
+- **Value:** [Why is this important? What loss/delay does it prevent?]
 
 ## 2. Technical Constraints
 
-> Harte Leitplanken. Der Agent darf NICHT den Weg des geringsten Widerstands gehen.
+> Hard guardrails. The agent must NOT take the path of least resistance.
 
-- **Modifikationsbereich:** [Exakte Pfade, z.B. `studio-tools/generate_ticket_manifest.py` — NUR hier]
-- **Regel:** [z.B. "Nutze die native Python `uuid` Bibliothek. Keine externen Pakete installieren."]
-- **Regel:** [Weitere Beschränkungen, z.B. "Keine Änderung an Kundenprojekten."]
-- **Playbook:** [`knowledge-base/backend_playbook.md` — zwingend einhalten]
-- **Anti-Slop:** Keine AI-Floskeln, keine unnötigen externen Packages ohne ADR.
+- **Modification scope:** [Exact paths, e.g. `studio-tools/generate_ticket_manifest.py` — ONLY here]
+- **Rule:** [e.g. "Use the native Python `uuid` library. Do not install external packages."]
+- **Rule:** [Further restrictions, e.g. "No changes to client projects."]
+- **Playbook:** [`knowledge-base/backend_playbook.md` — mandatory]
+- **Anti-Slop:** No AI clichés, no unnecessary external packages without an ADR.
 
 ## 3. Acceptance Criteria (BDD)
 
-> Maschinell testbares Verhalten statt Implementierungs-Beschreibung.
+> Machine-testable behavior instead of implementation description.
 
-- **Szenario 1:** [Name, z.B. "Erstellung eines neuen Tickets"]
-  - **Given:** [Startzustand, z.B. "Der Agent führt das Intake-Skript aus."]
-  - **When:** [Aktion, z.B. "Ein neues Ticket generiert wird."]
-  - **Then:** [Messbares Ergebnis, z.B. "Die ID beginnt mit `LO-` gefolgt von einem 8-stelligen alphanumerischen Hash und ist einzigartig."]
+- **Scenario 1:** [Name, e.g. "Creating a new ticket"]
+  - **Given:** [Initial state, e.g. "The agent runs the intake script."]
+  - **When:** [Action, e.g. "A new ticket is generated."]
+  - **Then:** [Measurable result, e.g. "The ID starts with `LO-` followed by an 8-character alphanumeric hash and is unique."]
 
-- **Szenario 2:** [Optional — weiterer Fall]
+- **Scenario 2:** [Optional — further case]
   - **Given:** ...
   - **When:** ...
   - **Then:** ...
 
 ## 4. Definition of Done
 
-- [ ] [z.B. "`run_qa_gate.py` läuft fehlerfrei durch."]
-- [ ] [z.B. "Eine Test-Ausführung erzeugt nachweislich keine Duplikate."]
-- [ ] [z.B. "CHANGELOG.md ist um die neue ID-Logik aktualisiert."]
-- [ ] QA-Gate grün (`./studio gate <project> --level 5`)
-- [ ] Anti-Slop-Audit: 0 Verstöße
+- [ ] [e.g. "`run_qa_gate.py` runs without errors."]
+- [ ] [e.g. "A test run provably produces no duplicates."]
+- [ ] [e.g. "CHANGELOG.md is updated with the new ID logic."]
+- [ ] QA gate green (`./studio gate <project> --level 5`)
+- [ ] Anti-Slop audit: 0 violations
 
-## Abhängigkeiten
+## Dependencies
 
-- [Andere Tickets, die zuerst fertig sein müssen]
+- [Other tickets that must be finished first]
 
 ## Skills
 
-- [Skill-IDs, die aktiviert werden — für den Agenten zur Rollen-/Wissens-Zuordnung]
+- [Skill IDs to activate — for the agent's role/knowledge mapping]
 
-## Verlauf
+## History
 
-- [YYYY-MM-DD]: Ticket angelegt (Status: open)
+- [YYYY-MM-DD]: Ticket created (status: open)

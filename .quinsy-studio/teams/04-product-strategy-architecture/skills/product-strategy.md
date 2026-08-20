@@ -1,6 +1,6 @@
 # Skill: Product Strategy
 
-> Vision, Roadmap, Wettbewerbsanalyse, Monetarisierung, Go-to-Market
+> Vision, roadmap, competitive analysis, monetization, go-to-market
 
 ## Metadata
 
@@ -12,122 +12,122 @@ lead_role: Product Strategist
 support_roles: [Product Manager, Growth Manager]
 phases: [0, 1, 2, 7]
 activation_triggers:
-  - Ticket enthält "Strategie", "Vision", "Roadmap", "Monetarisierung"
-  - Phase 0: Neues Projekt wird evaluiert
-  - Phase 1: Validierung und Strategie
-  - Phase 7: Nächste Iteration wird geplant
+  - Ticket contains "strategy", "vision", "roadmap", "monetization"
+  - Phase 0: new project is evaluated
+  - Phase 1: validation and strategy
+  - Phase 7: next iteration is planned
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Vision & Mission
+### 1. Vision & mission
 
 ```markdown
-Für jedes Projekt:
-  - Vision: Welche Zukunft erschaffen wir?
-  - Mission: Wie erreichen wir das?
-  - North Star Metric: Was ist DIE Metrik?
-  - USPs: Was macht uns einzigartig?
+For every project:
+  - Vision: which future do we create?
+  - Mission: how do we get there?
+  - North Star metric: what IS the metric?
+  - USPs: what makes us unique?
 ```
 
-### 2. Wettbewerbsanalyse
+### 2. Competitive analysis
 
 ```markdown
-Struktur:
-  - Direkte Konkurrenten (gleiche Lösung)
-  - Indirekte Konkurrenten (gleiche Lösung für anderes Problem)
-  - Substitute (alternative Lösungsansätze)
+Structure:
+  - Direct competitors (same solution)
+  - Indirect competitors (same solution for a different problem)
+  - Substitutes (alternative solution approaches)
 
-Pro Konkurrent:
-  - Features (was bieten sie?)
-  - Preis (wie monetarisieren sie?)
-  - Zielgruppe (wen bedienen sie?)
-  - USP (was ist ihr Alleinstellungsmerkmal?)
-  - Schwächen (wo können wir gewinnen?)
+Per competitor:
+  - Features (what do they offer?)
+  - Price (how do they monetize?)
+  - Target audience (whom do they serve?)
+  - USP (what is their differentiator?)
+  - Weaknesses (where can we win?)
 ```
 
-### 3. Monetarisierung
+### 3. Monetization
 
 ```markdown
-Modelle:
-  - Freemium: Basis gratis, Premium bezahlt
-  - Subscription: Monatlich/jährlich
-  - Transaktionsbasiert: Pro Nutzung
-  - Licensing: Enterprise-Lizenzen
-  - Hybrid: Kombination
+Models:
+  - Freemium: base free, premium paid
+  - Subscription: monthly/yearly
+  - Transaction-based: per use
+  - Licensing: enterprise licenses
+  - Hybrid: combination
 
-Preisfindung:
-  - Value-based Pricing (nicht Cost-plus)
-  - Wettbewerbsvergleich
-  - Preiselasticität testen
-  - Tier-Struktur (3 Levels)
+Pricing:
+  - Value-based pricing (not cost-plus)
+  - Competitive comparison
+  - Test price elasticity
+  - Tier structure (3 levels)
 ```
 
-### 4. Go-to-Market
+### 4. Go-to-market
 
 ```markdown
-Phasen:
-  1. Pre-Launch: Waitlist, Beta, Feedback
-  2. Launch: PR, Social, Outreach
-  3. Post-Launch: Growth, Retention, Optimization
+Phases:
+  1. Pre-launch: waitlist, beta, feedback
+  2. Launch: PR, social, outreach
+  3. Post-launch: growth, retention, optimization
 
-Kanäle:
-  - Organic: SEO, Content, Social
-  - Paid: Ads, Influencer
-  - Partnership: Integrationen, Affiliates
-  - Community: Discord, Forum
+Channels:
+  - Organic: SEO, content, social
+  - Paid: ads, influencers
+  - Partnership: integrations, affiliates
+  - Community: Discord, forum
 ```
 
 ### 5. Roadmap
 
 ```markdown
-Format: Now / Next / Later
+Format: now / next / later
 
-Now (0-3 Monate):
-  - Kritische Features
-  - Quick Wins
-  - Must-Haves für Launch
+Now (0-3 months):
+  - Critical features
+  - Quick wins
+  - Must-haves for launch
 
-Next (3-6 Monate):
-  - Growth-Features
-  - Monetarisierung
+Next (3-6 months):
+  - Growth features
+  - Monetization
   - Optimization
 
-Later (6-12 Monate):
-  - Enterprise Features
-  - Internationalisierung
-  - Advanced Analytics
+Later (6-12 months):
+  - Enterprise features
+  - Internationalization
+  - Advanced analytics
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Kein Differenzierungsmerkmal zum Wettbewerb
-- Feature-Parity als Ziel (statt Differenzierung)
-- Kein North Star Metric
-- Roadmap ohne Priorisierung
-- Preis nur auf Kostenbasis
+- No differentiator vs. the competition
+- Feature parity as a goal (instead of differentiation)
+- No North Star metric
+- Roadmap without prioritization
+- Price based only on cost
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Klare USPs definieren
-- Differenzierung durch Fokus
-- North Star Metric definieren und tracken
-- Priorisierte Roadmap mit Now/Next/Later
-- Value-based Pricing mit Tiering
+- Define clear USPs
+- Differentiation through focus
+- Define and track the North Star metric
+- Prioritized roadmap with now/next/later
+- Value-based pricing with tiering
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/project-archetypes.md` — Archetypen
-- `.quinsy-studio/process/lifecycle.md` — Phasen
+- `.quinsy-studio/process/project-archetypes.md` — archetypes
+- `.quinsy-studio/teams/05-growth-marketing-content/` — growth team

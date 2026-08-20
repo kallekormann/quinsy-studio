@@ -1,6 +1,6 @@
 # Skill: AI Integration
 
-> LLM-Integration, Prompt Engineering, Token-Management, Fallback-Strategien
+> LLM integration, prompt engineering, token management, fallback strategies
 
 ## Metadata
 
@@ -12,120 +12,120 @@ lead_role: AI Architect
 support_roles: [Backend Engineer, LLM Prompt Engineer]
 phases: [2, 3, 4, 5]
 activation_triggers:
-  - Ticket enthält "AI", "LLM", "GPT", "Claude", "Prompt"
-  - Phase 2: KI-Architektur wird definiert
-  - Phase 3: KI-Features werden geplant
-  - Phase 4: KI wird implementiert
-  - Phase 5: KI-QA
+  - Ticket contains "AI", "LLM", "GPT", "Claude", "prompt"
+  - Phase 2: AI architecture is defined
+  - Phase 3: AI features are planned
+  - Phase 4: AI is implemented
+  - Phase 5: AI QA
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. LLM-Integration
+### 1. LLM integration
 
 ```markdown
-Provider:
-  - OpenAI (GPT-4o, GPT-4o-mini) — Standard
-  - Anthropic (Claude) — Für komplexe Analysen
-  - Cohere — Für Embeddings
-  - Self-Hosted (Llama, Mistral) — Für Data Privacy
+Providers:
+  - OpenAI (GPT-4o, GPT-4o-mini) — standard
+  - Anthropic (Claude) — for complex analyses
+  - Cohere — for embeddings
+  - Self-hosted (Llama, Mistral) — for data privacy
 
-Architektur:
-  - Abstraktionsschicht (nicht direkt Provider-SDK)
-  - Provider-Switching via Config
-  - Kosten-Tracking pro Provider
+Architecture:
+  - Abstraction layer (not the provider SDK directly)
+  - Provider switching via config
+  - Cost tracking per provider
 ```
 
-### 2. Prompt Engineering
+### 2. Prompt engineering
 
 ```markdown
-System-Prompt:
-  - Klare Rolle definieren
-  - Output-Format vorgeben
-  - Constraints setzen
-  - Beispiele (Few-Shot)
+System prompt:
+  - Define a clear role
+  - Specify the output format
+  - Set constraints
+  - Examples (few-shot)
 
-User-Prompt:
-  - Kontext liefern
-  - Spezifische Anfrage
-  - Format-Vorgabe
+User prompt:
+  - Provide context
+  - Specific request
+  - Format specification
 
-Anti-Slop in Prompts:
-  - Keine Floskeln erlauben
-  - Strukturierte Outputs verlangen
-  - Qualitäts-Checks einbauen
+Anti-slop in prompts:
+  - Don't allow clichés
+  - Require structured outputs
+  - Build in quality checks
 ```
 
-### 3. Token-Management
+### 3. Token management
 
 ```markdown
-Optimierung:
-  - System-Prompt kompakt halten
-  - Few-Shot Examples effizient nutzen
-  - Context Window im Auge behalten
-  - Cache für wiederholte Anfragen
+Optimization:
+  - Keep the system prompt compact
+  - Use few-shot examples efficiently
+  - Keep an eye on the context window
+  - Cache repeated requests
 
-Kosten-Kontrolle:
-  - Maximale Tokens pro Request
-  - Rate-Limiting pro User
-  - Budget-Alerts
-  - Modell-Selection (günstig = mini)
+Cost control:
+  - Maximum tokens per request
+  - Rate limiting per user
+  - Budget alerts
+  - Model selection (cheap = mini)
 ```
 
-### 4. Fallback-Strategien
+### 4. Fallback strategies
 
 ```markdown
-Wenn LLM-Aufruf fehlschlägt:
-  1. Retry mit anderem Provider
-  2. Fallback auf kleineres Modell
-  3. Statisches Fallback (Template)
-  4. Graceful Degradation (Feature deaktiviert)
+When an LLM call fails:
+  1. Retry with another provider
+  2. Fall back to a smaller model
+  3. Static fallback (template)
+  4. Graceful degradation (feature disabled)
 
-Error-Handling:
+Error handling:
   - Timeout: 30s
-  - Rate Limit: exponential backoff
-  - Invalid Response: Retry mit Stricter Prompt
+  - Rate limit: exponential backoff
+  - Invalid response: retry with a stricter prompt
 ```
 
 ### 5. Streaming
 
 ```markdown
-Für User-Interfaces:
-  - SSE (Server-Sent Events) für Streaming
-  - Token-by-Token Output
-  - Abbruch-Möglichkeit
-  - Progressive UI-Updates
+For user interfaces:
+  - SSE (server-sent events) for streaming
+  - Token-by-token output
+  - Cancellation option
+  - Progressive UI updates
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Direkte Provider-APIs ohne Abstraktion
-  - Kein Fallback bei LLM-Ausfall
-  - Unkontrollierte Token-Kosten
-  - Kein Rate-Limiting
-  - Prompts ohne Anti-Slop-Regeln
+- Direct provider APIs without abstraction
+- No fallback on LLM failure
+- Uncontrolled token costs
+- No rate limiting
+- Prompts without anti-slop rules
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Provider-Abstraktionsschicht
-  - Fallback-Kette (Provider → kleineres Modell → Template)
-  - Budget-Limits und Monitoring
-  - Rate-Limiting pro User/Request
-  - Anti-Slop-Regeln in Prompts
+- Provider abstraction layer
+- Fallback chain (provider → smaller model → template)
+- Budget limits and monitoring
+- Rate limiting per user/request
+- Anti-slop rules in prompts
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/ai_automation_playbook.md` — AI-Regeln
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — Anti-Slop
+- `.quinsy-studio/knowledge-base/ai_automation_playbook.md` — AI rules
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — anti-slop

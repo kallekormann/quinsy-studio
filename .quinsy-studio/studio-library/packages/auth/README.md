@@ -1,15 +1,15 @@
 # Auth Package
 
-> Authentifizierung und Autorisierung für SaaS-Anwendungen.
+> Authentication and authorization for SaaS applications.
 
 ## Features
 
-- JWT-basierte Authentifizierung
-- Refresh-Token-Rotation
+- JWT-based authentication
+- Refresh token rotation
 - RBAC (Role-Based Access Control)
-- OAuth-Integration (Google, GitHub)
-- Session-Management
-- Rate-Limiting für Login
+- OAuth integration (Google, GitHub)
+- Session management
+- Rate limiting for login
 
 ## Architecture
 
@@ -79,8 +79,8 @@ if (rbac.hasPermission(user, 'write')) {
 
 ## Security
 
-- Secrets nie im Code
-- JWT mit kurzer Ablaufzeit
-- Refresh-Token-Rotation
-- Rate-Limiting für Login
-- CSRF-Schutz
+- Never store secrets in code
+- JWT with short expiration
+- Refresh token rotation
+- Rate limiting for login
+- CSRF protection

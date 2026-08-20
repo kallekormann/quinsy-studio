@@ -1,62 +1,62 @@
 # Design Playbook
 
-> UX-Heuristiken, Cognitive Load Theory, 8pt Grid, Typografie — die globalen Design-Standards.
+> UX heuristics, cognitive load theory, 8pt grid, typography — the global design standards.
 
-## Grundprinzip
+## Core principle
 
 ```
-Design ist nicht wie es aussieht.
-Design ist wie es funktioniert.
+Design is not how it looks.
+Design is how it works.
 — Steve Jobs
 ```
 
 ---
 
-## UX-Heuristiken (Nielsen/Norman)
+## UX heuristics (Nielsen/Norman)
 
-| # | Heuristik | Beschreibung | Umsetzung |
-|---|-----------|-------------|-----------|
-| 1 | **Sichtbarer Systemstatus** | User weiß immer was passiert | Loading-States, Feedback |
-| 2 | **System der realen Welt** | Sprache der User, nicht der Technik | Klare Labels, Icons |
-| 3 | **User-Kontrolle** | Undo, Back, Cancel | Immer möglich |
-| 4 | **Konsistenz & Standards** | Erwartungsgemäßes Verhalten | Design System |
-| 5 | **Fehlervermeidung** | Design verhindert Fehler | Guards, Confirmations |
-| 6 | **Erkennung statt Erinnerung** | Sichtbare Optionen | Dropdowns > Freitext |
-| 7 | **Flexibilität & Effizienz** | Keyboard Shortcuts für Power-User | Accelerators |
-| 8 | **Ästhetik & Minimalismus** | Weniger ist mehr | Progressive Disclosure |
-| 9 | **Fehlererkennung & -hilfe** | Klare Fehlermeldungen | Spezifische Messages |
-| 10 | **Hilfe & Dokumentation** | Hilfe readily available | Tooltips, Context-Help |
-
----
-
-## Cognitive Load Theory
-
-### Drei Arten von Cognitive Load
-
-| Typ | Beschreibung | Reduzierung |
-|-----|-------------|-------------|
-| **Intrinsic** | Schwierigkeit der Aufgabe selbst | Vereinfachen, Schritt-für-Schritt |
-| **Extraneous** | Schlechtes Design | Klare Struktur, Redundanz vermeiden |
-| **Germane** | Lern- und Verstehensprozess | Muster, Konsistenz, Feedback |
-
-### Umsetzung
-
-```
-✅ Progressive Disclosure (nicht alles auf einmal)
-✅ Chunking (Informationen in Gruppen)
-✅ Visuelle Hierarchie (Wichtiges zuerst)
-✅ Weißraum (Atmen lassen)
-✅ Konsistente Muster (Wiedererkennung)
-```
+| # | Heuristic | Description | Implementation |
+|---|-----------|-------------|----------------|
+| 1 | **Visibility of system status** | user always knows what is happening | loading states, feedback |
+| 2 | **Match with the real world** | language of the user, not of technology | clear labels, icons |
+| 3 | **User control** | undo, back, cancel | always possible |
+| 4 | **Consistency & standards** | expected behavior | design system |
+| 5 | **Error prevention** | design prevents errors | guards, confirmations |
+| 6 | **Recognition over recall** | visible options | dropdowns > free text |
+| 7 | **Flexibility & efficiency** | keyboard shortcuts for power users | accelerators |
+| 8 | **Aesthetic & minimalism** | less is more | progressive disclosure |
+| 9 | **Error detection & recovery** | clear error messages | specific messages |
+| 10 | **Help & documentation** | help readily available | tooltips, context help |
 
 ---
 
-## 8pt Grid System
+## Cognitive load theory
+
+### Three types of cognitive load
+
+| Type | Description | Reduction |
+|------|-------------|-----------|
+| **Intrinsic** | difficulty of the task itself | simplify, step by step |
+| **Extraneous** | bad design | clear structure, avoid redundancy |
+| **Germane** | learning and understanding process | patterns, consistency, feedback |
+
+### Implementation
 
 ```
-Grundeinheit: 8px
+✅ progressive disclosure (not everything at once)
+✅ chunking (group information)
+✅ visual hierarchy (important things first)
+✅ whitespace (let it breathe)
+✅ consistent patterns (recognition)
+```
 
-Spacing Scale:
+---
+
+## 8pt grid system
+
+```
+Base unit: 8px
+
+Spacing scale:
   xs:  4px   (0.5 × 8)
   sm:  8px   (1 × 8)
   md:  16px  (2 × 8)
@@ -66,19 +66,19 @@ Spacing Scale:
   3xl: 64px  (8 × 8)
 ```
 
-### Anwendung
+### Application
 
-- **Padding:** Immer Vielfaches von 8
-- **Margin:** Immer Vielfaches von 8
-- **Icon-Größen:** 16, 24, 32, 48
-- **Border-Radius:** 4, 8, 12, 16, 999 (pill)
-- **Font-Size:** Nicht am Grid, aber Line-Height: 1.5 (Body), 1.2 (Headings)
+- **Padding:** always a multiple of 8
+- **Margin:** always a multiple of 8
+- **Icon sizes:** 16, 24, 32, 48
+- **Border radius:** 4, 8, 12, 16, 999 (pill)
+- **Font size:** not on the grid, but line-height: 1.5 (body), 1.2 (headings)
 
 ---
 
-## Typografie-System
+## Typography system
 
-### Skala
+### Scale
 
 ```css
 --text-xs:   0.75rem;   /* 12px */
@@ -92,16 +92,16 @@ Spacing Scale:
 --text-5xl:  3rem;      /* 48px */
 ```
 
-### Font-Stack
+### Font stack
 
 ```css
 --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 ```
 
-### Hierarchie
+### Hierarchy
 
-| Element | Size | Weight | Line-Height |
+| Element | Size | Weight | Line height |
 |---------|------|--------|-------------|
 | Display | 48px | 800 | 1.1 |
 | H1 | 36px | 700 | 1.2 |
@@ -113,40 +113,40 @@ Spacing Scale:
 
 ---
 
-## Farb-System
+## Color system
 
-### Prinzip
+### Principle
 
 ```
-60-30-10 Regel:
-  60% — Dominante Farbe (Background)
-  30% — Sekundäre Farbe (Text, Borders)
-  10% — Akzentfarbe (CTAs, Highlights)
+60-30-10 rule:
+  60% — dominant color (background)
+  30% — secondary color (text, borders)
+  10% — accent color (CTAs, highlights)
 ```
 
-### Kontraste
+### Contrasts
 
-| Element | Mindest-Kontrast |
-|---------|-----------------|
-| Normal Text | 4.5:1 (WCAG AA) |
-| Large Text | 3:1 (WCAG AA) |
-| UI Components | 3:1 (WCAG AA) |
-| Focus Indicators | 3:1 (WCAG AA) |
+| Element | Minimum contrast |
+|---------|------------------|
+| Normal text | 4.5:1 (WCAG AA) |
+| Large text | 3:1 (WCAG AA) |
+| UI components | 3:1 (WCAG AA) |
+| Focus indicators | 3:1 (WCAG AA) |
 
 ---
 
-## Responsive Breakpoints
+## Responsive breakpoints
 
 | Breakpoint | Width | Layout |
 |------------|-------|--------|
-| Mobile | < 640px | Single Column, Full-Width |
-| Tablet | 640-1024px | 2 Columns |
-| Desktop | > 1024px | Centered Content (max-width: 640-800px) |
+| Mobile | < 640px | single column, full width |
+| Tablet | 640-1024px | 2 columns |
+| Desktop | > 1024px | centered content (max-width: 640-800px) |
 
-### Mobile-First
+### Mobile-first
 
 ```css
-/* Base: Mobile */
+/* Base: mobile */
 .element { padding: 16px; }
 
 /* Tablet */
@@ -162,55 +162,55 @@ Spacing Scale:
 
 ---
 
-## Animation-Prinzipien
+## Animation principles
 
-### 12 Prinzipien der Animation (Disney)
+### 12 principles of animation (Disney)
 
-1. **Squash & Stretch** — Gewicht und Trägheit
-2. **Anticipation** — Vorbereitung auf Bewegung
-3. **Staging** — Aufmerksamkeit lenken
-4. **Straight Ahead & Pose to Pose** — Timing
-5. **Follow Through & Overlapping Action** — Nachlauf
-6. **Slow In & Slow Out** — Ease
-7. **Arcs** — Natürliche Bewegungen
-8. **Secondary Action** — Begleitende Bewegung
-9. **Timing** — Geschwindigkeit
-10. **Exaggeration** — Betonung
-11. **Solid Drawing** — 3D in 2D
-12. **Appeal** — Sympathie
+1. **Squash & stretch** — weight and inertia
+2. **Anticipation** — preparation for movement
+3. **Staging** — direct attention
+4. **Straight ahead & pose to pose** — timing
+5. **Follow through & overlapping action** — follow-through
+6. **Slow in & slow out** — ease
+7. **Arcs** — natural movements
+8. **Secondary action** — accompanying movement
+9. **Timing** — speed
+10. **Exaggeration** — emphasis
+11. **Solid drawing** — 3D in 2D
+12. **Appeal** — likability
 
-### CSS-Äquivalente
+### CSS equivalents
 
 ```css
-/* Spring Physics */
+/* Spring physics */
 transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-/* Smooth Ease */
+/* Smooth ease */
 transition: opacity 0.2s ease-in-out;
 
-/* GPU-beschleunigt */
-transform: translateZ(0); /* oder will-change: transform */
+/* GPU-accelerated */
+transform: translateZ(0); /* or will-change: transform */
 ```
 
 ---
 
-## Barrierefreiheit (a11y)
+## Accessibility (a11y)
 
 ### WCAG 2.1 AA
 
-- [ ] Alle Interaktionen keyboard-navigierbar
-- [ ] Focus-Indikatoren sichtbar
-- [ ] Farbkontraste mindestens 4.5:1
-- [ ] Alle Bilder haben alt-Texte
-- [ ] Formulare haben Labels
-- [ ] Fehlermeldungen sind spezifisch
-- [ ] Skip-Links vorhanden
-- [ ] ARIA-Labels wo nötig
+- [ ] All interactions keyboard-navigable
+- [ ] Focus indicators visible
+- [ ] Color contrasts at least 4.5:1
+- [ ] All images have alt texts
+- [ ] Forms have labels
+- [ ] Error messages are specific
+- [ ] Skip links present
+- [ ] ARIA labels where needed
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/lifecycle.md` — Phase 2 (Design Blueprinting)
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — UI-Slop-Regeln
-- `.quinsy-studio/studio-library/ui/tokens/` — Design Tokens
+- `.quinsy-studio/process/lifecycle.md` — phase 2 (design blueprinting)
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — UI slop rules
+- `.quinsy-studio/studio-library/ui/tokens/` — design tokens

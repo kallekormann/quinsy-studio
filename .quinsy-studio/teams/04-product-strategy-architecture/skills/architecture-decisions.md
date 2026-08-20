@@ -1,6 +1,6 @@
 # Skill: Architecture Decisions
 
-> ADRs, Tech-Stack-Wahl, Build vs Buy, Monolith vs Microservices
+> ADRs, tech stack selection, build vs buy, monolith vs microservices
 
 ## Metadata
 
@@ -12,133 +12,133 @@ lead_role: Systems Architect
 support_roles: [Backend Architect, Frontend Architect, Platform Architect]
 phases: [2, 3]
 activation_triggers:
-  - Ticket enthält "ADR", "Architektur", "Tech-Stack", "Build vs Buy"
-  - Phase 2: Gesamtarchitektur wird definiert
-  - Phase 3: Technologie-Entscheidungen
-  - Grundsätzliche Architektur-Änderung
+  - Ticket contains "ADR", "architecture", "tech stack", "build vs buy"
+  - Phase 2: overall architecture is defined
+  - Phase 3: technology decisions
+  - Fundamental architecture change
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. ADR-Format
+### 1. ADR format
 
 ```markdown
-# ADR-{NNN}: {Titel}
+# ADR-{NNN}: {Title}
 
 ## Status
   proposed | accepted | deprecated | superseded
 
-## Kontext
-  Welches Problem wird gelöst?
+## Context
+  Which problem is being solved?
 
-## Entscheidung
-  Was wurde entschieden?
+## Decision
+  What was decided?
 
-## Begründung
-  Warum wurde so entschieden?
+## Rationale
+  Why was it decided this way?
 
-## Alternativen
-  Was wurde verworfen und warum?
+## Alternatives
+  What was rejected and why?
 
-## Konsequenzen
-  Positive und negative Auswirkungen
+## Consequences
+  Positive and negative impacts
 
-## Risiken
-  Was könnte schiefgehen?
+## Risks
+  What could go wrong?
 ```
 
-### 2. Tech-Stack-Entscheidung
+### 2. Tech-stack decision
 
 ```markdown
 Framework:
-  - Next.js (React SSR/ISR) → Standard für Web
-  - Laravel (PHP) → Bei Enterprise/PHP-Bestand
-  - Supabase → Als Database/Backend (schnell)
+  - Next.js (React SSR/ISR) → standard for web
+  - Laravel (PHP) → for enterprise/PHP legacy
+  - Supabase → as database/backend (fast)
 
 Database:
-  - PostgreSQL (Supabase) → Standard
-  - Redis → Cache, Queues, Sessions
-  - SQLite → Embedded, Testing
+  - PostgreSQL (Supabase) → standard
+  - Redis → cache, queues, sessions
+  - SQLite → embedded, testing
 
 Deployment:
-  - Vercel → Standard für Next.js
-  - Docker → Für komplexe Setups
-  - Railway / Fly.io → Für Backends
+  - Vercel → standard for Next.js
+  - Docker → for complex setups
+  - Railway / Fly.io → for backends
 
-Entscheidungskriterien:
-  1. Team-Kompetenz
-  2. Community & Ökosystem
-  3. Langfristige Wartung
+Decision criteria:
+  1. Team competence
+  2. Community & ecosystem
+  3. Long-term maintenance
   4. Performance
-  5. Kosten
+  5. Costs
 ```
 
-### 3. Build vs Buy
+### 3. Build vs buy
 
 ```markdown
-Bauen wenn:
-  - Kernkompetenz (Differenzierung)
-  - Volle Kontrolle nötig
-  - Keine gute Alternative existiert
-  - Langfristig günstiger
+Build when:
+  - Core competence (differentiation)
+  - Full control needed
+  - No good alternative exists
+  - Cheaper in the long run
 
-Kaufen wenn:
-  - Nicht-Kernkompetenz
-  - Time-to-Market kritisch
-  - Best Practice existiert
-  - Support & Maintenance nötig
+Buy when:
+  - Non-core competence
+  - Time-to-market critical
+  - Best practice exists
+  - Support & maintenance needed
 
-Beispiele:
-  ✅ Kaufen: Auth (Supabase Auth), Payment (Stripe), E-Mail (Resend)
-  ✅ Bauen: Kern-Features, UI, Business Logic
+Examples:
+  ✅ Buy: auth (Supabase Auth), payment (Stripe), email (Resend)
+  ✅ Build: core features, UI, business logic
 ```
 
-### 4. Monolith vs Microservices
+### 4. Monolith vs microservices
 
 ```markdown
-Standard: Modular Monolith
-  - Ein Deployment
-  - Klare Modulgrenzen
-  - Internal APIs (nicht HTTP)
-  - Später auf Microservices aufteilen wenn nötig
+Standard: modular monolith
+  - One deployment
+  - Clear module boundaries
+  - Internal APIs (not HTTP)
+  - Split into microservices later if needed
 
-Microservices wenn:
-  - Verschiedene Teams
-  - Unterschiedliche Skalierungsbedürfnisse
-  - Verschiedene Tech-Stacks nötig
-  - >50 Entwickler
+Microservices when:
+  - Different teams
+  - Different scaling needs
+  - Different tech stacks needed
+  - >50 developers
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Keine ADR für Grundsatzentscheidungen
-- Tech-Choice basierend auf "Hype"
-- Microservices ohne klare Grenzen
-- Build wenn Buy existiert (NIH-Syndrom)
-- Kein ADR für abgelehnte Alternativen
+- No ADR for fundamental decisions
+- Tech choice based on "hype"
+- Microservices without clear boundaries
+- Build when buy exists (NIH syndrome)
+- No ADR for rejected alternatives
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- ADR für jede Grundsatzentscheidung
-- Tech-Choice basierend auf Kriterien
-- Modular Monolith als Standard
-- Build nur wenn Kernkompetenz
-- Vollständige ADRs mit Alternativen
+- ADR for every fundamental decision
+- Tech choice based on criteria
+- Modular monolith as standard
+- Build only when it is a core competence
+- Complete ADRs with alternatives
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/adr-policy.md` — ADR-Regelwerk
-- `.quinsy-studio/process/project-archetypes.md` — Stack-Empfehlungen
-- `projects/[name]/docs/adr/` — ADR-Ablage
+- `.quinsy-studio/process/adr-policy.md` — ADR rulebook
+- `.quinsy-studio/process/project-archetypes.md` — stack recommendations
+- `projects/[name]/docs/adr/` — ADR storage

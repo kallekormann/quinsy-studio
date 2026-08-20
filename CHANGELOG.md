@@ -1,38 +1,71 @@
 # Changelog — Quinsy Studio
 
-Alle Änderungen am Quinsy Studio werden hier dokumentiert.
+All changes to Quinsy Studio are documented here.
+
+## [1.5.0] — 2026-08-20
+
+### Pre-implementation: three human gates (0, 1, 2)
+
+- ✅ Gate **0** — PRD + definitions approval before architecture
+- ✅ Gate **1** — architecture blueprint (`docs/architecture/`, ADRs)
+- ✅ Gate **2** — design (Next.js prototype, sticker sheet, tokens); **tickets generated here**
+- ✅ `./studio blueprint`, `./studio design --scope journey|core-views`, `./studio revise`
+
+### AI embedding & hardening
+
+- ✅ [`AGENTS.md`](AGENTS.md) — IDE agent contract
+- ✅ [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc)
+- ✅ `./studio bootstrap`, `./studio focus`, `./studio resume`, `./studio guard`, `./studio verify-worlds`
+- ✅ [process/worlds.md](.quinsy-studio/process/worlds.md), [process/agent-context.md](.quinsy-studio/process/agent-context.md)
+- ✅ `projects/` + `intake/` gitignored; per-project `.git` on init
+
+### Studio library system
+
+- ✅ [library_registry.md](.quinsy-studio/studio-library/library_registry.md) + `library_registry.json`
+- ✅ `./studio library list|pull|promote|suggest|promote-design`
+- ✅ `promote-library` — UI tokens, atoms/molecules/organisms, page-types, sticker sheet; `--force` + version bump
+- ✅ Functional stubs: auth, billing (Stripe/Lemon Squeezy), feature-gating, Button, comparison page-type
+- ✅ Reuse warnings on `./studio move … done`; library-first hint on `implement`
+
+## [1.4.0] — 2026-08-20
+
+### Workflow & tooling (summary)
+
+- ✅ Unified ticket IDs, skill_matcher, intake fail-fast, init merge
+- ✅ Sprint auto-assign, board columns, German PRD intake
+- ✅ E2E reference flow documented (Nudge)
 
 ## [1.3.0] — 2026-08-20
 
-### Strikte Ticket-Architektur (Projekt- + Studio-Ebene)
+### Strict Ticket Architecture (Project + Studio Level)
 
-Tickets waren zu vage (ein Satz + flache Checkboxen). Neues Schema für ALLE Tickets:
+Tickets were too vague (one sentence + flat checkboxes). New schema for ALL tickets:
 
-- ✅ **Rollenzuweisung:** `assignee_role` (Director-Level) wird aus Skills abgeleitet (z.B. Login → Backend Architect (Director))
-- ✅ **Context & Value:** Ist-Zustand vs. Soll-Zustand statt vager Problembeschreibung
-- ✅ **Strikte Constraints:** Exakte Modifikationspfade, Regeln (keine externen Packages ohne ADR), zwingende Playbook-Referenz
-- ✅ **BDD-Akzeptanzkriterien:** Given / When / Then statt Implementierungs-Beschreibung
-- ✅ **Definition of Done:** Messbare Abschluss-Kriterien
+- ✅ **Role Assignment:** `assignee_role` (Director-level) derived from skills (e.g., Login → Backend Architect (Director))
+- ✅ **Context & Value:** Current state vs. desired state instead of vague problem description
+- ✅ **Strict Constraints:** Exact modification paths, rules (no external packages without ADR), mandatory playbook reference
+- ✅ **BDD Acceptance Criteria:** Given / When / Then instead of implementation description
+- ✅ **Definition of Done:** Measurable completion criteria
 
-#### Umsetzung
-- ✅ `ticket_helpers.py` (neu) — gemeinsames Schema: Skill→Rolle-Mapping, Playbook-Mapping, BDD-Builder, Markdown-Renderer
-- ✅ `generate_ticket_manifest.py` — Setup-Tickets + Feature-Tickets mit neuem Schema; ID-Kollisionsfix beibehalten
-- ✅ `studio.py` — `cmd_ticket` (Projekt) + `cmd_learn` (Studio, Typ `studio-evolution`) auf neues Schema
-- ✅ `ticket_template.md` — Template mit Rolle, Ist/Soll, Constraints, BDD, DoD
+#### Implementation
+- ✅ `ticket_helpers.py` (new) — shared schema: skill→role mapping, playbook mapping, BDD builder, markdown renderer
+- ✅ `generate_ticket_manifest.py` — setup tickets + feature tickets with new schema; ID collision fix retained
+- ✅ `studio.py` — `cmd_ticket` (project) + `cmd_learn` (studio, type `studio-evolution`) on new schema
+- ✅ `ticket_template.md` — template with role, current/desired state, constraints, BDD, DoD
 
-#### Bugfixes (durch Schema-Test gefunden)
-- ✅ Feature-Extraktion: `(.+?)`-Regex matchte nur 1 Zeichen → Name wurde verworfen (jetzt: Doppelpunkt-Split)
-- ✅ Template-Platzhalter (`_Noch nicht definiert_`) wurden als Features extrahiert → gefiltert
-- ✅ `{project}`/`{signal}`-Platzhalter in f-Strings waren nicht aufgelöst
+#### Bugfixes (found through schema testing)
+- ✅ Feature extraction: `(.+?)` regex matched only 1 character → name was discarded (now: colon split)
+- ✅ Template placeholders (`_Not yet defined_`) were extracted as features → filtered out
+- ✅ `{project}`/`{signal}` placeholders in f-strings were not resolved
 
 ## [1.2.0] — 2026-08-20
 
-### Externe Skill-Quellen erweitert (Skill-Package-Manager)
-- ✅ 4 neue verifizierte Quellen: `coreyhaines31/marketingskills` (49 Skills inkl. ai-seo/AEO), `gamedev-skills/awesome-gamedev-agent-skills` (67 Skills + Router), `samir-abis/cookiecomply-skills` (DSGVO), `bloomprotocol/agent-visibility-skill` (GEO)
-- ✅ `skill-dependencies.json` auf 7 Domains erweitert, alle importiert (29 externe Skill-Quellen auf Disk)
-- ✅ Skill-Registry: Neue Quellen + gezielte Skill-Mappings (ai-seo→GM-002, cookiecomply→CL-002, seo-audit→GM-001, ...) + Archetyp `game`
+### External Skill Sources Expanded (Skill Package Manager)
+- ✅ 4 new verified sources: `coreyhaines31/marketingskills` (49 skills incl. ai-seo/AEO), `gamedev-skills/awesome-gamedev-agent-skills` (67 skills + router), `samir-abis/cookiecomply-skills` (GDPR), `bloomprotocol/agent-visibility-skill` (GEO)
+- ✅ `skill-dependencies.json` expanded to 7 domains, all imported (29 external skill sources on disk)
+- ✅ Skill registry: new sources + targeted skill mappings (ai-seo→GM-002, cookiecomply→CL-002, seo-audit→GM-001, ...) + `game` archetype
 
-### Externe Skills in Teams eingearbeitet
+### External Skills Integrated into Teams
 - ✅ AEO (GM-002): ai-seo, schema, geo_visibility, competitors
 - ✅ SEO (GM-001): seo-audit, programmatic-seo, site-architecture
 - ✅ Design System (FE-002) + UI Components (FE-001): hallmark, design_awesome
@@ -41,105 +74,105 @@ Tickets waren zu vage (ein Satz + flache Checkboxen). Neues Schema für ALLE Tic
 - ✅ Database (BE-002): database-schema-design, query-optimization
 - ✅ Security (PE-003): security-audit, threat-modeling, SAST/DAST
 
-### Skill-Matching-Test
-- ✅ `test_skill_matching.py` — 7 Beispiel-Tickets → interne + externe Skills, verifiziert Quellen auf Disk
-- ✅ Neue interne Skill GM-004 (Game Development) mit gamedev-Router-Trigger
-- ✅ Ergebnis: 7/7 Tickets gematcht, 29/29 externe Quellen verifiziert
-- ✅ Learning Item LO-0001 (Game-Dev-Lücke) als Nachweis des Learning Loops
+### Skill Matching Test
+- ✅ `test_skill_matching.py` — 7 sample tickets → internal + external skills, verified sources on disk
+- ✅ New internal skill GM-004 (Game Development) with gamedev router trigger
+- ✅ Result: 7/7 tickets matched, 29/29 external sources verified
+- ✅ Learning item LO-0001 (game-dev gap) as proof of the learning loop
 
 ## [1.1.0] — 2026-08-20
 
-### Ordner-Konsolidierung (alles unter .quinsy-studio/)
-- ✅ `studio-library/` → `.quinsy-studio/studio-library/` (Pfade in studio.py, sync_global_assets.py aktualisiert)
-- ✅ `templates/docker/` → `.quinsy-studio/studio-templates/docker/` (Basis-Docker-Template)
-- ✅ Orphan `studio-tools/` (alte studio.py) und leeres `templates/` entfernt
-- ✅ `studio` Wrapper bleibt als CLI-Entry-Point (delegiert an .quinsy-studio/studio-tools/)
+### Folder Consolidation (everything under .quinsy-studio/)
+- ✅ `studio-library/` → `.quinsy-studio/studio-library/` (paths in studio.py, sync_global_assets.py updated)
+- ✅ `templates/docker/` → `.quinsy-studio/studio-templates/docker/` (base Docker template)
+- ✅ Orphaned `studio-tools/` (old studio.py) and empty `templates/` removed
+- ✅ `studio` wrapper remains as CLI entry point (delegates to .quinsy-studio/studio-tools/)
 
-### Docker-Basis-Template (Base → Project)
-- ✅ `.quinsy-studio/studio-templates/docker/` mit docker-compose.yml, .env.example, README
-- ✅ `./studio env <project> init` kopiert Template in den Projektordner und parametrisiert `{{PROJECT_NAME}}`
-- ✅ `init_project_env.py` nutzt ebenfalls das Template (kein Hardcode mehr)
+### Docker Base Template (Base → Project)
+- ✅ `.quinsy-studio/studio-templates/docker/` with docker-compose.yml, .env.example, README
+- ✅ `./studio env <project> init` copies template to project folder and parameterizes `{{PROJECT_NAME}}`
+- ✅ `init_project_env.py` also uses the template (no more hardcoded values)
 
-### Skill-Package-Manager (externe Skills)
-- ✅ `.quinsy-studio/skill-dependencies.json` — abonnierte Quellen (hallmark, awesome-design-skills, awesome-ai-agent-skills)
-- ✅ `import_external_skills.py` — importiert Skills via git clone nach `.quinsy-studio/external-skills/`
-- ✅ `./studio update-skills` — Command zum Abonnieren/Aktualisieren
-- ✅ Skill-Registry um External-Skills-Mapping erweitert (Domain → Team → Skill)
+### Skill Package Manager (External Skills)
+- ✅ `.quinsy-studio/skill-dependencies.json` — subscribed sources (hallmark, awesome-design-skills, awesome-ai-agent-skills)
+- ✅ `import_external_skills.py` — imports skills via git clone to `.quinsy-studio/external-skills/`
+- ✅ `./studio update-skills` — command for subscribing/updating
+- ✅ Skill registry extended with external skills mapping (domain → team → skill)
 
 ## [1.0.0] — 2026-08-20
 
-### Rebuild des gesamten Studio-Systems
+### Complete Studio System Rebuild
 
-Nach einem vollständigen Verlust aller Studio-Dateien wurde das gesamte System neu aufgebaut.
+After a complete loss of all studio files, the entire system was rebuilt from scratch.
 
-#### Process-Dokumente (.quinsy-studio/process/)
-- ✅ `lifecycle.md` — 8-Phasen-Lebenszyklus
-- ✅ `gates.md` — Detaillierte Gate-Definitionen
-- ✅ `adr-policy.md` — ADR-Regelwerk
-- ✅ `anti-slop.md` — Anti-Slop-Audit
-- ✅ `ticket-workflow.md` — 9-Schritte-Ticket-Workflow
+#### Process Documents (.quinsy-studio/process/)
+- ✅ `lifecycle.md` — 8-phase lifecycle
+- ✅ `gates.md` — Detailed gate definitions
+- ✅ `adr-policy.md` — ADR rules
+- ✅ `anti-slop.md` — Anti-slop audit
+- ✅ `ticket-workflow.md` — 9-step ticket workflow
 - ✅ `iterative-delivery.md` — Sprint/Grooming/Board
-- ✅ `human-in-the-loop.md` — HITL-Entscheidungen
-- ✅ `project-archetypes.md` — Projekt-Archetypen
+- ✅ `human-in-the-loop.md` — HITL decisions
+- ✅ `project-archetypes.md` — Project archetypes
 
-#### Team-Skills (.quinsy-studio/teams/)
+#### Team Skills (.quinsy-studio/teams/)
 - ✅ `01-frontend-experience/` — UI/UX, Design System, Performance
-- ✅ `02-backend-systems/` — API, Datenbanken, Auth
-- ✅ `03-compliance-legal/` — DSGVO, Datenschutz, Impressum
-- ✅ `04-product-strategy-architecture/` — Strategie, Architektur, ADRs
+- ✅ `02-backend-systems/` — API, Databases, Auth
+- ✅ `03-compliance-legal/` — GDPR, Data Protection, Imprint
+- ✅ `04-product-strategy-architecture/` — Strategy, Architecture, ADRs
 - ✅ `05-growth-marketing-content/` — SEO, AEO, Content, Growth
 - ✅ `06-product-management-operating-model/` — PM, User Research, Roadmap
-- ✅ `07-ai-autonomous-systems/` — KI-Integration, Anti-Slop, Automatisierung
-- ✅ `08-platform-enterprise-engineering/` — Infrastruktur, DevOps, Security
+- ✅ `07-ai-autonomous-systems/` — AI Integration, Anti-Slop, Automation
+- ✅ `08-platform-enterprise-engineering/` — Infrastructure, DevOps, Security
 
 #### Studio CLI (studio-tools/)
-- ✅ `studio.py` — Python CLI mit allen Befehlen
-- ✅ `./studio` — Wrapper-Script
+- ✅ `studio.py` — Python CLI with all commands
+- ✅ `./studio` — Wrapper script
 
-**Befehle:**
+**Commands:**
 - `./studio status <project>`
 - `./studio gate <project> [--level N] [--anti-slop]`
-- `./studio adr <project> "<Titel>"`
-- `./studio ticket <project> "<Titel>"`
+- `./studio adr <project> "<title>"`
+- `./studio ticket <project> "<title>"`
 - `./studio board <project>`
 - `./studio move <project> <id> <status>`
 - `./studio sprint <project>`
 - `./studio groom <project>`
 - `./studio set-phase <project> <phase> --gate <n>`
-- `./studio decide <project> "<Titel>"`
+- `./studio decide <project> "<title>"`
 - `./studio decisions <project>`
 - `./studio env <project> init|up|down|status|logs`
 - `./studio repo <project> create|status`
-- `./studio learn "<Titel>" --signal <s>`
+- `./studio learn "<title>" --signal <s>`
 - `./studio learn-list`
 - `./studio retro <project>`
 - `./studio promote <project> <asset>`
 - `./studio init <project> --archetype <type>`
 
 #### Studio Library (studio-library/)
-- ✅ `ui/tokens/` — Design-Tokens (JSON, CSS)
-- ✅ `ui/components/button/` — Button-Komponente
-- ✅ `ui/page-types/comparison/` — Vergleichs-Seitentyp
-- ✅ `packages/auth/` — Authentifizierung
-- ✅ `packages/billing/` — Abrechnung
-- ✅ `packages/feature-gating/` — Feature-Flags
-- ✅ `manifest.json` — Asset-Registry
+- ✅ `ui/tokens/` — Design tokens (JSON, CSS)
+- ✅ `ui/components/button/` — Button component
+- ✅ `ui/page-types/comparison/` — Comparison page type
+- ✅ `packages/auth/` — Authentication
+- ✅ `packages/billing/` — Billing
+- ✅ `packages/feature-gating/` — Feature flags
+- ✅ `manifest.json` — Asset registry
 
 #### Templates
-- ✅ `templates/docker/` — Docker-Compose + .env
+- ✅ `templates/docker/` — Docker Compose + .env
 
 ---
 
 ## Status
 
-**System-Status:** ✅ Operativ
+**System Status:** ✅ Operational
 **Version:** 1.0.0
-**Letztes Update:** 2026-08-20
+**Last Updated:** 2026-08-20
 
 ---
 
-## Bekannte Einschränkungen
+## Known Limitations
 
-- Anti-Slop-Audit ist noch ein Stub (keine echte Code-Analyse)
-- Docker-Commands sind noch nicht vollständig implementiert
-- GitHub-Integration (gh CLI) noch nicht angebunden
+- Anti-slop audit is still a stub (no real code analysis)
+- Docker commands are not yet fully implemented
+- GitHub integration (gh CLI) not yet connected

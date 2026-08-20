@@ -1,6 +1,6 @@
 # Skill: Process Optimization
 
-> Sprint-Disziplin, Studio-Abläufe, Metriken, Anti-Patterns im Prozess
+> Sprint discipline, studio flows, metrics, anti-patterns in the process
 
 ## Metadata
 
@@ -12,110 +12,110 @@ lead_role: Process Guard
 support_roles: [Agile Coach]
 phases: [3, 5, 6, 7]
 activation_triggers:
-  - Ticket enthält "Prozess", "Sprint-Disziplin", "Optimierung"
-  - Phase 3: Sprint-Setup wird geprüft
-  - Phase 5: QA-Gate identifiziert Prozess-Lücken
-  - Phase 6: Retro identifiziert Verbesserungen
-  - /studio-evolution Befehl
+  - Ticket contains "Process", "Sprint Discipline", "Optimization"
+  - Phase 3: Sprint setup is being reviewed
+  - Phase 5: QA gate identifies process gaps
+  - Phase 6: Retro identifies improvements
+  - /studio-evolution command
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavioral Rules
 
-### 1. Sprint-Disziplin
+### 1. Sprint Discipline
 
 ```markdown
-Was prüfen:
-  - Werden alle 9 Schritte des Ticket-Workflows eingehalten?
-  - Wird TDD tatsächlich angewendet?
-  - Wird Anti-Slop-Audit durchgeführt?
-  - Werden Gates eingehalten?
-  - Wird dokumentiert?
+What to check:
+  - Are all 9 steps of the ticket workflow being followed?
+  - Is TDD actually being applied?
+  - Is anti-slop audit being run?
+  - Are gates being passed?
+  - Is documentation being maintained?
 
-Bei Verstößen:
-  - Ticket geht zurück zum fehlenden Schritt
-  - Learning wird protokolliert
-  - Prozess-Lücke wird geschlossen
+On violations:
+  - Ticket goes back to the missing step
+  - Learning is logged
+  - Process gap is closed
 ```
 
-### 2. Studio-Metriken
+### 2. Studio Metrics
 
 ```markdown
-Was tracken:
-  - Sprint-Velocity (Story Points pro Sprint)
-  - Ticket-Durchlaufzeit (Intake → Done)
-  - Gate-Pass-Rate (erstes Mal bestanden)
-  - Anti-Slop-Error-Rate
-  - Learning-Items pro Sprint
-  - Local vs. Global Learnings Ratio
+What to track:
+  - Sprint velocity (story points per sprint)
+  - Ticket cycle time (Intake → Done)
+  - Gate pass rate (first time)
+  - Anti-slop error rate
+  - Learning items per sprint
+  - Local vs. Global Learnings ratio
 
-Ziel:
-  - Velocity stabil oder steigend
-  - Durchlaufzeit sinkend
-  - Gate-Pass-Rate > 80%
-  - Anti-Slop-Error-Rate < 5%
+Goals:
+  - Velocity stable or increasing
+  - Cycle time decreasing
+  - Gate pass rate > 80%
+  - Anti-slop error rate < 5%
 ```
 
-### 3. Anti-Patterns im Prozess
+### 3. Process Anti-Patterns
 
 ```markdown
-Erkennung:
-  - Tickets die im "implement" hängen (>3 Tage)
-  - Steps die übersprungen werden
-  - Gates die nicht durchlaufen werden
-  - Fehlende Dokumentation
-  - Kein Learning aus Fehlern
+Detection:
+  - Tickets stuck in "implement" (>3 days)
+  - Steps being skipped
+  - Gates not being passed
+  - Missing documentation
+  - No learning from errors
 
-Gegenmaßnahmen:
-  - Automatische Erinnerungen
-  - Stricter Gate-Checks
-  - Prozess-Verbesserungen im Global Loop
+Countermeasures:
+  - Automatic reminders
+  - Stricter gate checks
+  - Process improvements in Global Loop
 ```
 
 ---
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Prohibited
 
 ```markdown
-- Prozess wird nicht geprüft
-  - Metriken werden nicht getrackt
-  - Verstöße werden nicht dokumentiert
-  - Keine Verbesserungen aus Lernings
+- Process not being checked
+  - Metrics not being tracked
+  - Violations not being documented
+  - No improvements from learnings
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Regelmäßige Prozess-Checks
-  - Metriken-Dashboard
-  - Verstöße → Learning → Verbesserung
-  - Iterative Prozess-Optimierung
+- Regular process checks
+  - Metrics dashboard
+  - Violation → Learning → Improvement
+  - Iterative process optimization
 ```
 
 ---
 
-## Qualitätssicherung: Skill-Matching-Test
+## Quality Assurance: Skill Matching Test
 
-Der Skill-Matching-Test verifiziert, dass Tickets korrekt auf interne UND externe Skills
-gemappt werden (`.quinsy-studio/studio-tools/test_skill_matching.py`):
+The skill matching test verifies that tickets are correctly mapped to internal AND external skills
+(`.quinsy-studio/studio-tools/test_skill_matching.py`):
 
 ```bash
 python3 .quinsy-studio/studio-tools/test_skill_matching.py
 ```
 
-**Ausführen nach:**
-- Neuen Trigger-Wörtern / Skill hinzugefügt
-- Neuer externer Skill-Dependency
-- Änderung an der Skill-Registry
+**Run after:**
+- New trigger words / skill added
+- New external skill dependency
+- Change to the skill registry
 
-**Testfälle (7):** Design-System, SEO/AEO, Cookie-Compliance, Database, Security, Game-Dev, Copywriting.
-Erwartung: `7/7` Tickets gematcht, `29/29` externe Quellen auf Disk.
+**Test cases (7):** Design System, SEO/AEO, Cookie Compliance, Database, Security, Game Dev, Copywriting.
+Expectation: `7/7` tickets matched, `29/29` external sources on disk.
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `.quinsy-studio/process/ticket-workflow.md` — 9-Schritte-Workflow
+- `.quinsy-studio/process/lifecycle.md` — Phases
+- `.quinsy-studio/process/ticket-workflow.md` — 9-step workflow
 - `.quinsy-studio/process/iterative-delivery.md` — Sprint/Grooming

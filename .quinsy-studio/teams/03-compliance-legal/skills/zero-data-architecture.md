@@ -1,6 +1,6 @@
 # Skill: Zero-Data Architecture
 
-> Datenminimierung, Löschkonzepte, Auftragsverarbeitungsverträge, Pseudonymisierung
+> Data minimization, deletion concepts, data processing agreements, pseudonymization
 
 ## Metadata
 
@@ -12,128 +12,128 @@ lead_role: Legal & Privacy Officer
 support_roles: [Backend Architect, Systems Architect]
 phases: [2, 3, 4]
 activation_triggers:
-  - Ticket enthält "Zero-Data", "Datenminimierung", "Löschkonzept"
-  - Phase 2: Daten-Architektur wird definiert
-  - Externe Dienstleister werden eingebunden
-  - Feature erfordert personenbezogene Daten
+  - Ticket contains "zero-data", "data minimization", "deletion concept"
+  - Phase 2: data architecture is defined
+  - External service providers are integrated
+  - Feature requires personal data
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Datenminimierung (Art. 5 DSGVO)
+### 1. Data minimization (Art. 5 GDPR)
 
 ```markdown
-Prinzip: So wenig Daten wie möglich, so viel wie nötig
+Principle: as little data as possible, as much as necessary
 
-Checkliste für jedes Datenfeld:
-  - Brauchen wir dieses Feld wirklich?
-  - Kann es pseudonymisiert werden?
-  - Kann es aggregiert werden?
-  - Kann es nach Nutzung gelöscht werden?
-  - Gibt es eine less-invasive Alternative?
+Checklist for every data field:
+  - Do we really need this field?
+  - Can it be pseudonymized?
+  - Can it be aggregated?
+  - Can it be deleted after use?
+  - Is there a less invasive alternative?
 
-Beispiele:
-  ❌ Geburtsdatum speichern → ✅ Nur "über 18" Boolean
-  ❌ vollständige IP-Adresse → ✅ Pseudonymisierte IP
-  ❌ Name + E-Mail + Telefon → ✅ Nur E-Mail (Kommunikation)
+Examples:
+  ❌ store date of birth → ✅ only "over 18" boolean
+  ❌ full IP address → ✅ pseudonymized IP
+  ❌ name + email + phone → ✅ only email (communication)
 ```
 
-### 2. Löschkonzept
+### 2. Deletion concept
 
 ```markdown
-Pro Datenkategorie:
-  - Speicherdauer definieren (max.!)
-  - Automatische Löschung implementieren
-  - Löschung muss verifizierbar sein
-  - Backup-Löschung berücksichtigen
+Per data category:
+  - Define the retention period (max.!)
+  - Implement automatic deletion
+  - Deletion must be verifiable
+  - Consider backup deletion
 
-Löschstrategien:
-  - Soft Delete → Hard Delete nach Frist
-  - Anonymisierung (statt Löschung wenn Aggregate nötig)
-  - Pseudonymisierung (Löschung der Zuordnung)
+Deletion strategies:
+  - Soft delete → hard delete after the period
+  - Anonymization (instead of deletion when aggregates are needed)
+  - Pseudonymization (deletion of the mapping)
 ```
 
-### 3. Auftragsverarbeitungsverträge (AVV/DPA)
+### 3. Data processing agreements (DPA)
 
 ```markdown
-Pflicht bei jedem externen Dienstleister der personenbezogene Daten verarbeitet:
+Mandatory for every external provider that processes personal data:
 
-Inhalte:
-  1. Art und Zweck der Verarbeitung
-  2. Dauer
-  3. Art der personenbezogenen Daten
-  4. Kategorie der betroffenen Personen
-  5. Pflichten des Auftragsverarbeiters
-  6. Technische und organisatorische Maßnahmen
-  7. Unterauftragsverarbeiter
-  8. Drittland-Transfer (falls vorhanden)
+Content:
+  1. Type and purpose of the processing
+  2. Duration
+  3. Type of personal data
+  4. Category of data subjects
+  5. Obligations of the processor
+  6. Technical and organizational measures
+  7. Sub-processors
+  8. Third-country transfer (if any)
 
-Beispiele für AVV-Pflicht:
+Examples of DPA obligations:
   - Hosting (Vercel, AWS, Supabase)
   - Analytics (Plausible, PostHog)
-  - E-Mail (SendGrid, Resend)
+  - Email (SendGrid, Resend)
   - Payment (Stripe)
   - Support (Crisp, Intercom)
 ```
 
-### 4. Pseudonymisierung
+### 4. Pseudonymization
 
 ```markdown
-Techniken:
-  - Hashing für User-IDs in Logs
-  - Tokenisierung für Payment-Daten
-  - Aggregation für Analytics
-  - K-Anonymity für Requests
+Techniques:
+  - Hashing for user IDs in logs
+  - Tokenization for payment data
+  - Aggregation for analytics
+  - K-anonymity for requests
 
-Vorteile:
-  - Datenschutz troz Analyse-Möglichkeit
-  - Reduziertes Risiko bei Datenleck
-  - Einfachere DSGVO-Konformität
+Benefits:
+  - Data protection despite analysis capability
+  - Reduced risk in case of a data breach
+  - Easier GDPR compliance
 ```
 
-### 5. Privacy by Design
+### 5. Privacy by design
 
 ```markdown
-Architektur-Prinzipien:
-  1. Nur notwendige Daten erheben
-  2. Daten nur so lange wie nötig speichern
-  3. Standardmäßig privat (privacy-first)
-  4. Ende-zu-Ende Verschlüsselung wo möglich
-  5. Client-seitige Verarbeitung bevorzugen
-  6. Keine Third-Party-Tracking ohne Consent
-```
-
----
-
-## Anti-Patterns
-
-### ❌ Verboten
-
-```markdown
-- Alles speichern "falls es mal gebraucht wird"
-- Keine Löschfristen definiert
-- Kein AVV mit Dienstleistern
-- IP-Adressen unverschlüsselt speichern
-- User-Tracking ohne Consent
-- Personenbezogene Daten in Logs
-```
-
-### ✅ Stattdessen
-
-```markdown
-- Nur notwendige Daten erheben
-- Klare Löschfristen + automatische Löschung
-- AVV mit allen Dienstleistern
-- Pseudonymisierung wo möglich
-- Tracking nur mit Consent
-- Anonymisierte Logs
+Architecture principles:
+  1. Collect only necessary data
+  2. Store data only as long as necessary
+  3. Private by default (privacy-first)
+  4. End-to-end encryption where possible
+  5. Prefer client-side processing
+  6. No third-party tracking without consent
 ```
 
 ---
 
-## Referenzen
+## Anti-patterns
 
-- `.quinsy-studio/knowledge-base/compliance_playbook.md` — Compliance-Regeln
-- `.quinsy-studio/knowledge-base/backend_playbook.md` — Datenbank-Design
+### ❌ Forbidden
+
+```markdown
+- Store everything "in case it's needed"
+- No deletion periods defined
+- No DPA with providers
+- Store IP addresses unencrypted
+- User tracking without consent
+- Personal data in logs
+```
+
+### ✅ Instead
+
+```markdown
+- Collect only necessary data
+- Clear deletion periods + automatic deletion
+- DPA with all providers
+- Pseudonymization where possible
+- Tracking only with consent
+- Anonymized logs
+```
+
+---
+
+## References
+
+- `.quinsy-studio/knowledge-base/compliance_playbook.md` — compliance rules
+- `.quinsy-studio/knowledge-base/backend_playbook.md` — database design

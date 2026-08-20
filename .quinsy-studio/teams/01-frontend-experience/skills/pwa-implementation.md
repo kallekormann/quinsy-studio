@@ -1,6 +1,6 @@
 # Skill: PWA Implementation
 
-> Service Worker, Offline-Unterstützung, Web App Manifest, Push Notifications
+> Service worker, offline support, web app manifest, push notifications
 
 ## Metadata
 
@@ -12,104 +12,104 @@ lead_role: Frontend Architect
 support_roles: [Frontend Engineer, Platform Architect]
 phases: [3, 4, 5]
 activation_triggers:
-  - Ticket enthält "PWA", "Offline", "Service Worker", "Installierbar"
-  - Archetyp erfordert PWA (saas-application)
-  - Phase 3 plant Offline-Support
+  - Ticket contains "PWA", "offline", "service worker", "installable"
+  - Archetype requires PWA (saas-application)
+  - Phase 3 plans offline support
 ```
 
 ---
 
 ## Verhaltensregeln
 
-### 1. Web App Manifest
+### 1. Web app manifest
 
 ```markdown
-Pflichtfelder:
-  - name: Vollständiger Name
-  - short_name: Name auf Homescreen
+Required fields:
+  - name: full name
+  - short_name: name on home screen
   - start_url: /
   - display: standalone
-  - background_color: Theme-Background
-  - theme_color: Theme-Primary
-  - icons: 192x192 + 512x512 (mindestens)
+  - background_color: theme background
+  - theme_color: theme primary
+  - icons: 192x192 + 512x512 (at least)
 ```
 
-### 2. Service Worker Strategie
+### 2. Service worker strategy
 
 ```markdown
-Cache-Strategien nach Ressource-Typ:
+Cache strategies by resource type:
 
-Statische Assets (JS, CSS, Fonts):
-  → Cache-First (schnell, zuverlässig)
-  → Cache-Name: "static-v{version}"
-  → TTL: 1 Jahr (immutable)
+Static assets (JS, CSS, fonts):
+  → cache-first (fast, reliable)
+  → cache name: "static-v{version}"
+  → TTL: 1 year (immutable)
 
-Bilder:
-  → Cache-First mit Network-Fallback
-  → Cache-Name: "images-v{version}"
-  → TTL: 30 Tage
+Images:
+  → cache-first with network fallback
+  → cache name: "images-v{version}"
+  → TTL: 30 days
 
-API Calls:
-  → Network-First mit Cache-Fallback
-  → Cache-Name: "api-v{version}"
-  → TTL: 5 Minuten
+API calls:
+  → network-first with cache fallback
+  → cache name: "api-v{version}"
+  → TTL: 5 minutes
 
-HTML (Navigation):
-  → Network-First mit Offline-Fallback
-  → Offline-Fallback: /offline.html
+HTML (navigation):
+  → network-first with offline fallback
+  → offline fallback: /offline.html
 ```
 
-### 3. Offline-Unterstützung
+### 3. Offline support
 
 ```markdown
-Pflicht-Offline-Szenarien:
-  - App-Shell ist immer verfügbar
-  - Letzte gespeicherte Daten sind sichtbar
-  - Offline-Hinweis wird angezeigt
-  - Background Sync für Queue
+Required offline scenarios:
+  - App shell is always available
+  - Last saved data is visible
+  - Offline notice is shown
+  - Background sync for queue
 
 Nice-to-have:
-  - Offline-Formular-Submission (Queue)
-  - Offline-Suche in cache-Inhalten
+  - Offline form submission (queue)
+  - Offline search in cached content
 ```
 
-### 4. Update-Management
+### 4. Update management
 
 ```markdown
-Service Worker Update:
-  - New Worker installiert → Wait
-  -SKIP_WAITING nur bei User-Interaction
-  - Update-Banner anzeigen
-  - Cache-Invalidierung bei Version-Update
+Service worker update:
+  - new worker installed → wait
+  - SKIP_WAITING only on user interaction
+  - show an update banner
+  - cache invalidation on version update
 ```
 
 ---
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Service Worker ohne Update-Strategie
-- Alles in einem Cache (keine Trennung)
-- Kein Offline-Fallback
-- Cache ohne Versionierung
-- PUSH-Notifications ohne explizite Zustimmung
+- Service worker without an update strategy
+- Everything in one cache (no separation)
+- No offline fallback
+- Cache without versioning
+- Push notifications without explicit consent
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Versionierte Caches pro Ressource-Typ
-- Network-First für dynamische Inhalte
-- Offline-Fallback-Page
-- Background Sync für Offline-Aktionen
-- Granulare Cache-Strategien
+- Versioned caches per resource type
+- Network-first for dynamic content
+- Offline fallback page
+- Background sync for offline actions
+- Granular cache strategies
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/frontend_playbook.md` — Frontend-Regeln
-- `templates/docker/` — Docker-Setup
+- `.quinsy-studio/knowledge-base/frontend_playbook.md` — frontend rules
+- `templates/docker/` — docker setup

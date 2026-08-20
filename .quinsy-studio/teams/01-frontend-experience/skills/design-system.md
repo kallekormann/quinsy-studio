@@ -1,6 +1,6 @@
 # Skill: Design System
 
-> Design Tokens, Typografie, Farbpalette, Spacing-System, Theme-Management
+> Design tokens, typography, color palette, spacing system, theme management
 
 ## Metadata
 
@@ -12,94 +12,94 @@ lead_role: UI/Interaction Designer
 support_roles: [Frontend Architect, Frontend Engineer]
 phases: [2, 3]
 activation_triggers:
-  - Neues Projekt wird initialisiert (Phase 2/3)
-  - Design Tokens müssen definiert/aktualisiert werden
-  - Farbpalette oder Typografie wird geändert
-  - Dark/Light Mode muss implementiert werden
-  - Asset wird zur Studio-Library promoted
+  - New project is initialized (phase 2/3)
+  - Design tokens must be defined/updated
+  - Color palette or typography is changed
+  - Dark/light mode must be implemented
+  - An asset is promoted to the studio library
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Design Tokens Hierarchie
+### 1. Design token hierarchy
 
 ```markdown
-Globale Tokens (Studio-HQ):
+Global tokens (studio HQ):
   → studio-library/ui/tokens/design-tokens.json
-  → Gelten für ALLE Projekte
+  → apply to ALL projects
 
-Lokale Tokens (Projekt):
+Local tokens (project):
   → projects/[name]/ui/tokens/
-  → Können Globale überschreiben (Project-Specific)
+  → can override globals (project-specific)
 ```
 
-### 2. Token-Struktur
+### 2. Token structure
 
 ```markdown
-Jeder Token hat:
-- Kategorie: color, typography, spacing, shadow, border, breakpoint
-- Name: konsistente Benennung (color-primary-500)
-- Wert: JSON-kompatibel
-- Dark Mode: eigener Wert oder Alias
-- Beschreibung: was der Token repräsentiert
+Every token has:
+- Category: color, typography, spacing, shadow, border, breakpoint
+- Name: consistent naming (color-primary-500)
+- Value: JSON-compatible
+- Dark mode: own value or alias
+- Description: what the token represents
 ```
 
-### 3. Typografie-Skala
+### 3. Typography scale
 
 ```markdown
-Standard-Skala (rem-basiert):
+Standard scale (rem-based):
 
-Display:    3rem / 48px  — Headline Hero
+Display:    3rem / 48px  — hero headline
 H1:         2.25rem / 36px
 H2:         1.875rem / 30px
 H3:         1.5rem / 24px
 H4:         1.25rem / 20px
 Body-LG:    1.125rem / 18px
-Body:       1rem / 16px      ← Base
+Body:       1rem / 16px      ← base
 Body-SM:    0.875rem / 14px
 Caption:    0.75rem / 12px
 
-Line-Heights:
-  Tight:   1.25 (Headlines)
-  Normal:  1.5  (Body)
-  Relaxed: 1.75 (Long-form)
+Line heights:
+  Tight:   1.25 (headlines)
+  Normal:  1.5  (body)
+  Relaxed: 1.75 (long-form)
 ```
 
-### 4. Farbpalette
+### 4. Color palette
 
 ```markdown
-Struktur pro Farbe:
-  - 50:  Hintergrund (lightest)
-  - 100: Light
-  - 200: Light
-  - 300: Medium-Light
-  - 400: Medium
-  - 500: Primary (Standard)
-  - 600: Medium-Dark
-  - 700: Dark
-  - 800: Dark
-  - 900: Darkest
-  - A100-A700: Accent
+Structure per color:
+  - 50:  background (lightest)
+  - 100: light
+  - 200: light
+  - 300: medium-light
+  - 400: medium
+  - 500: primary (standard)
+  - 600: medium-dark
+  - 700: dark
+  - 800: dark
+  - 900: darkest
+  - A100-A700: accent
 
-Basis-Farben:
-  - primary: Markenfarbe
-  - neutral: Grautöne
-  - success: Erfolg
-  - warning: Warnung
-  - error: Fehler
-  - info: Information
+Base colors:
+  - primary: brand color
+  - neutral: gray tones
+  - success: success
+  - warning: warning
+  - error: error
+  - info: information
 ```
 
-### 5. Spacing-System
+### 5. Spacing system
 
 ```markdown
-8px Grid als Basis:
+8px grid as base:
 
 space-0:   0px
 space-1:   4px     (0.25rem)
-space-2:   8px     (0.5rem)    ← Base Unit
+space-2:   8px     (0.5rem)    ← base unit
 space-3:   12px    (0.75rem)
 space-4:   16px    (1rem)
 space-5:   20px    (1.25rem)
@@ -112,60 +112,60 @@ space-20:  80px    (5rem)
 space-24:  96px    (6rem)
 ```
 
-### 6. Promotion zur Studio-Library
+### 6. Promotion to the studio library
 
 ```markdown
-Wann promoven?
-- Komponente ist in 2+ Projekten identisch
-- Design-Entscheidung ist universell
-- Token ist project-agnostic
+When to promote?
+- Component is identical in 2+ projects
+- Design decision is universal
+- Token is project-agnostic
 
-Wie promoven?
-1. Code in studio-library/ kopieren
-2. README.md mit Dokumentation versehen
-3. manifest.json aktualisieren
-4. CHANGELOG.md eintragen
+How to promote?
+1. Copy code into studio-library/
+2. Add README.md with documentation
+3. Update manifest.json
+4. Add a CHANGELOG.md entry
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Hardcoded Farben in Komponenten (statt Tokens)
-- Pixel-Werte statt rem/em
-- Einzelne Fonts laden (statt Font-Family)
-- Kein Dark Mode (wenn Projekt ihn braucht)
-- Tokens direkt in CSS (statt JSON als Source of Truth)
-- Keine Konsistenz zwischen Projekten
+- Hardcoded colors in components (instead of tokens)
+- Pixel values instead of rem/em
+- Loading single fonts (instead of a font family)
+- No dark mode (if the project needs it)
+- Tokens directly in CSS (instead of JSON as source of truth)
+- No consistency between projects
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Immer Design Tokens nutzen
-- rem/em für alles
-- Font-Family mit Fallbacks
-- Dark Mode über CSS Custom Properties
-- Tokens als JSON + CSS Custom Properties generieren
-- Globale Tokens aus Studio-HQ, lokale Overrides
+- Always use design tokens
+- rem/em for everything
+- Font family with fallbacks
+- Dark mode via CSS custom properties
+- Tokens as JSON + generated CSS custom properties
+- Global tokens from studio HQ, local overrides
 ```
 
 ---
 
-## Externe Skill-Unterstützung
+## External skill support
 
-> Vor der Umsetzung die importierten Best-in-Class-Skills laden (`./studio update-skills`):
+> Before implementation load the imported best-in-class skills (`./studio update-skills`):
 
-- **`design/skills/`** (Nutlope/hallmark) — Anti-AI-Slop-Design: Macrostructure-Auswahl, 57 Slop-Test-Gates, Themes. **Pflicht vor jedem neuen UI-Entwurf.**
-- **`design_awesome/skills/<stil>/SKILL.md`** (bergside/awesome-design-skills) — 67 Design-System-Styles (Corporate, Minimal, Glassmorphism, ...) mit SKILL.md + DESIGN.md
+- **`design/skills/`** (Nutlope/hallmark) — anti-AI-slop design: macrostructure selection, 57 slop test gates, themes. **Mandatory before every new UI draft.**
+- **`design_awesome/skills/<style>/SKILL.md`** (bergside/awesome-design-skills) — 67 design system styles (corporate, minimal, glassmorphism, ...) with SKILL.md + DESIGN.md
 
-Ablauf: Stil aus `design_awesome` wählen → `design` (hallmark) Slop-Test laufen lassen → Tokens definieren → Promotion prüfen.
+Flow: choose a style from `design_awesome` → run the `design` (hallmark) slop test → define tokens → check promotion.
 
-## Referenzen
+## References
 
-- `.quinsy-studio/studio-library/ui/tokens/` — Token-Dateien
-- `.quinsy-studio/studio-library/manifest.json` — Registrierung
-- `.quinsy-studio/knowledge-base/design_playbook.md` — Design-Regeln
+- `.quinsy-studio/studio-library/ui/tokens/` — token files
+- `.quinsy-studio/studio-library/manifest.json` — registration
+- `.quinsy-studio/knowledge-base/design_playbook.md` — design rules

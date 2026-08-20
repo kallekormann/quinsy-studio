@@ -1,24 +1,24 @@
 # Team 02 — Backend & Systems Engineering
 
-> Verantwortlich für API-Design, Datenbanken, Server-Logik, Auth, Integrationen und Datenflüsse.
+> Responsible for API design, databases, server logic, auth, integrations and data flows.
 
-## Director-Level Rollen
+## Director-level roles
 
-| Rolle | Level | Verantwortlichkeiten |
-|-------|-------|---------------------|
-| **Senior Fullstack Architect** | Director | Verbindet Frontend- und Backend-Infrastrukturen, verantwortet End-to-End-Datenintegration |
-| **Backend Architect** | Director | Gesamtheitliche API- und System-Architektur |
-| **Backend / PHP / JS Engineers** | Lead | Laravel 11 Core, Eloquent, Queue-Management, Node.js |
-| **Database Specialist** | Director | PostgreSQL/Supabase, JSONb EAV-Modelle, GIN-Indizierung |
+| Role | Level | Responsibilities |
+|------|-------|------------------|
+| **Senior Fullstack Architect** | Director | connects frontend and backend infrastructures, owns end-to-end data integration |
+| **Backend Architect** | Director | holistic API and system architecture |
+| **Backend / PHP / JS Engineers** | Lead | Laravel 11 core, Eloquent, queue management, Node.js |
+| **Database Specialist** | Director | PostgreSQL/Supabase, JSONb EAV models, GIN indexing |
 | **Backend Security & Infrastructure Specialists** | Director | Docker, Turborepo, CI/CD |
-| **Data Engineer** | Director | ETL, Affiliate-API-Syncs |
+| **Data Engineer** | Director | ETL, affiliate API syncs |
 
 ---
 
 ## Skills
 
-| ID | Skill | Lead-Rolle | Datei |
-|----|-------|------------|-------|
+| ID | Skill | Lead role | File |
+|----|-------|-----------|------|
 | BE-001 | API Design | Backend Architect | `skills/api-design.md` |
 | BE-002 | Database Design | Database Specialist | `skills/database-design.md` |
 | BE-003 | Authentication & Authorization | Backend Security Engineer | `skills/authentication-authorization.md` |
@@ -27,11 +27,11 @@
 
 ---
 
-## Phasen-Beteiligung
+## Phase participation
 
-| Phase | Lead-Rollen | Support-Rollen |
-|-------|-------------|----------------|
-| Phase 0 | — | Senior Fullstack Architect (Machbarkeit) |
+| Phase | Lead roles | Support roles |
+|-------|------------|---------------|
+| Phase 0 | — | Senior Fullstack Architect (feasibility) |
 | Phase 1 | Backend Architect | Data Engineer |
 | Phase 2 | Backend Architect, Database Specialist | Senior Fullstack Architect, Backend Security Engineer |
 | Phase 3 | Backend Architect | Database Specialist |
@@ -42,8 +42,8 @@
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/adr-policy.md` — Architektur-Entscheidungen
-- `.quinsy-studio/process/anti-slop.md` — Code-Qualität
-- `studio-library/packages/` — Wiederverwendbare Packages
+- `.quinsy-studio/process/adr-policy.md` — architecture decisions
+- `.quinsy-studio/process/anti-slop.md` — code quality
+- `studio-library/packages/` — reusable packages

@@ -1,46 +1,46 @@
 # AI Automation Playbook
 
-> Token-Optimierung, RAG-Architektur, Agent-Systeme — die globalen AI-Standards.
+> Token optimization, RAG architecture, agent systems — the global AI standards.
 
-## Grundprinzip
+## Core principle
 
 ```
-KI ist ein Werkzeug, kein Ersatz für Verstand.
-Token sind teuer — nutze sie weise.
+AI is a tool, not a substitute for judgment.
+Tokens are expensive — use them wisely.
 ```
 
 ---
 
-## Token-Optimierung
+## Token optimization
 
-### Strategien
+### Strategies
 
-| Strategie | Beschreibung | Einsparung |
-|-----------|-------------|-----------|
-| **Prompt Engineering** | Klare, präzise Prompts | 20-40% |
-| **Few-Shot Learning** | Beispiele statt Erklärungen | 30-50% |
-| **Chunking** | Große Dokumente aufteilen | 50-70% |
-| **Caching** | Häufige Queries zwischenspeichern | 40-60% |
-| **Modellwahl** | Kleines Modell für einfache Aufgaben | 60-80% |
+| Strategy | Description | Savings |
+|----------|-------------|---------|
+| **Prompt engineering** | clear, precise prompts | 20-40% |
+| **Few-shot learning** | examples instead of explanations | 30-50% |
+| **Chunking** | split large documents | 50-70% |
+| **Caching** | cache frequent queries | 40-60% |
+| **Model selection** | small model for simple tasks | 60-80% |
 
-### Prompt-Template
+### Prompt template
 
 ```markdown
-# System Prompt (minimal)
+# System prompt (minimal)
 
-Du bist [Rolle]. Antworte [Format].
+You are [role]. Answer [format].
 
-# Kontext (nur relevante Teile)
+# Context (only relevant parts)
 
 [Chunk 1]
 [Chunk 2]
 
-# Aufgabe
+# Task
 
-[Konkrete Frage]
+[Concrete question]
 ```
 
-### Cache-Strategie
+### Cache strategy
 
 ```typescript
 const cache = new Map();
@@ -60,9 +60,9 @@ async function cachedLLM(prompt: string): Promise<string> {
 
 ---
 
-## RAG-Architektur
+## RAG architecture
 
-### Architektur
+### Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -71,37 +71,37 @@ async function cachedLLM(prompt: string): Promise<string> {
 │                                                         │
 │  ┌─────────────┐     ┌─────────────┐                   │
 │  │  Document   │────▶│  Chunking   │                   │
-│  │  Ingestion  │     │             │                   │
+│  │  ingestion  │     │             │                   │
 │  └─────────────┘     └──────┬──────┘                   │
 │                             │                           │
 │                      ┌──────▼──────┐                   │
-│                      │ Embedding   │                   │
-│                      │ Generation  │                   │
+│                      │ embedding   │                   │
+│                      │ generation  │                   │
 │                      └──────┬──────┘                   │
 │                             │                           │
 │                      ┌──────▼──────┐                   │
-│                      │ Vector DB   │                   │
+│                      │ vector DB   │                   │
 │                      │ (Pinecone,  │                   │
 │                      │  Supabase)  │                   │
 │                      └──────┬──────┘                   │
 │                             │                           │
 │  ┌─────────────┐     ┌──────▼──────┐                   │
-│  │   User      │────▶│  Retrieval  │                   │
-│  │   Query     │     │  + Ranking  │                   │
+│  │   user      │────▶│  retrieval  │                   │
+│  │   query     │     │  + ranking  │                   │
 │  └─────────────┘     └──────┬──────┘                   │
 │                             │                           │
 │                      ┌──────▼──────┐                   │
 │                      │   LLM +     │                   │
-│                      │  Response   │                   │
+│                      │  response   │                   │
 │                      └─────────────┘                   │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Implementierung
+### Implementation
 
 ```typescript
-// 1. Document Ingestion
+// 1. document ingestion
 async function ingestDocument(doc: Document) {
   const chunks = chunkDocument(doc, { size: 500, overlap: 50 });
   
@@ -115,7 +115,7 @@ async function ingestDocument(doc: Document) {
   }
 }
 
-// 2. Retrieval
+// 2. retrieval
 async function retrieve(query: string, topK: number = 5) {
   const queryEmbedding = await generateEmbedding(query);
   const results = await vectorDB.query({
@@ -126,7 +126,7 @@ async function retrieve(query: string, topK: number = 5) {
   return results;
 }
 
-// 3. RAG Response
+// 3. RAG response
 async function ragResponse(query: string) {
   const context = await retrieve(query);
   const prompt = buildRAGPrompt(query, context);
@@ -134,20 +134,20 @@ async function ragResponse(query: string) {
 }
 ```
 
-### Chunking-Strategien
+### Chunking strategies
 
-| Strategie | Beschreibung | Use Case |
-|-----------|-------------|----------|
-| **Fixed Size** | Feste Größe (z.B. 500 Tokens) | Allgemein |
-| **Recursive** | Nach Satzzeichen aufteilen | Natürliche Sprache |
-| **Semantic** | Nach Themenwechsel | Dokumente |
-| **Hierarchical** | Über-/Unterkategorien | Strukturierte Daten |
+| Strategy | Description | Use case |
+|----------|-------------|----------|
+| **Fixed size** | fixed size (e.g. 500 tokens) | general |
+| **Recursive** | split by punctuation | natural language |
+| **Semantic** | split at topic changes | documents |
+| **Hierarchical** | super-/subcategories | structured data |
 
 ---
 
-## Agent-Systeme
+## Agent systems
 
-### Agent-Architektur
+### Agent architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -155,35 +155,35 @@ async function ragResponse(query: string) {
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  ┌─────────────┐                                       │
-│  │   Input     │                                       │
+│  │   input     │                                       │
 │  └──────┬──────┘                                       │
 │         │                                               │
 │  ┌──────▼──────┐                                       │
-│  │   Plan      │                                       │
-│  │  (LLM)     │                                       │
+│  │   plan      │                                       │
+│  │  (LLM)      │                                       │
 │  └──────┬──────┘                                       │
 │         │                                               │
 │  ┌──────▼──────┐     ┌─────────────┐                   │
-│  │   Execute   │────▶│   Tools     │                   │
-│  │  (Code)     │     │  (APIs, DB) │                   │
+│  │   execute   │────▶│   tools     │                   │
+│  │  (code)     │     │  (APIs, DB) │                   │
 │  └──────┬──────┘     └─────────────┘                   │
 │         │                                               │
 │  ┌──────▼──────┐                                       │
-│  │   Observe   │                                       │
-│  │  (Result)   │                                       │
+│  │   observe   │                                       │
+│  │  (result)   │                                       │
 │  └──────┬──────┘                                       │
 │         │                                               │
 │  ┌──────▼──────┐                                       │
-│  │   Reflect   │                                       │
-│  │  (LLM)     │                                       │
+│  │   reflect   │                                       │
+│  │  (LLM)      │                                       │
 │  └──────┬──────┘                                       │
 │         │                                               │
-│         └─────────────▶ Zurück zu Plan oder Stop       │
+│         └─────────────▶ back to plan or stop           │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Tool-Use
+### Tool use
 
 ```typescript
 const tools = [
@@ -231,14 +231,14 @@ const guardrails = {
 
 ## Monitoring
 
-### Metriken
+### Metrics
 
-| Metrik | Beschreibung | Alert |
+| Metric | Description | Alert |
 |--------|-------------|-------|
-| **Latency** | Antwortzeit | > 5s |
-| **Cost** | Token-Kosten | > Budget |
-| **Errors** | Fehlerquote | > 5% |
-| **Quality** | Nutzerzufriedenheit | < 3/5 |
+| **Latency** | response time | > 5s |
+| **Cost** | token costs | > budget |
+| **Errors** | error rate | > 5% |
+| **Quality** | user satisfaction | < 3/5 |
 
 ### Logging
 
@@ -258,8 +258,8 @@ function logLLMCall(call: LLMCall) {
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/teams/07-ai-autonomous-systems/` — AI-Team
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — AI-Slop-Regeln
-- `.quinsy-studio/process/learning-loop.md` — Learning Loop
+- `.quinsy-studio/teams/07-ai-autonomous-systems/` — AI team
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — AI slop rules
+- `.quinsy-studio/process/learning-loop.md` — learning loop

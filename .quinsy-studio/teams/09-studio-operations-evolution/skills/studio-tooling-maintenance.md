@@ -1,6 +1,6 @@
 # Skill: Studio Tooling Maintenance
 
-> Wartung, Refactoring und Verbesserung der Python-Tools im Studio-HQ
+> Maintenance, refactoring and improvement of the Python tools in the Studio HQ
 
 ## Metadata
 
@@ -12,80 +12,80 @@ lead_role: Studio Automation Engineer
 support_roles: [Platform Architect]
 phases: [6, 7]
 activation_triggers:
-  - Ticket enthält "Studio Tools", "Python", "Tooling", "Wartung"
-  - /studio-evolution Befehl
-  - Phase 6: Learning Loop identifiziert Tooling-Verbesserungen
-  - Performance-Probleme bei Studio-Tools
+  - Ticket contains "Studio Tools", "Python", "Tooling", "Maintenance"
+  - /studio-evolution command
+  - Phase 6: Learning Loop identifies tooling improvements
+  - Performance problems with studio tools
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavioral Rules
 
-### 1. Python-Tools pflegen
+### 1. Maintain Python Tools
 
 ```markdown
-Dateien in .quinsy-studio/studio-tools/:
-  - validate_anti_slop.py    → Anti-Slop-Erkennung
-  - run_qa_gate.py           → QA-Gate-Orchestrierung
-  - generate_ticket_manifest.py → Ticket-Generierung
-  - sync_global_assets.py    → Asset-Promotion
-  - init_project_env.py      → Projekt-Initialisierung
+Files in .quinsy-studio/studio-tools/:
+  - validate_anti_slop.py    → Anti-slop detection
+  - run_qa_gate.py           → QA gate orchestration
+  - generate_ticket_manifest.py → Ticket generation
+  - sync_global_assets.py    → Asset promotion
+  - init_project_env.py      → Project initialization
   - requirements.txt         → Dependencies
 
-Regelmäßige Wartung:
-  - Dependencies updaten (weekly)
-  - Security-Scans
-  - Performance-Benchmarks
-  - Unit-Tests schreiben/aktualisieren
+Regular maintenance:
+  - Update dependencies (weekly)
+  - Security scans
+  - Performance benchmarks
+  - Write/update unit tests
 ```
 
-### 2. Refactoring-Regeln
+### 2. Refactoring Rules
 
 ```markdown
-Beim Refactoring:
-  - API backward-compatible halten
-  - CHANGELOG.md eintragen
-  - README.md aktualisieren
-  - Tests aktualisieren
-  - Keine Breaking Changes ohne Version-Bump
+When refactoring:
+  - Keep API backward-compatible
+  - Update CHANGELOG.md
+  - Update README.md
+  - Update tests
+  - No breaking changes without version bump
 ```
 
 ### 3. Monitoring
 
 ```markdown
-Was tracken:
-  - Ausführungszeit pro Tool
-  - Erfolgsrate
-  - Häufigkeit der Nutzung
-  - Fehler-Logs
+What to track:
+  - Execution time per tool
+  - Success rate
+  - Usage frequency
+  - Error logs
 ```
 
 ---
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Prohibited
 
 ```markdown
-- Breaking Changes ohne Versionierung
-  - Keine Tests für geänderte Tools
-  - Dependencies nicht updaten
-  - Debug-Code in Production
+- Breaking changes without versioning
+  - No tests for changed tools
+  - Not updating dependencies
+  - Debug code in production
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Semantic Versioning
-  - Tests vor jedem Deploy
-  - Regelmäßige Dependency-Updates
-  - Sauberer Production-Code
+- Semantic versioning
+  - Tests before every deploy
+  - Regular dependency updates
+  - Clean production code
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/studio-tools/` — Python-Automation
+- `.quinsy-studio/studio-tools/` — Python automation
 - `.quinsy-studio/process/learning-loop.md` — Learning Loop

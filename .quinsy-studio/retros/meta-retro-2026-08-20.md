@@ -1,15 +1,15 @@
 # Meta-Retro — 2026-08-20
 
-## Eingegangene Learning Items
+## Incoming Learning Items
 - LO-0000: ...
 
-## Skill-Review
-| Skill | Qualitätssignal | Aktion |
-|-------|-----------------|--------|
+## Skill Review
+| Skill | Quality Signal | Action |
+|-------|----------------|--------|
 | ... | ... | ... |
 
-## Entscheidungen
-- ... (jede Änderung → CHANGELOG.md-Eintrag)
+## Decisions
+- ... (every change → CHANGELOG.md entry)
 
 ## Action Items
 - [ ] ... (Owner: ...)

@@ -1,26 +1,26 @@
 # Team 01 — Frontend & Experience
 
-> Verantwortlich für UI/UX, Design System, Komponenten, Performance, Barrierefreiheit, SEO/AEO und Growth.
+> Responsible for UI/UX, design system, components, performance, accessibility, SEO/AEO and growth.
 
-## Director-Level Rollen
+## Director-level roles
 
-| Rolle | Level | Verantwortlichkeiten |
-|-------|-------|---------------------|
-| **Lead Experience Architect** | Director | Gesamtverantwortung für Informationsarchitektur, User Journeys, kognitive Reibungslosigkeit |
-| **Frontend Architect** | Director | Monorepo, Next.js, SSR/ISR, Core Web Vitals |
+| Role | Level | Responsibilities |
+|------|-------|------------------|
+| **Lead Experience Architect** | Director | overall responsibility for information architecture, user journeys, cognitive smoothness |
+| **Frontend Architect** | Director | monorepo, Next.js, SSR/ISR, core web vitals |
 | **Frontend Engineer** | Lead | React, Tailwind CSS, Shadcn UI |
-| **Frontend Security Engineer** | — | XSS/CSRF-Schutz, Token-Handling |
-| **QA Specialist** | Director | E2E-Tests, Regressions-Sicherheit, UI/UX-Spec-Validierung |
-| **UI/Interaction Designer** | Director | Design Tokens, visuelle Einzigartigkeit, strikte Durchsetzung der Anti-Slop-Regeln im UI |
-| **Marketing, SEO/AEO & Affiliate Specialists** | Director | pSEO-Architektur, Link-Rot-Prevention, Netzwerk-Integrationen, faktenbasiertes Copywriting |
-| **Growth Manager & Data Analysts** | Director | AARRR-Funnel, Redis-Event-Pufferung, Cost of Experimentation, The Ghost of Experiments Past |
+| **Frontend Security Engineer** | — | XSS/CSRF protection, token handling |
+| **QA Specialist** | Director | E2E tests, regression safety, UI/UX spec validation |
+| **UI/Interaction Designer** | Director | design tokens, visual uniqueness, strict enforcement of anti-slop rules in the UI |
+| **Marketing, SEO/AEO & Affiliate Specialists** | Director | pSEO architecture, link-rot prevention, network integrations, fact-based copywriting |
+| **Growth Manager & Data Analysts** | Director | AARRR funnel, Redis event buffering, cost of experimentation, the ghost of experiments past |
 
 ---
 
 ## Skills
 
-| ID | Skill | Lead-Rolle | Datei |
-|----|-------|------------|-------|
+| ID | Skill | Lead role | File |
+|----|-------|-----------|------|
 | FE-001 | UI Component Design | Frontend Engineer | `skills/ui-component-design.md` |
 | FE-002 | Design System | UI/Interaction Designer | `skills/design-system.md` |
 | FE-003 | Performance Optimization | Frontend Architect | `skills/performance-optimization.md` |
@@ -30,12 +30,12 @@
 
 ---
 
-## Phasen-Beteiligung
+## Phase participation
 
-| Phase | Lead-Rollen | Support-Rollen |
-|-------|-------------|----------------|
-| Phase 0 | — | Lead Experience Architect (Machbarkeit) |
-| Phase 1 | — | Frontend Architect (UI-Alternativen) |
+| Phase | Lead roles | Support roles |
+|-------|------------|---------------|
+| Phase 0 | — | Lead Experience Architect (feasibility) |
+| Phase 1 | — | Frontend Architect (UI alternatives) |
 | Phase 2 | Frontend Architect, UI/Interaction Designer | Lead Experience Architect |
 | Phase 3 | Frontend Engineer, UI/Interaction Designer | QA Specialist |
 | Phase 4 | Frontend Engineer | QA Specialist, Frontend Security Engineer |
@@ -45,8 +45,8 @@
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `.quinsy-studio/studio-library/ui/` — UI-Assets
-- `./studio promote <project> <asset>` — Asset zur Library promote
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `.quinsy-studio/studio-library/ui/` — UI assets
+- `./studio promote <project> <asset>` — promote an asset to the library

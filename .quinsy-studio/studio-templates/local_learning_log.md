@@ -1,39 +1,39 @@
-# Local Learning Log — [Projektname]
+# Local Learning Log — [Project Name]
 
-> **ACHTUNG:** Diese Learnings sind **projektspezifisch** und gelten **nur** für dieses Projekt.
-> Sie werden NICHT in die globale Studio-Library übernommen.
+> **NOTE:** These learnings are **project-specific** and apply **only** to this project.
+> They are NOT adopted into the global studio library.
 
 ---
 
 ## Sprint [NN]
 
-### Datum: [YYYY-MM-DD]
+### Date: [YYYY-MM-DD]
 
-#### Was lief gut? 🟢
+#### What went well? 🟢
 - ...
 
-#### Was lief schlecht? 🔴
+#### What went badly? 🔴
 - ...
 
-#### Was können wir verbessern? 🟡
+#### What can we improve? 🟡
 - ...
 
-#### Projekt-spezifische Learnings
-| Learning | Signal | Aktion |
+#### Project-specific learnings
+| Learning | Signal | Action |
 |----------|--------|--------|
 | ... | ... | ... |
 
 ---
 
-## Learning Items (projektspezifisch)
+## Learning Items (project-specific)
 
-| ID | Titel | Signal | Status |
+| ID | Title | Signal | Status |
 |----|-------|--------|--------|
 | LO-0001 | ... | ... | open |
 
 ---
 
-## Archiv
+## Archive
 
 ### Sprint [N-1]
 ...

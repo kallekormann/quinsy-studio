@@ -1,6 +1,6 @@
 # Skill: Database Design
 
-> Schema-Design, Migrationen, Normalisierung, Indexierung, Query-Optimierung
+> Schema design, migrations, normalization, indexing, query optimization
 
 ## Metadata
 
@@ -12,44 +12,44 @@ lead_role: Database Specialist
 support_roles: [Backend Architect, Backend Engineer]
 phases: [2, 3, 4]
 activation_triggers:
-  - Ticket enthält "Database", "Schema", "Migration", "Query"
-  - Phase 2: Datenmodell wird entworfen
-  - Phase 4: Migrationen werden implementiert
-  - Performance-Problem mit Datenbank-Queries
+  - Ticket contains "database", "schema", "migration", "query"
+  - Phase 2: data model is designed
+  - Phase 4: migrations are implemented
+  - Performance problem with database queries
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Schema-Design
+### 1. Schema design
 
 ```markdown
-Standard-Regeln:
-  - 3NF (Third Normal Form) als Ausgangspunkt
-  - UUIDs für externe IDs (nicht Auto-Increment)
+Standard rules:
+  - 3NF (third normal form) as starting point
+  - UUIDs for external IDs (not auto-increment)
   - Timestamps: created_at, updated_at
-  - Soft Delete: deleted_at (statt physikalisches Löschen)
-  - Foreign Keys für Integrität
-  - CHECK Constraints für Validierung
+  - Soft delete: deleted_at (instead of physical deletion)
+  - Foreign keys for integrity
+  - CHECK constraints for validation
 
-Tabellen-Struktur:
+Table structure:
   id: UUID (PK)
   created_at: TIMESTAMP
   updated_at: TIMESTAMP
-  deleted_at: TIMESTAMP (nullable, für Soft Delete)
-  ... spezifische Felder
+  deleted_at: TIMESTAMP (nullable, for soft delete)
+  ... specific fields
 ```
 
-### 2. Migrationen
+### 2. Migrations
 
 ```markdown
-Regeln:
-  - Jede Migration ist reversibel (up + down)
-  - Migrationen sind versioniert
-  - Keine Breaking Changes in bestehenden Migrationen
-  - Daten-Migrationen separat von Schema-Migrationen
-  - Immer testen: migrate → rollback → migrate
+Rules:
+  - Every migration is reversible (up + down)
+  - Migrations are versioned
+  - No breaking changes in existing migrations
+  - Data migrations separate from schema migrations
+  - Always test: migrate → rollback → migrate
 
 Naming:
   20260820_create_users_table
@@ -57,46 +57,46 @@ Naming:
   20260822_create_orders_table
 ```
 
-### 3. Indexierung
+### 3. Indexing
 
 ```markdown
-Index erstellen für:
-  - Foreign Keys (immer!)
-  - Häufig gefilterte Spalten
-  - Sortierung in Listen-Ansichten
-  - UNIQUE Constraints
-  - composite index für häufige Multi-Column-Queries
+Create an index for:
+  - Foreign keys (always!)
+  - Frequently filtered columns
+  - Sorting in list views
+  - UNIQUE constraints
+  - composite index for frequent multi-column queries
 
-Nicht indexieren:
-  - Spalten mit wenigen eindeutigen Werten (Boolean, Status)
-  - Sehr große Text-Spalten (stattdessen Full-Text Search)
-  - Spalten die selten abgefragt werden
+Don't index:
+  - Columns with few distinct values (boolean, status)
+  - Very large text columns (use full-text search instead)
+  - Columns that are rarely queried
 ```
 
-### 4. Query-Optimierung
+### 4. Query optimization
 
 ```markdown
 Tools:
-  - EXPLAIN ANALYZE für Query-Plan
-  - pg_stat_statements für Langsam-Query-Erkennung
+  - EXPLAIN ANALYZE for the query plan
+  - pg_stat_statements for slow-query detection
 
-Optimierungen:
-  - N+1 Queries vermeiden (eager loading / JOIN)
-  - SELECT nur benötigte Spalten (kein SELECT *)
-  - Pagination für große Listen
-  - Caching für häufige Reads
-  - Batch Inserts/Updates für viele Einträge
+Optimizations:
+  - Avoid N+1 queries (eager loading / JOIN)
+  - SELECT only needed columns (no SELECT *)
+  - Pagination for large lists
+  - Caching for frequent reads
+  - Batch inserts/updates for many entries
 ```
 
 ### 5. JSONb (Supabase/PostgreSQL)
 
 ```markdown
-Wann JSONb:
-  - EAV-Modelle für flexible Attribute
-  - Metadaten die sich经常 ändern
-  - Konfigurations-Objekte
+When to use JSONb:
+  - EAV models for flexible attributes
+  - Metadata that changes often
+  - Configuration objects
 
-GIN-Index für JSONb:
+GIN index for JSONb:
   CREATE INDEX idx_metadata ON table USING GIN (metadata);
 
 Query:
@@ -105,47 +105,46 @@ Query:
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Auto-Increment statt UUID für externe IDs
-- Keine Foreign Keys (Integrität!)
-- SELECT * in Produktions-Code
-- N+1 Queries
-- Fehlende Index auf Foreign Keys
-- Keine Migration-Strategie
-- Hardcoded DB-Credentials
+- Auto-increment instead of UUID for external IDs
+- No foreign keys (integrity!)
+- SELECT * in production code
+- N+1 queries
+- Missing index on foreign keys
+- No migration strategy
+- Hardcoded DB credentials
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- UUIDs für externe Referenzen
-- Foreign Keys mit ON DELETE/UPDATE
-- Explizites SELECT mit benannten Spalten
-- Eager Loading / JOINs
-- Index auf alle FKs und häufige Query-Spalten
-- Versionierte Migrationen
-- Environment Variables / Secrets Management
+- UUIDs for external references
+- Foreign keys with ON DELETE/UPDATE
+- Explicit SELECT with named columns
+- Eager loading / JOINs
+- Index on all FKs and frequent query columns
+- Versioned migrations
+- Environment variables / secrets management
 ```
 
 ---
 
-## Externe Skill-Unterstützung
+## External skill support
 
-> Vor der Umsetzung die importierten Best-in-Class-Skills laden (`./studio update-skills`):
+> Before implementation load the imported best-in-class skills (`./studio update-skills`):
 
-- **`all_domains/database/database-schema-design`** — normalisiertes Schema-Design. **Primäre Referenz.**
-- **`all_domains/database/query-optimization`** — Langsame Queries optimieren (EXPLAIN, Indizes)
-- **`all_domains/database/database-migration`** — Migrations-Planung + Ausführung
-- **`all_domains/database/database-backup`** — Backup-Strategien
+- **`all_domains/database/database-schema-design`** — normalized schema design. **Primary reference.**
+- **`all_domains/database/query-optimization`** — optimize slow queries (EXPLAIN, indexes)
+- **`all_domains/database/database-migration`** — migration planning + execution
+- **`all_domains/database/database-backup`** — backup strategies
 
-Ablauf: Schema entwerfen → `database-schema-design` prüfen → Migration planen → Query-Performance validieren.
+Flow: design the schema → check with `database-schema-design` → plan the migration → validate query performance.
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend-Regeln
-- `.quinsy-studio/process/adr-policy.md` — ADR für DB-Entscheidungen
-- `.quinsy-studio/studio-library/packages/` — Wiederverwendbare Packages
+- `.quinsy-studio/knowledge-base/backend_playbook.md` — backend rules
+- `.quinsy-studio/process/adr-policy.md` — ADR for DB decisions

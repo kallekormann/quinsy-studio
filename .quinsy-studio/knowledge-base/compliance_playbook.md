@@ -1,115 +1,115 @@
 # Compliance Playbook
 
-> Zero-Data-Architecture, DSGVO, Cookie-Consent — die globalen Compliance-Standards.
+> Zero-data architecture, GDPR, cookie consent — the global compliance standards.
 
-## Grundprinzip
+## Core principle
 
 ```
-Compliance ist kein Feature — es ist Pflicht.
-Datenminimierung ist das Default.
+Compliance is not a feature — it is an obligation.
+Data minimization is the default.
 ```
 
 ---
 
-## Zero-Data Architecture
+## Zero-data architecture
 
-### Prinzip
+### Principle
 
 ```
-Sammle nur das, was du brauchst.
-Lösche, was du nicht mehr brauchst.
-Schütze, was du haben musst.
+Collect only what you need.
+Delete what you no longer need.
+Protect what you must keep.
 ```
 
-### Umsetzung
+### Implementation
 
-| Prinzip | Maßnahme |
-|---------|----------|
-| **Datenminimierung** | Nur essentielle Daten erheben |
-| **Zweckbindung** | Daten nur für definierten Zweck nutzen |
-| **Speicherbegrenzung** | Automatische Löschfristen |
-| **Pseudonymisierung** | IDs statt echter Namen |
-| **Verschlüsselung** | At-rest und in-transit |
+| Principle | Measure |
+|-----------|---------|
+| **Data minimization** | collect only essential data |
+| **Purpose limitation** | use data only for the defined purpose |
+| **Storage limitation** | automatic deletion periods |
+| **Pseudonymization** | IDs instead of real names |
+| **Encryption** | at rest and in transit |
 
-### Technische Maßnahmen
+### Technical measures
 
 ```typescript
-// 1. Pseudonymisierung
+// 1. Pseudonymization
 const pseudonym = crypto.createHash('sha256').update(userId).digest('hex');
 
-// 2. Automatische Löschung
+// 2. Automatic deletion
 await db.query(`
   DELETE FROM analytics 
   WHERE created_at < NOW() - INTERVAL '90 days'
 `);
 
-// 3. Verschlüsselung
+// 3. Encryption
 const encrypted = crypto.createCipheriv('aes-256-gcm', key, iv);
 ```
 
 ---
 
-## DSGVO
+## GDPR
 
-### Betroffenenrechte
+### Data subject rights
 
-| Recht | Beschreibung | Umsetzung |
-|-------|-------------|-----------|
-| **Auskunft** | Welche Daten gespeichert? | API-Endpoint: `GET /me/data` |
-| **Berichtigung** | Daten korrigieren | API-Endpoint: `PATCH /me` |
-| **Löschung** | Daten löschen ("Recht auf Vergessen") | API-Endpoint: `DELETE /me` |
-| **Datenübertragbarkeit** | Daten als Export | API-Endpoint: `GET /me/export` |
-| **Widerspruch** | Gegen Verarbeitung | Checkbox in Settings |
-| **Einwilligung** | Opt-in für Tracking | Cookie-Banner |
+| Right | Description | Implementation |
+|-------|-------------|----------------|
+| **Access** | which data is stored? | API endpoint: `GET /me/data` |
+| **Rectification** | correct data | API endpoint: `PATCH /me` |
+| **Erasure** | delete data ("right to be forgotten") | API endpoint: `DELETE /me` |
+| **Data portability** | data as export | API endpoint: `GET /me/export` |
+| **Objection** | against processing | checkbox in settings |
+| **Consent** | opt-in for tracking | cookie banner |
 
-### Verarbeitungsverzeichnis
+### Records of processing
 
 ```markdown
-# Verarbeitungsverzeichnis
+# Records of processing
 
-| Verarbeitung | Zweck | Rechtsgrundlage | Speicherdauer |
-|-------------|-------|-----------------|---------------|
-| User-Account | Diensterbringung | Art. 6(1)(b) DSGVO | Bis zur Löschung |
-| Analytics | Produktverbesserung | Art. 6(1)(a) DSGVO | 90 Tage |
-| Newsletter | Marketing | Art. 6(1)(a) DSGVO | Bis Abmeldung |
+| Processing | Purpose | Legal basis | Retention |
+|------------|---------|-------------|-----------|
+| User account | service delivery | Art. 6(1)(b) GDPR | until deletion |
+| Analytics | product improvement | Art. 6(1)(a) GDPR | 90 days |
+| Newsletter | marketing | Art. 6(1)(a) GDPR | until unsubscribe |
 ```
 
 ---
 
-## Cookie-Banner
+## Cookie banner
 
-### Anforderungen
+### Requirements
 
-1. **Opt-in** (nicht opt-out!)
-2. **Granulare Auswahl** (Notwendig, Analytics, Marketing)
-3. **Widerruf** jederzeit möglich
-4. **Keine Tricker** (z.B. "weiter = akzeptieren")
-5. **Cookie-Dauer** dokumentiert
-6. **Drittanbieter-Liste** aktuell
+1. **Opt-in** (not opt-out!)
+2. **Granular selection** (necessary, analytics, marketing)
+3. **Withdrawal** possible at any time
+4. **No tricks** (e.g. "continue = accept")
+5. **Cookie duration** documented
+6. **Third-party list** current
 
-### Implementierung
+### Implementation
 
 ```typescript
-// Cookie-Kategorien
+// cookie categories
 const cookieCategories = {
   necessary: {
-    name: 'Notwendig',
-    description: 'Essentiell für die Nutzung der Seite',
-    required: true, // Nicht deaktivierbar
+    name: 'Necessary',
+    description: 'Essential for using the site',
+    required: true, // cannot be disabled
   },
   analytics: {
     name: 'Analytics',
-    description: 'Helfen uns die Seite zu verbessern',
+    description: 'Help us improve the site',
     required: false,
   },
   marketing: {
     name: 'Marketing',
-    description: 'Personalisierte Werbung',
+    description: 'Personalized advertising',
     required: false,
   },
 };
 
-// Consent-Management
+// consent management
 function setConsent(category: keyof typeof cookieCategories, value: boolean) {
   localStorage.setItem(`consent_${category}`, String(value));
 }
@@ -122,116 +122,116 @@ function hasConsent(category: keyof typeof cookieCategories): boolean {
 
 ---
 
-## Impressum
+## Imprint
 
-### Pflichtangaben
+### Mandatory information
 
 ```markdown
-# Impressum
+# Imprint
 
-## Verantwortlich für den Inhalt
-[Name/Firma]
-[Straße, Hausnummer]
-[PLZ, Ort]
-[E-Mail]
-[Telefon] (optional)
+## Responsible for the content
+[Name/Company]
+[Street, number]
+[Postal code, city]
+[Email]
+[Phone] (optional)
 
-## Umsatzsteuer-ID (falls vorhanden)
-[Steuernummer oder USt-IdNr.]
+## VAT ID (if available)
+[Tax number or VAT ID]
 
-## Streitschlichtung
-Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: https://ec.europa.eu/consumers/odr/
+## Dispute resolution
+The European Commission provides a platform for online dispute resolution (OS): https://ec.europa.eu/consumers/odr/
 
-Wir sind nicht bereit oder verpflichtet, an Streitbeileungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
+We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.
 
-## Haftungsausschluss
-[Inhaltlich wie rechtlich]
+## Disclaimer
+[Content- and legally]
 ```
 
 ---
 
-## Datenschutzerklärung
+## Privacy policy
 
-### Struktur
+### Structure
 
 ```markdown
-# Datenschutzerklärung
+# Privacy Policy
 
-## 1. Verantwortlicher
-[Name, Adresse, E-Mail]
+## 1. Controller
+[Name, address, email]
 
-## 2. Datenschutzbeauftragter (falls vorhanden)
-[Name, E-Mail]
+## 2. Data protection officer (if any)
+[Name, email]
 
-## 3. Erhobene Datenarten
-- Account-Daten (Email, Name)
-- Nutzungsverhalten (Analytics)
-- Technische Daten (IP, Browser)
+## 3. Types of data collected
+- Account data (email, name)
+- Usage behavior (analytics)
+- Technical data (IP, browser)
 
-## 4. Zwecke der Verarbeitung
-- Diensterbringung
-- Produktverbesserung
-- Marketing (mit Einwilligung)
+## 4. Purposes of processing
+- Service delivery
+- Product improvement
+- Marketing (with consent)
 
-## 5. Rechtsgrundlagen
-- Art. 6(1)(a) DSGVO: Einwilligung
-- Art. 6(1)(b) DSGVO: Vertragsanbahnung
-- Art. 6(1)(f) DSGVO: Berechtigtes Interesse
+## 5. Legal bases
+- Art. 6(1)(a) GDPR: consent
+- Art. 6(1)(b) GDPR: contract initiation
+- Art. 6(1)(f) GDPR: legitimate interest
 
-## 6. Speicherdauer
-- Account-Daten: Bis zur Löschung
-- Analytics: 90 Tage
-- Logs: 30 Tage
+## 6. Retention periods
+- Account data: until deletion
+- Analytics: 90 days
+- Logs: 30 days
 
-## 7. Betroffenenrechte
-- Auskunft (Art. 15 DSGVO)
-- Berichtigung (Art. 16 DSGVO)
-- Löschung (Art. 17 DSGVO)
-- Datenübertragbarkeit (Art. 20 DSGVO)
-- Widerspruch (Art. 21 DSGVO)
+## 7. Data subject rights
+- Access (Art. 15 GDPR)
+- Rectification (Art. 16 GDPR)
+- Erasure (Art. 17 GDPR)
+- Data portability (Art. 20 GDPR)
+- Objection (Art. 21 GDPR)
 
-## 8. Beschwerderecht
-[Beschwerdestelle]
+## 8. Right to complain
+[Supervisory authority]
 
-## 9. Server-Standort
-[EU/Angabe]
+## 9. Server location
+[EU/indication]
 
 ## 10. Cookies
-[Cookie-Liste]
+[cookie list]
 ```
 
 ---
 
 ## AVV / DPA
 
-### Checkliste für Dienstleister
+### Checklist for service providers
 
-- [ ] Auftragsverarbeitungsvertrag (AVV) vorhanden
-- [ ] Server-Standort in EU
-- [ ] Verschlüsselung at-rest und in-transit
-- [ ] Sub-Processor dokumentiert
-- [ ] Löschkonzept definiert
-- [ ] Sicherheitsmaßnahmen dokumentiert
+- [ ] Data processing agreement (DPA) present
+- [ ] Server location in the EU
+- [ ] Encryption at rest and in transit
+- [ ] Sub-processors documented
+- [ ] Deletion concept defined
+- [ ] Security measures documented
 
 ---
 
-## Gate-Integration
+## Gate integration
 
 ```bash
-# DSGVO-Check
-./studio gate <project> --dsgvo
+# GDPR check
+./studio gate <project> --gdpr
 
-# Cookie-Banner-Check
+# cookie banner check
 ./studio gate <project> --cookies
 
-# Impressum-Check
-./studio gate <project> --impressum
+# imprint check
+./studio gate <project> --imprint
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/teams/03-compliance-legal/` — Compliance-Team
-- `.quinsy-studio/process/human-in-the-loop.md` — HITL für Compliance-Entscheidungen
-- `.quinsy-studio/process/gates.md` — Gate-Definitionen
+- `.quinsy-studio/teams/03-compliance-legal/` — compliance team
+- `.quinsy-studio/process/human-in-the-loop.md` — HITL for compliance decisions
+- `.quinsy-studio/process/gates.md` — gate definitions

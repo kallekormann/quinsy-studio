@@ -1,0 +1,53 @@
+---
+description: Quinsy Studio — context guard, two git worlds, scope/sprint discipline
+alwaysApply: true
+---
+
+# Quinsy Studio — Agent Rules
+
+Read [AGENTS.md](../../AGENTS.md) and [.quinsy-studio/process/agent-context.md](../../.quinsy-studio/process/agent-context.md).
+
+## Session start
+
+```bash
+./studio verify-worlds && ./studio focus <project> && ./studio resume <project>
+```
+
+Active project: `.quinsy-studio/.active-project.json`
+
+## Two worlds — never mix
+
+- **Studio HQ** (this repo): `.quinsy-studio/`, LO-* backlog — commit here only for studio work
+- **Project**: `projects/<name>/` — **separate git repo**; never `git add projects/` from studio root
+
+## Before implementing anything
+
+```bash
+./studio guard <project> "<user request>"
+```
+
+- `NEEDS_TICKET` → create ticket first, no code
+- `PRE_IMPL` → gates 0–2 not done; run `./studio resume`
+- `STUDIO_META` → only `.quinsy-studio/`, not project files
+
+## Library-first (before any implementation)
+
+```bash
+./studio library list
+./studio library suggest <project> "auth billing"
+./studio library pull <project> auth billing button
+```
+
+Adapt pulled code in the project. After ticket done, promote if generic:
+
+```bash
+./studio library promote <project> packages/billing --ticket <ID> [--force]
+```
+
+## Drift recovery
+
+User: "back on track" / "resume project" → `./studio focus <p>` then first item from `./studio resume <p>` only.
+
+## Library (gate 2)
+
+Design approval promotes base UI to `studio-library/` (tokens, components, sticker sheet). Project styling stays in project tokens.

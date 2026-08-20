@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """
-validate_anti_slop.py — Anti-Slop-Validierung für Quinsy Studio
+validate_anti_slop.py — Anti-slop validation for Quinsy Studio
 
-Parst Code und Content gegen die systemweite Blacklist.
-Erkennt AI-typische Patterns, Floskeln und Code-Anti-Patterns.
+Parses code and content against the system-wide blacklist.
+Detects AI-typical patterns, clichés and code anti-patterns.
 
-Verwendung:
+Usage:
   python3 validate_anti_slop.py <project> [--fix] [--json]
   python3 validate_anti_slop.py nudge
   python3 validate_anti_slop.py nudge --fix
 
-Exit-Code:
-  0 = Keine Verstöße
-  1 = Verstöße gefunden
+Exit code:
+  0 = no violations
+  1 = violations found
 """
 
 import sys
@@ -35,76 +35,65 @@ PROJECTS_DIR = STUDIO_ROOT / "projects"
 # ANTI-SLOP PATTERNS
 # =============================================================================
 
-# Text-Floskeln (AI-typische Phrasen)
+# Text clichés (AI-typical phrases)
 TEXT_SLOP_PATTERNS = [
-    # Englische Floskeln
-    (r'\b(?:in today\'?s? (?:digital )?(?:landscape|world|era))\b', "AI-Floskel: 'in today's digital landscape'"),
-    (r'\b(?:revolutioni[sz]e)\b', "AI-Floskel: 'revolutionize'"),
-    (r'\b(?:seamless(?:ly)?)\b', "AI-Floskel: 'seamless'"),
-    (r'\b(?:empowe(?:r|ring|red))\b', "AI-Floskel: 'empower'"),
-    (r'\b(?:leveragi?ng?)\b', "AI-Floskel: 'leveraging'"),
-    (r'\b(?:cutting[- ]edge)\b', "AI-Floskel: 'cutting-edge'"),
-    (r'\b(?:state[- ]of[- ]the[- ]art)\b', "AI-Floskel: 'state-of-the-art'"),
-    (r'\b(?:furthermore)\b', "AI-Floskel: 'furthermore'"),
-    (r'\b(?:moreover)\b', "AI-Floskel: 'moreover'"),
-    (r'\b(?:it\'?s? worth noting that)\b', "AI-Floskel: 'it's worth noting'"),
-    (r'\b(?:delve(?:s|d|ing)?)\b', "AI-Floskel: 'delve'"),
-    (r'\b(?:tapestry)\b', "AI-Floskel: 'tapestry'"),
-    (r'\b(?:multifaceted)\b', "AI-Floskel: 'multifaceted'"),
-    (r'\b(?:game[- ]changer)\b', "AI-Floskel: 'game-changer'"),
-    (r'\b(?:unlock (?:the )?(?:potential|power))\b', "AI-Floskel: 'unlock the potential'"),
-    (r'\b(?:harness(?:ing)?)\b', "AI-Floskel: 'harness'"),
-    (r'\b(?:pivot(?:ing)?)\b', "AI-Floskel: 'pivot'"),
-    (r'\b(?:synerg(?:y|ies|ize))\b', "AI-Floskel: 'synergy'"),
-    (r'\b(?:holistic(?:ally)?)\b', "AI-Floskel: 'holistic'"),
-    (r'\b(?:paradigm)\b', "AI-Floskel: 'paradigm'"),
-    (r'\b(?:ecosystem)\b', "AI-Floskel: 'ecosystem'"),
-    (r'\b(?:landscap(?:e|ing))\b', "AI-Floskel: 'landscape'"),
-    
-    # Deutsche Floskeln
-    (r'\b(?:in der heutigen digitalen welt)\b', "AI-Floskel: 'in der heutigen digitalen Welt'"),
-    (r'\b(?:revolutionieren)\b', "AI-Floskel: 'revolutionieren'"),
-    (r'\b(?:nahtlos(?:en)?)\b', "AI-Floskel: 'nahtlos'"),
-    (r'\b(?:ermöglich(?:en|t)?)\b', "AI-Floskel: 'ermöglichen'"),
-    (r'\b(?:weitreichend(?:en)?)\b', "AI-Floskel: 'weitreichend'"),
-    (r'\b(?:umfassend(?:en)?)\b', "AI-Floskel: 'umfassend'"),
-    (r'\b(?:innovativ(?:en|e|es)?)\b', "AI-Floskel: 'innovativ'"),
-    (r'\b(?:zukunftsweisend(?:en)?)\b', "AI-Floskel: 'zukunftsweisend'"),
+    (r'\b(?:in today\'?s? (?:digital )?(?:landscape|world|era))\b', "AI cliché: 'in today's digital landscape'"),
+    (r'\b(?:revolutioni[sz]e)\b', "AI cliché: 'revolutionize'"),
+    (r'\b(?:seamless(?:ly)?)\b', "AI cliché: 'seamless'"),
+    (r'\b(?:empowe(?:r|ring|red))\b', "AI cliché: 'empower'"),
+    (r'\b(?:leveragi?ng?)\b', "AI cliché: 'leveraging'"),
+    (r'\b(?:cutting[- ]edge)\b', "AI cliché: 'cutting-edge'"),
+    (r'\b(?:state[- ]of[- ]the[- ]art)\b', "AI cliché: 'state-of-the-art'"),
+    (r'\b(?:furthermore)\b', "AI cliché: 'furthermore'"),
+    (r'\b(?:moreover)\b', "AI cliché: 'moreover'"),
+    (r'\b(?:it\'?s? worth noting that)\b', "AI cliché: 'it's worth noting'"),
+    (r'\b(?:delve(?:s|d|ing)?)\b', "AI cliché: 'delve'"),
+    (r'\b(?:tapestry)\b', "AI cliché: 'tapestry'"),
+    (r'\b(?:multifaceted)\b', "AI cliché: 'multifaceted'"),
+    (r'\b(?:game[- ]changer)\b', "AI cliché: 'game-changer'"),
+    (r'\b(?:unlock (?:the )?(?:potential|power))\b', "AI cliché: 'unlock the potential'"),
+    (r'\b(?:harness(?:ing)?)\b', "AI cliché: 'harness'"),
+    (r'\b(?:pivot(?:ing)?)\b', "AI cliché: 'pivot'"),
+    (r'\b(?:synerg(?:y|ies|ize))\b', "AI cliché: 'synergy'"),
+    (r'\b(?:holistic(?:ally)?)\b', "AI cliché: 'holistic'"),
+    (r'\b(?:paradigm)\b', "AI cliché: 'paradigm'"),
+    (r'\b(?:ecosystem)\b', "AI cliché: 'ecosystem'"),
+    (r'\b(?:landscap(?:e|ing))\b', "AI cliché: 'landscape'"),
 ]
 
-# Code-Anti-Patterns (AI-typischer Code)
+# Code anti-patterns (AI-typical code)
 CODE_SLOP_PATTERNS = [
-    # Übermäßige Kommentare
-    (r'(?://|#)\s*(?:This function|This method|This class|Dieser Code)\b',
-     "AI-Slop: Überflüssiger einleitender Kommentar"),
+    # Excessive comments
+    (r'(?://|#)\s*(?:This function|This method|This class)\b',
+     "AI slop: redundant leading comment"),
     
-    # Redundante Variablen
+    # Redundant variables
     (r'const\s+\w+\s*=\s*\w+\s*;\s*\n\s*const\s+\w+\s*=\s*\w+\s*;',
-     "AI-Slop: Möglicherweise redundante Variablen"),
+     "AI slop: possibly redundant variables"),
     
-    # Übermäßige Console-Logs
+    # Excessive console logs
     (r'(?:console\.(?:log|debug|info)\s*\([^)]*\)\s*;?\s*){3,}',
-     "AI-Slop: Übermäßige Console-Logs"),
+     "AI slop: excessive console logs"),
     
-    # Unnötige Try-Catch
+    # Unnecessary try-catch
     (r'try\s*\{[^}]{0,50}\}\s*catch\s*\(\s*\w*\s*\)\s*\{\s*(?:console\.log|// ignore)',
-     "AI-Slop: Stiller Catch mit console.log"),
+     "AI slop: silent catch with console.log"),
     
-    # Dead Code
+    # Dead code
     (r'return\s+[^;]+;\s*\n\s*(?:const|let|var|function|return)',
-     "AI-Slop: Möglicherweise toter Code nach return"),
+     "AI slop: possible dead code after return"),
     
-    # Übermäßige Type Assertions
+    # Excessive type assertions
     (r'(?:as\s+\w+){2,}',
-     "AI-Slop: Übermäßige Type Assertions"),
+     "AI slop: excessive type assertions"),
     
-    # Magic Numbers
+    # Magic numbers
     (r'(?<!=|!|<|>|=)\s(?:100|1000|86400)\b(?!\s*(?:ms|px|%|rem))',
-     "AI-Slop: Magic Number ohne Einheit"),
+     "AI slop: magic number without unit"),
     
-    # Übermäßige async/await
+    # Excessive async/await
     (r'await\s+\w+\([^)]*\);\s*\n\s*await\s+\w+\([^)]*\);',
-     "AI-Slop: Möglicherweise sequentielle async-Aufrufe"),
+     "AI slop: possibly sequential async calls"),
 ]
 
 # Dateien die ignoriert werden
@@ -119,7 +108,7 @@ IGNORE_PATTERNS = [
     r'pnpm-lock\.yaml',
 ]
 
-# Datei-Endungen die geprüft werden
+# File extensions that are checked
 CHECK_EXTENSIONS = [
     '.ts', '.tsx', '.js', '.jsx',
     '.md', '.mdx',
@@ -157,7 +146,7 @@ class SlopReport:
 # =============================================================================
 
 def should_ignore(filepath: str) -> bool:
-    """Prüft ob eine Datei ignoriert werden soll."""
+    """Check whether a file should be ignored."""
     for pattern in IGNORE_PATTERNS:
         if re.search(pattern, filepath):
             return True
@@ -165,7 +154,7 @@ def should_ignore(filepath: str) -> bool:
 
 
 def scan_file(filepath: Path, project_dir: Path) -> List[SlopViolation]:
-    """Scannt eine Datei auf Anti-Slop-Patterns."""
+    """Scan a file for anti-slop patterns."""
     violations = []
     
     try:
@@ -174,9 +163,9 @@ def scan_file(filepath: Path, project_dir: Path) -> List[SlopViolation]:
         return violations
     
     lines = content.split('\n')
-    rel_path = str(filepath.relative_to(project_dir.parent))
+    rel_path = str(filepath.relative_to(project_dir))
     
-    # Text-Slop (für MD, TSX, JSX)
+    # Text slop (for MD, TSX, JSX)
     if filepath.suffix in ['.md', '.mdx', '.tsx', '.jsx']:
         for line_num, line in enumerate(lines, 1):
             for pattern, message in TEXT_SLOP_PATTERNS:
@@ -192,7 +181,7 @@ def scan_file(filepath: Path, project_dir: Path) -> List[SlopViolation]:
                         context=line.strip()[:100]
                     ))
     
-    # Code-Slop (für TS, JS, TSX, JSX)
+    # Code slop (for TS, JS, TSX, JSX)
     if filepath.suffix in ['.ts', '.tsx', '.js', '.jsx']:
         for pattern, message in CODE_SLOP_PATTERNS:
             matches = re.finditer(pattern, content, re.MULTILINE)
@@ -212,11 +201,11 @@ def scan_file(filepath: Path, project_dir: Path) -> List[SlopViolation]:
 
 
 def scan_project(project: str) -> SlopReport:
-    """Scannt ein gesamtes Projekt auf Anti-Slop."""
+    """Scan an entire project for anti-slop."""
     
     project_dir = PROJECTS_DIR / project
     if not project_dir.exists():
-        print(f"Fehler: Projekt nicht gefunden: {project_dir}")
+        print(f"Error: project not found: {project_dir}")
         sys.exit(1)
     
     all_violations = []
@@ -252,67 +241,62 @@ def scan_project(project: str) -> SlopReport:
 # =============================================================================
 
 def fix_violations(project: str, report: SlopReport):
-    """Versucht Verstöße automatisch zu beheben."""
-    
-    fixed_count = 0
-    
+    """Try to fix violations automatically (text slop warnings only)."""
+    project_dir = PROJECTS_DIR / project
+    replacements = {
+        "in today's digital landscape": "currently",
+        "in today's landscape": "currently",
+        "revolutionize": "improve",
+        "seamless": "smooth",
+        "seamlessly": "smoothly",
+        "empower": "enable",
+        "leveraging": "using",
+        "cutting-edge": "modern",
+        "state-of-the-art": "modern",
+        "furthermore": "",
+        "moreover": "",
+        "it's worth noting that": "",
+        "delve": "explore",
+        "tapestry": "combination",
+        "multifaceted": "complex",
+        "game-changer": "significant improvement",
+        "unlock the potential": "enable",
+        "harness": "use",
+        "pivot": "change direction",
+        "synergy": "collaboration",
+        "holistic": "comprehensive",
+        "paradigm": "approach",
+        "ecosystem": "system",
+        "landscape": "environment",
+    }
+
+    # Group violations by file
+    by_file: Dict[str, List[dict]] = {}
     for violation in report.violations:
         if violation["severity"] != "warning":
-            continue  # Nur Warnings automatisch fixen
-        
-        filepath = PROJECTS_DIR / project / violation["file"]
+            continue
+        by_file.setdefault(violation["file"], []).append(violation)
+
+    fixed_count = 0
+    for rel_path, violations in by_file.items():
+        filepath = project_dir / rel_path
         if not filepath.exists():
             continue
-        
-        content = filepath.read_text(encoding='utf-8')
-        lines = content.split('\n')
-        
-        if violation["line"] <= len(lines):
-            line = lines[violation["line"] - 1]
-            
-            # Einfache Fixes für Text-Slop
-            replacements = {
-                "in today's digital landscape": "currently",
-                "in today's landscape": "currently",
-                "revolutionize": "improve",
-                "seamless": "smooth",
-                "seamlessly": "smoothly",
-                "empower": "enable",
-                "leveraging": "using",
-                "cutting-edge": "modern",
-                "state-of-the-art": "modern",
-                "furthermore": "",
-                "moreover": "",
-                "it's worth noting that": "",
-                "delve": "explore",
-                "tapestry": "combination",
-                "multifaceted": "complex",
-                "game-changer": "significant improvement",
-                "unlock the potential": "enable",
-                "harness": "use",
-                "pivot": "change direction",
-                "synergy": "collaboration",
-                "holistic": "comprehensive",
-                "paradigm": "approach",
-                "ecosystem": "system",
-                "landscape": "environment",
-            }
-            
+        lines = filepath.read_text(encoding="utf-8").split("\n")
+        for violation in violations:
+            line_idx = violation["line"] - 1
+            if line_idx < 0 or line_idx >= len(lines):
+                continue
+            line = lines[line_idx]
             for old, new in replacements.items():
                 if old.lower() in line.lower():
                     line = re.sub(re.escape(old), new, line, flags=re.IGNORECASE)
                     fixed_count += 1
-            
-            lines[violation["line"] - 1] = line
-    
+            lines[line_idx] = line
+        filepath.write_text("\n".join(lines), encoding="utf-8")
+
     if fixed_count > 0:
-        # Write back
-        for filepath in PROJECTS_DIR(project).rglob('*'):
-            if filepath.is_file():
-                # This is simplified - in reality we'd track which files changed
-                pass
-        
-        print(f"  {fixed_count} Verstöße automatisch behoben")
+        print(f"  {fixed_count} violations fixed automatically")
 
 
 # =============================================================================
@@ -320,7 +304,7 @@ def fix_violations(project: str, report: SlopReport):
 # =============================================================================
 
 def print_report(report: SlopReport, use_json: bool = False):
-    """Gibt den Report aus."""
+    """Print the report."""
     
     if use_json:
         print(json.dumps(asdict(report), indent=2, ensure_ascii=False))
@@ -329,26 +313,26 @@ def print_report(report: SlopReport, use_json: bool = False):
     print(f"\n{'='*60}")
     print(f"  ANTI-SLOP AUDIT: {report.project}")
     print(f"{'='*60}")
-    print(f"\n  Dateien gescannt:  {report.files_scanned}")
-    print(f"  Verstöße:         {report.errors + report.warnings}")
-    print(f"    Fehler:         {report.errors}")
-    print(f"    Warnungen:      {report.warnings}")
-    print(f"  Ergebnis:         {'✅ GRÜN' if report.passed else 'ROT ✗'}")
+    print(f"\n  Files scanned:  {report.files_scanned}")
+    print(f"  Violations:     {report.errors + report.warnings}")
+    print(f"    Errors:       {report.errors}")
+    print(f"    Warnings:     {report.warnings}")
+    print(f"  Result:         {'✅ GREEN' if report.passed else 'RED ✗'}")
     
     if report.violations:
         print(f"\n  {'='*50}")
-        print(f"  VERSTÖSSE")
+        print(f"  VIOLATIONS")
         print(f"  {'='*50}")
         
-        for v in report.violations[:20]:  # Max 20 anzeigen
+        for v in report.violations[:20]:  # Show max 20
             icon = "❌" if v["severity"] == "error" else "⚠️"
             print(f"\n  {icon} {v['file']}:{v['line']}")
             print(f"     {v['message']}")
             if v["context"]:
-                print(f"     Kontext: {v['context'][:80]}...")
+                print(f"     Context: {v['context'][:80]}...")
         
         if len(report.violations) > 20:
-            print(f"\n  ... und {len(report.violations) - 20} weitere")
+            print(f"\n  ... and {len(report.violations) - 20} more")
     
     print()
 
@@ -358,7 +342,7 @@ def print_report(report: SlopReport, use_json: bool = False):
 
 def main():
     if len(sys.argv) < 2:
-        print("Verwendung:")
+        print("Usage:")
         print("  python3 validate_anti_slop.py <project> [--fix] [--json]")
         sys.exit(1)
     

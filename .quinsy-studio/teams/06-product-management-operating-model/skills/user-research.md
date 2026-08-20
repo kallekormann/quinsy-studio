@@ -1,6 +1,6 @@
 # Skill: User Research
 
-> Problem-Interviews, Solution-Interviews, Surveys, Usability-Tests, Analytics
+> Problem interviews, solution interviews, surveys, usability tests, analytics
 
 ## Metadata
 
@@ -12,86 +12,86 @@ lead_role: Product Manager
 support_roles: [UI/Interaction Designer, Growth Manager]
 phases: [0, 1, 3, 5, 7]
 activation_triggers:
-  - Ticket enthält "Research", "Interview", "Survey", "Usability"
-  - Phase 0: Problem wird validiert
-  - Phase 1: Lösung wird validiert
-  - Phase 5: Usability wird getestet
-  - Phase 7: Optimierung basiert auf Feedback
+  - Ticket contains "research", "interview", "survey", "usability"
+  - Phase 0: problem is validated
+  - Phase 1: solution is validated
+  - Phase 5: usability is tested
+  - Phase 7: optimization based on feedback
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Problem-Interviews
+### 1. Problem interviews
 
 ```markdown
-Ziel: Problem verstehen, nicht Lösung verkaufen
+Goal: understand the problem, not sell the solution
 
-Struktur (15-30 Min):
-  1. Kontext: "Erzählen Sie von..."
-  2. Problem: "Was ist dabei frustrierend?"
-  3. Aktuelle Lösung: "Wie lösen Sie das heute?"
-  4. Wert: "Was würden Sie dafür bezahlen?"
-  5. Abschluss: "Gibt es noch etwas?"
+Structure (15-30 min):
+  1. Context: "Tell me about..."
+  2. Problem: "What is frustrating about it?"
+  3. Current solution: "How do you solve it today?"
+  4. Value: "What would you pay for that?"
+  5. Closing: "Is there anything else?"
 
-Regeln:
-  - 80% Zuhören, 20% Fragen
-  - Keine Lösung vorschlagen
-  - Follow-up Fragen stellen
-  - Emotionen und Zitate notieren
+Rules:
+  - 80% listening, 20% questions
+  - Don't propose a solution
+  - Ask follow-up questions
+  - Note emotions and quotes
 ```
 
-### 2. Solution-Interviews
+### 2. Solution interviews
 
 ```markdown
-Ziel: Lösung testen, nicht Features verkaufen
+Goal: test the solution, not sell features
 
-Struktur:
-  1. Konzept zeigen (nichts erklären)
-  2. "Was verstehen Sie?"
-  3. "Wie würden Sie das nutzen?"
-  4. "Was fehlt?"
-  5. "Würden Sie dafür bezahlen?"
+Structure:
+  1. Show the concept (don't explain anything)
+  2. "What do you understand?"
+  3. "How would you use it?"
+  4. "What is missing?"
+  5. "Would you pay for it?"
 
-Regeln:
-  - Prototyp zeigen (nicht erzählen)
-  - Geduld haben (Nutzer denken lassen)
-  - Verwirrung = Design-Problem
+Rules:
+  - Show a prototype (don't tell)
+  - Be patient (let users think)
+  - Confusion = design problem
 ```
 
 ### 3. Surveys
 
 ```markdown
-Wann: Quantitatives Feedback zu vielen Usern
+When: quantitative feedback from many users
 
-Struktur:
-  - Max. 10 Fragen
-  - Mix aus Multiple Choice + Open
-  - Likert-Skala (1-5 oder 1-7)
-  - Demografie am Ende
+Structure:
+  - Max. 10 questions
+  - Mix of multiple choice + open
+  - Likert scale (1-5 or 1-7)
+  - Demographics at the end
 
-Regeln:
-  - Keine suggestiven Fragen
-  - Keine Doppel-Fragen
-  - Testen mit 3 Leuten vorher
-  - Anreiz für Teilnahme
+Rules:
+  - No suggestive questions
+  - No double questions
+  - Test with 3 people beforehand
+  - Incentive for participation
 ```
 
-### 4. Usability-Tests
+### 4. Usability tests
 
 ```markdown
-Struktur (30-45 Min):
-  1. Kontext: "Stellen Sie sich vor..."
-  2. Aufgabe: "Bitte finden Sie..."
-  3. Laut Denken: "Was denken Sie gerade?"
-  4. Follow-up: "Warum haben Sie...?"
+Structure (30-45 min):
+  1. Context: "Imagine..."
+  2. Task: "Please find..."
+  3. Think aloud: "What are you thinking?"
+  4. Follow-up: "Why did you...?"
 
-Regeln:
-  - 5 User = 80% der Probleme
-  - Keine Hilfestellung
-  - Protokollieren: wo scheitert der User?
-  - Severity rating: kritisch / mittel / niedrig
+Rules:
+  - 5 users = 80% of the problems
+  - No assistance
+  - Record: where does the user fail?
+  - Severity rating: critical / medium / low
 ```
 
 ### 5. Analytics
@@ -99,47 +99,47 @@ Regeln:
 ```markdown
 Tools: Plausible / PostHog / Google Analytics
 
-Metriken:
-  - Pageviews, Unique Visitors
-  - Bounce Rate
-  - Time on Page
-  - Conversion Rate
-  - User Flows (wo gehen User hin?)
-  - Drop-off Points (wo brechen User ab?)
+Metrics:
+  - Pageviews, unique visitors
+  - Bounce rate
+  - Time on page
+  - Conversion rate
+  - User flows (where do users go?)
+  - Drop-off points (where do users leave?)
 
-Für Entscheidungen:
-  - Quantitative Daten (Analytics) +
-  - Qualitative Daten (Interviews) =
-  - Fundierte Entscheidung
+For decisions:
+  - Quantitative data (analytics) +
+  - Qualitative data (interviews) =
+  - Informed decision
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Feature-Requests als User Needs interpretieren
-  - Nur quantitative Daten (keine Interviews)
-  - Leading Questions ("Stimmen Sie zu, dass...")
-  - Nur 1-2 User testen
-  - Lösung in Interviews verraten
+- Interpreting feature requests as user needs
+- Only quantitative data (no interviews)
+- Leading questions ("Do you agree that...")
+- Testing with only 1-2 users
+- Revealing the solution in interviews
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- "Five Whys" für tieferes Verständnis
-  - Mix aus qualitativ und quantitativ
-  - Offene Fragen stellen
-  - Min. 5 User für Usability-Tests
-  - Problem verstehen, nicht Lösung verkaufen
+- "Five whys" for deeper understanding
+- Mix of qualitative and quantitative
+- Ask open questions
+- Min. 5 users for usability tests
+- Understand the problem, don't sell the solution
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `.quinsy-studio/knowledge-base/design_playbook.md` — UX-Heuristiken
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `.quinsy-studio/knowledge-base/design_playbook.md` — UX heuristics

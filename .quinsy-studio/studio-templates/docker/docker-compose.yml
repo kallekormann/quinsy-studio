@@ -1,16 +1,16 @@
 version: '3.8'
 
 # =============================================================================
-# Quinsy Studio — Basis-Docker-Template
+# Quinsy Studio — Base Docker Template
 # =============================================================================
-# Wird beim Projekt-Setup (./studio env <project> init) als Basis in den
-# Projektordner kopiert und dort projektspezifisch erweitert.
+# Copied into the project folder as the base during project setup
+# (./studio env <project> init) and extended there per project.
 #
-# Platzhalter, die beim Init ersetzt werden:
-#   {{PROJECT_NAME}}  → Projektname
+# Placeholders replaced during init:
+#   {{PROJECT_NAME}}  → project name
 #
-# Projekt-spezifische Erweiterungen (Services, Builds, Volumes) gehören NUR
-# in projects/<name>/docker/ — NIEMALS in dieses Template.
+# Project-specific extensions (services, builds, volumes) belong ONLY
+# in projects/<name>/docker/ — NEVER in this template.
 # =============================================================================
 
 services:

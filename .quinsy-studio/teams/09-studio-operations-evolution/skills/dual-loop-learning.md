@@ -1,6 +1,6 @@
 # Skill: Dual-Loop Learning
 
-> Local Loop (Projekt) vs Global Loop (Studio), Learning Harvesting, Knowledge Promotion
+> Local Loop (Project) vs Global Loop (Studio), Learning Harvesting, Knowledge Promotion
 
 ## Metadata
 
@@ -12,50 +12,50 @@ lead_role: Process Guard
 support_roles: [Agile Coach, Documentation Writer]
 phases: [6]
 activation_triggers:
-  - Ticket enthält "Learning", "Retro", "Knowledge", "Promotion"
-  - Phase 6: Knowledge Harvesting (Pflicht)
-  - /studio learn Befehl
-  - /studio promote Befehl
+  - Ticket contains "Learning", "Retro", "Knowledge", "Promotion"
+  - Phase 6: Knowledge Harvesting (mandatory)
+  - /studio learn command
+  - /studio promote command
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavioral Rules
 
-### 1. Local Loop (Projekt-Welt)
+### 1. Local Loop (Project World)
 
 ```markdown
-Was gehört hierher:
-  - Projektspezifische Bugs und Workarounds
-  - Nischen-Erkenntnisse aus A/B-Tests
-  - Kundenspezifische Anforderungen
-  - Projekt-spezifische Config-Details
+What belongs here:
+  - Project-specific bugs and workarounds
+  - Niche insights from A/B tests
+  - Client-specific requirements
+  - Project-specific config details
 
-Ablageort:
+Storage location:
   projects/[name]/docs/local_learnings.md
 
 Format:
   ## Learning LL-{NNN}
-  - **Datum:** YYYY-MM-DD
-  - **Kontext:** Was ist passiert?
-  - **Erkenntnis:** Was haben wir gelernt?
-  - **Aktion:** Was wurde geändert?
-  - **Gilt für:** Nur dieses Projekt
+  - **Date:** YYYY-MM-DD
+  - **Context:** What happened?
+  - **Insight:** What did we learn?
+  - **Action:** What was changed?
+  - **Applies to:** This project only
 ```
 
-### 2. Global Loop (Studio-Welt)
+### 2. Global Loop (Studio World)
 
 ```markdown
-Was gehört hierher:
-  - Universell anwendbare Lösungen
-  - Bessere Playbooks
-  - Neue Anti-Slop-Regeln
-  - Verbesserte Python-Tools
-  - Wiederverwendbare Komponenten
+What belongs here:
+  - Universally applicable solutions
+  - Better playbooks
+  - New anti-slop rules
+  - Improved Python tools
+  - Reusable components
 
-Ablageort:
+Storage location:
   .quinsy-studio/knowledge-base/  → Playbooks
-  .quinsy-studio/studio-tools/    → Python-Scripts
+  .quinsy-studio/studio-tools/    → Python Scripts
   .quinsy-studio/studio-templates/ → Templates
   studio-library/                 → UI/Packages
 
@@ -67,60 +67,60 @@ Promotion via:
 
 ```markdown
 Workflow:
-  1. Sprint-Retrospektive durchführen
-  2. Learning Items sammeln
-  3. Für jedes Learning:
-     a. Ist es projektspezifisch? → Local Loop
-     b. Ist es universell? → Global Loop
+  1. Run sprint retrospective
+  2. Collect learning items
+  3. For each learning:
+     a. Is it project-specific? → Local Loop
+     b. Is it universal? → Global Loop
   4. Local Learnings → projects/[name]/docs/local_learnings.md
-  5. Global Learnings → .quinsy-studio/knowledge-base/ oder studio-tools/
-  6. CHANGELOG aktualisieren
+  5. Global Learnings → .quinsy-studio/knowledge-base/ or studio-tools/
+  6. Update CHANGELOG
 ```
 
-### 4. Promotion-Workflow
+### 4. Promotion Workflow
 
 ```markdown
-Wann promoven?
-  - Lösung ist in 2+ Projekten nützlich
-  - Code/Design ist generisch
-  - Lösung ist bewährt (getestet)
+When to promote:
+  - Solution is useful in 2+ projects
+  - Code/design is generic
+  - Solution is proven (tested)
 
-Wie promoven?
+How to promote:
   1. ./studio promote <project> <asset-path>
-  2. Asset wird in Studio-Library kopiert
-  3. README.md wird erstellt/aktualisiert
-  4. manifest.json wird aktualisiert
-  5. CHANGELOG.md wird aktualisiert
-  6. Skill-Registry wird aktualisiert (falls neuer Skill)
+  2. Asset is copied to Studio Library
+  3. README.md is created/updated
+  4. manifest.json is updated
+  5. CHANGELOG.md is updated
+  6. Skill registry is updated (if new skill)
 ```
 
 ---
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Prohibited
 
 ```markdown
-- Projekt-spezifische Lösungen ins Studio-HQ kopieren
-  - Keine Learning Harvesting nach Sprint
-  - Promotions ohne Dokumentation
-  - Local Learnings die als Global verkauft werden
+- Copying project-specific solutions to Studio HQ
+  - No learning harvesting after sprint
+  - Promotions without documentation
+  - Local learnings sold as global
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Strikte Trennung Local/Global
-  - Obligatorische Learning Harvesting in Phase 6
-  - Promotion mit vollständiger Doku
-  - Nur universell anwendbare Lösungen im Studio-HQ
+- Strict separation Local/Global
+  - Mandatory learning harvesting in Phase 6
+  - Promotion with complete documentation
+  - Only universally applicable solutions in Studio HQ
 ```
 
 ---
 
-## Referenzen
+## References
 
 - `.quinsy-studio/process/learning-loop.md` — Dual-Loop Learning
 - `.quinsy-studio/process/lifecycle.md` — Phase 6
-- `./studio promote` — Promotion-Befehl
-- `./studio learn` — Learning-Interface
+- `./studio promote` — Promotion command
+- `./studio learn` — Learning interface

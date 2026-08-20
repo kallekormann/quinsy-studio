@@ -1,33 +1,33 @@
 # Team 05 — Growth, Marketing & Content
 
-> Verantwortlich für SEO, AEO, Content-Strategie, Marketing, Branding und Growth-Hacking.
+> Responsible for SEO, AEO, content strategy, marketing, branding and growth hacking.
 
-## Director-Level Rollen
+## Director-level roles
 
-| Rolle | Level | Verantwortlichkeiten |
-|-------|-------|---------------------|
-| **Marketing, SEO/AEO & Affiliate Specialists** | Director | pSEO-Architektur, Link-Rot-Prevention, Netzwerk-Integrationen, faktenbasiertes Copywriting |
-| **Growth Manager & Data Analysts** | Director | AARRR-Funnel, Redis-Event-Pufferung, Cost of Experimentation, The Ghost of Experiments Past |
+| Role | Level | Responsibilities |
+|------|-------|------------------|
+| **Marketing, SEO/AEO & Affiliate Specialists** | Director | pSEO architecture, link-rot prevention, network integrations, fact-based copywriting |
+| **Growth Manager & Data Analysts** | Director | AARRR funnel, Redis event buffering, cost of experimentation, the ghost of experiments past |
 
 ---
 
 ## Skills
 
-| ID | Skill | Lead-Rolle | Datei |
-|----|-------|------------|-------|
+| ID | Skill | Lead role | File |
+|----|-------|-----------|------|
 | GM-001 | SEO Optimization | SEO Specialist | `skills/seo-optimization.md` |
 | GM-002 | AEO (Answer Engine Optimization) | SEO Specialist | `skills/aeo-answer-engine-optimization.md` |
 | GM-003 | Content Strategy | Content Strategist | `skills/content-strategy.md` |
 
 ---
 
-## Phasen-Beteiligung
+## Phase participation
 
-| Phase | Lead-Rollen | Support-Rollen |
-|-------|-------------|----------------|
-| Phase 0 | — | Growth Manager (Zielgruppen-Analyse) |
+| Phase | Lead roles | Support roles |
+|-------|------------|---------------|
+| Phase 0 | — | Growth Manager (audience analysis) |
 | Phase 1 | SEO/AEO Specialist | Growth Manager |
-| Phase 2 | — | SEO/AEO Specialist (URL-Struktur) |
+| Phase 2 | — | SEO/AEO Specialist (URL structure) |
 | Phase 3 | Content Strategist | SEO/AEO Specialist |
 | Phase 4 | — | Content Strategist |
 | Phase 5 | SEO/AEO Specialist | Content Strategist |
@@ -36,8 +36,8 @@
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/project-archetypes.md` — Archetyp-spezifische Strategien
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — Anti-Slop für Content
+- `.quinsy-studio/process/project-archetypes.md` — archetype-specific strategies
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — anti-slop for content

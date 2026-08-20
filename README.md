@@ -1,172 +1,126 @@
 # Quinsy Studio
 
-> Das autonome, selbstlernende Entwicklungs-Operating-System für KI-Agenten.
+> Filesystem-based operating system for AI-driven software development.
 
-## Überblick
+## What it is
 
-Quinsy Studio ist ein Framework für autonome Softwareentwicklung mit KI-Agenten. Es definiert:
+Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects** (client code, each with its own git repo). An IDE agent reads [`AGENTS.md`](AGENTS.md) and runs the `./studio` CLI.
 
-- **8 Phasen** von Konzeption bis Monitoring
-- **8 Teams** mit spezialisierten Rollen
-- **Qualitäts-Gates** die jeden Schritt prüfen
-- **Anti-Slop-Audit** für AI-generierten Code
-- **Self-Learning** durch Retros und Learning Items
-- **Human-in-the-Loop** für irreversible Entscheidungen
+| Layer | Path | In studio git? |
+|-------|------|----------------|
+| **Studio HQ** | `.quinsy-studio/`, `studio`, `AGENTS.md` | Yes |
+| **Projects** | `projects/<name>/` | No — separate repo per project |
+| **Intake** | `intake/*.md` | No — local only |
 
-## Schnellstart
+## Quick start (AI-driven)
 
 ```bash
-# 1. Projekt initialisieren
-./studio init mein-projekt --archetype saas-application
-
-# 2. Status prüfen
-./studio status mein-projekt
-
-# 3. Ticket erstellen
-./studio ticket mein-projekt "Erste Feature" --phase 3 --priority P1
-
-# 4. Board anzeigen
-./studio board mein-projekt
-
-# 5. Ticket bewegen
-./studio move mein-projekt MEIN-0001 implement --reason "Implementierung gestartet"
-
-# 6. Gate prüfen
-./studio gate mein-projekt --level 5
-
-# 7. ADR anlegen
-./studio adr mein-projekt "Architektur-Entscheidung"
-
-# 8. Sprint starten
-./studio sprint mein-projekt
-
-# 9. Grooming durchführen
-./studio groom mein-projekt
-
-# 10. Learning Item anlegen
-./studio learn "Gate-Check dauert zu lange" --signal tooling-gap
-
-# 11. Asset promoven
-./studio promote mein-projekt ui/components/button
-
-# 12. Retrospektive starten
-./studio retro mein-projekt
+./studio verify-worlds              # studio git ≠ project git
+./studio bootstrap my-project     # from intake/<prd>.md
+./studio focus my-project         # active context for agent
+./studio resume my-project        # next step only
 ```
 
-## Projektstruktur
+**Three human gates before implementation:**
+
+| Gate | You approve | Then |
+|------|-------------|------|
+| 0 | PRD + definitions | `./studio blueprint` |
+| 1 | Architecture + ADRs | `./studio design --scope journey\|core-views` |
+| 2 | Design mocks + sticker sheet | Tickets generated + library promotion |
+
+```bash
+./studio approve my-project --gate 0
+./studio blueprint my-project && ./studio approve my-project --gate 1
+./studio design my-project --scope core-views && ./studio approve my-project --gate 2
+./studio sprint my-project
+```
+
+Full guide: [`.quinsy-studio/GETTING_STARTED.md`](.quinsy-studio/GETTING_STARTED.md) · Agent contract: [`AGENTS.md`](AGENTS.md)
+
+## Library-first (UI + code)
+
+Before writing new code, pull from the studio library:
+
+```bash
+./studio library list
+./studio library suggest my-project "auth billing"
+./studio library pull my-project auth billing button
+```
+
+After a ticket is done, promote generic changes:
+
+```bash
+./studio library promote my-project packages/billing --ticket MY-0001
+```
+
+Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/studio-library/library_registry.md)
+
+## Context & scope (agent)
+
+```bash
+./studio focus <project>                    # scope banner
+./studio guard <project> "user request"     # in-scope / needs ticket / pre-impl
+./studio revise <project> --gate 1 --feedback "..."
+```
+
+Docs: [agent-context](.quinsy-studio/process/agent-context.md) · [two worlds](.quinsy-studio/process/worlds.md)
+
+## Repository layout
 
 ```
 quinsy-studio/
+├── AGENTS.md                 # IDE agent contract (read first)
+├── .cursor/rules/            # Cursor always-on rules
 ├── .quinsy-studio/
-│   ├── process/           # Prozess-Dokumente
-│   │   ├── lifecycle.md
-│   │   ├── gates.md
-│   │   ├── adr-policy.md
-│   │   ├── anti-slop.md
-│   │   ├── ticket-workflow.md
-│   │   ├── iterative-delivery.md
-│   │   ├── human-in-the-loop.md
-│   │   └── project-archetypes.md
-│   ├── teams/             # Team-Skills
-│   │   ├── 01-frontend-experience/
-│   │   ├── 02-backend-systems/
-│   │   ├── 03-compliance-legal/
-│   │   ├── 04-product-strategy-architecture/
-│   │   ├── 05-growth-marketing-content/
-│   │   ├── 06-product-management-operating-model/
-│   │   ├── 07-ai-autonomous-systems/
-│   │   └── 08-platform-enterprise-engineering/
-│   ├── backlog/           # Tickets (nur Studio-Verbesserungen LO-*)
-│   │   ├── open/
-│   │   ├── done/
-│   │   └── blocked/
-│   ├── retros/            # Retrospektiven
-│   ├── studio-library/    # Wiederverwendbare Assets
-│   │   ├── ui/ (tokens, components, page-types)
-│   │   ├── packages/ (auth, billing, feature-gating)
-│   │   └── manifest.json
-│   ├── studio-tools/      # Python-Tooling (alle Scripts)
-│   ├── studio-templates/  # Blau-pausen (PRD, Ticket, ADR, Docker-Basis)
-│   │   └── docker/        # Basis-Docker-Template → Projekt-Kopie
-│   ├── knowledge-base/    # Playbooks
-│   ├── external-skills/   # Importierte Best-in-Class Skills (update-skills)
-│   └── skill-dependencies.json
-├── projects/              # Projekte (inkl. eigenem backlog/, docker/)
-│   ├── nudge/
-│   └── quinsy-affiliate-engine/
-├── studio                 # CLI-Wrapper (delegiert an .quinsy-studio/studio-tools/)
-├── CHANGELOG.md
-└── README.md
+│   ├── process/              # Lifecycle, gates, ticket workflow, worlds
+│   ├── teams/                # 9 teams + skills
+│   ├── studio-library/       # Reusable UI + packages (auth, billing, …)
+│   ├── studio-tools/         # Python CLI (studio.py)
+│   ├── studio-templates/
+│   ├── knowledge-base/
+│   └── backlog/              # LO-* studio improvements only
+├── intake/                   # Raw PRDs (gitignored)
+├── projects/                 # Client projects (gitignored, own .git each)
+└── studio                    # CLI entrypoint
 ```
 
-## Dokumentation
+## Documentation
 
-### Process
-- [Lifecycle](.quinsy-studio/process/lifecycle.md) — 7 Phasen (Dual-Speed: CORE/LEAN)
-- [Gates](.quinsy-studio/process/gates.md) — Qualitäts-Checks
-- [ADR Policy](.quinsy-studio/process/adr-policy.md) — Architektur-Entscheidungen
-- [Anti-Slop](.quinsy-studio/process/anti-slop.md) — Code-Qualität
-- [Ticket Workflow](.quinsy-studio/process/ticket-workflow.md) — 9-Schritte
-- [Iterative Delivery](.quinsy-studio/process/iterative-delivery.md) — Sprints
-- [Human-in-the-Loop](.quinsy-studio/process/human-in-the-loop.md) — Entscheidungen
-- [Project Archetypes](.quinsy-studio/process/project-archetypes.md) — Projekt-Typen
+| Topic | Document |
+|-------|----------|
+| Operations manual | [.quinsy-studio/README.md](.quinsy-studio/README.md) |
+| Getting started | [.quinsy-studio/GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
+| Lifecycle | [process/lifecycle.md](.quinsy-studio/process/lifecycle.md) |
+| Human gates 0–2 | [process/gates.md](.quinsy-studio/process/gates.md) |
+| Ticket workflow (9 steps) | [process/ticket-workflow.md](.quinsy-studio/process/ticket-workflow.md) |
+| Studio library | [studio-library/library_registry.md](.quinsy-studio/studio-library/library_registry.md) |
+| Agent context | [process/agent-context.md](.quinsy-studio/process/agent-context.md) |
+| Git separation | [process/worlds.md](.quinsy-studio/process/worlds.md) |
 
-### Teams
-- [Frontend Experience](.quinsy-studio/teams/01-frontend-experience/README.md)
-- [Backend Systems](.quinsy-studio/teams/02-backend-systems/README.md)
-- [Compliance & Legal](.quinsy-studio/teams/03-compliance-legal/README.md)
-- [Product Strategy & Architecture](.quinsy-studio/teams/04-product-strategy-architecture/README.md)
-- [Growth, Marketing & Content](.quinsy-studio/teams/05-growth-marketing-content/README.md)
-- [Product Management & Operating Model](.quinsy-studio/teams/06-product-management-operating-model/README.md)
-- [AI & Autonomous Systems](.quinsy-studio/teams/07-ai-autonomous-systems/README.md)
-- [Platform & Enterprise Engineering](.quinsy-studio/teams/08-platform-enterprise-engineering/README.md)
+## Quality rules
 
-### Studio Library
-- [Design Tokens](.quinsy-studio/studio-library/ui/tokens/)
-- [Button Component](.quinsy-studio/studio-library/ui/components/button/)
-- [Comparison Page Type](.quinsy-studio/studio-library/ui/page-types/comparison/)
-- [Auth Package](.quinsy-studio/studio-library/packages/auth/)
-- [Billing Package](.quinsy-studio/studio-library/packages/billing/)
-- [Feature Gating Package](.quinsy-studio/studio-library/packages/feature-gating/)
+1. **Library-first** — suggest + pull before coding; promote when generic
+2. **No code without a ticket** (after gate 2)
+3. **Three human gates** — no implementation before gate 2
+4. **Two git worlds** — never commit `projects/` to this repo
+5. **Anti-slop + ADRs + HITL** — see process docs
 
-### Externe Skills (Skill-Package-Manager)
-- [Skill Dependencies](.quinsy-studio/skill-dependencies.json) — abonnierte Quellen
-- [External Skills Index](.quinsy-studio/external-skills/INDEX.md) — importierte Pakete
-- `./studio update-skills` — alle externen Skills abonnieren/aktualisieren
-
-## CLI-Befehle
+## CLI overview
 
 ```bash
 ./studio --help
+./studio library list
+./studio bootstrap <project>
+./studio board <project>
+./studio learn "..." --signal tooling-gap
 ```
 
-## Archetypen
+## Changelog
 
-| Archetyp | Beschreibung |
-|----------|-------------|
-| `saas-application` | B2C/B2B SaaS-Produkt |
-| `ecommerce` | Online-Shop |
-| `content-platform` | Content-Management |
-| `marketplace` | Zweiseitiger Markt |
-| `internal-tool` | Interne Dashboards |
-| `api-service` | Backend-API |
-| `mobile-app` | Mobile Anwendung |
-| `prototype` | Schneller Prototyp |
-
-## Qualitäts-Regeln
-
-1. **Kein Code ohne Ticket** — Jede Zeile Code braucht ein Ticket
-2. **Gate = Pflicht** — Kein Gate wird übersprungen
-3. **Anti-Slop** — AI-Code muss geprüft werden
-4. **ADRs** — Alle Entscheidungen werden dokumentiert
-5. **Self-Learning** — Fehler werden analysiert und vermieden
-6. **HITL** — Irreversible Entscheidungen brauchen menschliche Freigabe
-
-## CHANGELOG
-
-Siehe [CHANGELOG.md](CHANGELOG.md) für alle Änderungen.
+See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-**Version:** 1.0.0
-**Stand:** 2026-08-20
+**Version:** 1.5.0  
+**Date:** 2026-08-20

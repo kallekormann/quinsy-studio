@@ -1,329 +1,329 @@
-# Quinsy Studio — Projekt-Archetypen
+# Quinsy Studio — Project Archetypes
 
-> Jeder Archetyp definiert eine spezifische Projektstruktur, Technologie-Stack und Prozess-Anpassungen.
+> Every archetype defines a specific project structure, technology stack and process adjustments.
 
-## Archetyp-Übersicht
+## Archetype overview
 
-| Archetyp | Beschreibung | Komplexität | Stack |
-|----------|-------------|-------------|-------|
-| `saas-application` | B2C/B2B SaaS-Produkt | P0–P3 | Next.js, Tailwind, Supabase |
-| `ecommerce` | Online-Shop | P1–P3 | Shopify, Medusa, WooCommerce |
-| `content-platform` | Content-Management, Blog, Magazin | P0–P2 | WordPress, Strapi, Sanity |
-| `marketplace` | Zweiseitiger Markt (Buyer/Seller) | P2–P3 | Custom, Medusa, Sharetribe |
-| `internal-tool` | Interne Dashboards, Admin-Tools | P0–P1 | Retool, Next.js, Postgres |
-| `api-service` | Backend-API, Microservice | P1–P2 | Node.js, Go, Rust |
-| `mobile-app` | Native/Hybrid Mobile App | P1–P3 | React Native, Flutter |
-| `prototype` | Schneller Prototyp, MVP | P0 | Varies |
+| Archetype | Description | Complexity | Stack |
+|-----------|-------------|------------|-------|
+| `saas-application` | B2C/B2B SaaS product | P0–P3 | Next.js, Tailwind, Supabase |
+| `ecommerce` | Online shop | P1–P3 | Shopify, Medusa, WooCommerce |
+| `content-platform` | Content management, blog, magazine | P0–P2 | WordPress, Strapi, Sanity |
+| `marketplace` | Two-sided market (buyer/seller) | P2–P3 | custom, Medusa, Sharetribe |
+| `internal-tool` | Internal dashboards, admin tools | P0–P1 | Retool, Next.js, Postgres |
+| `api-service` | Backend API, microservice | P1–P2 | Node.js, Go, Rust |
+| `mobile-app` | Native/hybrid mobile app | P1–P3 | React Native, Flutter |
+| `prototype` | Quick prototype, MVP | P0 | varies |
 
 ---
 
 ## 1. saas-application
 
-### Profil
+### Profile
 
 ```
-Archetyp: SaaS (Software as a Service)
-Typ: B2C Micro-SaaS oder B2B Enterprise
-Ziel: Subscription-basiertes Produkt
+Archetype: SaaS (software as a service)
+Type: B2C micro-SaaS or B2B enterprise
+Goal: subscription-based product
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 Frontend:    Next.js 14+ (App Router), Tailwind CSS, shadcn/ui
-Backend:     Next.js API Routes / Server Actions
-Datenbank:   PostgreSQL (Supabase / Neon / Railway)
+Backend:     Next.js API routes / server actions
+Database:    PostgreSQL (Supabase / Neon / Railway)
 Auth:        Supabase Auth / Clerk / NextAuth.js
 Storage:     Supabase Storage / Cloudflare R2
 Deployment:  Vercel / Railway / Fly.io
 CI/CD:       GitHub Actions
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** Archetyp-Checkliste ausfüllen
-- **Phase 1:** Subscription-Modell definieren (Free/Pro/Enterprise)
-- **Phase 2:** Auth-Architektur (RBAC, Multi-Tenant)
-- **Phase 3:** Design System (Tokens, Komponenten)
-- **Phase 4:** TDD mit Fokus auf User-Flows
-- **Phase 5:** DSGVO-konform (Cookie-Banner, Datenschutz)
-- **Phase 6:** Staging → Production
-- **Phase 7:** Metriken (Retention, MRR, Churn)
+- **Phase 0:** fill out the archetype checklist
+- **Phase 1:** define the subscription model (free/pro/enterprise)
+- **Phase 2:** auth architecture (RBAC, multi-tenant)
+- **Phase 3:** design system (tokens, components)
+- **Phase 4:** TDD focused on user flows
+- **Phase 5:** GDPR compliant (cookie banner, privacy)
+- **Phase 6:** staging → production
+- **Phase 7:** metrics (retention, MRR, churn)
 
-### Gate-Anpassungen
+### Gate adjustments
 
-| Gate | Spezifische Prüfungen |
-|------|----------------------|
-| Gate 0 | Subscription-Modell definiert |
-| Gate 1 | Pricing validiert |
-| Gate 2 | Multi-Tenant-Architektur |
-| Gate 3 | Design System mit Tokens |
-| Gate 5 | DSGVO-Check, Cookie-Banner |
+| Gate | Specific checks |
+|------|-----------------|
+| Gate 0 | subscription model defined |
+| Gate 1 | pricing validated |
+| Gate 2 | multi-tenant architecture |
+| Gate 3 | design system with tokens |
+| Gate 5 | GDPR check, cookie banner |
 
 ---
 
 ## 2. ecommerce
 
-### Profil
+### Profile
 
 ```
-Archetyp: Online-Shop
-Typ: D2C, B2C, B2B
-Ziel: Produktverkauf, Conversion-Optimierung
+Archetype: online shop
+Type: D2C, B2C, B2B
+Goal: product sales, conversion optimization
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 Frontend:    Next.js 14+ / Shopify Hydrogen
 Backend:     Shopify / Medusa / WooCommerce
-Datenbank:   PostgreSQL / MySQL
+Database:    PostgreSQL / MySQL
 Payment:     Stripe / PayPal / Klarna
 Storage:     Shopify CDN / Cloudflare R2
 Deployment:  Vercel / Shopify Hosting
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** Produktkatalog definieren
-- **Phase 1:** Payment-Integration evaluieren
-- **Phase 2:** Produkt-Datenmodell, Bestandsverwaltung
-- **Phase 3:** Produktseiten, Checkout-Flow
-- **Phase 4:** Performance (Core Web Vitals kritisch)
-- **Phase 5:** PCI-DSS, DSGVO, Cookie-Banner
-- **Phase 6:** Launch mit Monitoring
-- **Phase 7:** Conversion-Tracking, A/B-Testing
+- **Phase 0:** define the product catalog
+- **Phase 1:** evaluate the payment integration
+- **Phase 2:** product data model, inventory management
+- **Phase 3:** product pages, checkout flow
+- **Phase 4:** performance (core web vitals critical)
+- **Phase 5:** PCI-DSS, GDPR, cookie banner
+- **Phase 6:** launch with monitoring
+- **Phase 7:** conversion tracking, A/B testing
 
 ---
 
 ## 3. content-platform
 
-### Profil
+### Profile
 
 ```
-Archetyp: Content-Management
-Typ: Blog, Magazin, Dokumentation
-Ziel: Content erstellen und verbreiten
+Archetype: content management
+Type: blog, magazine, documentation
+Goal: create and distribute content
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 CMS:         WordPress / Strapi / Sanity / Contentful
 Frontend:    Next.js 14+ (ISR) / Astro
-Datenbank:   PostgreSQL / MySQL
+Database:    PostgreSQL / MySQL
 Storage:     Cloudflare R2 / S3
 Deployment:  Vercel / Netlify
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** Content-Strategie definieren
-- **Phase 1:** CMS evaluieren (Headless vs. Traditional)
-- **Phase 2:** Content-Modell, Taxonomie
-- **Phase 3:** Seitentypen, Templates
-- **Phase 4:** SEO-Optimierung, Performance
-- **Phase 5:** DSGVO (Kommentare, Newsletter)
-- **Phase 6:** Content-Migration
-- **Phase 7:** Analytics, SEO-Monitoring
+- **Phase 0:** define the content strategy
+- **Phase 1:** evaluate the CMS (headless vs. traditional)
+- **Phase 2:** content model, taxonomy
+- **Phase 3:** page types, templates
+- **Phase 4:** SEO optimization, performance
+- **Phase 5:** GDPR (comments, newsletter)
+- **Phase 6:** content migration
+- **Phase 7:** analytics, SEO monitoring
 
 ---
 
 ## 4. marketplace
 
-### Profil
+### Profile
 
 ```
-Archetyp: Zweiseitiger Markt
-Typ: C2C, B2C, B2B
-Ziel: Anbieter und Nachfrager zusammenbringen
+Archetype: two-sided market
+Type: C2C, B2C, B2B
+Goal: bring suppliers and demanders together
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 Frontend:    Next.js 14+ / React
 Backend:     Node.js / Ruby on Rails
-Datenbank:   PostgreSQL
+Database:    PostgreSQL
 Search:      Elasticsearch / Algolia
 Payment:     Stripe Connect
 Deployment:  AWS / GCP / Railway
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** Marktmechanismen definieren (Matching, Pricing)
-- **Phase 1:** Chicken-and-Egg-Problem analysieren
-- **Phase 2:** User-Rollen (Buyer, Seller, Admin)
-- **Phase 3:** Listings, Search, Checkout
-- **Phase 4:** Trust & Safety, Reviews
-- **Phase 5:** Payment-Compliance, DSGVO
-- **Phase 6:** Soft Launch mit Beta-Usern
-- **Phase 7:** Netzwerk-Effekte monitoren
+- **Phase 0:** define the market mechanisms (matching, pricing)
+- **Phase 1:** analyze the chicken-and-egg problem
+- **Phase 2:** user roles (buyer, seller, admin)
+- **Phase 3:** listings, search, checkout
+- **Phase 4:** trust & safety, reviews
+- **Phase 5:** payment compliance, GDPR
+- **Phase 6:** soft launch with beta users
+- **Phase 7:** monitor network effects
 
 ---
 
 ## 5. internal-tool
 
-### Profil
+### Profile
 
 ```
-Archetyp: Internes Tool
-Typ: Dashboard, Admin, CRM
-Ziel: Interne Prozesse effizienter machen
+Archetype: internal tool
+Type: dashboard, admin, CRM
+Goal: make internal processes more efficient
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 Frontend:    Next.js / Retool / Tooljet
-Backend:     Next.js API Routes
-Datenbank:   PostgreSQL / Supabase
+Backend:     Next.js API routes
+Database:    PostgreSQL / Supabase
 Auth:        LDAP / SSO / NextAuth.js
-Deployment:  Internal / Vercel
+Deployment:  internal / Vercel
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** User-Flows definieren
-- **Phase 1:** Bestehende Tools evaluieren
-- **Phase 2:** Einfache Architektur
-- **Phase 3:** Funktionalität > Design
-- **Phase 4:** TDD, aber weniger strikt
-- **Phase 5:** Interne Security-Policies
-- **Phase 6:** Internes Deployment
-- **Phase 7:** User-Feedback
+- **Phase 0:** define the user flows
+- **Phase 1:** evaluate existing tools
+- **Phase 2:** simple architecture
+- **Phase 3:** functionality > design
+- **Phase 4:** TDD, but less strict
+- **Phase 5:** internal security policies
+- **Phase 6:** internal deployment
+- **Phase 7:** user feedback
 
 ---
 
 ## 6. api-service
 
-### Profil
+### Profile
 
 ```
-Archetyp: Backend-API
-Typ: REST, GraphQL, gRPC
-Ziel: Service für andere Anwendungen
+Archetype: backend API
+Type: REST, GraphQL, gRPC
+Goal: service for other applications
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 Runtime:     Node.js / Go / Rust / Python
 Framework:   Express / Fastify / Gin / Axum
-Datenbank:   PostgreSQL / MongoDB
+Database:    PostgreSQL / MongoDB
 Cache:       Redis
-Docs:        OpenAPI / GraphQL Schema
+Docs:        OpenAPI / GraphQL schema
 Deployment:  Docker / Kubernetes / Railway
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** API-Kontrakt definieren
-- **Phase 1:** Last-Testing
-- **Phase 2:** API-Design (REST/GraphQL)
-- **Phase 3:** SDK/Client-Generierung
-- **Phase 4:** TDD mit Fokus auf Integration
-- **Phase 5:** Security-Audit, Rate-Limiting
-- **Phase 6:** Versioning, Deprecation-Policy
-- **Phase 7:** Monitoring, SLA
+- **Phase 0:** define the API contract
+- **Phase 1:** load testing
+- **Phase 2:** API design (REST/GraphQL)
+- **Phase 3:** SDK/client generation
+- **Phase 4:** TDD focused on integration
+- **Phase 5:** security audit, rate limiting
+- **Phase 6:** versioning, deprecation policy
+- **Phase 7:** monitoring, SLA
 
 ---
 
 ## 7. mobile-app
 
-### Profil
+### Profile
 
 ```
-Archetyp: Mobile Anwendung
-Typ: Native, Hybrid, PWA
-Ziel: App-Store-Produkt
+Archetype: mobile application
+Type: native, hybrid, PWA
+Goal: app-store product
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 Framework:   React Native / Flutter / Swift/Kotlin
 Backend:     Node.js / Firebase / Supabase
-Datenbank:   PostgreSQL / Firestore
+Database:    PostgreSQL / Firestore
 Auth:        Firebase Auth / Supabase Auth
 Deployment:  App Store / Play Store / EAS
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** Plattform-Strategie (iOS/Android/Beide)
-- **Phase 1:** App-Store-Richtlinien prüfen
-- **Phase 2:** Offline-First-Architektur
-- **Phase 3:** Native Look & Feel
-- **Phase 4:** Performance (60 FPS kritisch)
-- **Phase 5:** App-Store-Review, DSGVO
-- **Phase 6:** Beta-Testing (TestFlight)
-- **Phase 7:** Crash-Reporting, Analytics
+- **Phase 0:** platform strategy (iOS/Android/both)
+- **Phase 1:** check app-store guidelines
+- **Phase 2:** offline-first architecture
+- **Phase 3:** native look & feel
+- **Phase 4:** performance (60 FPS critical)
+- **Phase 5:** app-store review, GDPR
+- **Phase 6:** beta testing (TestFlight)
+- **Phase 7:** crash reporting, analytics
 
 ---
 
 ## 8. prototype
 
-### Profil
+### Profile
 
 ```
-Archetyp: Schneller Prototyp
-Typ: MVP, Proof of Concept
-Ziel: Idee validieren
+Archetype: quick prototype
+Type: MVP, proof of concept
+Goal: validate the idea
 ```
 
-### Stack-Empfehlung
+### Stack recommendation
 
 ```
 Frontend:    Next.js / Vite / CodeSandbox
-Backend:     Serverless / Supabase
-Datenbank:   Supabase / Firebase
+Backend:     serverless / Supabase
+Database:    Supabase / Firebase
 Deployment:  Vercel / Netlify
 ```
 
-### Prozess-Anpassungen
+### Process adjustments
 
-- **Phase 0:** Minimale Anforderungen
-- **Phase 1:** Quick & Dirty Validierung
-- **Phase 2:** Vereinfachte Architektur
-- **Phase 3:** Schnelles Design
-- **Phase 4:** Code > Tests (Temporär)
-- **Phase 5:** Minimale QA
-- **Phase 6:** Sofortiges Deployment
-- **Phase 7:** Lernen, nicht optimieren
+- **Phase 0:** minimal requirements
+- **Phase 1:** quick & dirty validation
+- **Phase 2:** simplified architecture
+- **Phase 3:** fast design
+- **Phase 4:** code > tests (temporary)
+- **Phase 5:** minimal QA
+- **Phase 6:** immediate deployment
+- **Phase 7:** learn, don't optimize
 
 ---
 
-## Archetyp-Wahl
+## Archetype selection
 
 ```bash
-# Archetyp bei Projektstart setzen
+# Set the archetype at project start
 ./studio init <project> --archetype saas-application
 
-# Archetyp ändern (erfordert ADR)
+# Change the archetype (requires an ADR)
 ./studio set-archetype <project> ecommerce
 ```
 
 ---
 
-## Archetyp-Checkliste (Phase 0)
+## Archetype checklist (phase 0)
 
 ```markdown
-# Archetyp-Checkliste — <Project>
+# Archetype Checklist — <Project>
 
-## Gewählter Archetyp: [saas-application]
+## Selected archetype: [saas-application]
 
-- [ ] Archetyp definiert
-- [ ] Komplexitäts-Level geschätzt
-- [ ] Stack-Empfehlung überprüft
-- [ ] Prozess-Anpassungen notiert
-- [ ] Gate-Anpassungen dokumentiert
+- [ ] Archetype defined
+- [ ] Complexity level estimated
+- [ ] Stack recommendation reviewed
+- [ ] Process adjustments noted
+- [ ] Gate adjustments documented
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `./studio init <project> --archetype <type>` — Projekt initialisieren
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `./studio init <project> --archetype <type>` — initialize a project

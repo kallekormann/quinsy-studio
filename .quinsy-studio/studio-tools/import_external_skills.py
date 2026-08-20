@@ -2,24 +2,24 @@
 """
 Quinsy Studio — External Skills Importer (Skill-Package-Manager)
 
-Lädt die in `.quinsy-studio/skill-dependencies.json` deklarierten externen
-Best-in-Class Skills und legt sie unter `.quinsy-studio/external-skills/<domain>/`
-ab, damit der Agent sie in die jeweiligen Rollen-Profile einbinden kann.
+Loads the external best-in-class skills declared in `.quinsy-studio/skill-dependencies.json`
+and places them under `.quinsy-studio/external-skills/<domain>/` so the agent
+can integrate them into the respective role profiles.
 
-Verwendung:
-    python3 import_external_skills.py            # Alle Dependencies installieren/aktualisieren
-    python3 import_external_skills.py --list     # Deklarierte Dependencies anzeigen
-    python3 import_external_skills.py design     # Nur eine Domain installieren
+Usage:
+    python3 import_external_skills.py            # Install/update all dependencies
+    python3 import_external_skills.py --list     # Show declared dependencies
+    python3 import_external_skills.py design     # Install a single domain
 
-Abhängigkeiten:
-    - `npx` (Node) für `npx skills add <owner>/<repo>`
-    - Fallback: `git clone` (ohne Node)
+Dependencies:
+    - `npx` (Node) for `npx skills add <owner>/<repo>`
+    - Fallback: `git clone` (without Node)
 
-Regeln:
-    - Externe Skills sind IMMER dem internen anti_ai_slop_protocol.md und
-      der Zero-Data-Architecture untergeordnet.
-    - Nach dem Import wird ein INDEX.md generiert, der die Zuordnung
-      Domain → Team → Skill-Datei dokumentiert.
+Rules:
+    - External skills are ALWAYS subordinate to the internal anti_ai_slop_protocol.md
+      and the Zero-Data Architecture.
+    - After the import an INDEX.md is generated documenting the mapping
+      domain → team → skill file.
 """
 
 import sys
@@ -37,27 +37,27 @@ EXTERNAL_SKILLS_DIR = QUINSY_STUDIO / "external-skills"
 
 
 def load_dependencies() -> dict:
-    """Lädt die Skill-Dependencies aus der JSON-Datei."""
+    """Load the skill dependencies from the JSON file."""
     if not DEPENDENCIES_FILE.exists():
-        print(f"  ⚠️  Keine skill-dependencies.json gefunden: {DEPENDENCIES_FILE}")
+        print(f"  ⚠️  No skill-dependencies.json found: {DEPENDENCIES_FILE}")
         return {}
     data = json.loads(DEPENDENCIES_FILE.read_text())
-    # Meta-Keys (//, //2, ...) herausfiltern
+    # Filter out meta keys (//, //2, ...)
     return {k: v for k, v in data.items() if isinstance(v, dict)}
 
 
 def has_npx() -> bool:
-    """Prüft, ob npx (Node) verfügbar ist."""
+    """Check whether npx (Node) is available."""
     return shutil.which("npx") is not None
 
 
 def has_git() -> bool:
-    """Prüft, ob git verfügbar ist."""
+    """Check whether git is available."""
     return shutil.which("git") is not None
 
 
 def npx_install(dep_name: str, spec: dict) -> bool:
-    """Installiert ein Skill-Paket via `npx skills add`."""
+    """Install a skill package via `npx skills add`."""
     install_cmd = spec.get("install", f"npx skills add {dep_name}")
     print(f"    → npx: {install_cmd}")
     try:
@@ -65,19 +65,19 @@ def npx_install(dep_name: str, spec: dict) -> bool:
             install_cmd.split(), capture_output=True, text=True, timeout=120
         )
         if result.returncode != 0:
-            print(f"    ⚠️  npx fehlgeschlagen ({result.returncode}): {result.stderr[:300]}")
+            print(f"    ⚠️  npx failed ({result.returncode}): {result.stderr[:300]}")
             return False
-        print(f"    ✓ via npx installiert")
+        print(f"    ✓ installed via npx")
         return True
     except FileNotFoundError:
         return False
     except subprocess.TimeoutExpired:
-        print(f"    ⚠️  Timeout bei npx")
+        print(f"    ⚠️  npx timeout")
         return False
 
 
 def git_clone(dep_name: str, spec: dict) -> bool:
-    """Fallback: klont das Repository in external-skills/<domain>/."""
+    """Fallback: clone the repository into external-skills/<domain>/."""
     repo = spec.get("repo", "")
     # "github:Nutlope/hallmark@main" → https://github.com/Nutlope/hallmark.git
     if repo.startswith("github:"):
@@ -92,7 +92,7 @@ def git_clone(dep_name: str, spec: dict) -> bool:
     print(f"    → git clone: {url}")
     try:
         if (target / ".git").exists():
-            print(f"    ✓ bereits vorhanden: {target} (git pull für Update)")
+            print(f"    ✓ already present: {target} (git pull for update)")
             subprocess.run(
                 ["git", "-C", str(target), "pull"], capture_output=True, text=True, timeout=60
             )
@@ -102,22 +102,22 @@ def git_clone(dep_name: str, spec: dict) -> bool:
             capture_output=True, text=True, timeout=120
         )
         if result.returncode != 0:
-            print(f"    ⚠️  git clone fehlgeschlagen: {result.stderr[:300]}")
+            print(f"    ⚠️  git clone failed: {result.stderr[:300]}")
             return False
-        print(f"    ✓ geklont nach: {target}")
+        print(f"    ✓ cloned to: {target}")
         return True
     except FileNotFoundError:
-        print(f"    ⚠️  git nicht verfügbar")
+        print(f"    ⚠️  git not available")
         return False
 
 
 def import_dependency(dep_name: str, spec: dict, use_npx: bool = False) -> bool:
-    """Importiert eine einzelne Dependency.
+    """Import a single dependency.
 
-    Standard: git clone in .quinsy-studio/external-skills/<domain>/ —
-    so bleibt das Studio selbst-enthalten und projektreferenzierbar.
-    Optional (--npx): `npx skills add` für lokale Agent-Integration
-    (installiert in ~/.claude/skills o.ä., NICHT ins Studio).
+    Default: git clone into .quinsy-studio/external-skills/<domain>/ —
+    keeps the studio self-contained and project-referencable.
+    Optional (--npx): `npx skills add` for local agent integration
+    (installs into ~/.claude/skills etc., NOT into the studio).
     """
     team = spec.get("team", "?")
     why = spec.get("why", "")
@@ -129,17 +129,17 @@ def import_dependency(dep_name: str, spec: dict, use_npx: bool = False) -> bool:
         ok = npx_install(dep_name, spec)
         if ok:
             return True
-        print(f"    → Fallback auf git clone")
+        print(f"    → falling back to git clone")
 
     if has_git():
         return git_clone(dep_name, spec)
 
-    print(f"    ⚠️  git nicht verfügbar — manueller Import nötig")
+    print(f"    ⚠️  git not available — manual import required")
     return False
 
 
 def generate_index(results: dict):
-    """Generiert die INDEX.md mit Domain → Team → Skills Zuordnung."""
+    """Generate the INDEX.md with the domain → team → skills mapping."""
     EXTERNAL_SKILLS_DIR.mkdir(parents=True, exist_ok=True)
     index_file = EXTERNAL_SKILLS_DIR / "INDEX.md"
 
@@ -147,12 +147,12 @@ def generate_index(results: dict):
         "# External Skills — Index",
         "",
         f"> Generiert: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-        "> Quelle: `.quinsy-studio/skill-dependencies.json`",
+        "> Source: `.quinsy-studio/skill-dependencies.json`",
         "",
-        "Externe Best-in-Class Skills, die das Studio abonniert. Sie sind IMMER",
-        "dem internen `anti_ai_slop_protocol.md` und der Zero-Data-Architecture untergeordnet.",
+        "External best-in-class skills the studio subscribes to. They are ALWAYS",
+        "subordinate to the internal `anti_ai_slop_protocol.md` and the Zero-Data Architecture.",
         "",
-        "## Übersicht",
+        "## Overview",
         "",
         "| Domain | Team | Status | Quelle |",
         "|--------|------|--------|--------|",
@@ -165,16 +165,16 @@ def generate_index(results: dict):
 
     lines += [
         "",
-        "## Nutzung im Prozess",
+        "## Usage in the process",
         "",
-        "1. `./studio update-skills` — alle Dependencies abonnieren/aktualisieren.",
-        "2. Der Agent liest die jeweilige SKILL.md des importierten Pakets, bevor er",
-        "   die zugehörige Rolle aktiviert (siehe `.quinsy-studio/teams/skill-registry.md`).",
-        "3. Konflikte mit internen Regeln entscheidet IMMER das interne Studio-Regelwerk.",
+        "1. `./studio update-skills` — subscribe to/update all dependencies.",
+        "2. The agent reads the respective SKILL.md of the imported package before",
+        "   activating the associated role (see `.quinsy-studio/teams/skill-registry.md`).",
+        "3. Conflicts with internal rules are ALWAYS decided by the internal studio rulebook.",
     ]
 
     index_file.write_text("\n".join(lines))
-    print(f"\n  INDEX.md generiert: {index_file}")
+    print(f"\n  INDEX.md generated: {index_file}")
 
 
 def main():
@@ -184,15 +184,15 @@ def main():
         return
 
     if "--list" in sys.argv:
-        print("\nDeklarierte Skill-Dependencies:")
+        print("\nDeclared skill dependencies:")
         for name, spec in sorted(deps.items()):
             print(f"  [{name}] {spec.get('repo', '?')} → Team {spec.get('team', '?')}")
-        print("\nOptionen:")
-        print("  --npx   Lokale Agent-Installation via `npx skills add` (nicht ins Studio)")
-        print("  <name>  Nur eine Domain importieren")
+        print("\nOptions:")
+        print("  --npx   Local agent install via `npx skills add` (not into the studio)")
+        print("  <name>  Import a single domain only")
         return
 
-    # Nur eine Domain, wenn angegeben; --npx für lokale Agent-Installation
+    # Only one domain if specified; --npx for local agent installation
     targets = None
     use_npx = "--npx" in sys.argv
     for arg in sys.argv[1:]:
@@ -210,9 +210,9 @@ def main():
 
     ok_count = sum(1 for _, ok in results.values() if ok)
     print(f"\n  {'=' * 50}")
-    print(f"  Ergebnis: {ok_count}/{len(results)} Dependencies importiert")
-    print(f"  Nächster Schritt: ./studio update-skills bei neuen Quellen, oder")
-    print(f"  Skills manuell in die Team-Skills einarbeiten (.quinsy-studio/teams/).")
+    print(f"  Result: {ok_count}/{len(results)} dependencies imported")
+    print(f"  Next step: run ./studio update-skills for new sources, or")
+    print(f"  work skills into the team skills manually (.quinsy-studio/teams/).")
 
 
 if __name__ == "__main__":

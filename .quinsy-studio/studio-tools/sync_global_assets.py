@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-sync_global_assets.py — Global Asset Synchronization für Quinsy Studio
+sync_global_assets.py — Global asset synchronization for Quinsy Studio
 
-Scannt Projektcode auf generische, wiederverwendbare Logik und extrahiert
-diese in die globale Studio-Library.
+Scans project code for generic, reusable logic and extracts it
+into the global studio library.
 
-Verwendung:
+Usage:
   python3 sync_global_assets.py <project> [--dry-run]
   python3 sync_global_assets.py nudge
   python3 sync_global_assets.py nudge --dry-run
 
 Output:
-  studio-library/ui/components/    — UI-Komponenten
-  studio-library/packages/         — Backend-Packages/Services
-  studio-library/ui/tokens/        — Design Tokens
+  studio-library/ui/components/    — UI components
+  studio-library/packages/         — backend packages/services
+  studio-library/ui/tokens/        — design tokens
 """
 
 import sys
@@ -33,7 +33,7 @@ STUDIO_ROOT = Path(__file__).parent.parent.parent
 PROJECTS_DIR = STUDIO_ROOT / "projects"
 STUDIO_LIBRARY = STUDIO_ROOT / ".quinsy-studio" / "studio-library"
 
-# Pattern für wiederverwendbare Dateien
+# Patterns for reusable files
 REUSABLE_PATTERNS = {
     "ui_component": [
         r'components?/[a-z]+/[A-Z]\w+\.tsx$',
@@ -61,7 +61,7 @@ REUSABLE_PATTERNS = {
     ],
 }
 
-# Dateien die NICHT extrahiert werden
+# Files that are NOT extracted
 EXCLUDE_PATTERNS = [
     r'node_modules',
     r'\.next',
@@ -80,7 +80,7 @@ EXCLUDE_PATTERNS = [
 # =============================================================================
 
 def should_exclude(filepath: str) -> bool:
-    """Prüft ob eine Datei ausgeschlossen werden soll."""
+    """Check whether a file should be excluded."""
     for pattern in EXCLUDE_PATTERNS:
         if re.search(pattern, filepath):
             return True
@@ -88,7 +88,7 @@ def should_exclude(filepath: str) -> bool:
 
 
 def classify_file(filepath: Path) -> Optional[str]:
-    """Klassifiziert eine Datei nach Typ."""
+    """Classify a file by type."""
     rel_path = str(filepath)
     
     for asset_type, patterns in REUSABLE_PATTERNS.items():
@@ -100,52 +100,52 @@ def classify_file(filepath: Path) -> Optional[str]:
 
 
 def analyze_reusability(filepath: Path, project_dir: Path) -> Dict:
-    """Analysiert ob eine Datei wiederverwendbar ist."""
+    """Analyze whether a file is reusable."""
     
     try:
         content = filepath.read_text(encoding='utf-8')
     except (UnicodeDecodeError, PermissionError):
-        return {"reusable": False, "reason": "Kann nicht gelesen werden"}
+        return {"reusable": False, "reason": "Cannot be read"}
     
-    # Heuristiken für Wiederverwendbarkeit
+    # Reusability heuristics
     score = 0
     reasons = []
     
-    # 1. Komplexe Logik (viele Imports, Exports)
+    # 1. Complex logic (many imports, exports)
     imports = len(re.findall(r'^import\s', content, re.MULTILINE))
     exports = len(re.findall(r'^export\s', content, re.MULTILINE))
     
     if imports > 3 and exports > 1:
         score += 2
-        reasons.append(f"Mehrere Imports ({imports}) und Exports ({exports})")
+        reasons.append(f"Multiple imports ({imports}) and exports ({exports})")
     
-    # 2. Komponente mit Props
+    # 2. Component with props
     if re.search(r'interface\s+\w+Props', content):
         score += 3
-        reasons.append("Hat definierte Props-Schnittstelle")
+        reasons.append("Has a defined props interface")
     
-    # 3. Hook mit generischer Logik
+    # 3. Hook with generic logic
     if re.search(r'^export\s+(?:function|const)\s+use[A-Z]', content, re.MULTILINE):
         score += 2
-        reasons.append("Generischer Hook")
+        reasons.append("Generic hook")
     
-    # 4. Keine projektspezifischen Referenzen
+    # 4. No project-specific references
     project_name = project_dir.name
     if project_name.lower() not in content.lower():
         score += 1
-        reasons.append("Keine projektspezifischen Referenzen")
+        reasons.append("No project-specific references")
     
-    # 5. Keine hardcoded URLs oder Konfiguration
+    # 5. No hardcoded URLs or configuration
     if not re.search(r'https?://(?!api\.|cdn\.)', content):
         score += 1
-        reasons.append("Keine hardcoded URLs")
+        reasons.append("No hardcoded URLs")
     
-    # 6. Dokumentation vorhanden
+    # 6. Documentation present
     if re.search(r'(?:/\*\*|///|^\s*\*)', content):
         score += 1
-        reasons.append("Dokumentation vorhanden")
+        reasons.append("Documentation present")
     
-    # Threshold: Score >= 3意味着 wiederverwendbar
+    # Threshold: score >= 3 means reusable
     return {
         "reusable": score >= 3,
         "score": score,
@@ -156,11 +156,11 @@ def analyze_reusability(filepath: Path, project_dir: Path) -> Dict:
 
 
 def scan_project_for_assets(project: str) -> Dict:
-    """Scannt ein Projekt auf wiederverwendbare Assets."""
+    """Scan a project for reusable assets."""
     
     project_dir = PROJECTS_DIR / project
     if not project_dir.exists():
-        print(f"Fehler: Projekt nicht gefunden: {project_dir}")
+        print(f"Error: project not found: {project_dir}")
         sys.exit(1)
     
     assets = {
@@ -222,7 +222,7 @@ def scan_project_for_assets(project: str) -> Dict:
 # =============================================================================
 
 def extract_assets(project: str, scan_result: Dict, dry_run: bool = False):
-    """Extrahiert gefundene Assets in die Studio-Library."""
+    """Extract found assets into the studio library."""
     
     project_dir = PROJECTS_DIR / project
     extracted_count = 0
@@ -249,11 +249,11 @@ def extract_assets(project: str, scan_result: Dict, dry_run: bool = False):
             dest_path = dest_dir / source_path.name
             
             if dry_run:
-                print(f"  [DRY-RUN] Würde extrahieren: {asset['path']} → {dest_path.relative_to(STUDIO_ROOT)}")
+                print(f"  [DRY-RUN] Would extract: {asset['path']} → {dest_path.relative_to(STUDIO_ROOT)}")
             else:
                 dest_path.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source_path, dest_path)
-                print(f"  Extrahiert: {asset['path']} → {dest_path.relative_to(STUDIO_ROOT)}")
+                print(f"  Extracted: {asset['path']} → {dest_path.relative_to(STUDIO_ROOT)}")
             
             extracted_count += 1
     
@@ -264,7 +264,7 @@ def extract_assets(project: str, scan_result: Dict, dry_run: bool = False):
 # =============================================================================
 
 def update_manifest(project: str, scan_result: Dict, extracted_count: int):
-    """Aktualisiert das Studio-Library Manifest."""
+    """Update the studio library manifest."""
     
     manifest_file = STUDIO_LIBRARY / "manifest.json"
     
@@ -301,18 +301,18 @@ def update_manifest(project: str, scan_result: Dict, extracted_count: int):
 # =============================================================================
 
 def print_report(scan_result: Dict, extracted_count: int, dry_run: bool):
-    """Gibt den Sync-Report aus."""
+    """Print the sync report."""
     
     print(f"\n{'='*60}")
     print(f"  GLOBAL ASSET SYNC: {scan_result['project']}")
     print(f"{'='*60}")
-    print(f"\n  Dateien gescannt:      {scan_result['scanned_files']}")
-    print(f"  Wiederverwendbar:      {scan_result['reusable_files']}")
-    print(f"  Extrahiert:            {extracted_count}")
+    print(f"\n  Files scanned:       {scan_result['scanned_files']}")
+    print(f"  Reusable:            {scan_result['reusable_files']}")
+    print(f"  Extracted:           {extracted_count}")
     
     # Breakdown by type
     print(f"\n  {'='*50}")
-    print(f"  ASSETS NACH TYP")
+    print(f"  ASSETS BY TYPE")
     print(f"  {'='*50}")
     
     for category, asset_list in scan_result["assets"].items():
@@ -322,7 +322,7 @@ def print_report(scan_result: Dict, extracted_count: int, dry_run: bool):
                 print(f"    - {asset['path']} (Score: {asset['analysis']['score']})")
     
     if dry_run:
-        print(f"\n  ℹ️  DRY-RUN Modus — keine Dateien wurden kopiert.")
+        print(f"\n  ℹ️  DRY-RUN mode — no files were copied.")
     
     print()
 
@@ -332,7 +332,7 @@ def print_report(scan_result: Dict, extracted_count: int, dry_run: bool):
 
 def main():
     if len(sys.argv) < 2:
-        print("Verwendung:")
+        print("Usage:")
         print("  python3 sync_global_assets.py <project> [--dry-run]")
         sys.exit(1)
     
@@ -340,12 +340,12 @@ def main():
     dry_run = "--dry-run" in sys.argv
     
     # Scan project
-    print(f"\n  Scanne {project} auf wiederverwendbare Assets...")
+    print(f"\n  Scanning {project} for reusable assets...")
     scan_result = scan_project_for_assets(project)
     
     # Extract assets
     if scan_result["reusable_files"] > 0:
-        print(f"\n  Extrahiere {scan_result['reusable_files']} Assets...")
+        print(f"\n  Extracting {scan_result['reusable_files']} assets...")
         extracted_count = extract_assets(project, scan_result, dry_run)
         
         # Update manifest
@@ -353,7 +353,7 @@ def main():
             update_manifest(project, scan_result, extracted_count)
     else:
         extracted_count = 0
-        print(f"\n  Keine wiederverwendbaren Assets gefunden.")
+        print(f"\n  No reusable assets found.")
     
     # Print report
     print_report(scan_result, extracted_count, dry_run)

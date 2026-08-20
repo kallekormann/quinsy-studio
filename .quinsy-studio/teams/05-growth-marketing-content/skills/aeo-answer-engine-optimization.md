@@ -1,6 +1,6 @@
 # Skill: AEO (Answer Engine Optimization)
 
-> Optimierung für KI-Suchmaschinen, strukturierte Daten, zitierfähige Inhalte
+> Optimization for AI search engines, structured data, citable content
 
 ## Metadata
 
@@ -12,122 +12,122 @@ lead_role: SEO Specialist
 support_roles: [Content Strategist, Frontend Engineer]
 phases: [3, 5, 7]
 activation_triggers:
-  - Ticket enthält "AEO", "AI Search", "ChatGPT", "Perplexity"
-  - Phase 3: Content wird für AEO optimiert
-  - Phase 5: AEO-Audit
-  - Phase 7: AEO-Optimierung
+  - Ticket contains "AEO", "AI search", "ChatGPT", "Perplexity"
+  - Phase 3: content is optimized for AEO
+  - Phase 5: AEO audit
+  - Phase 7: AEO optimization
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Strukturierte Daten für LLMs
+### 1. Structured data for LLMs
 
 ```markdown
-LLMs extrahieren:
-  - Tabellen (Markdown/HTML)
-  - Listen (nummeriert und unnummeriert)
-  - Definitionen (klare Begriffe)
-  - Vergleiche (Side-by-Side)
-  - FAQ-Sektionen
+LLMs extract:
+  - Tables (markdown/HTML)
+  - Lists (numbered and unnumbered)
+  - Definitions (clear terms)
+  - Comparisons (side-by-side)
+  - FAQ sections
 
-Formatierung:
-  - Klare Überschriften (H2, H3)
-  - Bullet Points für Aufzählungen
-  - Tabellen für Vergleiche
-  - Code-Blöcke für technische Inhalte
+Formatting:
+  - Clear headings (H2, H3)
+  - Bullet points for enumerations
+  - Tables for comparisons
+  - Code blocks for technical content
 ```
 
-### 2. Zitierfähige Antworten
+### 2. Citable answers
 
 ```markdown
-Jede Hauptbehauptung:
-  1. Direkte Antwort (1-2 Sätze)
-  2. Detaillierte Erklärung
-  3. Quelle / Referenz
-  4. Beispiel
+Every main claim:
+  1. Direct answer (1-2 sentences)
+  2. Detailed explanation
+  3. Source / reference
+  4. Example
 
-Struktur:
-  "Ja/Nein/Fakt. [Detaillierte Erklärung]. 
-   Laut [Quelle] ist [spezifischer Wert/Fakt]."
+Structure:
+  "Yes/No/Fact. [Detailed explanation].
+   According to [source], [specific value/fact]."
 ```
 
-### 3. FAQ-Optimierung
+### 3. FAQ optimization
 
 ```markdown
-Für jede wichtige Seite:
-  - 3-5 häufige Fragen
-  - Klare, direkte Antworten
-  - FAQPage Schema.org Markup
-  - Fragen aus "People Also Ask" ableiten
+For every important page:
+  - 3-5 frequent questions
+  - Clear, direct answers
+  - FAQPage schema.org markup
+  - Derive questions from "People Also Ask"
 ```
 
-### 4. Vergleichstabellen
+### 4. Comparison tables
 
 ```markdown
-Für Produkt-/Feature-Vergleiche:
-  - Markdown-Tabellen
-  - Klare Spalten-Überschriften
-  - Feature vs. Feature
-  - Preis vs. Preis
+For product/feature comparisons:
+  - Markdown tables
+  - Clear column headings
+  - Feature vs. feature
+  - Price vs. price
 
-Beispiel:
+Example:
   | Feature | Free | Pro | Enterprise |
   |---------|------|-----|------------|
   | Users   | 1    | 10  | Unlimited  |
   | Storage | 1GB  | 10GB| 100GB      |
 ```
 
-### 5. Authority-Signale
+### 5. Authority signals
 
 ```markdown
-Für LLM-Rankings:
-  - Autoren-Bio mit Expertise
-  - Zitate und Referenzen
-  - Aktualität (Datum aktualisieren)
-  - Domain-Authorität aufbauen
-  - Brand-Erwähnungen
+For LLM rankings:
+  - Author bio with expertise
+  - Citations and references
+  - Freshness (update the date)
+  - Build domain authority
+  - Brand mentions
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Nur Fließtext ohne Struktur
-  - Keine Quellen für Behauptungen
-  - Keine Tabellen für Vergleiche
-  - Veraltete Inhalte
-  - Keine FAQ-Sektionen
+- Only continuous prose without structure
+- No sources for claims
+- No tables for comparisons
+- Outdated content
+- No FAQ sections
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Strukturierte Inhalte mit Listen/Tabellen
-  - Quellen für jede Behauptung
-  - Vergleichstabellen für Features
-  - Regelmäßige Aktualisierung
-  - FAQ mit Schema.org Markup
+- Structured content with lists/tables
+- Sources for every claim
+- Comparison tables for features
+- Regular updates
+- FAQ with schema.org markup
 ```
 
 ---
 
-## Externe Skill-Unterstützung
+## External skill support
 
-> Vor der Umsetzung die importierten Best-in-Class-Skills laden (`./studio update-skills`):
+> Before implementation load the imported best-in-class skills (`./studio update-skills`):
 
-- **`marketing_aeo/skills/ai-seo`** (coreyhaines31/marketingskills) — vollständiger AEO-Workflow: In AI-Search-Ergebnissen und LLM-Antworten zitiert werden. **Primäre Quelle für diese Skill.**
-- **`marketing_aeo/skills/schema`** — strukturierte Daten / JSON-LD / Schema.org-Markup für KI-Sichtbarkeit
-- **`geo_visibility/SKILL.md`** (bloomprotocol) — AI-Visibility-Audit, llms.txt, Vergleichsseiten-Generator
-- **`marketing_aeo/skills/competitors`** — Vergleichs-/Alternativen-Seiten (`/alternatives-to/`)
+- **`marketing_aeo/skills/ai-seo`** (coreyhaines31/marketingskills) — complete AEO workflow: being cited in AI search results and LLM answers. **Primary source for this skill.**
+- **`marketing_aeo/skills/schema`** — structured data / JSON-LD / schema.org markup for AI visibility
+- **`geo_visibility/SKILL.md`** (bloomprotocol) — AI visibility audit, llms.txt, comparison page generator
+- **`marketing_aeo/skills/competitors`** — comparison/alternative pages (`/alternatives-to/`)
 
-Ablauf: `ai-seo` lesen → Audit-Punkte anwenden → Schema-Markup ergänzen → llms.txt prüfen.
+Flow: read `ai-seo` → apply the audit points → add schema markup → check llms.txt.
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/design_playbook.md` — Content-Struktur
-- `.quinsy-studio/knowledge-base/frontend_playbook.md` — Schema.org
+- `.quinsy-studio/knowledge-base/design_playbook.md` — content structure
+- `.quinsy-studio/knowledge-base/frontend_playbook.md` — schema.org

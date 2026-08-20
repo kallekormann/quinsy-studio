@@ -1,320 +1,324 @@
-# Quinsy Studio — Ticket-Workflow
+# Quinsy Studio — Ticket Workflow
 
-> Jedes Ticket durchläuft einen strikten 9-Schritte-Workflow.
-> Kein Schritt wird übersprungen; jeder Schritt wird dokumentiert.
+> Every ticket goes through a strict 9-step workflow.
+> No step is skipped; every step is documented.
 
-## Workflow-Übersicht
+## Workflow overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    9-SCHRITTE-TICKET-WORKFLOW                   │
+│                    9-STEP TICKET WORKFLOW                       │
 └─────────────────────────────────────────────────────────────────┘
 
- 1. INTAKE          ──▶  Ticket wird erstellt
+ 1. INTAKE          ──▶  ticket is created
        │
- 2. ANALYSE         ──▶  Anforderungen werden analysiert
+ 2. ANALYSIS        ──▶  requirements are analyzed
        │
- 3. PLANUNG         ──▶  Umsetzung wird geplant
+ 3. PLANNING        ──▶  implementation is planned
        │
- 4. DESIGN          ──▶  Design/Architektur wird definiert
+ 4. DESIGN          ──▶  design/architecture is defined
        │
- 5. IMPLEMENTATION  ──▶  Code wird geschrieben
+ 5. IMPLEMENTATION  ──▶  code is written
        │
- 6. QA-GATE         ──▶  Qualität wird geprüft
+ 6. QA GATE         ──▶  quality is checked
        │
- 7. REVIEW          ──▶  Code-Review wird durchgeführt
+ 7. REVIEW          ──▶  code review is performed
        │
- 8. REUSE-REVIEW    ──▶  Wiederverwendbarkeit wird geprüft
+ 8. REUSE REVIEW    ──▶  reusability is checked
        │
- 9. DONE            ──▶  Ticket wird abgeschlossen
+ 9. DONE            ──▶  ticket is completed
 ```
 
 ---
 
-## Die 9 Schritte (Verbindlich)
+## The 9 steps (mandatory)
 
-| # | Schritt | Beschreibung |
-|---|---------|-------------|
-| 1 | **Aufnahme & Verstehen** | Ticket lesen, Kontext verstehen, Fragen klären |
-| 2 | **Zerlegung & Abhängigkeiten** | In Sub-Tasks aufteilen, Abhängigkeiten identifizieren |
-| 3 | **Konzeption/Design** | Lösungsansatz definieren, Architektur-Entscheidungen |
-| 4 | **Umsetzung (Clean Code, TDD)** | Code schreiben, Tests schreiben, Tests grün |
-| 5 | **Selbstprüfung (Tests, Lint, Review)** | Eigenständige Qualitätsprüfung |
-| 6 | **QA-Gate** | `./studio gate <project>` muss grün sein |
-| 7 | **Doku & ADR-Sync** | Dokumentation aktualisieren, ADRs anlegen/updaten |
-| 8 | **Reuse-Review** | Wiederverwendbar? → `./studio promote` + Doku |
-| 9 | **Abschluss** | Status `done`, status.json aktualisieren |
+| # | Step | Description |
+|---|------|-------------|
+| 1 | **Intake & understanding** | read ticket, understand context, clarify questions |
+| 2 | **Decomposition & dependencies** | split into sub-tasks, identify dependencies |
+| 3 | **Conception/design** | define solution approach, architecture decisions |
+| 4 | **Implementation (clean code, TDD)** | write code, write tests, tests green |
+| 5 | **Self-check (tests, lint, review)** | independent quality check |
+| 6 | **QA gate** | `./studio gate <project>` must be green |
+| 7 | **Docs & ADR sync** | update documentation, create/update ADRs |
+| 8 | **Reuse review** | reusable? → `./studio promote` + docs |
+| 9 | **Completion** | status `done`, update status.json |
 
-**Regel:** Kein Schritt wird übersprungen. Jeder Schritt wird dokumentiert.
+**Rule:** no step is skipped. Every step is documented.
 
 ---
 
-## Detail-Schritte
+## Detailed steps
 
-### Schritt 1: Aufnahme & Verstehen
+### Step 1: Intake & understanding
 
 ```bash
-./studio ticket <project> "<Titel>" --phase <N> --priority <P> --estimate <E>
+./studio ticket <project> "<title>" --phase <N> --priority <P> --estimate <E>
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Ticket erstellen mit allen Metadaten |
+| **Action** | create ticket with all metadata |
 | **Output** | `<project>/backlog/open/TICKET-NNN-<slug>.md` |
-| **Verantwortlich** | Project Manager |
+| **Responsible** | Project Manager |
 
-**Ticket-Template:**
+**Ticket template:**
 ```markdown
 ---
 id: TICKET-NNN
-title: <Titel>
+title: <title>
 status: open
 phase: <N>
 priority: <P0-P3>
 estimate: <S/M/L/XL>
 created: YYYY-MM-DD
-assignee: <Rolle>
+assignee: <role>
 ---
 
-# TICKET-NNN — <Titel>
+# TICKET-NNN — <title>
 
-## Akzeptanzkriterien
-- [ ] Kriterium 1
-- [ ] Kriterium 2
-- [ ] Kriterium 3
+## Acceptance criteria
+- [ ] Criterion 1
+- [ ] Criterion 2
+- [ ] Criterion 3
 
-## Technische Anforderungen
+## Technical requirements
 ...
 
-## Abhängigkeiten
+## Dependencies
 - ...
 
-## Begründung
-Warum ist dieses Ticket wichtig?
+## Rationale
+Why is this ticket important?
 ```
 
 ---
 
-### Schritt 2: Zerlegung & Abhängigkeiten
+### Step 2: Decomposition & dependencies
 
 ```bash
-./studio move <project> TICKET-NNN analyze --reason "Zerlegung durchgeführt"
+./studio move <project> TICKET-NNN analyze --reason "Decomposition done"
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | In Sub-Tasks aufteilen, Abhängigkeiten identifizieren |
-| **Output** | Ticket mit Sub-Tasks und Abhängigkeiten |
-| **Verantwortlich** | Project Manager + Tech Lead |
+| **Action** | split into sub-tasks, identify dependencies |
+| **Output** | ticket with sub-tasks and dependencies |
+| **Responsible** | Project Manager + Tech Lead |
 
-**Checkliste:**
-- [ ] Ticket in Sub-Tasks zerlegt
-- [ ] Abhängigkeiten zu anderen Tickets dokumentiert
-- [ ] Blockierer identifiziert
-- [ ] Schätzungen für Sub-Tasks
+**Checklist:**
+- [ ] Ticket decomposed into sub-tasks
+- [ ] Dependencies on other tickets documented
+- [ ] Blockers identified
+- [ ] Estimates for sub-tasks
 
 ---
 
-### Schritt 3: Konzeption/Design
+### Step 3: Conception/design
 
 ```bash
-./studio move <project> TICKET-NNN design --reason "Konzeption abgeschlossen"
+./studio move <project> TICKET-NNN design --reason "Conception complete"
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Lösungsansatz definieren, Architektur-Entscheidungen |
-| **Output** | Design-Spezifikation, ggf. ADR |
-| **Verantwortlich** | Relevante Fachrollen |
+| **Action** | define solution approach, architecture decisions |
+| **Output** | design specification, possibly ADR |
+| **Responsible** | relevant expert roles |
 
-**Checkliste:**
-- [ ] Lösungsansatz dokumentiert
-- [ ] Architektur-Entscheidungen als ADR (falls nötig)
-- [ ] UI-Komponenten definiert (falls Frontend)
-- [ ] Datenmodell definiert (falls Backend)
-- [ ] API-Design definiert (falls API)
+**Checklist:**
+- [ ] Solution approach documented
+- [ ] Architecture decisions as ADR (if needed)
+- [ ] UI components defined (if frontend)
+- [ ] Data model defined (if backend)
+- [ ] API design defined (if API)
 
 ---
 
-### Schritt 4: Umsetzung (Clean Code, TDD)
+### Step 4: Implementation (clean code, TDD)
 
 ```bash
-./studio move <project> TICKET-NNN implement --reason "Implementierung gestartet"
+./studio move <project> TICKET-NNN implement --reason "Implementation started"
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Code schreiben (Test-First!) |
-| **Output** | Lauffähiger Code mit Tests |
-| **Verantwortlich** | Backend Systems / Frontend Experience |
+| **Action** | write code (test-first!) |
+| **Output** | working code with tests |
+| **Responsible** | Backend Systems / Frontend Experience |
 
-**Regeln:**
-- ✅ Test-First (TDD)
-- ✅ Clean Code / SOLID
-- ✅ Spezifische Error-Handling
-- ✅ Kein AI-Slop
-- ✅ Dokumentation
-- ❌ Kein Code ohne Ticket
-- ❌ Kein Commit ohne grüne Tests
+**Rules:**
+- ✅ Test-first (TDD)
+- ✅ Clean code / SOLID
+- ✅ Specific error handling
+- ✅ No AI slop
+- ✅ Documentation
+- ❌ No code without a ticket
+- ❌ No commit without green tests
 
 ---
 
-### Schritt 5: Selbstprüfung (Tests, Lint, Review)
+### Step 5: Self-check (tests, lint, review)
 
 ```bash
-# Tests ausführen
+# run tests
 pnpm test
-# Linting
+# linting
 pnpm lint
-# Build
+# build
 pnpm build
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Eigenständige Qualitätsprüfung |
-| **Output** | Alle Checks grün |
-| **Verantwortlich** | Implementierender Agent |
+| **Action** | independent quality check |
+| **Output** | all checks green |
+| **Responsible** | implementing agent |
 
-**Checkliste:**
-- [ ] Alle Tests grün
-- [ ] Keine Linting-Errors
-- [ ] Build erfolgreich
-- [ ] Code-Review (selbst oder Peer)
-- [ ] Kein AI-Slop (Anti-Slop-Check)
+**Checklist:**
+- [ ] All tests green
+- [ ] No linting errors
+- [ ] Build successful
+- [ ] Code review (self or peer)
+- [ ] No AI slop (anti-slop check)
 
 ---
 
-### Schritt 6: QA-Gate
+### Step 6: QA gate
 
 ```bash
 ./studio gate <project> --level 5
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Formales QA-Gate ausführen |
-| **Output** | Gate-Status (grün/rot) |
-| **Verantwortlich** | QA Specialist, Anti-Slop Auditor |
+| **Action** | run the formal QA gate |
+| **Output** | gate status (green/red) |
+| **Responsible** | QA Specialist, Anti-Slop Auditor |
 
-**Regel:** `./studio gate <project>` muss grün sein, bevor Ticket als done markiert wird.
+**Rule:** `./studio gate <project>` must be green before a ticket is marked done.
 
-**Bei Fehler:** Ticket geht zurück zu Schritt 4 (Umsetzung)
+**On failure:** the ticket goes back to step 4 (implementation)
 
 ---
 
-### Schritt 7: Doku & ADR-Sync
+### Step 7: Docs & ADR sync
 
 ```bash
-# falls nötig:
-./studio adr <project> "<Titel>"
+# if needed:
+./studio adr <project> "<title>"
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Dokumentation aktualisieren, ADRs anlegen/updaten |
-| **Output** | Aktualisierte Doku, ggf. neue ADRs |
-| **Verantwortlich** | Implementierender Agent |
+| **Action** | update documentation, create/update ADRs |
+| **Output** | updated docs, possibly new ADRs |
+| **Responsible** | implementing agent |
 
-**Checkliste:**
-- [ ] Betroffene Definitions-Dateien aktualisiert
-- [ ] READMEs aktuell
-- [ ] ADRs angelegt (falls Architektur-Entscheidung)
-- [ ] Decision Records aktualisiert (falls HITL)
+**Checklist:**
+- [ ] Affected definition files updated
+- [ ] READMEs current
+- [ ] ADRs created (if architecture decision)
+- [ ] Decision records updated (if HITL)
 
 ---
 
-### Schritt 8: Reuse-Review
+### Step 8: Reuse review (library-first)
 
 ```bash
-# falls wiederverwendbar:
-./studio promote <project> <asset-path>
+./studio library suggest <project> "<ticket topic>"
+./studio library pull <project> auth billing button    # before implement
+# after ticket — if generic:
+./studio library promote <project> packages/billing --ticket <ID> [--force]
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Prüfen ob Code/Design wiederverwendbar ist |
-| **Output** | Reuse-Entscheidung, ggf. Promotion zu Studio-Library |
-| **Verantwortlich** | Project Manager |
+| **Action** | Pull library boilerplate first; promote mutations if generic |
+| **Output** | `docs/library-usage.json`, `docs/library-promotions.json` |
+| **Responsible** | Implementing engineer + agent |
 
-**Checkliste:**
-- [ ] Ist diese Lösung für andere Projekte nützlich?
-- [ ] Könnte es eine generische Komponente werden?
-- [ ] Ist es eine bewährte Lösung?
-- [ ] Soll es zur Studio-Library promoted werden?
+**Checklist:**
+- [ ] Checked `./studio library list` / `suggest` before coding
+- [ ] Pulled relevant stubs (auth, billing, UI atoms)
+- [ ] Is the **final** solution useful for other projects?
+- [ ] Promoted with `--ticket` if yes; documented in ticket if no
 
-**Bei Promotion:**
+**On promotion:**
 ```bash
-./studio promote <project> <asset-path>
-# Z.B.: ./studio promote nudge ui/components/button
+./studio library promote nudge packages/billing --ticket NUDG-0004
+./studio library promote nudge ui/components/atoms/Badge.tsx --ticket NUDG-0002
 ```
+
+Moving to `done` without promotion logs **warns** if `packages/` or `ui/components/` changed.
 
 ---
 
-### Schritt 9: Abschluss → Status `done`
+### Step 9: Completion → status `done`
 
 ```bash
-./studio move <project> TICKET-NNN done --reason "Alle 9 Schritte abgeschlossen"
+./studio move <project> TICKET-NNN done --reason "All 9 steps complete"
 ```
 
-| Aspekt | Beschreibung |
+| Aspect | Description |
 |--------|-------------|
-| **Aktion** | Ticket abschließen, Status aktualisieren |
-| **Output** | Ticket in `backlog/done/` verschoben, status.json aktualisiert |
-| **Verantwortlich** | Project Manager |
+| **Action** | close the ticket, update status |
+| **Output** | ticket moved to `backlog/done/`, status.json updated |
+| **Responsible** | Project Manager |
 
-**Abschluss-Checkliste:**
-- [ ] Alle 9 Schritte dokumentiert
-- [ ] Alle Akzeptanzkriterien erfüllt
-- [ ] QA-Gate grün
-- [ ] Doku aktuell
-- [ ] Status.json aktualisiert
-- [ ] Commit durchgeführt
+**Completion checklist:**
+- [ ] All 9 steps documented
+- [ ] All acceptance criteria met
+- [ ] QA gate green
+- [ ] Docs current
+- [ ] status.json updated
+- [ ] Commit done
 
 ---
 
-## Ticket-Status
+## Ticket statuses
 
 ```
 open ──▶ analyze ──▶ plan ──▶ design ──▶ implement ──▶ qa ──▶ review ──▶ reuse ──▶ done
                                                                       
-         blocked ◀── (bei Problemen) ──▶ (zurück zu vorherigem Schritt)
+         blocked ◀── (on problems) ──▶ (back to previous step)
 ```
 
-| Status | Bedeutung |
-|--------|-----------|
-| `open` | Ticket erstellt, wartet auf Analyse |
-| `analyze` | Wird analysiert |
-| `plan` | Implementierung wird geplant |
-| `design` | Design/Architektur wird definiert |
-| `implement` | Code wird geschrieben |
-| `qa` | Qualität wird geprüft |
-| `review` | Code-Review |
-| `reuse` | Reuse-Review |
-| `done` | Abgeschlossen |
-| `blocked` | Blockiert (warten auf Entscheidung/Input) |
+| Status | Meaning |
+|--------|---------|
+| `open` | ticket created, waiting for analysis |
+| `analyze` | being analyzed |
+| `plan` | implementation being planned |
+| `design` | design/architecture being defined |
+| `implement` | code being written |
+| `qa` | quality being checked |
+| `review` | code review |
+| `reuse` | reuse review |
+| `done` | completed |
+| `blocked` | blocked (waiting for decision/input) |
 
 ---
 
-## Blockierte Tickets
+## Blocked tickets
 
-Wenn ein Ticket blockiert ist:
+When a ticket is blocked:
 
 ```bash
-./studio move <project> TICKET-NNN blocked --reason "Wartet auf ADR-Entscheidung"
+./studio move <project> TICKET-NNN blocked --reason "Waiting for ADR decision"
 ```
 
-- Blockierungsgrund wird dokumentiert
-- Ticket wird bei Grooming besprochen
-- Bei Grooming wird geprüft ob Blocker behoben werden kann
+- The blocking reason is documented
+- The ticket is discussed at grooming
+- At grooming it is checked whether the blocker can be resolved
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/lifecycle.md` — Phasen
-- `.quinsy-studio/process/gates.md` — QA-Gate im Detail
-- `.quinsy-studio/process/anti-slop.md` — Anti-Slop-Audit
-- `.quinsy-studio/process/iterative-delivery.md` — Sprint/Board/Grooming
-- `./studio ticket <project> "<Titel>"` — Ticket erstellen
-- `./studio move <project> <id> <status>` — Status wechseln
+- `.quinsy-studio/process/lifecycle.md` — phases
+- `.quinsy-studio/process/gates.md` — QA gate in detail
+- `.quinsy-studio/process/anti-slop.md` — anti-slop audit
+- `.quinsy-studio/process/iterative-delivery.md` — sprint/board/grooming
+- `./studio ticket <project> "<title>"` — create a ticket
+- `./studio move <project> <id> <status>` — change status

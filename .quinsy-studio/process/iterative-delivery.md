@@ -1,22 +1,22 @@
 # Quinsy Studio — Iterative Delivery
 
-> Ab Phase 3 wird iterativ gearbeitet. Sprints, Grooming und das Backlog-Board sind die Triebwerke.
+> From phase 3 on, work is iterative. Sprints, grooming and the backlog board are the engines.
 
-## Grundprinzip
+## Core principle
 
 ```
-Iterativ = planen → bauen → prüfen → lernen → wiederholen
+Iterative = plan → build → check → learn → repeat
 ```
 
-Kein Sprint ist identisch; jeder Sprint lernt aus dem vorherigen.
+No sprint is identical; every sprint learns from the previous one.
 
 ---
 
-## Sprint-Zyklus
+## Sprint cycle
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    SPRINT-ZYKLUS                        │
+│                    SPRINT CYCLE                         │
 └─────────────────────────────────────────────────────────┘
 
  ┌──────────────┐
@@ -33,80 +33,80 @@ Kein Sprint ist identisch; jeder Sprint lernt aus dem vorherigen.
         ▼                                        │
  ┌──────────────┐                                │
  │   TICKETS    │                                │
- │   BEARBEITEN │                                │
+ │   WORK ON    │                                │
  └──────┬───────┘                                │
         │                                        │
         ▼                                        │
  ┌──────────────┐                                │
- │   QA-GATE    │                                │
+ │   QA GATE    │                                │
  └──────┬───────┘                                │
         │                                        │
         ▼                                        │
  ┌──────────────┐                                │
- │   RETRO      │ ──── Learning Items ──────────┘
+ │   RETRO      │ ──── learning items ──────────┘
  │   + REVIEW   │
  └──────────────┘
 ```
 
 ---
 
-## Sprint-Struktur
+## Sprint structure
 
-Jeder Sprint hat:
+Every sprint has:
 - **Name:** `SPRINT-01`, `SPRINT-02`, ...
-- **Dauer:** variabel (je nach Projekt)
-- **Fokus:** ein oder mehrere Features
-- **Ziel:** klare Definition von Done
+- **Duration:** variable (depending on the project)
+- **Focus:** one or more features
+- **Goal:** clear definition of done
 
-### Sprint-Verzeichnis
+### Sprint directory
 
 ```
 <project>/sprints/
 ├── SPRINT-01/
-│   ├── plan.md          # Sprint-Planung
-│   ├── summary.md       # Sprint-Zusammenfassung
-│   ├── grooming.md      # Grooming-Protokoll
-│   └── retro.md         # Retrospektive
+│   ├── plan.md          # sprint planning
+│   ├── summary.md       # sprint summary
+│   ├── grooming.md      # grooming protocol
+│   └── retro.md         # retrospective
 ├── SPRINT-02/
 │   └── ...
 ```
 
 ---
 
-## Sprint-Planung
+## Sprint planning
 
 ```bash
 ./studio sprint <project>
 ```
 
-Erstellt `sprints/SPRINT-NN/plan.md` mit Template:
+Creates `sprints/SPRINT-NN/plan.md` with template:
 
 ```markdown
-# Sprint-Planung — SPRINT-NN
+# Sprint Planning — SPRINT-NN
 
-**Ziel:** <Was soll in diesem Sprint erreicht werden?>
+**Goal:** <what should be achieved in this sprint?>
 **Start:** YYYY-MM-DD
-**Ende:** YYYY-MM-DD
-**Kapazität:** <realistische Einschätzung>
+**End:** YYYY-MM-DD
+**Capacity:** <realistic estimate>
 
-## Tickets in diesem Sprint
+## Tickets in this sprint
 
-| Ticket | Titel | Phase | Priorität | Geschätzt |
-|--------|-------|-------|-----------|-----------|
+| Ticket | Title | Phase | Priority | Estimate |
+|--------|-------|-------|----------|----------|
 | TICKET-NNN | ... | 4 | P1 | M |
 
-## Abhängigkeiten
+## Dependencies
 - ...
 
-## Risiken
+## Risks
 - ...
 
 ## Definition of Done
-- [ ] Alle Tickets im Status "done"
-- [ ] QA-Test grün
-- [ ] Anti-Slop-Audit: 0 Error
-- [ ] Retrospektive durchgeführt
-- [ ] Summary geschrieben
+- [ ] All tickets in status "done"
+- [ ] QA test green
+- [ ] Anti-slop audit: 0 errors
+- [ ] Retrospective done
+- [ ] Summary written
 ```
 
 ---
@@ -117,71 +117,71 @@ Erstellt `sprints/SPRINT-NN/plan.md` mit Template:
 ./studio groom <project>
 ```
 
-Das Grooming ist die wöchentliche Board-Besprechung:
+Grooming is the weekly board meeting:
 
-### Grooming-Agenda
+### Grooming agenda
 
-1. **Blockierte Tickets prüfen**
-   - Kann der Blocker behoben werden?
-   - Soll das Ticket geschlossen werden?
+1. **Check blocked tickets**
+   - Can the blocker be resolved?
+   - Should the ticket be closed?
 
-2. **Priorisierung**
-   - Sind die Prioritäten noch aktuell?
-   - Sollen Tickets umsortiert werden?
+2. **Prioritization**
+   - Are the priorities still current?
+   - Should tickets be reordered?
 
-3. **Abhängigkeiten**
-   - Gibt es neue Abhängigkeiten?
-   - Sind Abhängigkeiten aufgelöst?
+3. **Dependencies**
+   - Are there new dependencies?
+   - Are dependencies resolved?
 
-4. **Kapazität**
-   - Ist der Sprint realistisch geplant?
-   - Sollen Tickets verschoben werden?
+4. **Capacity**
+   - Is the sprint planned realistically?
+   - Should tickets be moved?
 
-5. **Neue Tickets**
-   - Gibt es neue Anforderungen?
-   - Sollen sie als Tickets angelegt werden?
+5. **New tickets**
+   - Are there new requirements?
+   - Should they be created as tickets?
 
-### Grooming-Protokoll
+### Grooming protocol
 
 ```markdown
-# Grooming-Protokoll — SPRINT-NN
+# Grooming Protocol — SPRINT-NN
 
-**Datum:** YYYY-MM-DD
-**Teilnehmer:** Project Manager, ...
+**Date:** YYYY-MM-DD
+**Participants:** Project Manager, ...
 
-## Blockierte Tickets
-| Ticket | Grund | Aktion |
-|--------|-------|--------|
+## Blocked tickets
+| Ticket | Reason | Action |
+|--------|--------|--------|
 | ... | ... | ... |
 
-## Priorisierungsänderungen
-| Ticket | Neue Priorität | Grund |
-|--------|---------------|-------|
+## Prioritization changes
+| Ticket | New priority | Reason |
+|--------|--------------|--------|
 | ... | ... | ... |
 
-## Neue Tickets
-| Ticket | Titel | Priorität |
-|--------|-------|-----------|
+## New tickets
+| Ticket | Title | Priority |
+|--------|-------|----------|
 | ... | ... | ... |
 
-## Kapazitätsanpassungen
+## Capacity adjustments
 - ...
 
-## Nächste Schritte
+## Next steps
 - ...
 ```
 
 ---
 
-## Backlog-Board
+## Backlog board
 
-Das Board zeigt alle Tickets ihres aktuellen Status:
+The board shows all tickets by their current status:
 
 ```bash
 ./studio board <project>
 ```
 
-### Board-Ansicht
+### Board view
 
 ```
 ┌─────────────┬─────────────┬─────────────┬─────────────┬─────────────┐
@@ -194,7 +194,7 @@ Das Board zeigt alle Tickets ihres aktuellen Status:
 └─────────────┴─────────────┴─────────────┴─────────────┴─────────────┘
 ```
 
-### Board-Filter
+### Board filters
 
 ```bash
 ./studio board <project> --phase 4
@@ -204,143 +204,143 @@ Das Board zeigt alle Tickets ihres aktuellen Status:
 
 ---
 
-## Ticket-Bewegung
+## Ticket movement
 
 ```bash
-# Ticket in nächsten Status verschieben
-./studio move <project> TICKET-NNN <status> [--reason "Grund"]
+# move a ticket to the next status
+./studio move <project> TICKET-NNN <status> [--reason "Reason"]
 
-# Beispiele
-./studio move nudge TICKET-007 implement --reason "Implementierung gestartet"
-./studio move nudge TICKET-007 qa --reason "QA gestartet"
-./studio move nudge TICKET-007 done --reason "Alle Kriterien erfüllt"
+# examples
+./studio move nudge TICKET-007 implement --reason "Implementation started"
+./studio move nudge TICKET-007 qa --reason "QA started"
+./studio move nudge TICKET-007 done --reason "All criteria met"
 ```
 
-**Regel:** Jede Bewegung wird dokumentiert (Status-Änderung + Grund).
+**Rule:** every movement is documented (status change + reason).
 
 ---
 
-## Sprint-Review
+## Sprint review
 
-Am Ende jedes Sprints:
+At the end of each sprint:
 
 ```markdown
-# Sprint-Review — SPRINT-NN
+# Sprint Review — SPRINT-NN
 
-## Erreicht
+## Achieved
 - [x] TICKET-001: ...
 - [x] TICKET-002: ...
 
-## Nicht erreicht ( verschoben)
-- [ ] TICKET-003: ... (Grund: ...)
+## Not achieved (moved)
+- [ ] TICKET-003: ... (reason: ...)
 
-## Metriken
-- Geplant: 5 Tickets
-- Geschafft: 3 Tickets
-- Quote: 60%
-- Durchschnittliche Dauer: 2 Tage/Ticket
+## Metrics
+- Planned: 5 tickets
+- Completed: 3 tickets
+- Rate: 60%
+- Average duration: 2 days/ticket
 
 ## Velocity
-- SPRINT-01: 3 Tickets
-- SPRINT-02: 4 Tickets (+1)
+- SPRINT-01: 3 tickets
+- SPRINT-02: 4 tickets (+1)
 - Trend: 📈
 ```
 
 ---
 
-## Retrospektive
+## Retrospective
 
-Nach jedem Sprint:
+After each sprint:
 
 ```bash
 ./studio retro <project>
 ```
 
-### Retro-Template
+### Retro template
 
 ```markdown
-# Retrospektive — SPRINT-NN
+# Retrospective — SPRINT-NN
 
-## Was lief gut? 🟢
+## What went well? 🟢
 - ...
 
-## Was lief schlecht? 🔴
+## What went badly? 🔴
 - ...
 
-## Was können wir verbessern? 🟡
+## What can we improve? 🟡
 - ...
 
-## Learning Items
-| Item | Signal | Quelle | Aktion |
+## Learning items
+| Item | Signal | Source | Action |
 |------|--------|--------|--------|
 | ... | ... | ... | ... |
 
-## Action Items
-- [ ] ... (Owner: ...)
-- [ ] ... (Owner: ...)
+## Action items
+- [ ] ... (owner: ...)
+- [ ] ... (owner: ...)
 ```
 
 ---
 
-## Learning Items
+## Learning items
 
 ```bash
-./studio learn "<Titel>" --signal <Signal> --source <Quelle>
+./studio learn "<title>" --signal <signal> --source <source>
 ```
 
-### Learning-Signale
+### Learning signals
 
-| Signal | Bedeutung |
-|--------|-----------|
-| `gate-fail` | Gate-Prüfung fehlgeschlagen |
-| `rework` | Arbeit musste wiederholt werden |
-| `tooling-gap` | Tooling fehlte oder war unzureichend |
-| `design-gap` | Design-Spezifikation war unzureichend |
-| `process-gap` | Prozess-Schritt war unklar |
-| `knowledge-gap` | Wissen fehlte |
+| Signal | Meaning |
+|--------|---------|
+| `gate-fail` | gate check failed |
+| `rework` | work had to be redone |
+| `tooling-gap` | tooling was missing or insufficient |
+| `design-gap` | design specification was insufficient |
+| `process-gap` | process step was unclear |
+| `knowledge-gap` | knowledge was missing |
 
-### Learning-Item-Template
+### Learning item template
 
 ```markdown
 ---
 id: LO-NNNN
-title: <Titel>
+title: <title>
 status: open | in-progress | done
-signal: <Signal>
-source: <Quelle>
+signal: <signal>
+source: <source>
 priority: P0-P3
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 ---
 
-# LO-NNNN — <Titel>
+# LO-NNNN — <title>
 
-## Beobachtung
-Was ist passiert / was fehlt?
+## Observation
+What happened / what is missing?
 
-## Auswirkung
-Welche Folge hatte das (Rework, Unsicherheit, Qualitätsrisiko)?
+## Impact
+What was the consequence (rework, uncertainty, quality risk)?
 
-## Vorschlag
-Wie soll Prozess / Skill / Tooling verbessert werden?
+## Proposal
+How should process / skill / tooling be improved?
 
 ## Status
-- [ ] Im Meta-Retro besprochen
-- [ ] Umgesetzt (CHANGELOG.md-Eintrag, Version aktualisiert)
+- [ ] Discussed in the meta-retro
+- [ ] Implemented (CHANGELOG.md entry, version updated)
 ```
 
 ---
 
-## Status-Datei
+## Status file
 
-Jedes Projekt hat eine `status.json`:
+Every project has a `status.json`:
 
 ```json
 {
   "name": "nudge",
   "phase": "5",
   "gate": "4",
-  "gate_status": "bestanden",
+  "gate_status": "passed",
   "created": "2026-08-19",
   "last_update": "2026-08-19",
   "archetype": "saas-application",
@@ -353,7 +353,7 @@ Jedes Projekt hat eine `status.json`:
   "gate_history": [
     {
       "gate": 0,
-      "status": "grün",
+      "status": "green",
       "passed_at": "2026-08-19T10:00:00Z"
     }
   ]
@@ -362,14 +362,14 @@ Jedes Projekt hat eine `status.json`:
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/ticket-workflow.md` — 9-Schritte-Ticket-Workflow
-- `.quinsy-studio/process/gates.md` — Gate-Definitionen
-- `.quinsy-studio/process/lifecycle.md` — Phasen-Überblick
-- `./studio sprint <project>` — Sprint anlegen
-- `./studio groom <project>` — Grooming durchführen
-- `./studio board <project>` — Board anzeigen
-- `./studio move <project> <id> <status>` — Ticket bewegen
-- `./studio learn "<Titel>"` — Learning Item anlegen
-- `./studio retro <project>` — Retrospektive starten
+- `.quinsy-studio/process/ticket-workflow.md` — 9-step ticket workflow
+- `.quinsy-studio/process/gates.md` — gate definitions
+- `.quinsy-studio/process/lifecycle.md` — phase overview
+- `./studio sprint <project>` — create a sprint
+- `./studio groom <project>` — run grooming
+- `./studio board <project>` — show the board
+- `./studio move <project> <id> <status>` — move a ticket
+- `./studio learn "<title>"` — create a learning item
+- `./studio retro <project>` — start a retrospective

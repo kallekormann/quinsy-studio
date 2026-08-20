@@ -1,6 +1,6 @@
 # Skill: Performance Optimization
 
-> Core Web Vitals, Bundle-Analyse, Code-Splitting, Lazy Loading, Caching
+> Core web vitals, bundle analysis, code splitting, lazy loading, caching
 
 ## Metadata
 
@@ -12,111 +12,111 @@ lead_role: Frontend Architect
 support_roles: [Frontend Engineer, Platform Architect]
 phases: [3, 4, 5, 7]
 activation_triggers:
-  - Ticket enthält "Performance", "Ladezeit", "Speed", "Bundle"
-  - Core Web Vitals sind unter Budget
-  - Lighthouse-Score < 90
-  - Phase 5 QA-Gate prüft Performance
+  - Ticket contains "performance", "load time", "speed", "bundle"
+  - Core web vitals are under budget
+  - Lighthouse score < 90
+  - Phase 5 QA gate checks performance
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Performance Budget
+### 1. Performance budget
 
 ```markdown
-Core Web Vitals:
+Core web vitals:
   LCP (Largest Contentful Paint):  < 2.5s
   INP (Interaction to Next Paint): < 200ms
   CLS (Cumulative Layout Shift):   < 0.1
 
-Lighthouse Scores:
+Lighthouse scores:
   Performance:     > 90
   Accessibility:   > 90
-  Best Practices:  > 90
+  Best practices:  > 90
   SEO:             > 90
 
-Bundle Budget:
+Bundle budget:
   Total:           < 250KB (gzipped)
-  First Load JS:   < 100KB (gzipped)
+  First load JS:   < 100KB (gzipped)
   CSS:             < 50KB (gzipped)
 ```
 
-### 2. Code-Splitting Strategie
+### 2. Code-splitting strategy
 
 ```markdown
-Splitting-Punkte:
-1. Route-basiert (Next.js: automatisch via dynamic imports)
-2. Komponenten-basiert (bei large Komponenten)
-3. Library-basiert (bei großen Dependencies)
+Splitting points:
+1. Route-based (Next.js: automatic via dynamic imports)
+2. Component-based (for large components)
+3. Library-based (for large dependencies)
 
-dynamic import für:
-  - Modal-Komponenten
-  - Chart-Libraries
-  - Editor-Komponenten
-  - Anything > 20KB das nicht sofort sichtbar ist
+dynamic import for:
+  - modal components
+  - chart libraries
+  - editor components
+  - anything > 20KB that is not immediately visible
 ```
 
-### 3. Lazy Loading
+### 3. Lazy loading
 
 ```markdown
-Bilder:
-  - loading="lazy" für below-the-fold Bilder
-  - srcset für responsive Bilder
-  - WebP/AVIF Format
-  - Blur-Placeholder für LCP-Bilder
+Images:
+  - loading="lazy" for below-the-fold images
+  - srcset for responsive images
+  - WebP/AVIF format
+  - Blur placeholder for LCP images
 
-Komponenten:
+Components:
   - React.lazy() + Suspense
-  - Intersection Observer für无限列表
-  - Prefetching für wahrscheinliche nächste Routes
+  - Intersection observer for infinite lists
+  - Prefetching for likely next routes
 
-Daten:
-  - SWR/React Query für Client-fetching
-  - ISR (Incremental Static Regeneration) für statische Seiten
-  - Streaming SSR für komplexe Seiten
+Data:
+  - SWR/React Query for client fetching
+  - ISR (Incremental Static Regeneration) for static pages
+  - Streaming SSR for complex pages
 ```
 
-### 4. Caching-Strategie
+### 4. Caching strategy
 
 ```markdown
-HTTP Caching:
-  - Static Assets: immutable, long-cache (1 year)
-  - API Responses: stale-while-revalidate
-  - HTML: short-cache + revalidation
+HTTP caching:
+  - Static assets: immutable, long cache (1 year)
+  - API responses: stale-while-revalidate
+  - HTML: short cache + revalidation
 
-Service Worker (PWA):
-  - Cache-First für statische Assets
-  - Network-First für API Calls
-  - Offline-Fallback für kritische Seiten
+Service worker (PWA):
+  - Cache-first for static assets
+  - Network-first for API calls
+  - Offline fallback for critical pages
 ```
 
-### 5. Image-Optimierung
+### 5. Image optimization
 
 ```markdown
-Formate:
-  - WebP als Standard
-  - AVIF als Modern-Fallback
-  - PNG nur für Transparenz
-  - SVG für Icons
+Formats:
+  - WebP as standard
+  - AVIF as modern fallback
+  - PNG only for transparency
+  - SVG for icons
 
-Techniken:
-  - Responsive Images (srcset, sizes)
-  - Lazy Loading (loading="lazy")
-  - Blur-Placeholder
-  - CDN für Image-Resizing
+Techniques:
+  - Responsive images (srcset, sizes)
+  - Lazy loading (loading="lazy")
+  - Blur placeholder
+  - CDN for image resizing
 ```
 
 ### 6. Monitoring
 
 ```markdown
 Tools:
-  - Lighthouse CI (in Pipeline)
-  - Web Vitals Library (im Code)
-  - Sentry Performance Monitoring
-  - Custom Performance Marks
+  - Lighthouse CI (in pipeline)
+  - Web vitals library (in code)
+  - Sentry performance monitoring
+  - Custom performance marks
 
-Metriken tracken:
+Track metrics:
   - FCP (First Contentful Paint)
   - LCP (Largest Contentful Paint)
   - INP (Interaction to Next Paint)
@@ -126,36 +126,36 @@ Metriken tracken:
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Große Bundle ohne Code-Splitting
-- Alle Bilder ohne Lazy Loading
-- CSS/JS ohne Minification
-- Keine Preloading-Prefetching Strategie
-- Performance erst in Phase 5 prüfen
-- Kein Performance Budget
-- Inline-SVGs für komplexe Icons (statt Sprite/Component)
+- Large bundle without code splitting
+- All images without lazy loading
+- CSS/JS without minification
+- No preloading/prefetching strategy
+- Checking performance only in phase 5
+- No performance budget
+- Inline SVGs for complex icons (instead of sprite/component)
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Dynamische Imports für alles > 20KB
-- Lazy Loading für below-the-fold
-- Minification + Tree-Shaking
-- Prefetching für wahrscheinliche nächste Routes
-- Performance-Check in Phase 3 (früh!)
-- Lighthouse CI in Pipeline
-- SVG-Sprite oder Icon-Component
+- Dynamic imports for everything > 20KB
+- Lazy loading for below-the-fold
+- Minification + tree shaking
+- Prefetching for likely next routes
+- Performance check in phase 3 (early!)
+- Lighthouse CI in pipeline
+- SVG sprite or icon component
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/frontend_playbook.md` — Frontend-Regeln
-- `.quinsy-studio/process/gates.md` — Performance im Gate 5
-- `./studio gate <project> --performance` — Performance-Check
+- `.quinsy-studio/knowledge-base/frontend_playbook.md` — frontend rules
+- `.quinsy-studio/process/gates.md` — performance in gate 5
+- `./studio gate <project> --performance` — performance check

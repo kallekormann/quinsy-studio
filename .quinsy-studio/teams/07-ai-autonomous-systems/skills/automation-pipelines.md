@@ -1,6 +1,6 @@
 # Skill: Automation Pipelines
 
-> CI/CD-Pipelines, Test-Automatisierung, Deployment-Automatisierung, Monitoring
+> CI/CD pipelines, test automation, deployment automation, monitoring
 
 ## Metadata
 
@@ -12,122 +12,122 @@ lead_role: Studio Automation Engineer
 support_roles: [Platform Architect, Backend Engineer]
 phases: [3, 4, 5, 6, 7]
 activation_triggers:
-  - Ticket enthält "CI/CD", "Pipeline", "Automatisierung", "Deployment"
-  - Phase 3: CI/CD wird eingerichtet
-  - Phase 4: Automatisierung wird implementiert
-  - Phase 5: QA-Pipeline
-  - Phase 7: Deployment-Pipeline
+  - Ticket contains "CI/CD", "pipeline", "automation", "deployment"
+  - Phase 3: CI/CD is set up
+  - Phase 4: automation is implemented
+  - Phase 5: QA pipeline
+  - Phase 7: deployment pipeline
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. CI/CD Pipeline
+### 1. CI/CD pipeline
 
 ```markdown
-Standard-Pipeline (GitHub Actions):
+Standard pipeline (GitHub Actions):
 
 on push:
   1. Lint (ESLint, Prettier)
-  2. Type-Check (TypeScript)
-  3. Unit-Tests (Vitest)
-  4. Integration-Tests
+  2. Type check (TypeScript)
+  3. Unit tests (Vitest)
+  4. Integration tests
   5. Build
-  6. Security-Scan (Dependabot)
+  6. Security scan (Dependabot)
 
 on merge to main:
-  1. Alle CI-Checks
-  2. Deploy to Staging
-  3. Smoke-Tests
-  4. Deploy to Production (after approval)
+  1. All CI checks
+  2. Deploy to staging
+  3. Smoke tests
+  4. Deploy to production (after approval)
 ```
 
-### 2. Test-Automatisierung
+### 2. Test automation
 
 ```markdown
-In Pipeline:
-  - Unit-Tests: Immer (schnell, <2 Min)
-  - Integration-Tests: Immer (<5 Min)
-  - E2E-Tests: Bei Deploy auf Staging (<10 Min)
-  - Visual Regression: Bei UI-Änderungen
-  - Lighthouse: Bei Deploy auf Staging
+In pipeline:
+  - Unit tests: always (fast, <2 min)
+  - Integration tests: always (<5 min)
+  - E2E tests: on deploy to staging (<10 min)
+  - Visual regression: on UI changes
+  - Lighthouse: on deploy to staging
 ```
 
-### 3. Deployment-Automatisierung
+### 3. Deployment automation
 
 ```markdown
-Strategie: Blue/Green oder Canary
+Strategy: blue/green or canary
 
 Vercel:
-  - Auto-Deploy on push
-  - Preview-Deployments für PRs
-  - Production-Deploy nach Merge
+  - Auto-deploy on push
+  - Preview deployments for PRs
+  - Production deploy after merge
 
 Docker:
-  - Multi-Stage Build
-  - Health-Checks
-  - Graceful Shutdown
+  - Multi-stage build
+  - Health checks
+  - Graceful shutdown
 ```
 
 ### 4. Monitoring
 
 ```markdown
-Post-Deployment:
-  - Uptime-Monitoring (Ping/UptimeRobot)
-  - Error-Tracking (Sentry)
-  - Performance-Monitoring (Vercel Analytics)
-  - Log-Aggregation
+Post-deployment:
+  - Uptime monitoring (ping/UptimeRobot)
+  - Error tracking (Sentry)
+  - Performance monitoring (Vercel Analytics)
+  - Log aggregation
 
 Alerts:
-  - Error-Rate > 1%
-  - Response-Time > 2s
+  - Error rate > 1%
+  - Response time > 2s
   - Uptime < 99.9%
-  - Build-Failure
+  - Build failure
 ```
 
-### 5. Backup & Rollback
+### 5. Backup & rollback
 
 ```markdown
 Rollback:
-  - Vercel: One-Click Rollback
-  - Docker: Previous Image
-  - Database: Migration-Down
+  - Vercel: one-click rollback
+  - Docker: previous image
+  - Database: migration down
 
 Backup:
-  - Database: Täglich (automatisiert)
-  - Config: In Git
-  - Secrets: In Secret-Manager
+  - Database: daily (automated)
+  - Config: in git
+  - Secrets: in secret manager
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Manuelle Deploys
-  - Keine Tests in Pipeline
-  - Kein Rollback-Plan
-  - Kein Monitoring post-deploy
-  - Secrets im Code/Repository
+- Manual deploys
+- No tests in the pipeline
+- No rollback plan
+- No post-deploy monitoring
+- Secrets in code/repository
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Automatisiertes Deployment
-  - Vollständige Test-Pipeline
-  - One-Click Rollback
-  - Uptime + Error-Monitoring
-  - Secrets in Secret-Manager
+- Automated deployment
+- Complete test pipeline
+- One-click rollback
+- Uptime + error monitoring
+- Secrets in secret manager
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/ai_automation_playbook.md` — Automatisierung
-- `templates/docker/` — Docker-Templates
-- `.quinsy-studio/studio-tools/` — Python-Automation
+- `.quinsy-studio/knowledge-base/ai_automation_playbook.md` — automation
+- `templates/docker/` — docker templates
+- `.quinsy-studio/studio-tools/` — python automation

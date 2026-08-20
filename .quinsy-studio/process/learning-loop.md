@@ -1,185 +1,201 @@
 # Quinsy Studio — Learning Loop
 
-> Das Studio lernt aus seinen Fehlern. Jeder Mistake wird analysiert und in Verbesserungen umgewandelt.
+> The studio learns from its mistakes. Every mistake is analyzed and turned into improvements.
 
-## Grundprinzip
+## Core principle
 
 ```
-Fehler → Learning Item → Meta-Retro → Verbesserung → CHANGELOG
+Mistake → Learning item → Meta-retro → Improvement → CHANGELOG
 ```
 
 ---
 
-## Learning-Items erfassen
+## Capture learning items
 
 ```bash
-./studio learn "<Titel>" --signal <Signal> --source <Quelle>
+./studio learn "<title>" --signal <signal> --source <source>
 ```
 
-### Signale
+### Signals
 
-| Signal | Beschreibung | Aktion |
+| Signal | Description | Action |
 |--------|-------------|--------|
-| `gate-fail` | Gate-Prüfung fehlgeschlagen | Gate-Kriterien überprüfen |
-| `rework` | Arbeit musste wiederholt werden | Prozess-Schritt analysieren |
-| `tooling-gap` | Tooling fehlte oder war unzureichend | CLI/Tooling erweitern |
-| `design-gap` | Design-Spezifikation war unzureichend | Design-Process verbessern |
-| `process-gap` | Prozess-Schritt war unklar | Process-Docs aktualisieren |
-| `knowledge-gap` | Wissen fehlte | Team-Skill erweitern |
-| `sloppy-code` | AI-Slop erkannt | Anti-Slop-Regeln verschärfen |
-| `slow-gate` | Gate-Check dauerte zu lang | Gate-Optimierung |
+| `gate-fail` | gate check failed | review gate criteria |
+| `rework` | work had to be redone | analyze the process step |
+| `tooling-gap` | tooling was missing or insufficient | extend CLI/tooling |
+| `design-gap` | design specification was insufficient | improve the design process |
+| `process-gap` | process step was unclear | update process docs |
+| `knowledge-gap` | knowledge was missing | extend the team skill |
+| `sloppy-code` | AI slop detected | tighten anti-slop rules |
+| `slow-gate` | gate check took too long | optimize the gate |
 
-### Learning-Item-Format
+### Learning item format
 
 ```markdown
 ---
 id: LO-NNNN
-title: <Titel>
+title: <title>
 status: open | in-progress | done
-signal: <Signal>
-source: <Quelle>
+signal: <signal>
+source: <source>
 priority: P0-P3
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 ---
 
-# LO-NNNN — <Titel>
+# LO-NNNN — <title>
 
-## Beobachtung
-Was ist passiert / was fehlt?
+## Observation
+What happened / what is missing?
 
-## Auswirkung
-Welche Folge hatte das (Rework, Unsicherheit, Qualitätsrisiko)?
+## Impact
+What was the consequence (rework, uncertainty, quality risk)?
 
-## Vorschlag
-Wie soll Prozess / Skill / Tooling verbessert werden?
+## Proposal
+How should process / skill / tooling be improved?
 
 ## Status
-- [ ] Im Meta-Retro besprochen
-- [ ] Umgesetzt (CHANGELOG.md-Eintrag, Version aktualisiert)
+- [ ] Discussed in the meta-retro
+- [ ] Implemented (CHANGELOG.md entry, version updated)
 ```
 
 ---
 
-## Learning-Items auflisten
+## List learning items
 
 ```bash
 ./studio learn-list
 ```
 
-Zeigt alle offenen Learning Items.
+Shows all open learning items.
 
 ---
 
-## Meta-Retrospektive
+## Meta-retrospective
 
 ```bash
 ./studio retro <project>
 ```
 
-### Ablauf
+### Flow
 
-1. **Learning Items sammeln**
-   - Offene LOs aus `./studio learn-list`
-   - Feedback aus Sprint-Retros
-   - Gate-Fehler-Analyse
+1. **Collect learning items**
+   - Open LOs from `./studio learn-list`
+   - Feedback from sprint retros
+   - Gate error analysis
 
-2. **Skill-Review**
-   - Jeder Team-Skill wird geprüft
-   - Qualitätssignale sammeln
-   - Verbesserungen identifizieren
+2. **Skill review**
+   - Every team skill is reviewed
+   - Collect quality signals
+   - Identify improvements
 
-3. **Entscheidungen**
-   - Was wird geändert?
-   - Was wird beibehalten?
-   - Priorisierung
+3. **Decisions**
+   - What will be changed?
+   - What will be kept?
+   - Prioritization
 
-4. **Action Items**
-   - Konkrete Änderungen
-   - Owner zuweisen
-   - Deadline setzen
+4. **Action items**
+   - Concrete changes
+   - Assign owner
+   - Set deadline
 
 5. **CHANGELOG**
-   - Jede Änderung wird dokumentiert
-   - Version aktualisieren
+   - Every change is documented
+   - Update the version
 
-### Retro-Template
+### Retro template
 
 ```markdown
 # Meta-Retro — YYYY-MM-DD
 
-## Eingegangene Learning Items
+## Incoming learning items
 - LO-0000: ...
 
-## Skill-Review
-| Skill | Qualitätssignal | Aktion |
-|-------|-----------------|--------|
+## Skill review
+| Skill | Quality signal | Action |
+|-------|----------------|--------|
 | ... | ... | ... |
 
-## Entscheidungen
-- ... (jede Änderung → CHANGELOG.md-Eintrag)
+## Decisions
+- ... (every change → CHANGELOG.md entry)
 
-## Action Items
-- [ ] ... (Owner: ...)
-- [ ] ... (Owner: ...)
+## Action items
+- [ ] ... (owner: ...)
+- [ ] ... (owner: ...)
 ```
 
 ---
 
-## CHANGELOG pflegen
+## Global loop: studio library
 
-Jede Änderung am Studio wird im CHANGELOG dokumentiert:
+Reusable **UI and code** flow from projects into `.quinsy-studio/studio-library/`:
+
+| When | Command |
+|------|---------|
+| Before coding | `./studio library pull <project> auth billing …` |
+| Gate 2 (design) | `./studio approve --gate 2` → `promote-library` |
+| After ticket (generic code) | `./studio library promote <project> <path> --ticket <id>` |
+
+Registry: [../studio-library/library_registry.md](../studio-library/library_registry.md)
+
+Process/skill improvements still use **LO-*** items and `./studio learn`.
+
+---
+
+## Maintain the CHANGELOG
+
+Every change to the studio is documented in the CHANGELOG:
 
 ```markdown
 ## [1.1.0] — 2026-08-21
 
-### Geändert
-- Gate-Check optimiert (30% schneller)
-- Anti-Slop-Regeln verschärft (neue Regel: C5)
+### Changed
+- Gate check optimized (30% faster)
+- Anti-slop rules tightened (new rule: C5)
 
-### Hinzugefügt
-- Neuer Befehl: `./studio audit <project>`
-- Team-Skill 07: Anti-Slop-Sektion erweitert
+### Added
+- New command: `./studio audit <project>`
+- Team skill 07: anti-slop section extended
 
-### Behoben
-- Gate-History Bug behoben
+### Fixed
+- Gate history bug fixed
 ```
 
 ---
 
 ## Integration
 
-Der Learning Loop ist ein ** kontinuierlicher Prozess**:
+The learning loop is a **continuous process**:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                 LEARNING LOOP                           │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
-│  1. Arbeiten                                            │
-│     └─▶ Fehler passieren                               │
+│  1. Work                                                │
+│     └─▶ mistakes happen                                 │
 │                                                         │
-│  2. Learning Item anlegen                               │
-│     └─▶ `./studio learn \"...\" --signal ...`          │
+│  2. Create a learning item                              │
+│     └─▶ `./studio learn "..." --signal ...`            │
 │                                                         │
-│  3. Meta-Retro                                          │
+│  3. Meta-retro                                          │
 │     └─▶ `./studio retro <project>`                     │
 │                                                         │
-│  4. Verbesserung umsetzen                               │
-│     └─▶ Process/Tool/Skill anpassen                    │
+│  4. Implement the improvement                           │
+│     └─▶ adjust process/tool/skill                      │
 │                                                         │
-│  5. CHANGELOG aktualisieren                             │
-│     └─▶ Version bump                                   │
+│  5. Update the CHANGELOG                                │
+│     └─▶ version bump                                    │
 │                                                         │
-│  6. Zurück zu 1                                         │
+│  6. Back to 1                                           │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/iterative-delivery.md` — Sprint/Retro
-- `.quinsy-studio/process/gates.md` — Gate-Definitionen
-- `CHANGELOG.md` — Änderungshistorie
+- `.quinsy-studio/process/iterative-delivery.md` — sprint/retro
+- `.quinsy-studio/process/gates.md` — gate definitions
+- `CHANGELOG.md` — change history

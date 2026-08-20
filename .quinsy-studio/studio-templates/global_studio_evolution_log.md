@@ -1,35 +1,35 @@
 # Global Studio Evolution Log
 
-> **WICHTIG:** Diese Änderungen betreffen das **gesamte Studio** und gelten für **alle zukünftigen Projekte**.
-> Nur universell anwendbare Verbesserungen werden hier eingetragen.
+> **IMPORTANT:** These changes affect the **entire studio** and apply to **all future projects**.
+> Only universally applicable improvements are recorded here.
 
 ---
 
-## Studio-Version: [1.X.0]
+## Studio version: [1.X.0]
 
-### Datum: [YYYY-MM-DD]
+### Date: [YYYY-MM-DD]
 
-#### Geändert
-- [Was wurde geändert?]
+#### Changed
+- [What was changed?]
 
-#### Hinzugefügt
-- [Was wurde neu hinzugefügt?]
+#### Added
+- [What was newly added?]
 
-#### Behoben
-- [Was wurde behoben?]
+#### Fixed
+- [What was fixed?]
 
 ---
 
-## Geplante Evolutionen
+## Planned Evolutions
 
-| Priorität | Beschreibung | Status |
-|-----------|-------------|--------|
+| Priority | Description | Status |
+|----------|-------------|--------|
 | P1 | ... | in-progress |
 | P2 | ... | planned |
 
 ---
 
-## Archiv
+## Archive
 
 ### Version [1.X.0] — [YYYY-MM-DD]
 ...

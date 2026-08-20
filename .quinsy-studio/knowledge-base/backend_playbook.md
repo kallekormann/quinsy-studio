@@ -1,65 +1,65 @@
 # Backend Playbook
 
-> Domain-Driven Design (DDD), SOLID, JSONb EAV-Strukturen — die globalen Backend-Standards.
+> Domain-driven design (DDD), SOLID, JSONb EAV structures — the global backend standards.
 
-## Grundprinzip
+## Core principle
 
 ```
-Sicher. Skalierbar. Wartbar.
-Jede Entscheidung wird dokumentiert.
+Secure. Scalable. Maintainable.
+Every decision is documented.
 ```
 
 ---
 
-## Architektur
+## Architecture
 
-### Domain-Driven Design (DDD)
+### Domain-driven design (DDD)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    DDD-STRUKTUR                         │
+│                    DDD STRUCTURE                        │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  ┌─────────────┐     ┌─────────────┐                   │
 │  │   Domain    │────▶│ Application │                   │
-│  │   Layer     │     │   Layer     │                   │
+│  │   layer     │     │   layer     │                   │
 │  └─────────────┘     └──────┬──────┘                   │
 │                             │                           │
 │                      ┌──────▼──────┐                   │
-│                      │ Interface   │                   │
-│                      │   Layer     │                   │
+│                      │ interface   │                   │
+│                      │   layer     │                   │
 │                      └──────┬──────┘                   │
 │                             │                           │
 │                      ┌──────▼──────┐                   │
-│                      │Infrastructure│                   │
-│                      │   Layer     │                   │
+│                      │infrastructure│                   │
+│                      │   layer     │                   │
 │                      └─────────────┘                   │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Layer
+### Layers
 
-| Layer | Verantwortlich | Enthält |
-|-------|---------------|---------|
-| **Domain** | Geschäftslogik | Entities, Value Objects, Aggregates, Domain Events |
-| **Application** | Orchestrierung | Use Cases, DTOs, Application Services |
-| **Interface** | Kommunikation | API Controllers, CLI, Message Handlers |
-| **Infrastructure** | Technische Umsetzung | DB, External APIs, File System |
+| Layer | Responsible | Contains |
+|-------|-------------|----------|
+| **Domain** | business logic | entities, value objects, aggregates, domain events |
+| **Application** | orchestration | use cases, DTOs, application services |
+| **Interface** | communication | API controllers, CLI, message handlers |
+| **Infrastructure** | technical implementation | DB, external APIs, file system |
 
 ---
 
-## SOLID Principles
+## SOLID principles
 
-| Prinzip | Beschreibung | Umsetzung |
-|---------|-------------|-----------|
-| **S**ingle Responsibility | Eine Klasse = eine Verantwortung | Kleine, fokussierte Klassen |
-| **O**pen/Closed | Offen für Erweiterung, geschlossen für Modifikation | Interfaces, Strategy Pattern |
-| **L**iskov Substitution | Untertypen sind ersetzbar | Saubere Vererbung |
-| **I**nterface Segregation | Keine fetten Interfaces | Viele kleine Interfaces |
-| **D**ependency Inversion | Abstraktionen statt Konkretheiten | Dependency Injection |
+| Principle | Description | Implementation |
+|-----------|-------------|----------------|
+| **S**ingle Responsibility | one class = one responsibility | small, focused classes |
+| **O**pen/Closed | open for extension, closed for modification | interfaces, strategy pattern |
+| **L**iskov Substitution | subtypes are replaceable | clean inheritance |
+| **I**nterface Segregation | no fat interfaces | many small interfaces |
+| **D**ependency Inversion | abstractions instead of concretions | dependency injection |
 
-### Umsetzung
+### Implementation
 
 ```typescript
 // ✅ SOLID
@@ -78,11 +78,11 @@ class CreateUserUseCase {
   }
 }
 
-// ❌ NICHT SOLID
+// ❌ NOT SOLID
 class UserService {
   async createUser(data: any) {
-    const db = new Database(); // Dependency Inversion verletzt
-    await db.query('INSERT INTO users...'); // SRP verletzt
+    const db = new Database(); // violates dependency inversion
+    await db.query('INSERT INTO users...'); // violates SRP
   }
 }
 ```
@@ -91,14 +91,14 @@ class UserService {
 
 ## PostgreSQL / Supabase
 
-### Datenbank-Design
+### Database design
 
 ```sql
--- Enums (Type Safety)
+-- Enums (type safety)
 CREATE TYPE user_role AS ENUM ('admin', 'user', 'viewer');
 CREATE TYPE task_status AS ENUM ('open', 'in_progress', 'done');
 
--- Tabellen
+-- Tables
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT UNIQUE NOT NULL,
@@ -107,15 +107,15 @@ CREATE TABLE users (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Indexe
+-- Indexes
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 ```
 
-### JSONb EAV-Strukturen
+### JSONb EAV structures
 
 ```sql
--- Flexibles Attribut-System
+-- Flexible attribute system
 CREATE TABLE product_attributes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id UUID NOT NULL REFERENCES products(id),
@@ -124,80 +124,80 @@ CREATE TABLE product_attributes (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- GIN-Index für JSONb
+-- GIN index for JSONb
 CREATE INDEX idx_product_attributes_value 
   ON product_attributes USING GIN(attribute_value);
 
--- Abfrage
+-- Query
 SELECT * FROM product_attributes 
 WHERE attribute_value @> '{"color": "red"}';
 ```
 
-### Migrationen
+### Migrations
 
 ```bash
-# Neue Migration
+# new migration
 supabase migration new add_users_table
 
-# Migration ausführen
+# run migrations
 supabase db reset
 
-# Migration anwenden
+# apply migrations
 supabase db push
 ```
 
 ---
 
-## API Design
+## API design
 
-### RESTful Ressourcen
+### RESTful resources
 
 ```
-GET    /api/v1/users          # Liste
-GET    /api/v1/users/:id      # Detail
-POST   /api/v1/users          # Erstellen
-PATCH  /api/v1/users/:id      # Aktualisieren
-DELETE /api/v1/users/:id      # Löschen
+GET    /api/v1/users          # list
+GET    /api/v1/users/:id      # detail
+POST   /api/v1/users          # create
+PATCH  /api/v1/users/:id      # update
+DELETE /api/v1/users/:id      # delete
 ```
 
-### Response-Format
+### Response format
 
 ```typescript
-// Erfolg
+// success
 {
   "data": { ... },
   "meta": { "page": 1, "total": 100 }
 }
 
-// Fehler
+// error
 {
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Email ist ungültig",
-    "details": { "email": "Muss eine gültige E-Mail-Adresse sein" }
+    "message": "Email is invalid",
+    "details": { "email": "Must be a valid email address" }
   }
 }
 ```
 
-### Versionierung
+### Versioning
 
 ```
-/api/v1/...  # Hauptversion
-/api/v2/...  # Breaking Changes
+/api/v1/...  # main version
+/api/v2/...  # breaking changes
 ```
 
 ---
 
-## Authentifizierung
+## Authentication
 
-### JWT + Refresh Token
+### JWT + refresh token
 
 ```typescript
-// Login
+// login
 const accessToken = jwt.sign({ userId: user.id }, SECRET, { expiresIn: '15m' });
 const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '7d' });
 
-// Refresh
+// refresh
 app.post('/refresh', async (req, res) => {
   const { refreshToken } = req.body;
   const payload = jwt.verify(refreshToken, REFRESH_SECRET);
@@ -225,10 +225,10 @@ function hasPermission(role: Role, permission: Permission): boolean {
 
 ---
 
-## Error Handling
+## Error handling
 
 ```typescript
-// Custom Error Classes
+// custom error classes
 class AppError extends Error {
   constructor(
     public code: string,
@@ -245,7 +245,7 @@ class ValidationError extends AppError {
   }
 }
 
-// Global Error Handler
+// global error handler
 app.use((err, req, res, next) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
@@ -253,10 +253,10 @@ app.use((err, req, res, next) => {
     });
   }
   
-  // Unbekannter Fehler
+  // unknown error
   console.error(err);
   res.status(500).json({
-    error: { code: 'INTERNAL_ERROR', message: 'Ein interner Fehler ist aufgetreten' }
+    error: { code: 'INTERNAL_ERROR', message: 'An internal error occurred' }
   });
 });
 ```
@@ -265,7 +265,7 @@ app.use((err, req, res, next) => {
 
 ## Testing
 
-### Unit Tests
+### Unit tests
 
 ```typescript
 describe('CreateUserUseCase', () => {
@@ -280,7 +280,7 @@ describe('CreateUserUseCase', () => {
 });
 ```
 
-### Integration Tests
+### Integration tests
 
 ```typescript
 describe('POST /api/users', () => {
@@ -297,8 +297,8 @@ describe('POST /api/users', () => {
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — Backend-Slop-Regeln
-- `.quinsy-studio/teams/02-backend-systems/` — Backend-Team
-- `.quinsy-studio/teams/08-platform-enterprise-engineering/` — Infrastruktur-Team
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — backend slop rules
+- `.quinsy-studio/teams/02-backend-systems/` — backend team
+- `.quinsy-studio/teams/08-platform-enterprise-engineering/` — infrastructure team

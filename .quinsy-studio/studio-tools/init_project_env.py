@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Project Environment Initializer — Automatisiert Git-Repos und Docker-Compose Bootstrapping.
+Project Environment Initializer — Automates git repos and docker-compose bootstrapping.
 
-Verwendung:
+Usage:
     python3 init_project_env.py <project> [--archetype <type>]
 """
 
@@ -29,8 +29,8 @@ def init_project(project: str, archetype: str = 'saas-application'):
     """Initialize a new project environment."""
     project_dir = PROJECTS_DIR / project
     
-    print(f"\n  Initialisiere Projekt: {project}")
-    print(f"  Archetyp: {archetype}")
+    print(f"\n  Initializing project: {project}")
+    print(f"  Archetype: {archetype}")
     
     # 1. Create directory structure
     create_directories(project_dir)
@@ -47,27 +47,42 @@ def init_project(project: str, archetype: str = 'saas-application'):
     # 5. Initialize Docker
     init_docker(project_dir, project)
     
-    # 6. Initialize Git (optional)
+    # 6. Initialize Git (project-local repo — never studio HQ)
     init_git(project_dir)
+    init_project_gitignore(project_dir)
     
-    print(f"\n  \033[92m✓ Projekt initialisiert: {project_dir}\033[0m")
-    print(f"  Nächste Schritte:")
-    print(f"    1. PRD erstellen: {project_dir}/docs/intake/prd.md")
-    print(f"    2. Docker starten: ./studio env {project} up")
-    print(f"    3. GitHub-Repo: ./studio repo {project} create")
+    print(f"\n  \033[92m✓ Project initialized: {project_dir}\033[0m")
+    print(f"  Next steps:")
+    print(f"    1. Create PRD: {project_dir}/docs/intake/prd.md")
+    print(f"    2. Start Docker: ./studio env {project} up")
+    print(f"    3. GitHub repo: ./studio repo {project} create")
 
 def create_directories(project_dir: Path):
     """Create project directory structure."""
     dirs = [
         "docs/intake",
         "docs/definitions",
+        "docs/architecture",
+        "docs/architecture/diagrams",
         "docs/adr",
         "docs/decisions",
         "docs/phases",
         "docs/modules",
         "design",
-        "ui",
+        "design/prototype",
+        "ui/tokens",
+        "ui/components/atoms",
+        "ui/components/molecules",
+        "ui/components/organisms",
+        "ui/page-types",
         "backlog/open",
+        "backlog/analyze",
+        "backlog/plan",
+        "backlog/design",
+        "backlog/implement",
+        "backlog/qa",
+        "backlog/review",
+        "backlog/reuse",
         "backlog/done",
         "backlog/blocked",
         "sprints",
@@ -79,141 +94,167 @@ def create_directories(project_dir: Path):
     for d in dirs:
         (project_dir / d).mkdir(parents=True, exist_ok=True)
     
-    print(f"  ✓ Verzeichnisstruktur erstellt")
+    seed_definitions(project_dir)
+    
+    print(f"  ✓ Directory structure created")
+
+
+DEFINITION_TEMPLATES = {
+    "00-index.md": "# Definitions Index\n\nLinks to all definition documents for this project.\n",
+    "01-glossary.md": "# Glossary\n\n| Term | Definition |\n|------|------------|\n| _TODO_ | _TODO_ |\n",
+    "02-personas.md": "# Personas\n\n_Describe primary user personas._\n",
+    "03-user-journeys.md": "# User Journeys\n\n_Key flows through the product._\n",
+    "04-domain-model.md": "# Domain Model\n\n_Core entities and relationships._\n",
+    "05-data-flows.md": "# Data Flows\n\n_How data moves through the system._\n",
+    "06-api-overview.md": "# API Overview\n\n_Public and internal APIs._\n",
+    "07-ui-states.md": "# UI States\n\n_Loading, empty, error, success states._\n",
+    "08-non-goals.md": "# Non-Goals\n\n_Explicitly out of scope._\n",
+    "09-constraints.md": "# Constraints\n\n_Technical and business constraints._\n",
+    "10-kpis.md": "# KPIs\n\n_Measurable success metrics._\n",
+    "11-assumptions.md": "# Assumptions\n\n_Document assumptions until validated._\n",
+}
+
+
+def seed_definitions(project_dir: Path):
+    """Create definition document scaffolds if missing."""
+    defs_dir = project_dir / "docs" / "definitions"
+    defs_dir.mkdir(parents=True, exist_ok=True)
+    for filename, content in DEFINITION_TEMPLATES.items():
+        path = defs_dir / filename
+        if not path.exists():
+            path.write_text(content)
 
 def create_status(project_dir: Path, project: str, archetype: str):
-    """Create initial status.json."""
+    """Create initial status.json (aligned with studio.py schema)."""
     status = {
         "name": project,
-        "phase": "1",
+        "phase": "0",
         "gate": "0",
-        "gate_status": "offen",
+        "gate_status": "open",
+        "mode": "core",
         "created": datetime.now().strftime("%Y-%m-%d"),
         "last_update": datetime.now().strftime("%Y-%m-%d"),
         "archetype": archetype,
         "current_sprint": None,
         "active_ticket": None,
-        "gate_history": []
+        "gate_history": [],
+        "human_gates": {},
+        "design_scope": None,
     }
     
     status_file = project_dir / "status.json"
     status_file.write_text(json.dumps(status, indent=2, ensure_ascii=False))
-    print(f"  ✓ status.json erstellt")
+    print(f"  ✓ status.json created")
 
 def create_agent_briefing(project_dir: Path, project: str, archetype: str):
     """Create agent-briefing.md."""
-    content = f"""# Agent-Briefing — {project}
+    content = f"""# Agent Briefing — {project}
 
-Du führst das Projekt `{project}` autonom durch das Quinsy-Studio-Betriebssystem.
-- **Archetyp:** {archetype} — Rollen/ADRs/Entscheidungen siehe `docs/intake/archetype-checklist.md` und `.quinsy-studio/process/project-archetypes.md`.
+You run the project `{project}` autonomously through the Quinsy Studio operating system.
+- **Archetype:** {archetype} — roles/ADRs/decisions see `docs/intake/archetype-checklist.md` and `.quinsy-studio/process/project-archetypes.md`.
 
-## Dein Auftrag
-1. Lies `docs/intake/prd.md` und `docs/intake/validation.md`.
-2. Führe **Phase 1 (Intake & PRD Processing)** aus: fülle `docs/definitions/`, kläre Details oder
-   markiere sie als Annahmen, lege ADRs für Grundsatzentscheidungen an.
-3. Bestätige **Gate 0**, dann arbeite **Phase 2 bis 7** ab (siehe `RUNBOOK.md`).
-4. Ab Phase 3: arbeite **iterativ** — Backlog-Board, 9-Schritte-Ticket-Workflow,
-   Grooming, Priorisierung, Sprints (`.quinsy-studio/process/iterative-delivery.md`).
-5. Aktualisiere nach jedem Schritt `status.json` und die betroffene Dokumentation.
-6. Beobachte **Lern-Signale** (Gate-Fail, Rework, Tooling-/Design-Lücke) und lege
-   Learning Items an (`./studio learn "…" --signal … --source …`).
+## Your mission (pre-implementation)
+1. **Gate 0** — Fill `docs/definitions/` from PRD; user approves: `./studio approve {project} --gate 0`
+2. **Gate 1** — Fill `docs/architecture/` + ADRs; user approves: `./studio approve {project} --gate 1`
+3. **Gate 2** — Build `design/prototype/` (Next.js), tokens, atomic UI, sticker sheet; user picks mock scope (`journey` | `core-views`); user approves: `./studio approve {project} --gate 2`
+4. **Then** — Tickets are generated; sprint + implementation (phases 4–7).
 
-## Nicht verhandelbar
-- `.quinsy-studio/process/` ist die verbindliche Referenz (Lifecycle, Gates, ADR, Anti-Slop, Iteration).
-- Rollen-Skills liegen in `.quinsy-studio/teams/` — aktiviere die passende Rolle je Phase.
-- Jede Entscheidung wird ein ADR; jedes ADR aktualisiert die benannte Dokumentation.
-- Anti-Slop-Audit und QA-Gate müssen grün sein, bevor ein Gate als bestanden gilt.
-- Kein `done`-Ticket ohne Definition of Done; kein Sprint ohne summary.md.
-- Human-in-the-loop: blockierende Entscheidungen werden als Decision Record eskaliert und warten auf menschliche Freigabe (`.quinsy-studio/process/human-in-the-loop.md`).
+## Iteration
+- User feedback: `./studio revise {project} --gate <0|1|2> --feedback "..."`
+- Log: `docs/phases/revisions.md`
 
-## Werkzeuge
-- `./studio status {project}` — Stand anzeigen
-- `./studio gate {project}` — QA-Gate ausführen
-- `./studio adr {project} "<Titel>"` — ADR anlegen
-- `./studio ticket {project} "<Titel>"` — Ticket anlegen
-- `./studio board {project}` / `./studio move {project} <id> <status>` — Board steuern
-- `./studio sprint {project}` / `./studio groom {project}` — Sprint-Zyklus
-- `./studio set-phase {project} <phase> --gate <n>` — Fortschritt festhalten
-- `./studio decide {project} "<Titel>"` / `./studio decisions {project}` — Entscheidungen (HITL)
-- `./studio env {project} init|up|down|status|logs` — Docker-Entwicklungsumgebung
-- `./studio repo {project} create|status` — GitHub-Repo (nur mit expliziter Freigabe)
-- `./studio learn "<Titel>" --signal …` / `./studio learn-list` / `./studio retro` — Studio-Learning-Loop
+## Non-negotiable
+- No tickets or production implementation before gate 2.
+- Mocks live in `design/prototype/` using the target stack (e.g. Next.js).
+- Sticker sheet: `design/prototype/app/sticker-sheet/` (tokens + components).
+- `.quinsy-studio/process/` is the binding reference (lifecycle, gates, ADR, anti-slop, iteration).
+- Role skills live in `.quinsy-studio/teams/` — activate the right role per phase.
+- Every decision becomes an ADR; every ADR updates the named documentation.
+- Anti-slop audit and QA gate must be green before a gate counts as passed.
+- No `done` ticket without a definition of done; no sprint without summary.md.
+- Human-in-the-loop: blocking decisions are escalated as decision records and wait for human approval (`.quinsy-studio/process/human-in-the-loop.md`).
+
+## Tools
+- `./studio focus {project}` / `./studio resume {project}` / `./studio guard {project} "..."`
+- `./studio verify-worlds` — studio vs project git must be separate
+- `./studio blueprint {project}` / `./studio design {project} --scope journey|core-views`
+- `./studio approve {project} --gate 0|1|2` — tickets + library promotion after gate 2
+- `./studio promote-library {project}` — re-sync design system to studio-library
+- `./studio revise {project} --gate <n> --feedback "..."` — iteration loop
 """
     
     briefing_file = project_dir / "agent-briefing.md"
     briefing_file.write_text(content)
-    print(f"  ✓ agent-briefing.md erstellt")
+    print(f"  ✓ agent-briefing.md created")
 
 def create_runbook(project_dir: Path, project: str):
     """Create RUNBOOK.md."""
     content = f"""# RUNBOOK — {project}
 
-Autonomer Ablauf von Intake bis Gate 7. Der Agent arbeitet dieses Dokument ab.
+Autonomous flow from intake to gate 7. The agent works through this document.
 
-## Phase 1 — Intake & PRD Processing (Gate 0)
-1. `docs/intake/validation.md` lesen; fehlende/leere PRD-Abschnitte schließen oder als
-   Annahme in `docs/definitions/11-assumptions.md` markieren.
-2. `docs/definitions/00-index.md` … `11-assumptions.md` befüllen (keine `_TODO_` mehr).
-3. Grundsatzentscheidungen als ADR anlegen: `./studio adr {project} "<Titel>"`.
-4. Gate 0 prüfen: PRD validiert, Definitions vollständig, Fragen/Annahmen explizit, ADRs da.
+## Phase 1 — Intake (HUMAN GATE 0)
+1. `./studio intake {project} intake/<prd>.md`
+2. Fill `docs/definitions/00-index.md` … `11-assumptions.md`
+3. User approves: `./studio approve {project} --gate 0`
 
-## Dev-Environment (nach Phase 1)
-1. `./studio env {project} init` — Docker-Compose + Dockerfiles + Git-Init (main).
-2. `./studio repo {project} create` — GitHub-Repo (nur mit Freigabe, kein Auto-Push).
-3. `./studio env {project} up` — Postgres + Redis starten.
+## Phase 2 — Architecture blueprint (HUMAN GATE 1)
+1. `./studio blueprint {project}`
+2. Fill `docs/architecture/`, create ADRs
+3. User approves: `./studio approve {project} --gate 1`
 
-## Phase 2 — Architecture & Design Blueprinting (HUMAN-GATE 1)
-Rollen: Systems Architect, Backend Architect, Frontend Architect.
-Artefakt: Architecture Blueprint + UI-Specs.
-**WARTEN AUF FREIGABE DES USERS.**
+## Phase 3 — Design (HUMAN GATE 2)
+1. User chooses: `./studio design {project} --scope journey` OR `--scope core-views`
+2. Build Next.js prototype in `design/prototype/`, tokens, atomic components, sticker sheet
+3. User approves: `./studio approve {project} --gate 2` → **tickets generated**
 
-## Phase 3 — Sprint Setup & Backlog Grooming (Gate 3)
-Rollen: Product Manager, Backlog Owner.
-Artefakt: Backlog-Board mit geschätzten Tickets.
-Tickets anlegen: `./studio ticket {project} "<Titel>" --phase 3 --priority P1 --estimate M`.
+## Phase 4 — Sprint setup
+Roles: Product Manager, Backlog Owner.
+Artifact: backlog board with estimated tickets.
+Create tickets: `./studio ticket {project} "<title>" --phase 3 --priority P1 --estimate M`.
 
-## Phase 4 — Autonomous Sprint Execution
-Rollen: Frontend/Backend Engineer, Database Specialist.
-Ablauf je Sprint:
-1. `./studio sprint {project}` → `sprints/SPRINT-NN/plan.md` ausfüllen.
-2. Tickets per `./studio move` zuordnen und abarbeiten (9-Schritte-Ticket-Workflow inkl. Reuse-Review).
-3. `./studio groom {project}` → Blocked-Review + Priorisierung.
-4. `summary.md` + `retro.md` schreiben; nächsten Sprint starten.
+## Phase 5 — Autonomous Sprint Execution
+Roles: Frontend/Backend Engineer, Database Specialist.
+Flow per sprint:
+1. `./studio sprint {project}` → fill `sprints/SPRINT-NN/plan.md`.
+2. Assign and work tickets via `./studio move` (9-step ticket workflow incl. reuse review).
+3. `./studio groom {project}` → blocked review + prioritization.
+4. Write `summary.md` + `retro.md`; start the next sprint.
 
-## Phase 5 — Comprehensive QA & Compliance Gate (Gate 5)
-`./studio gate {project}` grün; Anti-Slop-Audit 0 Verstöße; jedes done-Ticket hat QA-Gate grün.
+## Phase 6 — Comprehensive QA
+`./studio gate {project}` green; anti-slop audit 0 violations; every done ticket has a green QA gate.
 
 ## Phase 6 — Dual-Loop Knowledge Harvesting
-Rollen: Process Guard, Platform Architect.
-Local Loop: Projektspezifische Learnings → `docs/local_learnings.md`.
-Global Loop: Universelle Verbesserungen → `.quinsy-studio/knowledge-base/`.
+Roles: Process Guard, Platform Architect.
+Local loop: project-specific learnings → `docs/local_learnings.md`.
+Global loop: universal improvements → `.quinsy-studio/knowledge-base/`.
 
 ## Phase 7 — Deployment & Iteration
-Rollen: Platform Architect, Growth Manager.
+Roles: Platform Architect, Growth Manager.
 
-## Regeln (immer)
-- Jede Änderung/Entscheidung → ADR + Aktualisierung der betroffenen Definitions-Datei.
-- Kein Gate ohne vollständige Exit-Kriterien (`.quinsy-studio/process/gates.md`).
-- Kein Ticket ohne Akzeptanzkriterien und Definition of Done.
-- Kein Sprint ohne `summary.md` (Process Guard).
-- Anti-Slop-Policy beachten (`.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md`).
-- Human-in-the-loop: Budget/Recht/irreversible Schritte → Decision Record (`./studio decide`) + menschliche Freigabe.
-- Lern-Signale beobachten → `./studio learn "…" --signal … --source …`; Meta-Retro entscheidet über Verbesserungen (`.quinsy-studio/process/learning-loop.md`).
+## Rules (always)
+- Every change/decision → ADR + update of the affected definitions file.
+- No gate without complete exit criteria (`.quinsy-studio/process/gates.md`).
+- No ticket without acceptance criteria and definition of done.
+- No sprint without `summary.md` (Process Guard).
+- Follow the anti-slop policy (`.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md`).
+- Human-in-the-loop: budget/legal/irreversible steps → decision record (`./studio decide`) + human approval.
+- Watch for learning signals → `./studio learn "..." --signal ... --source ...`; the meta-retro decides improvements (`.quinsy-studio/process/learning-loop.md`).
 """
     
     runbook_file = project_dir / "RUNBOOK.md"
     runbook_file.write_text(content)
-    print(f"  ✓ RUNBOOK.md erstellt")
+    print(f"  ✓ RUNBOOK.md created")
 
 def init_docker(project_dir: Path, project: str):
     """Initialize Docker environment from the studio base template."""
     docker_dir = project_dir / "docker"
     docker_dir.mkdir(parents=True, exist_ok=True)
     
-    # Basis-Template aus dem Studio kopieren und projektspezifisch parametrisieren
+    # Copy the base template from the studio and parameterize it per project
     template_dir = TEMPLATES_DIR / "docker"
     if not template_dir.exists():
-        print(f"  ⚠ Basis-Docker-Template fehlt: {template_dir}")
+        print(f"  ⚠ Base docker template missing: {template_dir}")
         return
     
     for f in template_dir.iterdir():
@@ -222,16 +263,24 @@ def init_docker(project_dir: Path, project: str):
             content = content.replace("{{PROJECT_NAME}}", project)
             (docker_dir / f.name).write_text(content)
     
-    print(f"  ✓ Docker-Environment erstellt (aus Basis-Template, projektspezifisch)")
+    print(f"  ✓ Docker environment created (from base template, project-specific)")
+
+def init_project_gitignore(project_dir: Path):
+    """Copy project .gitignore template (project world, not studio HQ)."""
+    tpl = TEMPLATES_DIR / "project.gitignore"
+    dest = project_dir / ".gitignore"
+    if tpl.exists() and not dest.exists():
+        dest.write_text(tpl.read_text())
+        print(f"  ✓ .gitignore created (project repo)")
 
 def init_git(project_dir: Path):
     """Initialize Git repository."""
     try:
         subprocess.run(['git', 'init'], cwd=str(project_dir), capture_output=True)
         subprocess.run(['git', 'checkout', '-b', 'main'], cwd=str(project_dir), capture_output=True)
-        print(f"  ✓ Git-Repository initialisiert")
+        print(f"  ✓ Git repository initialized")
     except Exception as e:
-        print(f"  \033[93m⚠ Git-Init fehlgeschlagen: {e}\033[0m")
+        print(f"  \033[93m⚠ Git init failed: {e}\033[0m")
 
 # =============================================================================
 # MAIN
@@ -239,7 +288,7 @@ def init_git(project_dir: Path):
 
 def main():
     if len(sys.argv) < 2:
-        print("Verwendung: python3 init_project_env.py <project> [--archetype <type>]")
+        print("Usage: python3 init_project_env.py <project> [--archetype <type>]")
         sys.exit(1)
     
     project = sys.argv[1]

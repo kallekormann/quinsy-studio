@@ -1,13 +1,13 @@
 # Quinsy Studio — Skill Registry
 
-> Zentraler Index aller Skills. Der Agent nutzt diese Registry, um die richtigen Skills einem Ticket zuzuordnen.
+> Central index of all skills. The agent uses this registry to assign the right skills to a ticket.
 
 ---
 
-## Übersicht
+## Overview
 
-| Team | Skills | Lead-Rollen (Director) |
-|------|--------|------------------------|
+| Team | Skills | Lead Roles (Director) |
+|------|--------|----------------------|
 | 01 Frontend Experience | 6 Skills | Lead Experience Architect, Frontend Architect, QA Specialist, UI/Interaction Designer |
 | 02 Backend Systems | 5 Skills | Senior Fullstack Architect, Backend Architect, Database Specialist |
 | 03 Compliance & Legal | 4 Skills | Legal & Privacy Officer |
@@ -17,208 +17,208 @@
 | 07 AI & Autonomous Systems | 3 Skills | Autonomous Systems Director |
 | 08 Platform & Enterprise Engineering | 4 Skills | Platform Architect |
 | 09 Studio Operations & Evolution | 4 Skills | Studio Automation Engineer, Process Guard, Agile Coach |
-| **Gesamt** | **36 Skills** | |
+| **Total** | **36 Skills** | |
 
 ---
 
-## Externe Skills (Skill-Package-Manager)
+## External Skills (Skill Package Manager)
 
-> Das Studio abonniert Best-in-Class Skills aus externen Repositories
-> (`./studio update-skills`). Sie sind IMMER dem internen
-> `anti_ai_slop_protocol.md` und der Zero-Data-Architecture untergeordnet.
-> Importiert nach `.quinsy-studio/external-skills/` (siehe `INDEX.md`).
+> The studio subscribes to best-in-class skills from external repositories
+> (`./studio update-skills`). They are ALWAYS subordinate to the internal
+> `anti_ai_slop_protocol.md` and Zero-Data Architecture.
+> Imported to `.quinsy-studio/external-skills/` (see `INDEX.md`).
 
-| Externe Quelle | Abgedeckte Domains | Interne Teams/Skills | Aktivierung |
-|----------------|--------------------|----------------------|-------------|
-| `Nutlope/hallmark` | Anti-Slop-Design, Macrostructure, Themes | 01 FE: FE-002 Design System, UI/Interaction Designer | `audit`, `redesign`, `study`, Design-Entwürfe |
-| `bergside/awesome-design-skills` | 67 Design-Skills (Corporate, Paper, Glassmorphism, ...) | 01 FE: FE-001, FE-002 | Referenz-Bibliothek bei UI-Entwürfen (SKILL.md + DESIGN.md pro Stil) |
-| `seb1n/awesome-ai-agent-skills` | Database, Security, Legal/Compliance, SEO, Copywriting, PM, DevOps, API, Design | **alle Teams** — gezielt per Skill: | `--skill <name>` |
-| `coreyhaines31/marketingskills` | **49 Marketing-Skills**: CRO, Copywriting, SEO, AEO (`ai-seo`), Analytics, Growth | 05 Growth: GM-001, GM-002, GM-003 | `product-marketing` (Basis) → `ai-seo`, `seo-audit`, `schema`, `copywriting`, `cro`, `ab-testing` |
-| `gamedev-skills/awesome-gamedev-agent-skills` | 67 Game-Dev-Skills (Godot, Unity, Unreal, Phaser, PixiJS, three.js, Bevy, pygame, LÖVE, Roblox) | 01 FE / 02 BE (Projekt-Archetyp `game`!) | Router erkennt Engine + Task automatisch |
-| `samir-abis/cookiecomply-skills` | DSGVO/Cookie-Compliance (Banner, Consent) | 03 Compliance: CL-002 | `cookiecomply`-Workflow |
-| `bloomprotocol/agent-visibility-skill` | GEO/AI-Visibility: llms.txt, JSON-LD, Vergleichsseiten, AI-Visibility-Audit | 05 Growth: GM-002 AEO | `AI-Visibility-Audit`, `llms.txt`, Comparison Pages |
+| External Source | Covered Domains | Internal Teams/Skills | Activation |
+|----------------|----------------|----------------------|------------|
+| `Nutlope/hallmark` | Anti-Slop Design, Macrostructure, Themes | 01 FE: FE-002 Design System, UI/Interaction Designer | `audit`, `redesign`, `study`, Design drafts |
+| `bergside/awesome-design-skills` | 67 Design Skills (Corporate, Paper, Glassmorphism, ...) | 01 FE: FE-001, FE-002 | Reference library for UI designs (SKILL.md + DESIGN.md per style) |
+| `seb1n/awesome-ai-agent-skills` | Database, Security, Legal/Compliance, SEO, Copywriting, PM, DevOps, API, Design | **All teams** — targeted per skill: | `--skill <name>` |
+| `coreyhaines31/marketingskills` | **49 Marketing Skills**: CRO, Copywriting, SEO, AEO (`ai-seo`), Analytics, Growth | 05 Growth: GM-001, GM-002, GM-003 | `product-marketing` (base) → `ai-seo`, `seo-audit`, `schema`, `copywriting`, `cro`, `ab-testing` |
+| `gamedev-skills/awesome-gamedev-agent-skills` | 67 Game Dev Skills (Godot, Unity, Unreal, Phaser, PixiJS, three.js, Bevy, pygame, LÖVE, Roblox) | 01 FE / 02 BE (project archetype `game`!) | Router detects engine + task automatically |
+| `samir-abis/cookiecomply-skills` | GDPR/Cookie Compliance (Banner, Consent) | 03 Compliance: CL-002 | `cookiecomply` workflow |
+| `bloomprotocol/agent-visibility-skill` | GEO/AI-Visibility: llms.txt, JSON-LD, Comparison Pages, AI-Visibility Audit | 05 Growth: GM-002 AEO | `AI-Visibility-Audit`, `llms.txt`, Comparison Pages |
 
-### Gezielte Skill-Mappings (awesome-ai-agent-skills → Studio-Skills)
+### Targeted Skill Mappings (awesome-ai-agent-skills → Studio Skills)
 
-| Externer Skill | Studio-Skill (ersetzt/ergänzt) |
-|----------------|-------------------------------|
+| External Skill | Studio Skill (replaces/supplements) |
+|----------------|--------------------------------------|
 | `database-schema-design`, `query-optimization`, `database-migration` | BE-002 Database Design |
 | `api-design`, `oauth-2-0-setup`, `webhook-setup` | BE-001 API Design, BE-003 Auth |
 | `security-audit`, `threat-modeling`, `dependency-scanning`, `static-application-security-testing` | PE-003 Security Audit |
 | `compliance-checklist-generation`, `privacy-policy-drafting`, `terms-of-service-generation` | CL-001 DSGVO, CL-003 Impressum/AGB |
-| `seo-optimization`, `keyword-research`, `content-strategy` | GM-001 SEO, GM-003 Content |
-| `copywriting`, `blog-post-writing`, `technical-writing` | GM-003 Content, SO-004 Doku |
-| `ai-seo` (marketing_aeo) | **GM-002 AEO** — in AI-Search/LLM-Antworten zitiert werden |
-| `seo-audit`, `schema`, `programmatic-seo`, `site-architecture` (marketing_aeo) | GM-001 SEO (pSEO, Schema.org, Link-Rot) |
-| `competitors`, `comparison` (marketing_aeo/geo_visibility) | GM-002 AEO — Vergleichs-/Alternativen-Seiten |
+| `seo-optimization`, `customer-research`, `content-strategy` | GM-001 SEO, GM-003 Content |
+| `copywriting`, `blog-post-writing`, `technical-writing` | GM-003 Content, SO-004 Docs |
+| `ai-seo` (marketing_aeo) | **GM-002 AEO** — be cited in AI Search/LLM responses |
+| `seo-audit`, `schema`, `programmatic-seo`, `site-architecture` (marketing_aeo) | GM-001 SEO (pSEO, Schema.org, Link Rot) |
+| `competitors`, `comparison` (marketing_aeo/geo_visibility) | GM-002 AEO — comparison/alternative pages |
 | `cro`, `ab-testing`, `analytics`, `pricing` (marketing_aeo) | GM-003 Growth — Cost of Experimentation, Ghost of Experiments Past |
 | `product-marketing`, `customer-research` (marketing_aeo) | PM-001 User Research, GM-003 Content |
-| `cookiecomply` (compliance_cookies) | CL-002 Cookie Banner, Consent-Management |
+| `cookiecomply` (compliance_cookies) | CL-002 Cookie Banner, Consent Management |
 | `llms.txt`, `JSON-LD`, `AI-Visibility-Audit` (geo_visibility) | GM-002 AEO, GM-001 SEO |
-| `godot-*`, `unity-*`, `unreal-*`, `phaser-*` (gamedev) | Projekt-Archetyp `game` — Frontend/Backend je Engine |
-| `project-management` | PM-002 Roadmapping, SO-002 Prozess |
+| `godot-*`, `unity-*`, `unreal-*`, `phaser-*` (gamedev) | Project archetype `game` — Frontend/Backend per engine |
+| `project-management` | PM-002 Roadmapping, SO-002 Process |
 | `docker-compose-setup`, `ci-cd`, `infrastructure-as-code` | PE-001 Infra, PE-002 CI/CD |
 | `frontend-design`, `wireframing`, `accessibility-testing` | FE-001, FE-004 |
-| `human-in-the-loop` | SO-002 Prozess (HITL-Gates) |
+| `human-in-the-loop` | SO-002 Process (HITL Gates) |
 
-**Workflow:** Vor Aktivierung einer internen Skill-Datei prüft der Agent, ob ein
-importierter externer Skill die Aufgabe besser abdeckt → externe SKILL.md lesen →
-mit internen Regeln abgleichen → ausführen.
+**Workflow:** Before activating an internal skill file, the agent checks whether an
+imported external skill covers the task better → read external SKILL.md →
+compare with internal rules → execute.
 
 ---
 
-## Skill-Zuordnung nach Ticket-Inhalten
+## Skill Assignment by Ticket Content
 
-### Wenn Ticket enthält → Skill aktivieren
+### When ticket contains → activate skill
 
 #### Frontend (Team 01)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
-| Komponente, Component, UI-Element, Button, Card, Modal | UI Component Design | FE-001 |
-| Design Tokens, Farbpalette, Typografie, Theme, Dark Mode | Design System | FE-002 |
-| Performance, Ladezeit, Speed, Bundle, Core Web Vitals | Performance Optimization | FE-003 |
-| a11y, Barrierefreiheit, Accessibility, WCAG, Screenreader | Accessibility | FE-004 |
-| PWA, Offline, Service Worker, Manifest, Installierbar | PWA Implementation | FE-005 |
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| Component, UI Element, Button, Card, Modal | UI Component Design | FE-001 |
+| Design Tokens, Color Palette, Typography, Theme, Dark Mode | Design System | FE-002 |
+| Performance, Load Time, Speed, Bundle, Core Web Vitals | Performance Optimization | FE-003 |
+| a11y, Accessibility, WCAG, Screenreader | Accessibility | FE-004 |
+| PWA, Offline, Service Worker, Manifest, Installable | PWA Implementation | FE-005 |
 | Test, Testing, Coverage, Unit-Test, E2E | Frontend Testing | FE-006 |
 
 #### Backend (Team 02)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
 | API, Endpoint, REST, GraphQL, HTTP | API Design | BE-001 |
 | Database, Schema, Migration, Query, SQL, Postgres | Database Design | BE-002 |
 | Auth, Login, JWT, Session, RBAC, OAuth | Authentication & Authorization | BE-003 |
-| Error, Exception, Fehlerbehandlung, Retry, Logging | Error Handling | BE-004 |
+| Error, Exception, Error Handling, Retry, Logging | Error Handling | BE-004 |
 | Integration, Webhook, Stripe, SendGrid, Payment | Third-Party Integrations | BE-005 |
 
 #### Compliance (Team 03)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
-| DSGVO, GDPR, Datenschutz, Privacy | DSGVO Compliance | CL-001 |
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| DSGVO, GDPR, Privacy | DSGVO Compliance | CL-001 |
 | Cookie, Consent, Banner, Tracking | Cookie Banner | CL-002 |
-| Impressum, AGB, Nutzungsbedingungen, Widerruf | Impressum & AGB | CL-003 |
-| Zero-Data, Datenminimierung, Löschkonzept, AVV | Zero-Data Architecture | CL-004 |
+| Impressum, AGB, Terms of Service, Cancellation | Impressum & AGB | CL-003 |
+| Zero-Data, Data Minimization, Deletion Concept, DPA | Zero-Data Architecture | CL-004 |
 
 #### Strategy (Team 04)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
-| Strategie, Vision, Roadmap, Monetarisierung | Product Strategy | PS-001 |
-| ADR, Architektur, Tech-Stack, Build vs Buy | Architecture Decisions | PS-002 |
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| Strategy, Vision, Roadmap, Monetization | Product Strategy | PS-001 |
+| ADR, Architecture, Tech Stack, Build vs Buy | Architecture Decisions | PS-002 |
 | Evaluation, Framework, Library, Migration | Technology Evaluation | PS-003 |
-| Machbarkeit, Feasibility, Risiko, Scope | Feasibility Analysis | PS-004 |
+| Feasibility, Risk, Scope | Feasibility Analysis | PS-004 |
 
 #### Growth (Team 05)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
-| SEO, Sichtbarkeit, Ranking, Google, Schema.org | SEO Optimization | GM-001 |
-| AEO, AI Search, ChatGPT, Perplexity, Vergleich | AEO | GM-002 |
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| SEO, Visibility, Ranking, Google, Schema.org | SEO Optimization | GM-001 |
+| AEO, AI Search, ChatGPT, Perplexity, Comparison | AEO | GM-002 |
 | Content, Blog, Social, Newsletter, Tone of Voice | Content Strategy | GM-003 |
 
 #### Product Management (Team 06)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
 | Research, Interview, Survey, Usability | User Research | PM-001 |
-| Roadmap, Priorisierung, Planning, MoSCoW | Roadmapping | PM-002 |
-| Operating Model, Team-Struktur, Prozess, OKR | Operating Model | PM-003 |
+| Roadmap, Prioritization, Planning, MoSCoW | Roadmapping | PM-002 |
+| Operating Model, Team Structure, Process, OKR | Operating Model | PM-003 |
 
 #### AI (Team 07)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
-| AI, LLM, GPT, Claude, Prompt, KI-Integration | AI Integration | AI-001 |
-| Anti-Slop, Slop, AI-Code, Code-Qualität | Anti-Slop Audit | AI-002 |
-| CI/CD, Pipeline, Automatisierung, GitHub Actions | Automation Pipelines | AI-003 |
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| AI, LLM, GPT, Claude, Prompt, AI Integration | AI Integration | AI-001 |
+| Anti-Slop, Slop, AI Code, Code Quality | Anti-Slop Audit | AI-002 |
+| CI/CD, Pipeline, Automation, GitHub Actions | Automation Pipelines | AI-003 |
 
 #### Platform (Team 08)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
 | Infrastructure, Docker, Cloud, Deploy, CDN | Infrastructure | PE-001 |
 | CI/CD, Pipeline, GitHub Actions, Build | CI/CD Pipelines | PE-002 |
 | Security, OWASP, Penetration, Vulnerability | Security Audit | PE-003 |
 | Monitoring, Alerting, Uptime, Sentry | Monitoring & Observability | PE-004 |
 
-#### Game Development (Querschnitt — externer Skill)
+#### Game Development (Cross-cutting — External Skill)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
-| Game, Godot, Unity, Unreal, Platformer, Phaser, three.js, pygame, Spiel | Game Development (extern) | GM-004 |
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| Game, Godot, Unity, Unreal, Platformer, Phaser, three.js, pygame | Game Development (external) | GM-004 |
 
-> GM-004 aktiviert den **gamedev-Router** (`.quinsy-studio/external-skills/gamedev/router/`),
-> der Engine + Task automatisch erkennt und die passenden Skills lädt (z.B. `godot-2d-movement` + `platformer`).
-> Entspricht dem Projekt-Archetyp `game`.
+> GM-004 activates the **gamedev router** (`.quinsy-studio/external-skills/gamedev/router/`),
+> which automatically detects engine + task and loads matching skills (e.g., `godot-2d-movement` + `platformer`).
+> Corresponds to project archetype `game`.
 
 #### Studio Operations (Team 09)
 
-| Trigger-Wörter | Skill | ID |
-|----------------|-------|----|
-| Studio Tools, Python, Tooling, Wartung | Studio Tooling Maintenance | SO-001 |
-| Prozess, Sprint-Disziplin, Optimierung, Metriken | Process Optimization | SO-002 |
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| Studio Tools, Python, Tooling, Maintenance | Studio Tooling Maintenance | SO-001 |
+| Process, Sprint Discipline, Optimization, Metrics | Process Optimization | SO-002 |
 | Learning, Retro, Knowledge, Promotion, Dual-Loop | Dual-Loop Learning | SO-003 |
-| Doku, Documentation, README, CHANGELOG | Documentation Governance | SO-004 |
+| Docs, Documentation, README, CHANGELOG | Documentation Governance | SO-004 |
 
 ---
 
-## Skill-Zuordnung nach Phase
+## Skill Assignment by Phase
 
-| Phase | Typische Skills |
+| Phase | Typical Skills |
 |-------|----------------|
 | **Phase 0** (Intake) | PS-001, PS-004, PM-001, CL-001, SO-004 |
-| **Phase 1** (Validierung) | PS-001, PS-003, PS-004, PM-001, PE-001, GM-001, SO-004 |
-| **Phase 2** (Architektur) | PS-002, BE-001, BE-002, FE-002, CL-001, CL-004, AI-001, PE-001, PE-003, GM-001, SO-002 |
+| **Phase 1** (Validation) | PS-001, PS-003, PS-004, PM-001, PE-001, GM-001, SO-004 |
+| **Phase 2** (Architecture) | PS-002, BE-001, BE-002, FE-002, CL-001, CL-004, AI-001, PE-001, PE-003, GM-001, SO-002 |
 | **Phase 3** (Sprint Setup) | PM-002, FE-001, FE-002, FE-005, BE-001, CL-002, GM-003, PE-001, PE-002, AI-001, SO-002 |
-| **Phase 4** (Implementierung) | FE-001, FE-003, FE-004, FE-005, FE-006, BE-001, BE-002, BE-003, BE-004, BE-005, CL-002, CL-003, AI-001, AI-002, PE-002, PE-003, SO-001 |
+| **Phase 4** (Implementation) | FE-001, FE-003, FE-004, FE-005, FE-006, BE-001, BE-002, BE-003, BE-004, BE-005, CL-002, CL-003, AI-001, AI-002, PE-002, PE-003, SO-001 |
 | **Phase 5** (QA) | FE-003, FE-004, FE-006, BE-003, CL-001, CL-002, AI-002, PE-003, PE-004, GM-001, GM-002, PM-001, SO-002 |
 | **Phase 6** (Knowledge Harvesting) | **SO-003 (Dual-Loop)**, SO-001, SO-002, SO-004, PE-004, PM-003 |
 | **Phase 7** (Deployment) | PE-001, PE-002, PE-004, GM-001, GM-002, GM-003, PS-001, PM-002, PM-003, SO-001, SO-004 |
 
 ---
 
-## Skill-Zuordnung nach Archetyp
+## Skill Assignment by Archetype
 
-| Archetyp | Bevorzugte Skills |
-|----------|-------------------|
+| Archetype | Preferred Skills |
+|-----------|-------------------|
 | **saas-application** | FE-001, FE-002, FE-005, BE-001, BE-002, BE-003, CL-001, PS-001, PE-001, SO-003 |
 | **e-commerce** | FE-001, BE-001, BE-005, CL-001, CL-002, GM-001, PS-001, SO-003 |
 | **content-platform** | FE-001, FE-002, BE-001, GM-001, GM-002, GM-003, PS-001, SO-003 |
 | **enterprise-tool** | BE-001, BE-003, PE-003, PS-002, CL-004, SO-003 |
 | **mobile-first** | FE-001, FE-005, FE-003, PE-001, SO-003 |
-| **game** | FE-001, FE-003, BE-002, PE-001 + **extern: gamedev (Router)** |
+| **game** | FE-001, FE-003, BE-002, PE-001 + **external: gamedev (Router)** |
 
 ---
 
-## Skill-Aktivierungs-Workflow
+## Skill Activation Workflow
 
 ```
-1. Ticket lesen
+1. Read ticket
      │
-2. Trigger-Wörter erkennen
+2. Detect trigger words
      │
-3. Skills aus Registry zuordnen (max. 5 pro Ticket)
+3. Assign skills from registry (max. 5 per ticket)
      │
-4. Phasen-Kontext prüfen
+4. Check phase context
      │
-5. Archetyp prüfen
+5. Check archetype
      │
-6. Lead-Rolle bestimmen (aus Team-README)
+6. Determine lead role (from team README)
      │
-7. Support-Rollen bestimmen
+7. Determine support roles
      │
-8. Skill-Dateien laden (.quinsy-studio/teams/[team]/skills/)
+8. Load skill files (.quinsy-studio/teams/[team]/skills/)
      │
-9. Nach Skill-Regeln arbeiten
+9. Work according to skill rules
      │
-10. Learning → Local oder Global Loop (Phase 6)
+10. Learning → Local or Global Loop (Phase 6)
 ```
 
 ---
 
-## Skill-Dateien (Pfade)
+## Skill Files (Paths)
 
 ```
 .quinsy-studio/teams/
@@ -285,5 +285,5 @@ mit internen Regeln abgleichen → ausführen.
 │       ├── process-optimization.md
 │       ├── dual-loop-learning.md
 │       └── documentation-governance.md
-└── skill-registry.md  ← DIESE DATEI
+└── skill-registry.md  ← THIS FILE
 ```

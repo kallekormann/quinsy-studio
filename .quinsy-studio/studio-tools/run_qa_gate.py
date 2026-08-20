@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-run_qa_gate.py — QA-Orchestrator für Quinsy Studio
+run_qa_gate.py — QA orchestrator for Quinsy Studio
 
-Führt vollständige QA-Prüfungen durch:
+Runs complete QA checks:
 - Linting (ESLint/Prettier)
-- Type-Checking (TypeScript)
-- Unit-Tests (Vitest/Jest)
-- Build-Prüfung
-- Dependency-Check (npm audit)
-- Anti-Slop-Audit
+- Type checking (TypeScript)
+- Unit tests (Vitest/Jest)
+- Build check
+- Dependency check (npm audit)
+- Anti-slop audit
 
-Verwendung:
+Usage:
   python3 run_qa_gate.py <project> [--level N] [--fix]
   python3 run_qa_gate.py nudge
   python3 run_qa_gate.py nudge --level 5
 
-Exit-Code:
-  0 = Alle Checks bestanden
-  1 = Mindestens ein Check fehlgeschlagen
+Exit code:
+  0 = all checks passed
+  1 = at least one check failed
 """
 
 import sys
@@ -68,7 +68,7 @@ class QAReport:
 # =============================================================================
 
 def get_checks_for_level(level: int) -> List[QACheck]:
-    """Gibt die Checks für ein bestimmtes Gate-Level zurück."""
+    """Return the checks for a given gate level."""
     
     checks = []
     
@@ -78,12 +78,12 @@ def get_checks_for_level(level: int) -> List[QACheck]:
             QACheck(
                 name="package_json_exists",
                 command="test -f package.json",
-                description="package.json vorhanden"
+                description="package.json exists"
             ),
             QACheck(
                 name="node_modules_exists",
                 command="test -d node_modules",
-                description="node_modules vorhanden (npm install ausgeführt?)"
+                description="node_modules exists (npm install run?)"
             ),
         ])
     
@@ -93,13 +93,13 @@ def get_checks_for_level(level: int) -> List[QACheck]:
             QACheck(
                 name="eslint",
                 command="npx eslint . --max-warnings 0",
-                description="ESLint (keine Warnings)",
+                description="ESLint (no warnings)",
                 timeout=60
             ),
             QACheck(
                 name="prettier",
                 command="npx prettier --check .",
-                description="Prettier Formatierung",
+                description="Prettier formatting",
                 timeout=30
             ),
         ])
@@ -110,7 +110,7 @@ def get_checks_for_level(level: int) -> List[QACheck]:
             QACheck(
                 name="typescript",
                 command="npx tsc --noEmit",
-                description="TypeScript Type-Check",
+                description="TypeScript type check",
                 timeout=120
             ),
         ])
@@ -121,7 +121,7 @@ def get_checks_for_level(level: int) -> List[QACheck]:
             QACheck(
                 name="unit_tests",
                 command="npx vitest run --reporter=verbose",
-                description="Unit-Tests (Vitest)",
+                description="Unit tests (Vitest)",
                 timeout=120
             ),
         ])
@@ -132,7 +132,7 @@ def get_checks_for_level(level: int) -> List[QACheck]:
             QACheck(
                 name="build",
                 command="npx next build",
-                description="Build-Prüfung",
+                description="Build check",
                 timeout=180
             ),
             QACheck(
@@ -156,7 +156,7 @@ def get_checks_for_level(level: int) -> List[QACheck]:
 # =============================================================================
 
 def run_check(check: QACheck, project_dir: Path) -> QAResult:
-    """Führt einen einzelnen Check aus."""
+    """Run a single check."""
     
     start_time = datetime.now()
     
@@ -177,7 +177,7 @@ def run_check(check: QACheck, project_dir: Path) -> QAResult:
             passed=result.returncode == 0,
             output=result.stdout + result.stderr,
             duration=duration,
-            error=None if result.returncode == 0 else f"Exit-Code: {result.returncode}"
+            error=None if result.returncode == 0 else f"Exit code: {result.returncode}"
         )
         
     except subprocess.TimeoutExpired:
@@ -187,7 +187,7 @@ def run_check(check: QACheck, project_dir: Path) -> QAResult:
             passed=False,
             output="",
             duration=duration,
-            error=f"Timeout nach {check.timeout}s"
+            error=f"Timeout after {check.timeout}s"
         )
         
     except Exception as e:
@@ -205,7 +205,7 @@ def run_check(check: QACheck, project_dir: Path) -> QAResult:
 # =============================================================================
 
 def check_project_structure(project_dir: Path) -> QAResult:
-    """Prüft ob die Projektstruktur korrekt ist."""
+    """Check whether the project structure is correct."""
     
     required_dirs = [
         "docs",
@@ -221,11 +221,11 @@ def check_project_structure(project_dir: Path) -> QAResult:
     
     for d in required_dirs:
         if not (project_dir / d).exists():
-            missing.append(f"Verzeichnis: {d}")
+            missing.append(f"Directory: {d}")
     
     for f in required_files:
         if not (project_dir / f).exists():
-            missing.append(f"Datei: {f}")
+            missing.append(f"File: {f}")
     
     if missing:
         return QAResult(
@@ -233,19 +233,19 @@ def check_project_structure(project_dir: Path) -> QAResult:
             passed=False,
             output="\n".join(missing),
             duration=0,
-            error=f"Fehlende Elemente: {', '.join(missing)}"
+            error=f"Missing elements: {', '.join(missing)}"
         )
     
     return QAResult(
         check="project_structure",
         passed=True,
-        output="Projektstruktur vollständig",
+        output="Project structure complete",
         duration=0
     )
 
 
 def check_skill_matching() -> QAResult:
-    """Führt den Skill-Matching-Test aus (Skill-Registry-Integrität)."""
+    """Run the skill-matching test (skill-registry integrity)."""
     
     test_script = Path(__file__).parent / "test_skill_matching.py"
     if not test_script.exists():
@@ -254,7 +254,7 @@ def check_skill_matching() -> QAResult:
             passed=False,
             output="",
             duration=0,
-            error=f"Test-Script fehlt: {test_script}"
+            error=f"Test script missing: {test_script}"
         )
     
     start_time = datetime.now()
@@ -272,7 +272,7 @@ def check_skill_matching() -> QAResult:
             passed=result.returncode == 0,
             output=result.stdout + result.stderr,
             duration=duration,
-            error=None if result.returncode == 0 else "Skill-Matching-Test fehlgeschlagen"
+            error=None if result.returncode == 0 else "Skill-matching test failed"
         )
     except subprocess.TimeoutExpired:
         return QAResult(
@@ -285,7 +285,7 @@ def check_skill_matching() -> QAResult:
 
 
 def check_status_json(project_dir: Path) -> QAResult:
-    """Prüft ob status.json valide ist."""
+    """Check whether status.json is valid."""
     
     status_file = project_dir / "status.json"
     
@@ -293,9 +293,9 @@ def check_status_json(project_dir: Path) -> QAResult:
         return QAResult(
             check="status_json",
             passed=False,
-            output="status.json nicht vorhanden",
+            output="status.json not present",
             duration=0,
-            error="Datei fehlt"
+            error="File missing"
         )
     
     try:
@@ -311,7 +311,7 @@ def check_status_json(project_dir: Path) -> QAResult:
                 passed=False,
                 output=json.dumps(status, indent=2),
                 duration=0,
-                error=f"Fehlende Felder: {', '.join(missing)}"
+                error=f"Missing fields: {', '.join(missing)}"
             )
         
         return QAResult(
@@ -327,7 +327,7 @@ def check_status_json(project_dir: Path) -> QAResult:
             passed=False,
             output="",
             duration=0,
-            error=f"Ungültiges JSON: {e}"
+            error=f"Invalid JSON: {e}"
         )
 
 # =============================================================================
@@ -335,7 +335,7 @@ def check_status_json(project_dir: Path) -> QAResult:
 # =============================================================================
 
 def print_report(report: QAReport, use_json: bool = False):
-    """Gibt den QA-Report aus."""
+    """Print the QA report."""
     
     if use_json:
         print(json.dumps(asdict(report), indent=2, ensure_ascii=False))
@@ -354,7 +354,7 @@ def print_report(report: QAReport, use_json: bool = False):
         print(f"\n  {icon} {result['check']}{duration_str}")
         
         if not result["passed"] and result.get("error"):
-            print(f"     Fehler: {result['error']}")
+            print(f"     Error: {result['error']}")
             if result["output"]:
                 # Show first few lines of output
                 output_lines = result["output"].strip().split('\n')[:5]
@@ -362,15 +362,15 @@ def print_report(report: QAReport, use_json: bool = False):
                     print(f"     {line}")
     
     print(f"\n  {'='*50}")
-    print(f"  ERGEBNIS: {report.passed}")
-    print(f"  Bestanden: {passed_count}/{total_count}")
-    print(f"  Dauer:     {report.total_duration:.1f}s")
+    print(f"  RESULT: {report.passed}")
+    print(f"  Passed: {passed_count}/{total_count}")
+    print(f"  Duration: {report.total_duration:.1f}s")
     print(f"  {'='*50}")
     
     if report.passed:
-        print(f"\n  ✅ Alle QA-Checks bestanden. Ticket kann als 'done' markiert werden.")
+        print(f"\n  ✅ All QA checks passed. Ticket can be marked as 'done'.")
     else:
-        print(f"\n  ❌ QA-Checks fehlgeschlagen. Ticket muss zurück zu Phase 4 (Implementierung).")
+        print(f"\n  ❌ QA checks failed. Ticket must go back to phase 4 (implementation).")
     
     print()
 
@@ -380,7 +380,7 @@ def print_report(report: QAReport, use_json: bool = False):
 
 def main():
     if len(sys.argv) < 2:
-        print("Verwendung:")
+        print("Usage:")
         print("  python3 run_qa_gate.py <project> [--level N] [--json]")
         sys.exit(1)
     
@@ -395,10 +395,10 @@ def main():
     
     project_dir = PROJECTS_DIR / project
     if not project_dir.exists():
-        print(f"Fehler: Projekt nicht gefunden: {project_dir}")
+        print(f"Error: project not found: {project_dir}")
         sys.exit(1)
     
-    print(f"\n  Starte QA-Gate Level {level} für {project}...")
+    print(f"\n  Starting QA gate level {level} for {project}...")
     
     # Get checks for level
     checks = get_checks_for_level(level)
@@ -407,18 +407,18 @@ def main():
     checks.insert(0, QACheck(
         name="project_structure",
         command="",
-        description="Projektstruktur"
+        description="Project structure"
     ))
     checks.insert(1, QACheck(
         name="status_json",
         command="",
-        description="status.json valide"
+        description="status.json valid"
     ))
     if level >= 5:
         checks.append(QACheck(
             name="skill_matching",
             command="",
-            description="Skill-Matching-Test (Registry-Integrität)"
+            description="Skill-matching test (registry integrity)"
         ))
     
     # Execute checks
@@ -426,7 +426,7 @@ def main():
     total_start = datetime.now()
     
     for check in checks:
-        print(f"\n  Führe aus: {check.description}...", end="", flush=True)
+        print(f"\n  Running: {check.description}...", end="", flush=True)
         
         if check.name == "project_structure":
             result = check_project_structure(project_dir)
@@ -445,7 +445,7 @@ def main():
     total_duration = (datetime.now() - total_start).total_seconds()
     
     # Build report
-    passed = all(r.passed for r in results if r.check not in ["npm_audit"])  # npm audit ist warning
+    passed = all(r.passed for r in results if r.check not in ["npm_audit"])  # npm audit is warning
     
     report = QAReport(
         project=project,

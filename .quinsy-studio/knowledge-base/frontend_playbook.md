@@ -1,55 +1,55 @@
 # Frontend Playbook
 
-> Component-Composition, IndexedDB Local-First, SSR/ISR — die globalen Frontend-Standards.
+> Component composition, IndexedDB local-first, SSR/ISR — the global frontend standards.
 
-## Grundprinzip
+## Core principle
 
 ```
-Schnell. Offline-fähig. Barrierefrei.
-Kein Kompromiss bei Performance.
+Fast. Offline-capable. Accessible.
+No compromise on performance.
 ```
 
 ---
 
-## Architektur
+## Architecture
 
-### Monorepo-Struktur
+### Monorepo structure
 
 ```
 project/
 ├── apps/
-│   └── web/              # Next.js App
+│   └── web/              # Next.js app
 ├── packages/
-│   ├── ui/               # Shared Components
+│   ├── ui/               # shared components
 │   ├── config/           # ESLint, Prettier
-│   └── tsconfig/         # TypeScript Configs
+│   └── tsconfig/         # TypeScript configs
 ├── turbo.json
 ├── pnpm-workspace.yaml
 └── package.json
 ```
 
-### Component Composition
+### Component composition
 
 ```
 Atoms → Molecules → Organisms → Templates → Pages
 
-Button, Input     Card, Form       Header, Footer    Page-Layout    Home, About
+Button, Input     Card, Form       Header, Footer    Page layout    Home, About
 Badge, Icon       Modal, Dropdown  Sidebar, Nav
 ```
 
-**Regel:** Komponenten sind generisch, konfigurierbar, wiederverwendbar.
+**Rule:** components are generic, configurable, reusable.
 
 ---
 
 ## Next.js App Router
 
-### Grundstruktur
+### Basic structure
 
 ```typescript
 // app/layout.tsx
 export default function RootLayout({ children }) {
   return (
-    <html lang="de">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
@@ -61,17 +61,17 @@ export default function Home() {
 }
 ```
 
-### Server Components (Standard)
+### Server components (default)
 
 ```typescript
-// Server Component (kein "use client")
+// server component (no "use client")
 async function UserData({ userId }) {
   const user = await db.user.findUnique({ where: { id: userId } });
   return <div>{user.name}</div>;
 }
 ```
 
-### Client Components (nur bei Bedarf)
+### Client components (only when needed)
 
 ```typescript
 "use client";
@@ -84,13 +84,13 @@ function InteractiveComponent() {
 }
 ```
 
-**Regel:** Server Components als Default, Client Components nur wenn nötig (Interaktivität, Browser APIs).
+**Rule:** server components by default, client components only when necessary (interactivity, browser APIs).
 
 ---
 
-## IndexedDB Local-First
+## IndexedDB local-first
 
-### Architektur
+### Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -98,24 +98,24 @@ function InteractiveComponent() {
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
 │  ┌─────────────┐     ┌─────────────┐                   │
-│  │   UI Layer  │────▶│  Local DB   │                   │
+│  │   UI layer  │────▶│  Local DB   │                   │
 │  │  (React)    │     │ (IndexedDB) │                   │
 │  └─────────────┘     └──────┬──────┘                   │
 │                             │                           │
 │                      ┌──────▼──────┐                   │
-│                      │   Sync Layer│                   │
-│                      │  (Optional) │                   │
+│                      │   sync layer│                   │
+│                      │  (optional) │                   │
 │                      └──────┬──────┘                   │
 │                             │                           │
 │                      ┌──────▼──────┐                   │
-│                      │  Cloud DB   │                   │
+│                      │  cloud DB   │                   │
 │                      │ (Supabase)  │                   │
 │                      └─────────────┘                   │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Implementierung (idb Library)
+### Implementation (idb library)
 
 ```typescript
 import { openDB } from 'idb';
@@ -140,10 +140,10 @@ async function syncToCloud() {
 }
 ```
 
-### Offline-First Strategie
+### Offline-first strategy
 
 ```typescript
-// Service Worker für Offline
+// service worker for offline
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
@@ -157,7 +157,7 @@ self.addEventListener('fetch', (event) => {
 
 ## Performance
 
-### Core Web Vitals Budget
+### Core web vitals budget
 
 | Metric | Target | Measurement |
 |--------|--------|-------------|
@@ -166,50 +166,50 @@ self.addEventListener('fetch', (event) => {
 | CLS | < 0.1 | Cumulative Layout Shift |
 | INP | < 200ms | Interaction to Next Paint |
 
-### Optimierungen
+### Optimizations
 
 ```typescript
-// 1. Lazy Loading
+// 1. Lazy loading
 const HeavyComponent = dynamic(() => import('./HeavyComponent'), { loading: () => <Spinner /> });
 
-// 2. Image Optimization
+// 2. Image optimization
 import Image from 'next/image';
 <Image src="/photo.jpg" width={500} height={300} alt="Description" priority={false} />
 
-// 3. Font Optimization
+// 3. Font optimization
 import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
-// 4. Script Optimization
+// 4. Script optimization
 import Script from 'next/script';
 <Script src="/analytics.js" strategy="lazyOnload" />
 ```
 
-### Bundle-Analyse
+### Bundle analysis
 
 ```bash
-# Build mit Analyse
+# build with analysis
 ANALYZE=true pnpm build
 
-# Lighthouse
+# lighthouse
 npx lighthouse http://localhost:3000 --output=html
 ```
 
 ---
 
-## State Management
+## State management
 
-### Einfach: React State
+### Simple: React state
 
 ```typescript
-// Für lokale State
+// for local state
 const [count, setCount] = useState(0);
 
-// Für abgeleiteten State
+// for derived state
 const doubleCount = useMemo(() => count * 2, [count]);
 ```
 
-### Mittel: Context
+### Medium: Context
 
 ```typescript
 const ThemeContext = createContext('light');
@@ -223,7 +223,7 @@ function App() {
 }
 ```
 
-### Komplex: Zustand / Jotai
+### Complex: Zustand / Jotai
 
 ```typescript
 import { create } from 'zustand';
@@ -234,13 +234,13 @@ const useStore = create((set) => ({
 }));
 ```
 
-**Regel:** Einfach → Mittel → Komplex. Nicht übervieren.
+**Rule:** simple → medium → complex. Don't over-engineer.
 
 ---
 
 ## Testing
 
-### Unit Tests (Vitest)
+### Unit tests (Vitest)
 
 ```typescript
 import { render, screen } from '@testing-library/react';
@@ -252,7 +252,7 @@ test('renders correctly', () => {
 });
 ```
 
-### E2E Tests (Playwright)
+### E2E tests (Playwright)
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -265,9 +265,9 @@ test('homepage loads', async ({ page }) => {
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/design_playbook.md` — Design-Standards
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — Frontend-Slop-Regeln
-- `.quinsy-studio/studio-library/ui/` — UI-Assets
-- `.quinsy-studio/teams/01-frontend-experience/` — Frontend-Team
+- `.quinsy-studio/knowledge-base/design_playbook.md` — design standards
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — frontend slop rules
+- `.quinsy-studio/studio-library/ui/` — UI assets
+- `.quinsy-studio/teams/01-frontend-experience/` — frontend team

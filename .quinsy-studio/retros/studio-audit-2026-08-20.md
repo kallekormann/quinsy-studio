@@ -1,304 +1,346 @@
 # Quinsy Studio — Audit Report
 
-> Testdurchlauf mit Nudge PRD. Analyse von Lücken, Overhead, Automation und Learning-Loop.
+> Test run with Nudge PRD. Analysis of gaps, overhead, automation, and learning loop.
 
-**Datum:** 2026-08-20
-**Test-Input:** `intake/Nudge.md` (SaaS-Application, B2C Micro-SaaS)
-**Erwarteter Archetyp:** saas-application
+**Date:** 2026-08-20
+**Test Input:** `intake/Nudge.md` (SaaS Application, B2C Micro-SaaS)
+**Expected Archetype:** saas-application
 
 ---
 
-## 1. Simulierter Workflow (Phase 0-7)
+## 1. Simulated Workflow (Phase 0-7)
 
 ### Phase 1: Intake & PRD Processing
 
-**Was der Agent tun sollte:**
-1. PRD einlesen → ✅ PRD vorhanden und vollständig
-2. `docs/definitions/` befüllen → ❌ **FEHLT** — Kein `docs/definitions/` Verzeichnis im Projekt
-3. Archetyp bestimmen → ✅ "saas-application" ist korrekt
-4. `./studio init nudge --archetype saas-application` → ❌ **FEHLT** — Projekt-Verzeichnis existiert nicht mehr
-5. `./studio env nudge init` → ❌ Docker-Setup fehlt
-6. `./studio repo nudge create` → ❌ GitHub-Integration nicht angebunden
-7. Tickets generieren → ❌ **FEHLT** — `generate_ticket_manifest.py` ist ein Stub
-8. Erste ADRs → ❌ Keine ADRs vorhanden
-9. `status.json` → ❌ Existiert nicht
-10. Gate 0 prüfen → ⚠️ Würde fehlschlagen (alle Checks rot)
+**What the agent should do:**
+1. Read PRD → ✅ PRD present and complete
+2. Fill `docs/definitions/` → ❌ **MISSING** — No `docs/definitions/` directory in the project
+3. Determine archetype → ✅ "saas-application" is correct
+4. `./studio init nudge --archetype saas-application` → ❌ **MISSING** — Project directory no longer exists
+5. `./studio env nudge init` → ❌ Docker setup missing
+6. `./studio repo nudge create` → ❌ GitHub integration not connected
+7. Generate tickets → ❌ **MISSING** — `generate_ticket_manifest.py` is a stub
+8. First ADRs → ❌ No ADRs present
+9. `status.json` → ❌ Does not exist
+10. Check Gate 0 → ⚠️ Would fail (all checks red)
 
-**Lücke 1: PRD → Ticket-Automatisierung fehlt komplett**
-Das `generate_ticket_manifest.py` ist ein Stub. Es liest keine PRDs ein und generiert keine Tickets. Der Agent müsste manuell jedes Ticket erstellen.
+**Gap 1: PRD → Ticket automation is completely missing**
+The `generate_ticket_manifest.py` is a stub. It reads no PRDs and generates no tickets. The agent would have to manually create every ticket.
 
-**Lücke 2: Projektstruktur wird nicht automatisch erstellt**
-`./studio init` erstellt nur ein leeres Verzeichnis. Die `docs/definitions/` Struktur (00-index bis 11-assumptions) wird nicht generiert.
+**Gap 2: Project structure is not automatically created**
+`./studio init` only creates an empty directory. The `docs/definitions/` structure (00-index to 11-assumptions) is not generated.
 
 ---
 
 ### Phase 2: Architecture & Design Blueprinting
 
-**Was der Agent tun sollte:**
-1. Tech-Stack finalisieren → ✅ PRD nennt Next.js, Supabase, Tailwind
-2. System-Architektur entwerfen → ❌ Kein Template für Architecture Blueprint
-3. Datenmodell definieren → ❌ Kein ER-Diagramm-Template
-4. API-Kontrakte → ❌ Kein OpenAPI-Template
-5. UI-Specs → ⚠️ Design Tokens vorhanden, aber kein UI-Spec-Template
-6. Sicherheits-Architektur → ❌ Kein Security-Template
-7. DSGVO-Check → ⚠️ Compliance-Playbook vorhanden, aber kein automatisierter Check
-8. ADRs dokumentieren → ✅ `./studio adr` funktioniert
-9. Blueprint zusammenstellen → ❌ Kein Blueprint-Template
-10. Human-Gate 1 → ⚠️ Prozess beschrieben, aber kein mechanismus für Freigabe
+**What the agent should do:**
+1. Finalize tech stack → ✅ PRD mentions Next.js, Supabase, Tailwind
+2. Design system architecture → ❌ No template for architecture blueprint
+3. Define data model → ❌ No ER diagram template
+4. API contracts → ❌ No OpenAPI template
+5. UI specs → ⚠️ Design tokens present, but no UI spec template
+6. Security architecture → ❌ No security template
+7. GDPR check → ⚠️ Compliance playbook present, but no automated check
+8. Document ADRs → ✅ `./studio adr` works
+9. Compile blueprint → ❌ No blueprint template
+10. Human Gate 1 → ⚠️ Process described, but no mechanism for approval
 
-**Lücke 3: Keine Templates für Phase 2**
-Es gibt kein Template für Architecture Blueprint, UI-Specs, oder Security-Architektur.
+**Gap 3: No templates for Phase 2**
+There are no templates for architecture blueprint, UI specs, or security architecture.
 
-**Lücke 4: Human-Gate 1 hat kein Umsetzungsmechanismus**
-Der Prozess beschreibt "Warten auf Freigabe", aber es gibt keinen mechanismus wie der User freigibt (kein `./studio approve`, kein Comment-System).
+**Gap 4: Human Gate 1 has no implementation mechanism**
+The process describes "waiting for approval", but there is no mechanism for how the user approves (no `./studio approve`, no comment system).
 
 ---
 
 ### Phase 3: Sprint Setup & Backlog Grooming
 
-**Was der Agent tun sollte:**
-1. `./studio sprint nudge` → ✅ Funktioniert
-2. Tickets priorisieren → ⚠️ Kein Mechanismus für RICE/MoSCoW
-3. Abhängigkeiten identifizieren → ❌ Kein Dependency-Tracking
-4. Kapazität schätzen → ❌ Kein Kapazitäts-Template
-5. Tickets zuordnen → ❌ Kein Mechanismus für Sprint-Zuordnung
-6. `plan.md` ausfüllen → ✅ Template wird erstellt
-7. Blocked-Review → ⚠️ Board zeigt blocked Tickets, aber kein Review-Workflow
-8. Grooming-Protokoll → ✅ Template wird erstellt
-9. Gate 3 prüfen → ⚠️ Kein automatisierter Gate-Check
+**What the agent should do:**
+1. `./studio sprint nudge` → ✅ Works
+2. Prioritize tickets → ⚠️ No mechanism for RICE/MoSCoW
+3. Identify dependencies → ❌ No dependency tracking
+4. Estimate capacity → ❌ No capacity template
+5. Assign tickets → ❌ No mechanism for sprint assignment
+6. Fill out `plan.md` → ✅ Template is created
+7. Blocked review → ⚠️ Board shows blocked tickets, but no review workflow
+8. Grooming protocol → ✅ Template is created
+9. Check Gate 3 → ⚠️ No automated gate check
 
-**Lücke 5: Kein Ticket-Sprint-Zuordnungs-Mechanismus**
-Tickets werden erstellt, aber es gibt keinen Weg sie einem Sprint zuzuordnen.
+**Gap 5: No ticket-sprint assignment mechanism**
+Tickets are created, but there is no way to assign them to a sprint.
 
 ---
 
 ### Phase 4: Autonomous Sprint Execution
 
-**Was der Agent tun sollte:**
-Pro Ticket: 9-Schritte-Workflow
+**What the agent should do:**
+Per ticket: 9-step workflow
 
-**Schritt 1: Aufnahme & Verstehen** → ✅ Ticket-Template vorhanden
-**Schritt 2: Zerlegung** → ⚠️ `./studio move` funktioniert, aber keine Sub-Tasks
-**Schritt 3: Konzeption/Design** → ⚠️ Move zu "design" funktioniert
-**Schritt 4: Umsetzung** → ⚠️ Move zu "implement" funktioniert
-**Schritt 5: Selbstprüfung** → ❌ **FEHLT** — Kein automatisierter Lint/Test-Check
-**Schritt 6: QA-Gate** → ⚠️ `./studio gate` existiert, aber Checks sind oberflächlich
-**Schritt 7: Doku & ADR-Sync** → ❌ Kein automatisierter Sync
-**Schritt 8: Reuse-Review** → ✅ `./studio promote` funktioniert
-**Schritt 9: Abschluss** → ✅ `./studio move done` funktioniert
+**Step 1: Intake & Understanding** → ✅ Ticket template present
+**Step 2: Decomposition** → ⚠️ `./studio move` works, but no sub-tasks
+**Step 3: Conception/Design** → ⚠️ Move to "design" works
+**Step 4: Implementation** → ⚠️ Move to "implement" works
+**Step 5: Self-check** → ❌ **MISSING** — No automated lint/test check
+**Step 6: QA Gate** → ⚠️ `./studio gate` exists, but checks are superficial
+**Step 7: Docs & ADR Sync** → ❌ No automated sync
+**Step 8: Reuse Review** → ✅ `./studio promote` works
+**Step 9: Completion** → ✅ `./studio move done` works
 
-**Lücke 6: Kein automatisierter Lint/Test-Check in Schritt 5**
-Der Agent müsste manuell `pnpm test`, `pnpm lint`, `pnpm build` ausführen. Es gibt keinen mechanismus das automatisch zu prüfen.
+**Gap 6: No automated lint/test check in Step 5**
+The agent would have to manually run `pnpm test`, `pnpm lint`, `pnpm build`. There is no mechanism to check this automatically.
 
-**Lücke 7: QA-Gate-Checks sind oberflächlich**
-`cmd_gate()` prüft nur ob Dateien existieren, nicht ob die tatsächliche Qualität stimmt.
+**Gap 7: QA gate checks are superficial**
+`cmd_gate()` only checks if files exist, not if the actual quality is correct.
 
 ---
 
 ### Phase 5: Comprehensive QA & Compliance Gate
 
-**Was der Agent tun sollte:**
-1. `validate_anti_slop.py` → ❌ **STUB** — Keine echte Code-Analyse
-2. `run_qa_gate.py` → ❌ **STUB** — Führt nichts aus
-3. Security-Scan → ❌ Nicht implementiert
-4. DSGVO-Check → ❌ Nicht implementiert
-5. Performance-Tests → ❌ Nicht implementiert
-6. a11y-Check → ❌ Nicht implementiert
-7. Anti-Slop-Audit → ❌ Nur Stub
-8. Gate 5 muss grün → ⚠️ Würde immer grün sein (keine echten Checks)
-9. QA-Report → ❌ Nicht implementiert
+**What the agent should do:**
+1. `validate_anti_slop.py` → ❌ **STUB** — No real code analysis
+2. `run_qa_gate.py` → ❌ **STUB** — Runs nothing
+3. Security scan → ❌ Not implemented
+4. GDPR check → ❌ Not implemented
+5. Performance tests → ❌ Not implemented
+6. a11y check → ❌ Not implemented
+7. Anti-slop audit → ❌ Stub only
+8. Gate 5 must be green → ⚠️ Would always be green (no real checks)
+9. QA report → ❌ Not implemented
 
-**Lücke 8: Phase 5 ist komplett nicht implementiert**
-Alle Python-Scripts sind Stubs. Der QA-Gate würde immer grün sein, egal was der Agent gebaut hat.
+**Gap 8: Phase 5 is completely unimplemented**
+All Python scripts are stubs. The QA gate would always be green, regardless of what the agent built.
 
 ---
 
 ### Phase 6: Dual-Loop Knowledge Harvesting
 
-**Was der Agent tun sollte:**
-1. Sprint-Retrospektive → ✅ `./studio retro` erstellt Template
-2. Learning Items sammeln → ✅ `./studio learn` funktioniert
-3. Local Loop → ⚠️ Template vorhanden, aber kein Mechanismus
-4. Global Loop → ⚠️ Template vorhanden, aber kein Mechanismus
-5. Playbooks aktualisieren → ❌ Kein automatisierter Mechanismus
-6. Python-Tools optimieren → ❌ Kein automatisierter Mechanismus
-7. CHANGELOG aktualisieren → ⚠️ Manuelles Update
-8. `./studio retro` → ✅ Funktioniert
+**What the agent should do:**
+1. Sprint retrospective → ✅ `./studio retro` creates template
+2. Collect learning items → ✅ `./studio learn` works
+3. Local Loop → ⚠️ Template present, but no mechanism
+4. Global Loop → ⚠️ Template present, but no mechanism
+5. Update playbooks → ❌ No automated mechanism
+6. Optimize Python tools → ❌ No automated mechanism
+7. Update CHANGELOG → ⚠️ Manual update
+8. `./studio retro` → ✅ Works
 
-**Lücke 9: Learning-Loop ist manuell**
-Es gibt keine Automatisierung die Learnings automatisch in Playbooks oder Tools überträgt.
+**Gap 9: Learning loop is manual**
+There is no automation to automatically transfer learnings into playbooks or tools.
 
 ---
 
 ### Phase 7: Deployment & Iteration
 
-**Was der Agent tun sollte:**
-1. Staging-Deployment → ❌ Kein Deploy-Mechanismus
-2. Smoke-Tests → ❌ Nicht implementiert
-3. Production-Deployment → ❌ Nicht implementiert
-4. Monitoring → ❌ Nicht implementiert
-5. Release-Notes → ❌ Nicht implementiert
-6. Nächsten Sprint planen → ⚠️ Manuelles `./studio sprint`
+**What the agent should do:**
+1. Staging deployment → ❌ No deploy mechanism
+2. Smoke tests → ❌ Not implemented
+3. Production deployment → ❌ Not implemented
+4. Monitoring → ❌ Not implemented
+5. Release notes → ❌ Not implemented
+6. Plan next sprint → ⚠️ Manual `./studio sprint`
 
-**Lücke 10: Phase 7 ist komplett nicht implementiert**
-Kein Deployment, kein Monitoring, keine Release-Notes.
-
----
-
-## 2. Zusammenfassung der Lücken
-
-### Kritische Lücken (Blocker)
-
-| # | Lücke | Auswirkung | Aufwand |
-|---|-------|------------|---------|
-| 1 | PRD → Ticket-Automatisierung fehlt | Agent kann Tickets nicht automatisch generieren | Hoch |
-| 5 | Kein Ticket-Sprint-Zuordnung | Tickets können nicht Sprints zugeordnet werden | Mittel |
-| 8 | Phase 5 (QA) ist Stub | QA-Gate prüft nichts — immer grün | Hoch |
-| 10 | Phase 7 (Deployment) fehlt | Kein Deployment-Mechanismus | Hoch |
-
-### Wichtige Lücken (Verbesserung)
-
-| # | Lücke | Auswirkung | Aufwand |
-|---|-------|------------|---------|
-| 2 | Projektstruktur wird nicht auto-erstellt | Manuelles Anlegen von dirs | Niedrig |
-| 3 | Keine Templates für Phase 2 | Agent muss Blueprint manuell strukturieren | Mittel |
-| 4 | Human-Gate 1 hat kein Umsetzungsmechanismus | Kein Freigabe-Workflow | Mittel |
-| 6 | Kein auto Lint/Test-Check | Manuelles Prüfen in Schritt 5 | Niedrig |
-| 7 | QA-Gate-Checks oberflächlich | Nur Existenz-Check, keine Qualität | Hoch |
-
-###Nice-to-have (Optimierung)
-
-| # | Lücke | Auswirkung | Aufwand |
-|---|-------|------------|---------|
-| 9 | Learning-Loop manuell | Learnings werden nicht automatisch verarbeitet | Mittel |
+**Gap 10: Phase 7 is completely unimplemented**
+No deployment, no monitoring, no release notes.
 
 ---
 
-## 3. Overhead-Analyse
+## 2. Gap Summary
 
-### Was zu viel Overhead ist
+### Critical Gaps (Blockers)
 
-| Element | Overhead-Level | Begründung |
-|---------|---------------|------------|
-| **9-Schritte-Ticket-Workflow** | ⚠️ HOCH | 9 Schritte pro Ticket sind zu viel für einfache Tasks. Ein kleines Bugfix braucht keine "Konzeption/Design" Phase. |
-| **Gate 0 + Gate 3 + Gate 5** | ⚠️ MITTEL | 3 Gates für ein kleines Projekt. Gate 0 und Gate 3 könnten zusammengelegt werden. |
-| **9 Teams mit 36 Skills** | ⚠️ HOCH | Für ein B2C Micro-SaaS sind 9 Teams overkill. Teams 03 (Compliance), 04 (Strategy), 05 (Growth), 06 (PM) könnten in 1-2 Teams zusammengefasst werden. |
-| **Docker für jedes Projekt** | ⚠️ MITTEL | Nudge braucht kein Docker — Next.js + Supabase läuft lokal ohne Container. |
-| **ADRs für alles** | ⚠️ NIEDRIG | ADRs sind sinnvoll, aber nicht für jede kleinste Entscheidung. |
+| # | Gap | Impact | Effort |
+|---|-----|--------|--------|
+| 1 | PRD → Ticket automation missing | Agent cannot generate tickets automatically | High |
+| 5 | No ticket-sprint assignment | Tickets cannot be assigned to sprints | Medium |
+| 8 | Phase 5 (QA) is stub | QA gate checks nothing — always green | High |
+| 10 | Phase 7 (Deployment) missing | No deployment mechanism | High |
 
-### Was sinnvoll ist
+### Important Gaps (Improvement)
 
-| Element | Bewertung |
-|---------|-----------|
-| **Anti-Slop-Audit** | ✅ Sehr sinnvoll — verhindert AI-Code-Qualitätsprobleme |
-| **Dual-Loop Learning** | ✅ Sehr sinnvoll — trennt Projekt von Studio-Wissen |
-| **Skill-Registry** | ✅ Sehr sinnvoll — ermöglicht gezielte Skill-Zuordnung |
-| **Templates** | ✅ Sinnvoll — spart Zeit bei der Erstellung |
-| **CHANGELOG** | ✅ Sinnvoll — dokumentiert Studio-Entwicklung |
+| # | Gap | Impact | Effort |
+|---|-----|--------|--------|
+| 2 | Project structure not auto-created | Manual directory creation | Low |
+| 3 | No templates for Phase 2 | Agent must manually structure blueprint | Medium |
+| 4 | Human Gate 1 has no implementation mechanism | No approval workflow | Medium |
+| 6 | No auto lint/test check | Manual checking in Step 5 | Low |
+| 7 | QA gate checks superficial | Existence check only, no quality | High |
 
----
+### Nice-to-have (Optimization)
 
-## 4. Learning-Loop-Audit: Lernt das Studio aus Fehlern?
-
-### Evidenz aus den Learning Items
-
-| ID | Fehler | Status | wurde behoben? |
-|----|--------|--------|----------------|
-| LO-0001 | Design-Referenzen erst nachträglich vorhanden | done | ⚠️ Unklar ob implementiert |
-| LO-0002 | validate_design prüft nicht Studio-Library | open | ❌ NICHT behoben |
-| LO-0003 | GitHub-Repo-Erstellung braucht explizite Freigabe | done | ⚠️ Unklar ob implementiert |
-| LO-0004 | Design-Audit schlägt bei frischen Projekten fehl | done | ⚠️ Unklar ob implementiert |
-| LO-0005 | Prozess-Doku hatte veraltete 8-Schritte-Referenzen | done | ✅ Behoben (7 Phasen jetzt) |
-
-### Bewertung
-
-**Das Studio lernt NICHT zuverlässig aus Fehlern.**
-
-Beweise:
-1. **LO-0002 ist noch open** — Der Fehler wurde erkannt, aber nicht behoben
-2. **"done" heißt nicht "implementiert"** — Die Learning Items sind als "done" markiert, aber die Änderungen sind nicht nachweisbar (kein CHANGELOG-Eintrag, kein Code-Commit)
-3. **Kein Rückkopplungs-Mechanismus** — Es gibt keinen automatisierten Weg, ein Learning Item in eine Code-Änderung zu übersetzen
-4. **Studio-Dateien wurden komplett gelöscht** — Das größte Learning: Das gesamte Studio ging verloren. Es gibt keine Backup-Strategie.
-
-### Kritische Frage
-
-> **Warum wurden alle Studio-Dateien gelöscht?**
-
-Mögliche Ursachen:
-- Git-Reset oder Branch-Wechsel
-- Manuelle Löschung
-- Fehlende Versionskontrolle für das Studio selbst
-
-**Empfehlung:** Das Studio muss under Git-Kontrolle stehen. `.quinsy-studio/` muss ein eigenes Git-Repository sein oder Teil des Haupt-Repos.
+| # | Gap | Impact | Effort |
+|---|-----|--------|--------|
+| 9 | Learning loop manual | Learnings not automatically processed | Medium |
 
 ---
 
-## 5. Konkrete Empfehlungen
+## 3. Overhead Analysis
 
-### Priorität 1 (Sofort)
+### What has too much overhead
 
-1. **PRD → Ticket-Automatisierung bauen**
-   - `generate_ticket_manifest.py` muss das Nudge-PRD lesen und Tickets generieren
-   - Mindestens: Feature-Liste extrahieren, Akzeptanzkriterien setzen
+| Element | Overhead Level | Rationale |
+|---------|---------------|-----------|
+| **9-step ticket workflow** | ⚠️ HIGH | 9 steps per ticket is too much for simple tasks. A small bugfix does not need a "Conception/Design" phase. |
+| **Gate 0 + Gate 3 + Gate 5** | ⚠️ MEDIUM | 3 gates for a small project. Gate 0 and Gate 3 could be merged. |
+| **9 teams with 36 skills** | ⚠️ HIGH | For a B2C Micro-SaaS, 9 teams is overkill. Teams 03 (Compliance), 04 (Strategy), 05 (Growth), 06 (PM) could be combined into 1-2 teams. |
+| **Docker for every project** | ⚠️ MEDIUM | Nudge does not need Docker — Next.js + Supabase runs locally without containers. |
+| **ADRs for everything** | ⚠️ LOW | ADRs are useful, but not for every tiny decision. |
 
-2. **QA-Gate mit echten Checks füllen**
-   - `validate_anti_slop.py` muss echten Code scannen
-   - `run_qa_gate.py` muss Lint, Type-Check, Tests ausführen
-   - Anti-Slop-Check muss AI-Pattern erkennen
+### What is useful
 
-3. **Git-Kontrolle für Studio sicherstellen**
-   - `.quinsy-studio/` muss under Git stehen
-   - Regelmäßige Commits nach Studio-Änderungen
-
-### Priorität 2 (Dieser Sprint)
-
-4. **Ticket-Sprint-Zuordnung implementieren**
-   - `./studio ticket` muss `--sprint` Flag unterstützen
-   - `./studio sprint` muss Tickets zuordnen können
-
-5. **Human-Gate 1 Umsetzungsmechanismus**
-   - `./studio approve <project> --gate 1` oder ähnliches
-   - Comment-System für Feedback
-
-6. **Overhead reduzieren**
-   - 9-Schritte-Workflow auf 5 Schritte kürzen (für einfache Tasks)
-   - Gates 0+3 zusammenlegen
-   - Team-Struktur vereinfachen (von 9 auf 5 Teams)
-
-### Priorität 3 (Nächster Sprint)
-
-7. **Learning-Loop automatisieren**
-   - `./studio learn` muss automatisch in CHANGELOG eintragen
-   - Global Loop muss Playbooks aktualisieren können
-
-8. **Phase 7 ansatzweise implementieren**
-   - Mindestens: Vercel-Deploy via CLI
-   - Release-Notes generieren
+| Element | Assessment |
+|---------|------------|
+| **Anti-Slop Audit** | ✅ Very useful — prevents AI code quality problems |
+| **Dual-Loop Learning** | ✅ Very useful — separates project from studio knowledge |
+| **Skill Registry** | ✅ Very useful — enables targeted skill assignment |
+| **Templates** | ✅ Useful — saves time during creation |
+| **CHANGELOG** | ✅ Useful — documents studio development |
 
 ---
 
-## 6. Fazit
+## 4. Learning Loop Audit: Does the Studio Learn from Mistakes?
 
-### Was funktioniert
-- ✅ Skill-Registry mit 36 Skills und Trigger-Wörtern
-- ✅ Dual-Loop Learning Konzept (theoretisch)
-- ✅ Team-Struktur mit Director-Level Rollen
-- ✅ Process-Docs (lifecycle, gates, ticket-workflow)
-- ✅ Knowledge Base (6 Playbooks)
-- ✅ Studio Templates (5 Templates)
-- ✅ Python-CLI mit 18 Befehlen
+### Evidence from Learning Items
 
-### Was NICHT funktioniert
-- ❌ PRD → Ticket-Automatisierung (Stub)
-- ❌ QA-Gate (Stub)
-- ❌ Anti-Slop-Audit (Stub)
-- ❌ Deployment (nicht implementiert)
-- ❌ Learning-Loop (manuell, nicht zuverlässig)
-- ❌ Backup-Strategie (fehlt komplett)
-- ❌ Projekt-Struktur (wird nicht automatisch erstellt)
+| ID | Error | Status | Was it fixed? |
+|----|-------|--------|---------------|
+| LO-0001 | Design references only available after the fact | done | ⚠️ Unclear if implemented |
+| LO-0002 | validate_design does not check Studio Library | open | ❌ NOT fixed |
+| LO-0003 | GitHub repo creation requires explicit approval | done | ⚠️ Unclear if implemented |
+| LO-0004 | Design audit fails on fresh projects | done | ⚠️ Unclear if implemented |
+| LO-0005 | Process docs had outdated 8-step references | done | ✅ Fixed (7 phases now) |
 
-### Gesamtbewertung
+### Assessment
 
-**Das Studio ist eine hülle ohne bauch.** Die Struktur ist da (Teams, Skills, Process-Docs), aber die Business-Logic fehlt. Die Python-Scripts sind Stubs. Der QA-Gate würde immer grün sein. Der Learning-Loop funktioniert nicht zuverlässig.
+**The studio does NOT reliably learn from mistakes.**
 
-**Nächster Schritt:** Die kritischen Lücken (1, 2, 3) schließen, bevor das Studio für ein neues Projekt verwendet wird.
+Evidence:
+1. **LO-0002 is still open** — The error was identified but not fixed
+2. **"done" does not mean "implemented"** — Learning items are marked as "done", but the changes are not verifiable (no CHANGELOG entry, no code commit)
+3. **No feedback mechanism** — There is no automated way to translate a learning item into a code change
+4. **Studio files were completely deleted** — The biggest learning: the entire studio was lost. There is no backup strategy.
+
+### Critical Question
+
+> **Why were all studio files deleted?**
+
+Possible causes:
+- Git reset or branch switch
+- Manual deletion
+- Missing version control for the studio itself
+
+**Recommendation:** The studio must be under Git control. `.quinsy-studio/` must be its own Git repository or part of the main repo.
+
+---
+
+## 5. Concrete Recommendations
+
+### Priority 1 (Immediate)
+
+1. **Build PRD → Ticket automation**
+   - `generate_ticket_manifest.py` must read the Nudge PRD and generate tickets
+   - At minimum: extract feature list, set acceptance criteria
+
+2. **Fill QA gate with real checks**
+   - `validate_anti_slop.py` must scan real code
+   - `run_qa_gate.py` must run lint, type-check, tests
+   - Anti-slop check must detect AI patterns
+
+3. **Ensure Git control for studio**
+   - `.quinsy-studio/` must be under Git
+   - Regular commits after studio changes
+
+### Priority 2 (This Sprint)
+
+4. **Implement ticket-sprint assignment**
+   - `./studio ticket` must support `--sprint` flag
+   - `./studio sprint` must be able to assign tickets
+
+5. **Human Gate 1 implementation mechanism**
+   - `./studio approve <project> --gate 1` or similar
+   - Comment system for feedback
+
+6. **Reduce overhead**
+   - Shorten 9-step workflow to 5 steps (for simple tasks)
+   - Merge Gates 0+3
+   - Simplify team structure (from 9 to 5 teams)
+
+### Priority 3 (Next Sprint)
+
+7. **Automate learning loop**
+   - `./studio learn` must automatically enter into CHANGELOG
+   - Global Loop must be able to update playbooks
+
+8. **Partially implement Phase 7**
+   - At minimum: Vercel deploy via CLI
+   - Generate release notes
+
+---
+
+## 6. Conclusion
+
+### What works
+- ✅ Skill registry with 36 skills and trigger words
+- ✅ Dual-Loop Learning concept (theoretically)
+- ✅ Team structure with Director-level roles
+- ✅ Process docs (lifecycle, gates, ticket-workflow)
+- ✅ Knowledge Base (6 playbooks)
+- ✅ Studio Templates (5 templates)
+- ✅ Python CLI with 18 commands
+
+### What does NOT work
+- ❌ PRD → Ticket automation (stub)
+- ❌ QA gate (stub)
+- ❌ Anti-slop audit (stub)
+- ❌ Deployment (not implemented)
+- ❌ Learning loop (manual, unreliable)
+- ❌ Backup strategy (completely missing)
+- ❌ Project structure (not automatically created)
+
+### Overall Assessment
+
+**The studio is a shell without substance.** The structure is there (teams, skills, process docs), but the business logic is missing. The Python scripts are stubs. The QA gate would always be green. The learning loop does not work reliably.
+
+**Next step:** Close the critical gaps (1, 2, 3) before the studio is used for a new project.
+
+---
+
+## 7. Audit Refresh — 2026-08-20 (post v1.3.0 + studio self-repair)
+
+> Re-evaluated after P0 fixes, skill_matcher unification, init merge, and Nudge E2E test.
+
+### Resolved since original audit
+
+| Original finding | Status | Evidence |
+|------------------|--------|----------|
+| `generate_ticket_manifest.py` is a stub | **RESOLVED** | Full implementation (~800 lines), English+German PRD extraction |
+| `./studio approve` missing | **RESOLVED** | `cmd_approve --gate 1` in studio.py |
+| `./studio init` creates empty dirs only | **RESOLVED** | `cmd_init` delegates to `init_project_env.py` (docker, git, RUNBOOK, agent-briefing) |
+| Duplicate `cmd_ticket` | **RESOLVED** | Removed duplicate method |
+| Ticket ID collisions | **RESOLVED** | Unified `ticket_ids.py` (scan + counter) |
+| Intake ignores invalid PRD | **RESOLVED** | `process_intake.py` exits 1; `cmd_intake` checks manifest exit code |
+| Four divergent skill matchers | **RESOLVED** | Single `skill_matcher.py` imported everywhere |
+| GM-004 phantom skill | **RESOLVED** | `teams/05-.../skills/game-development.md` created |
+| Broken `keyword-research` path | **RESOLVED** | Replaced with `customer-research` in seo-optimization.md + registry |
+| `validate_anti_slop --fix` broken | **RESOLVED** | fix_violations writes back per file |
+| Gate numbering confusion | **PARTIALLY RESOLVED** | Terminology section added to gates.md; lifecycle diagram updated |
+| Two init paths | **RESOLVED** | Merged into single `studio init` → `init_project_env` |
+
+### Still open
+
+| Finding | Status | Notes |
+|---------|--------|-------|
+| QA levels vs gates.md full spec | **OPEN** | Lighthouse, GDPR, a11y, E2E not in run_qa_gate.py |
+| Human Phase Gate 2 | **OPEN** | Removed from diagram; only gate 1 implemented |
+| Sprint ticket assignment | **OPEN** | No `--sprint` flag |
+| 9-step workflow enforcement | **OPEN** | `cmd_move` accepts any status |
+| Deployment (Phase 7) | **OPEN** | Not implemented |
+| Learning loop closure | **OPEN** | LO tickets still template-only |
+| `env up/down`, `repo create` | **OPEN** | Print hints only |
+| Definitions auto-scaffold | **OPEN** | Empty docs/definitions/ on init |
+
+### E2E test (Nudge)
+
+Run: `./studio init nudge --archetype saas-application && ./studio intake nudge intake/Nudge.md`
+
+See `projects/nudge/` for generated PRD, validation.json, tickets, and status.json after test run.

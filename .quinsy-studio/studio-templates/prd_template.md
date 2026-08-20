@@ -1,43 +1,43 @@
-# PRD — [Projektname]
+# PRD — [Project Name]
 
-> **Archetyp & Komplexität**
-> * **Archetyp:** [saas-application / ecommerce / content-platform / marketplace / internal-tool / api-service / mobile-app / prototype]
-> * **Komplexität:** [P0 (MVP) / P1 (Fokus) / P2 (Standard) / P3 (Enterprise)]
+> **Archetype & Complexity**
+> * **Archetype:** [saas-application / ecommerce / content-platform / marketplace / internal-tool / api-service / mobile-app / prototype]
+> * **Complexity:** [P0 (MVP) / P1 (Focus) / P2 (Standard) / P3 (Enterprise)]
 
 ---
 
-## Titel / Überblick
+## Title / Overview
 
-[Einfache Beschreibung des Produkts in 1-2 Sätzen.]
+[Simple description of the product in 1-2 sentences.]
 
 ---
 
 ## Problem
 
-[Was ist das Problem, das gelöst wird? Warum ist es wichtig?]
+[What problem is being solved? Why is it important?]
 
 ---
 
-## Zielgruppe & Nutzer
+## Target Audience & Users
 
-* **Primäre Zielgruppe:** [Wer sind die Hauptnutzer?]
+* **Primary audience:** [Who are the main users?]
 * **Jobs-to-be-done:**
-  * "[Was will der Nutzer erreichen?]"
-  * "[Welches Problem löst das Produkt?]"
+  * "[What does the user want to achieve?]"
+  * "[Which problem does the product solve?]"
 
 ---
 
-## Ziele & Erfolgskriterien
+## Goals & Success Criteria
 
-* **North Star Metric:** [Die eine Metrik, die zählt.]
+* **North Star Metric:** [The one metric that matters.]
 * **KPIs:**
-  * [Metrik 1: Zielwert]
-  * [Metrik 2: Zielwert]
-  * [Metrik 3: Zielwert]
+  * [Metric 1: target value]
+  * [Metric 2: target value]
+  * [Metric 3: target value]
 
 ---
 
-## Umfang
+## Scope
 
 * **In Scope (P0):**
   * [Feature 1]
@@ -45,64 +45,64 @@
   * [Feature 3]
 
 * **Out of Scope (P1/P2):**
-  * [Was NICHT im MVP ist]
-  * [Was später kommen kann]
+  * [What is NOT in the MVP]
+  * [What can come later]
 
 ---
 
-## Anforderungen
+## Requirements
 
-### Funktionale Anforderungen
+### Functional Requirements
 
 * **P0:**
-  * [FR-1: Beschreibung]
-  * [FR-2: Beschreibung]
+  * [FR-1: description]
+  * [FR-2: description]
 
 * **P1:**
-  * [FR-3: Beschreibung]
+  * [FR-3: description]
 
-### Nicht-funktionale Anforderungen
+### Non-functional Requirements
 
-* **Performance:** [Ladezeiten, FPS, etc.]
-* **Usability:** [Zero-Onboarding, intuitiv, etc.]
-* **Plattformen:** [Web, iOS, Android, Desktop]
-* **Sicherheit:** [Auth, Verschlüsselung, etc.]
-
----
-
-## Monetarisierung
-
-* **Modell:** [Freemium / Abo / Einmal-Kauf / Kostenlos]
-* **Free-Tier:** [Was ist inklusive?]
-* **Pro-Tier:** [Was kostet es? Was ist zusätzlich?]
+* **Performance:** [load times, FPS, etc.]
+* **Usability:** [zero onboarding, intuitive, etc.]
+* **Platforms:** [web, iOS, Android, desktop]
+* **Security:** [auth, encryption, etc.]
 
 ---
 
-## Compliance & Recht
+## Monetization
 
-* **DSGVO:** [Datenschutz-Anforderungen]
-* **Impressum:** [Pflichtangaben]
-* **Sonstiges:** [Lizenzen, Verträge, etc.]
-
----
-
-## Technologie (optional)
-
-* **Frontend:** [Framework, Library]
-* **Backend:** [Framework, Sprache]
-* **Datenbank:** [DB-System]
-* **Deployment:** [Cloud, On-Premise]
+* **Model:** [freemium / subscription / one-time purchase / free]
+* **Free tier:** [what is included?]
+* **Pro tier:** [what does it cost? what is extra?]
 
 ---
 
-## Risiken & offene Fragen
+## Compliance & Legal
 
-* **Risiko:** [Was könnte schiefgehen?]
-* **Offene Frage:** [Was muss noch geklärt werden?]
+* **GDPR:** [data protection requirements]
+* **Imprint:** [mandatory legal notices]
+* **Other:** [licenses, contracts, etc.]
 
 ---
 
-## Referenzen
+## Technology (optional)
 
-* [Links zu vergleichbaren Produkten]
-* [Inspirationsquellen]
+* **Frontend:** [framework, library]
+* **Backend:** [framework, language]
+* **Database:** [DB system]
+* **Deployment:** [cloud, on-premise]
+
+---
+
+## Risks & Open Questions
+
+* **Risk:** [what could go wrong?]
+* **Open question:** [what still needs clarification?]
+
+---
+
+## References
+
+* [Links to comparable products]
+* [Sources of inspiration]

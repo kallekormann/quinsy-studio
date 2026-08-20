@@ -1,6 +1,6 @@
 # Skill: Frontend Testing
 
-> Unit-Tests, Integration-Tests, E2E-Tests, Visual Regression, Snapshot-Tests
+> Unit tests, integration tests, E2E tests, visual regression, snapshot tests
 
 ## Metadata
 
@@ -12,49 +12,49 @@ lead_role: QA Specialist
 support_roles: [Frontend Engineer]
 phases: [4, 5]
 activation_triggers:
-  - Ticket enthält "Test", "Testing", "Coverage"
-  - Phase 4: TDD während Implementierung
-  - Phase 5: QA-Gate prüft Test-Coverage
-  - Reuse-Review: Komponente braucht Tests für Library
+  - Ticket contains "test", "testing", "coverage"
+  - Phase 4: TDD during implementation
+  - Phase 5: QA gate checks test coverage
+  - Reuse review: component needs tests for the library
 ```
 
 ---
 
 ## Verhaltensregeln
 
-### 1. Test-Pyramide
+### 1. Test pyramid
 
 ```markdown
         ╱╲
-       ╱ E2E ╲           ← 10% (wenige, kritische Pfade)
+       ╱ E2E ╲           ← 10% (few, critical paths)
       ╱────────╲
-     ╱ Integration ╲      ← 30% (Komponenten-Zusammenspiel)
+     ╱ Integration ╲      ← 30% (component interplay)
     ╱────────────────╲
-   ╱     Unit Tests    ╲  ← 60% (schnell, isoliert)
+   ╱     Unit tests    ╲  ← 60% (fast, isolated)
   ╱────────────────────╲
 
-Coverage-Minimum:
-  - Statements: > 80%
-  - Branches: > 75%
-  - Functions: > 80%
-  - Lines: > 80%
+Coverage minimum:
+  - statements: > 80%
+  - branches: > 75%
+  - functions: > 80%
+  - lines: > 80%
 ```
 
-### 2. Unit-Tests (Vitest/Jest)
+### 2. Unit tests (Vitest/Jest)
 
 ```markdown
-Was testen:
-  - Komponenten-Rendering mit verschiedenen Props
-  - Event-Handler (onClick, onChange)
-  - Bedingte Rendering-Logik
-  - Utility-Funktionen
-  - Custom Hooks
+What to test:
+  - component rendering with different props
+  - event handlers (onClick, onChange)
+  - conditional rendering logic
+  - utility functions
+  - custom hooks
 
-Wie testen:
-  - render() mit Testing Library
-  - userEvent für Interaktionen
-  - screen.getBy* für Element-Suche
-  - expect() für Assertions
+How to test:
+  - render() with Testing Library
+  - userEvent for interactions
+  - screen.getBy* for element search
+  - expect() for assertions
 
 Naming:
   describe('ComponentName', () => {
@@ -64,80 +64,80 @@ Naming:
   })
 ```
 
-### 3. Integration-Tests
+### 3. Integration tests
 
 ```markdown
-Was testen:
-  - Komponenten-Zusammenspiel
-  - Form-Submission mit Validierung
-  - API-Integration (gemockt)
-  - Navigation zwischen Pages
-  - Theme/Context Provider
+What to test:
+  - component interplay
+  - form submission with validation
+  - API integration (mocked)
+  - navigation between pages
+  - theme/context providers
 ```
 
-### 4. E2E-Tests (Playwright)
+### 4. E2E tests (Playwright)
 
 ```markdown
-Was testen:
-  - Kritische User Journeys
-  - Login/Logout Flow
-  - Checkout/Conversion Flow
-  - Form-Submission mit Backend
-  - Multi-Step-Workflows
+What to test:
+  - critical user journeys
+  - login/logout flow
+  - checkout/conversion flow
+  - form submission with backend
+  - multi-step workflows
 
-Nur kritische Pfade — nicht jeden Button!
+Only critical paths — not every button!
 ```
 
-### 5. Visual Regression
+### 5. Visual regression
 
 ```markdown
-Tools: Chromatic / Percy / Playwright Snapshots
+Tools: Chromatic / Percy / Playwright snapshots
 
-Was testen:
-  - Komponenten in allen Varianten
-  - Responsive Breakpoints
-  - Dark/Light Mode
-  - Hover/Focus/Active States
+What to test:
+  - components in all variants
+  - responsive breakpoints
+  - dark/light mode
+  - hover/focus/active states
 ```
 
-### 6. TDD-Workflow
+### 6. TDD workflow
 
 ```markdown
-1. RED:    Test schreiben der fehlschlägt
-2. GREEN:  Code schreiben der Test besteht
-3. REFACTOR: Code bereinigen, Tests bleiben grün
+1. RED:    write a test that fails
+2. GREEN:  write code that passes the test
+3. REFACTOR: clean up code, tests stay green
 ```
 
 ---
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Tests die nur prüfen ob Komponente rendert
-- Kein Test für Error-Zustände
-- Snapshot-Tests die zu oft aktualisiert werden
-- Tests die von externen Services abhängen
-- Kein Test für Accessibility
-- Mocks die zu viel verstecken
+- Tests that only check whether a component renders
+- No test for error states
+- Snapshot tests that are updated too often
+- Tests that depend on external services
+- No test for accessibility
+- Mocks that hide too much
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Tests für alle States (loading, error, success, empty)
-- Error-Zustände explizit testen
-- Integration-Tests statt zu vieler Snapshots
-- API-Mocks mit MSW (Mock Service Worker)
-- axe-core Integration in Tests
-- Einfache, verständliche Mocks
+- Tests for all states (loading, error, success, empty)
+- Test error states explicitly
+- Integration tests instead of too many snapshots
+- API mocks with MSW (Mock Service Worker)
+- axe-core integration in tests
+- Simple, understandable mocks
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/frontend_playbook.md` — Frontend-Regeln
-- `.quinsy-studio/process/ticket-workflow.md` — Schritt 5 (Selbstprüfung)
-- `./studio gate <project> --tests` — Test-Coverage prüfen
+- `.quinsy-studio/knowledge-base/frontend_playbook.md` — frontend rules
+- `.quinsy-studio/process/ticket-workflow.md` — step 5 (self-check)
+- `./studio gate <project> --tests` — check test coverage

@@ -1,152 +1,152 @@
-# Skill: DSGVO Compliance
+# Skill: GDPR Compliance
 
-> Datenschutz-Grundverordnung, Verarbeitungsverzeichnis, Betroffenenrechte, Datenschutzerklärung
+> General Data Protection Regulation, records of processing, data subject rights, privacy policy
 
 ## Metadata
 
 ```
 skill_id: CL-001
-name: DSGVO Compliance
+name: GDPR Compliance
 team: 03-compliance-legal
 lead_role: Legal & Privacy Officer
 support_roles: [Backend Security Engineer]
 phases: [0, 1, 2, 3, 4, 5, 6]
 activation_triggers:
-  - Ticket enthält "DSGVO", "GDPR", "Datenschutz", "Privacy"
-  - Jedes Projekt (Pflicht-Check in Phase 1)
-  - Phase 5: DSGVO-Audit
-  - Externe Dienstleister werden eingebunden
+  - Ticket contains "GDPR", "data protection", "privacy"
+  - Every project (mandatory check in phase 1)
+  - Phase 5: GDPR audit
+  - External service providers are integrated
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Verarbeitungsverzeichnis (Art. 30 DSGVO)
+### 1. Records of processing (Art. 30 GDPR)
 
 ```markdown
-Pflicht-Einträge pro Verarbeitungstätigkeit:
-  1. Name des Verantwortlichen
-  2. Zweck der Verarbeitung
-  3. Kategorie der betroffenen Personen
-  4. Kategorie der personenbezogenen Daten
-  5. Kategorie der Empfänger
-  6. Drittland-Transfer (ja/nein + Garantien)
-  7. Löschfristen
-  8. Technische und organisatorische Maßnahmen
+Mandatory entries per processing activity:
+  1. Name of the controller
+  2. Purpose of the processing
+  3. Category of data subjects
+  4. Category of personal data
+  5. Category of recipients
+  6. Third-country transfer (yes/no + safeguards)
+  7. Deletion periods
+  8. Technical and organizational measures
 ```
 
-### 2. Datenschutzerklärung
+### 2. Privacy policy
 
 ```markdown
-Pflicht-Inhalte:
-  1. Verantwortlicher (Name, Adresse, E-Mail)
-  2. Datenschutzbeauftragter (falls vorhanden)
-  3. Erhobene Datenarten
-  4. Zwecke der Verarbeitung
-  5. Rechtsgrundlagen (Art. 6 DSGVO)
-  6. Speicherdauer / Löschfristen
-  7. Betroffenenrechte (Auskunft, Löschung, Berichtigung)
-  8. Beschwerderecht (Landesdatenschutzbehörde)
-  9. Server-Standort
-  10. Kontaktdaten
+Mandatory content:
+  1. Controller (name, address, email)
+  2. Data protection officer (if any)
+  3. Types of data collected
+  4. Purposes of processing
+  5. Legal bases (Art. 6 GDPR)
+  6. Retention / deletion periods
+  7. Data subject rights (access, erasure, rectification)
+  8. Right to complain (supervisory authority)
+  9. Server location
+  10. Contact details
 
-Aktualisierung: Mindestens jährlich oder bei Änderungen
+Update: at least annually or on changes
 ```
 
-### 3. Cookie-Banner
+### 3. Cookie banner
 
 ```markdown
-Kategorien:
-  - Notwendig (immer aktiv, kein Consent nötig)
+Categories:
+  - Necessary (always active, no consent needed)
   - Analytics (opt-in!)
   - Marketing (opt-in!)
 
-Regeln:
-  - Opt-in (nicht opt-out!)
-  - Granulare Auswahl pro Kategorie
-  - "Alle akzeptieren" UND "Auswahl speichern"
-  - Widerruf jederzeit möglich (Link im Footer)
-  - Keine Tricker-Cookies ("weiter = akzeptieren")
-  - Cookie-Dauer dokumentiert
-  - Drittanbieter-Liste aktuell
+Rules:
+  - Opt-in (not opt-out!)
+  - Granular selection per category
+  - "Accept all" AND "Save selection"
+  - Withdrawal possible at any time (link in the footer)
+  - No trick cookies ("continue = accept")
+  - Cookie duration documented
+  - Third-party list current
 ```
 
-### 4. Rechtsgrundlagen
+### 4. Legal bases
 
 ```markdown
-Art. 6 Abs. 1 DSGVO:
-  a) Einwilligung          → Cookie-Banner, Newsletter
-  b) Vertragserfüllung     → Account-Erstellung, Bestellung
-  c) Rechtliche Verpflichtung → Steuerliche Aufbewahrung
-  d) Lebenswichtiges Interesse → Notfälle
-  e) Öffentliches Interesse → (selten)
-  f) Berechtigtes Interesse → Analytics (mit Abwägung!)
+Art. 6(1) GDPR:
+  a) Consent              → cookie banner, newsletter
+  b) Contract performance → account creation, order
+  c) Legal obligation     → tax retention
+  d) Vital interests      → emergencies
+  e) Public interest      → (rare)
+  f) Legitimate interest  → analytics (with balancing test!)
 
-Für jedes Datenfeld muss eine Rechtsgrundlage dokumentiert sein!
+Every data field must have a documented legal basis!
 ```
 
-### 5. Betroffenenrechte
+### 5. Data subject rights
 
 ```markdown
-Rechte der Nutzer:
-  - Auskunft (Art. 15): Welche Daten haben wir?
-  - Berichtigung (Art. 16): Daten korrigieren
-  - Löschung (Art. 17): "Recht auf Vergessenwerden"
-  - Einschränkung (Art. 18): Verarbeitung einschränken
-  - Datenübertragbarkeit (Art. 20): Daten als Export
-  - Widerspruch (Art. 21): Gegen Verarbeitung widersprechen
-  - Automatisierte Entscheidungen (Art. 22): Keine ohne Einwilligung
+User rights:
+  - Access (Art. 15): which data do we have?
+  - Rectification (Art. 16): correct data
+  - Erasure (Art. 17): "right to be forgotten"
+  - Restriction (Art. 18): restrict processing
+  - Data portability (Art. 20): data as export
+  - Objection (Art. 21): object to processing
+  - Automated decisions (Art. 22): none without consent
 
-Umsetzung:
-  - Self-Service Portal für Auskunft/Export/Löschung
-  - Response-Time: 30 Tage (max.)
+Implementation:
+  - Self-service portal for access/export/erasure
+  - Response time: 30 days (max.)
 ```
 
-### 6. Drittland-Transfer
+### 6. Third-country transfer
 
 ```markdown
-Wenn Daten außerhalb der EU verarbeitet werden:
-  1. Prüfe ob Angemessenheitsbeschluss existiert
-  2. Falls nicht: Standard-Vertragsklauseln (SCC)
-  3. TOMs (Technische Organisatorische Maßnahmen) dokumentieren
-  4. User informieren
+When data is processed outside the EU:
+  1. Check whether an adequacy decision exists
+  2. If not: standard contractual clauses (SCC)
+  3. Document TOMs (technical and organizational measures)
+  4. Inform the user
 
-Vorrang: EU-Server! Nur bei zwingenden Gründen Drittland.
+Priority: EU servers! Third country only for compelling reasons.
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- Tracking ohne Einwilligung
-- Kein Cookie-Banner
-- Opt-out statt Opt-in
-- Kein Verarbeitungsverzeichnis
-- Drittland-Transfer ohne SCC
-- Daten longer als nötig speichern
-- Kein Selbstbedienungs-Portal für Betroffenenrechte
+- Tracking without consent
+- No cookie banner
+- Opt-out instead of opt-in
+- No records of processing
+- Third-country transfer without SCC
+- Storing data longer than necessary
+- No self-service portal for data subject rights
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Nur mit Einwilligung tracken
-- Granularer Cookie-Banner
-- Opt-in als Standard
-- Vollständiges Verarbeitungsverzeichnis
-- EU-Server bevorzugen
-- Speicherdauer definieren und umsetzen
-- Self-Service für Auskunft/Export/Löschung
+- Track only with consent
+- Granular cookie banner
+- Opt-in as standard
+- Complete records of processing
+- Prefer EU servers
+- Define and implement retention periods
+- Self-service for access/export/erasure
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/compliance_playbook.md` — Compliance-Regeln
-- `.quinsy-studio/process/gates.md` — DSGVO im Gate 5
-- `./studio gate <project> --dsgvo` — DSGVO-Check
+- `.quinsy-studio/knowledge-base/compliance_playbook.md` — compliance rules
+- `.quinsy-studio/process/gates.md` — GDPR in gate 5
+- `./studio gate <project> --gdpr` — GDPR check

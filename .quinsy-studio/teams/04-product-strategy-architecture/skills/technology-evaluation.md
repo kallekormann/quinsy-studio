@@ -1,6 +1,6 @@
 # Skill: Technology Evaluation
 
-> Framework/Library-Evaluierung, PoC-Erstellung, Migration-Planung
+> Framework/library evaluation, PoC creation, migration planning
 
 ## Metadata
 
@@ -12,109 +12,109 @@ lead_role: Systems Architect
 support_roles: [Backend Architect, Frontend Architect]
 phases: [1, 2]
 activation_triggers:
-  - Ticket enthält "Evaluation", "Framework", "Library", "Migration"
-  - Phase 1: Technologien werden bewertet
-  - Phase 2: Tech-Stack wird finalisiert
-  - Neue Dependency soll eingeführt werden
+  - Ticket contains "evaluation", "framework", "library", "migration"
+  - Phase 1: technologies are assessed
+  - Phase 2: tech stack is finalized
+  - A new dependency should be introduced
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Evaluierungsprozess
+### 1. Evaluation process
 
 ```markdown
-Schritt 1: Anforderungen definieren
-  - Funktionale Anforderungen
-  - Non-Funktionale (Performance, Skalierbarkeit)
-  - Team-Kompetenz
+Step 1: define requirements
+  - Functional requirements
+  - Non-functional (performance, scalability)
+  - Team competence
   - Budget
 
-Schritt 2: Optionen identifizieren
-  - 3-5 realistische Optionen
-  - Keine Exoten (nur wenn zwingend)
+Step 2: identify options
+  - 3-5 realistic options
+  - No exotic choices (only if compelling)
 
-Schritt 3: Kriterien gewichten
+Step 3: weight criteria
   - Performance (25%)
-  - Community & Support (20%)
-  - Lernkurve (20%)
-  - Langfristige Wartung (20%)
-  - Kosten (15%)
+  - Community & support (20%)
+  - Learning curve (20%)
+  - Long-term maintenance (20%)
+  - Costs (15%)
 
-Schritt 4: PoC (bei kritischen Entscheidungen)
-  - Max. 2 Tage
-  - Realistisches Szenario
-  - Benchmark gegen Kriterien
+Step 4: PoC (for critical decisions)
+  - Max. 2 days
+  - Realistic scenario
+  - Benchmark against criteria
 
-Schritt 5: Empfehlung mit ADR
+Step 5: recommendation with an ADR
 ```
 
-### 2. PoC-Regeln
+### 2. PoC rules
 
 ```markdown
-PoC-Ziel:
-  - Technische Machbarkeit beweisen
-  - Performance messen
-  - Lernkurve abschätzen
-  - Integrationsaufwand verstehen
+PoC goal:
+  - Prove technical feasibility
+  - Measure performance
+  - Estimate the learning curve
+  - Understand the integration effort
 
-PoC-Umfang:
-  - Max. 2 Tage
-  - Max. 500 Zeilen Code
-  - Realistisches Szenario (kein Todo-App)
+PoC scope:
+  - Max. 2 days
+  - Max. 500 lines of code
+  - Realistic scenario (no to-do app)
 
-Dokumentation:
-  - ADR mit Empfehlung
-  - Benchmark-Ergebnisse
-  - Erfahrungen (positiv/negativ)
+Documentation:
+  - ADR with recommendation
+  - Benchmark results
+  - Experience (positive/negative)
 ```
 
 ### 3. Migration
 
 ```markdown
-Wann migrieren:
-  - Technologie ist EOL (End of Life)
-  - Drastisch bessere Alternative
-  - Sicherheitslücken
-  - Performance-Probleme
+When to migrate:
+  - Technology is EOL (end of life)
+  - Drastically better alternative
+  - Security vulnerabilities
+  - Performance problems
 
-Migration-Strategie:
-  1. Strangler Fig Pattern (inkrementell)
-  2. Feature-Flag für neue Implementierung
-  3. Parallel-Betrieb
-  4. A/B-Test
-  5. Full Switch
-  6. Alte Technologie entfernen
+Migration strategy:
+  1. Strangler fig pattern (incremental)
+  2. Feature flag for the new implementation
+  3. Parallel operation
+  4. A/B test
+  5. Full switch
+  6. Remove the old technology
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- "Weil es cool ist" als Begründung
-- Kein PoC für kritische Entscheidungen
-- Big Bang Migration
-- Kein Rollback-Plan
-- Evaluation ohne Kriterien
+- "Because it's cool" as justification
+- No PoC for critical decisions
+- Big bang migration
+- No rollback plan
+- Evaluation without criteria
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Strukturierte Evaluation mit Gewichtung
-- PoC für alles was >3 Monate Auswirkung hat
-- Inkrementelle Migration (Strangler Fig)
-- Rollback-Plan für jede Migration
-- ADR für jede Entscheidung
+- Structured evaluation with weighting
+- PoC for everything with >3 months impact
+- Incremental migration (strangler fig)
+- Rollback plan for every migration
+- ADR for every decision
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/process/adr-policy.md` — ADR-Regelwerk
-- `.quinsy-studio/process/project-archetypes.md` — Stack-Empfehlungen
+- `.quinsy-studio/process/adr-policy.md` — ADR rulebook
+- `.quinsy-studio/process/project-archetypes.md` — stack recommendations

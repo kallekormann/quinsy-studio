@@ -1,6 +1,6 @@
 # Skill: Anti-Slop Audit
 
-> AI-Code-Erkennung, Code-Qualitätsprüfung, Anti-Pattern-Detection
+> AI code detection, code quality checks, anti-pattern detection
 
 ## Metadata
 
@@ -12,34 +12,34 @@ lead_role: Process Guard
 support_roles: [AI Architect, QA Specialist]
 phases: [4, 5]
 activation_triggers:
-  - Ticket enthält "Anti-Slop", "Slop", "AI-Code", "Qualität"
-  - Phase 5: QA-Gate prüft Anti-Slop
-  - Reuse-Review: Code wird zur Library promoted
-  - Verdacht auf AI-generierten Code
+  - Ticket contains "anti-slop", "slop", "AI code", "quality"
+  - Phase 5: QA gate checks anti-slop
+  - Reuse review: code is promoted to the library
+  - Suspicion of AI-generated code
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Anti-Slop-Checkliste
+### 1. Anti-slop checklist
 
 ```markdown
-Code-Pattern-Erkennung:
-  - Übermäßige Kommentare (jede Zeile kommentiert)
-  - Redundante Variablen
-  - Unnötige Imports
-  - Übermäßige Error-Handling-Blöcke
-  - TODO-Kommentare ohne Kontext
-  - Übermäßige Log-Aufrufe
-  - Unnötige Delay/Fake-Daten
-  - Redundante Validierung
+Code pattern detection:
+  - Excessive comments (every line commented)
+  - Redundant variables
+  - Unnecessary imports
+  - Excessive error-handling blocks
+  - TODO comments without context
+  - Excessive log calls
+  - Unnecessary delays/fake data
+  - Redundant validation
 ```
 
-### 2. Text-Pattern (AI-Floskeln)
+### 2. Text patterns (AI clichés)
 
 ```markdown
-Schwarze Liste:
+Blacklist:
   - "In today's digital landscape"
   - "Revolutionize" / "Revolutionary"
   - "Seamless" / "Seamlessly"
@@ -54,82 +54,82 @@ Schwarze Liste:
   - "Unlock the potential"
 ```
 
-### 3. Qualitäts-Prüfung
+### 3. Quality check
 
 ```markdown
-Für jede Code-Datei:
-  - Komplexe Funktionen (>50 Zeilen)?
-  - Maximale Verschachtelung (>3 Ebenen)?
-  - Zu viele Parameter (>5)?
-  - Fehlende Typisierung?
-  - Dead Code?
-  - Performance-Issues (N+1, fehlende Indices)?
+For every code file:
+  - Complex functions (>50 lines)?
+  - Maximum nesting (>3 levels)?
+  - Too many parameters (>5)?
+  - Missing typing?
+  - Dead code?
+  - Performance issues (N+1, missing indexes)?
 ```
 
-### 4. Audit-Workflow
+### 4. Audit workflow
 
 ```markdown
-Schritt 1: Statischer Check
+Step 1: static check
   - Linting (ESLint, Prettier)
-  - Type-Check (TypeScript)
-  - Complexity-Analyse
+  - Type check (TypeScript)
+  - Complexity analysis
 
-Schritt 2: Pattern-Matching
-  - AI-Floskeln in Kommentaren/Strings
-  - Übermäßige Log-Aufrufe
-  - Redundanter Code
+Step 2: pattern matching
+  - AI clichés in comments/strings
+  - Excessive log calls
+  - Redundant code
 
-Schritt 3: Review
-  - Code-Sinnhaftigkeit prüfen
-  - Performance prüfen
-  - Sicherheit prüfen
+Step 3: review
+  - Check code sensibility
+  - Check performance
+  - Check security
 
-Schritt 4: Report
-  - Fehler (muss gefixt werden)
-  - Warnungen (sollte gefixt werden)
-  - Vorschläge (könnte verbessert werden)
+Step 4: report
+  - Errors (must be fixed)
+  - Warnings (should be fixed)
+  - Suggestions (could be improved)
 ```
 
-### 5. Integration in QA-Gate
+### 5. Integration into the QA gate
 
 ```markdown
 ./studio gate <project> --anti-slop
 
 Output:
-  ✅ Anti-Slop: 0 Errors, 3 Warnings
-  ❌ Anti-Slop: 5 Errors (müssen gefixt werden)
+  ✅ Anti-slop: 0 errors, 3 warnings
+  ❌ Anti-slop: 5 errors (must be fixed)
 
-Regel: 0 Anti-Slop Errors für Gate-Pass
+Rule: 0 anti-slop errors for a gate pass
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- AI-generierter Code ohne Review
-  - Übermäßige TODO-Kommentare
-  - Redundanter Code wird nicht bereinigt
-  - Anti-Slop-Check nur optional
-  - Kein Anti-Slop im QA-Gate
+- AI-generated code without review
+- Excessive TODO comments
+- Redundant code not cleaned up
+- Anti-slop check only optional
+- No anti-slop in the QA gate
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Jeder Code wird geprüft
-  - Klare, nützliche Kommentare
-  - Redundanter Code wird entfernt
-  - Anti-Slop als Pflicht-Check im QA-Gate
-  - Pattern-Detection in CI/CD
+- Every code is reviewed
+- Clear, useful comments
+- Redundant code is removed
+- Anti-slop as a mandatory check in the QA gate
+- Pattern detection in CI/CD
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — Anti-Slop-Regeln
-- `.quinsy-studio/process/gates.md` — Anti-Slop im Gate 5
-- `studio-tools/validate_anti_slop.py` — Automatisierter Check
+- `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — anti-slop rules
+- `.quinsy-studio/process/gates.md` — anti-slop in gate 5
+- `studio-tools/validate_anti_slop.py` — automated check

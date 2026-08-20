@@ -1,6 +1,6 @@
 # Skill: Error Handling
 
-> Fehlerbehandlung, Logging, Retry mit Backoff, Circuit Breaker
+> Error handling, logging, retry with backoff, circuit breaker
 
 ## Metadata
 
@@ -12,33 +12,33 @@ lead_role: Backend Architect
 support_roles: [Backend Engineer, Platform Architect]
 phases: [3, 4, 5]
 activation_triggers:
-  - Ticket enthält "Error", "Exception", "Fehlerbehandlung", "Retry"
-  - Phase 3: Error-Handling-Strategie wird definiert
-  - Phase 4: Error-Handling wird implementiert
-  - Phase 5: QA prüft Error-Handling
+  - Ticket contains "error", "exception", "retry"
+  - Phase 3: error-handling strategy is defined
+  - Phase 4: error handling is implemented
+  - Phase 5: QA checks error handling
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavior rules
 
-### 1. Error-Response-Format
+### 1. Error response format
 
 ```markdown
-Standardisierte Error-Response:
+Standardized error response:
 {
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Ungültige Eingabe",
+    "message": "Invalid input",
     "details": [
-      { "field": "email", "code": "INVALID_FORMAT", "message": "Keine gültige E-Mail" }
+      { "field": "email", "code": "INVALID_FORMAT", "message": "Not a valid email" }
     ],
     "request_id": "req-abc-123",
     "timestamp": "2026-08-20T10:30:00Z"
   }
 }
 
-Error-Codes (konsistent):
+Error codes (consistent):
   VALIDATION_ERROR      → 422
   AUTH_REQUIRED         → 401
   FORBIDDEN             → 403
@@ -52,13 +52,13 @@ Error-Codes (konsistent):
 ### 2. Logging
 
 ```markdown
-Log-Levels:
-  ERROR   → Systemfehler, braucht Aufmerksamkeit
-  WARN    → Unerwartet aber nicht kritisch
-  INFO    → Wichtige Operationen
-  DEBUG   → Detaillierte Infos (nur Dev)
+Log levels:
+  ERROR   → system errors, needs attention
+  WARN    → unexpected but not critical
+  INFO    → important operations
+  DEBUG   → detailed info (dev only)
 
-Log-Format:
+Log format:
 {
   "level": "error",
   "message": "Payment failed",
@@ -68,109 +68,109 @@ Log-Format:
   "timestamp": "2026-08-20T10:30:00Z"
 }
 
-Was loggen:
-  - Alle Error-Level auf alle Channels
-  - Auth-Events (Login, Logout, Failed)
-  - Datenbank-Operationen (bei Fehlern)
-  - External API Calls (Response-Time, Errors)
-  - Security-Events (CSRF, Rate-Limit)
+What to log:
+  - All error levels on all channels
+  - Auth events (login, logout, failed)
+  - Database operations (on errors)
+  - External API calls (response time, errors)
+  - Security events (CSRF, rate limit)
 
-Was NICHT loggen:
-  - Passwörter, Tokens, Secrets
-  - Vollständige User-Inputs (DSGVO!)
-  - Unnötige Debug-Infos in Production
+What NOT to log:
+  - Passwords, tokens, secrets
+  - Full user inputs (GDPR!)
+  - Unnecessary debug info in production
 ```
 
-### 3. Retry mit Backoff
+### 3. Retry with backoff
 
 ```markdown
-Strategie: Exponential Backoff + Jitter
+Strategy: exponential backoff + jitter
 
-Base Delay: 1s
-Max Retries: 3
+Base delay: 1s
+Max retries: 3
 Backoff: base * 2^attempt + random_jitter
 
 Attempt 1: ~1s
 Attempt 2: ~2-3s
 Attempt 3: ~4-8s
 
-Wann retry:
-  - 5xx Server Errors
-  - Network Timeout
-  - Rate Limit (mit Retry-After Header)
+When to retry:
+  - 5xx server errors
+  - Network timeout
+  - Rate limit (with Retry-After header)
 
-Kein retry bei:
-  - 4xx Client Errors (außer 429)
-  - Auth-Fehler
-  - Validierungs-Fehler
+No retry for:
+  - 4xx client errors (except 429)
+  - Auth errors
+  - Validation errors
 ```
 
-### 4. Circuit Breaker
+### 4. Circuit breaker
 
 ```markdown
-Für External Services:
+For external services:
 
 States:
-  CLOSED     → Normaler Betrieb, alle Requests durchlassen
-  OPEN       → Fehler-Limit erreicht, alle Requests werden abgelehnt
-  HALF-OPEN  → Test-Request wird durchgelassen
+  CLOSED     → normal operation, all requests pass through
+  OPEN       → error limit reached, all requests are rejected
+  HALF-OPEN  → a test request is let through
 
-Schwellenwerte:
-  - Fehler-Limit: 5 fehlgeschlagene Requests
-  - Timeout: 30 Sekunden
-  - Successes für HALF-OPEN → CLOSED: 3
+Thresholds:
+  - Error limit: 5 failed requests
+  - Timeout: 30 seconds
+  - Successes for HALF-OPEN → CLOSED: 3
 
-Funktion:
-  1. Bei 5 Fehlern in Folge → OPEN
-  2. Nach 30s → HALF-OPEN
-  3. Test-Request → Erfolg: CLOSED / Fehler: OPEN
+Function:
+  1. After 5 consecutive errors → OPEN
+  2. After 30s → HALF-OPEN
+  3. Test request → success: CLOSED / error: OPEN
 ```
 
-### 5. Graceful Degradation
+### 5. Graceful degradation
 
 ```markdown
-Wenn ein Service ausfällt:
-  1. Feature deaktivieren (nicht Crashed)
-  2. Fallback-Daten anzeigen (wenn möglich)
-  3. User informieren (klare Meldung)
-  4. Monitoring alarmieren
-  5. automatik Wiederherstellung versuchen
+When a service fails:
+  1. Disable the feature (don't crash)
+  2. Show fallback data (if possible)
+  3. Inform the user (clear message)
+  4. Alert monitoring
+  5. Try automatic recovery
 
-Beispiele:
-  - Payment-Service down → "Zahlung momentan nicht möglich"
-  - Search-Service down → Fallback auf DB-Query
-  - Analytics-Service down → Events puffern
+Examples:
+  - Payment service down → "Payment currently unavailable"
+  - Search service down → fallback to DB query
+  - Analytics service down → buffer events
 ```
 
 ---
 
-## Anti-Patterns
+## Anti-patterns
 
-### ❌ Verboten
+### ❌ Forbidden
 
 ```markdown
-- catch {} (stiller Fehler)
-- Error Messages die interne Details zeigen
-- Kein Logging bei Fehlern
-- Infinite Retry ohne Backoff
-- Kein Circuit Breaker für External Services
-- Exception-Propagation ohne Kontext
+- catch {} (silent error)
+- Error messages that show internal details
+- No logging on errors
+- Infinite retry without backoff
+- No circuit breaker for external services
+- Exception propagation without context
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Spezifisches Error-Handling pro Fehler-Typ
-- Generische User-Messages (kein Stack-Trace)
-- Strukturiertes Logging mit Kontext
-- Exponential Backoff mit Jitter
-- Circuit Breaker für alle External Services
-- Error-Messages mit request_id für Tracing
+- Specific error handling per error type
+- Generic user messages (no stack trace)
+- Structured logging with context
+- Exponential backoff with jitter
+- Circuit breaker for all external services
+- Error messages with request_id for tracing
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend-Regeln
-- `.quinsy-studio/process/gates.md` — Error-Handling im QA-Gate
+- `.quinsy-studio/knowledge-base/backend_playbook.md` — backend rules
+- `.quinsy-studio/process/gates.md` — error handling in the QA gate

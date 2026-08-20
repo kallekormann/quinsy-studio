@@ -1,15 +1,15 @@
 # Billing Package
 
-> Subscription, Metering und Zahlungsabwicklung für SaaS-Anwendungen.
+> Subscription, metering, and payment processing for SaaS applications.
 
 ## Features
 
-- Subscription-Management (Free/Pro/Enterprise)
-- Metering und Usage-Based Pricing
-- Zahlungsabwicklung (Stripe, Lemon Squeezy)
-- Rechnungsstellung
-- Webhook-Handling
-- Entitlement-Management
+- Subscription management (Free/Pro/Enterprise)
+- Metering and usage-based pricing
+- Payment processing (Stripe, Lemon Squeezy)
+- Invoice generation
+- Webhook handling
+- Entitlement management
 
 ## Architecture
 

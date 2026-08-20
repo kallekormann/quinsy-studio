@@ -1,50 +1,50 @@
 # Comparison Page Type
 
-> Seitentyp für Vergleiche, Alternativen und "Best of"-Listen.
+> Page type for comparisons, alternatives, and "best of" lists.
 
 ## Use Cases
 
-- Produktvergleiche
-- Feature-Matrix
-- Preisvergleich
-- Alternativen zu bekannten Tools
-- "X vs. Y" Artikel
+- Product comparisons
+- Feature matrix
+- Price comparison
+- Alternatives to known tools
+- "X vs. Y" articles
 
-## Struktur
+## Structure
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                     HEADER                              │
-│  Titel, Untertitel, CTA                                │
+│  Title, Subtitle, CTA                                  │
 ├─────────────────────────────────────────────────────────┤
 │                  INTRO                                  │
-│  Kontext, Problemstellung, Zielgruppe                  │
+│  Context, Problem Statement, Target Audience            │
 ├─────────────────────────────────────────────────────────┤
 │              COMPARISON TABLE                           │
-│  Features, Preise, Bewertungen                         │
+│  Features, Prices, Ratings                              │
 ├─────────────────────────────────────────────────────────┤
 │              DETAILED SECTIONS                          │
-│  Pro/Contra für jede Option                            │
+│  Pros/Cons for each option                              │
 ├─────────────────────────────────────────────────────────┤
 │              RECOMMENDATION                             │
-│  Empfehlung je nach Use Case                           │
+│  Recommendation per use case                            │
 ├─────────────────────────────────────────────────────────┤
 │              FAQ                                        │
-│  Häufige Fragen                                        │
+│  Frequently asked questions                             │
 ├─────────────────────────────────────────────────────────┤
 │              CTA                                        │
-│  Nächste Schritte                                       │
+│  Next steps                                             │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Komponenten
+## Components
 
-- `ComparisonTable` — Feature-Matrix
-- `OptionCard` — Einzelne Option mit Pro/Contra
-- `RatingBadge` — Bewertungsanzeige
-- `RecommendationBox` — Empfehlungsbox
+- `ComparisonTable` — Feature matrix
+- `OptionCard` — Individual option with pros/cons
+- `RatingBadge` — Rating display
+- `RecommendationBox` — Recommendation box
 
-## Datenmodell
+## Data Model
 
 ```typescript
 interface Comparison {
@@ -75,5 +75,5 @@ interface Feature {
 ## SEO
 
 - Schema.org: `Product`, `Review`, `AggregateRating`
-- Vergleichs-Keywords in H1/H2
-- Strukturierte Daten für Rich Snippets
+- Comparison keywords in H1/H2
+- Structured data for rich snippets

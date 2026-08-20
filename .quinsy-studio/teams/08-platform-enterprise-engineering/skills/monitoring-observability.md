@@ -1,6 +1,6 @@
 # Skill: Monitoring & Observability
 
-> Application Monitoring, Error-Tracking, Uptime-Monitoring, Alerting
+> Application monitoring, error tracking, uptime monitoring, alerting
 
 ## Metadata
 
@@ -12,68 +12,68 @@ lead_role: Platform Architect
 support_roles: [DevOps Engineer, Backend Engineer]
 phases: [5, 6, 7]
 activation_triggers:
-  - Ticket enthält "Monitoring", "Alerting", "Uptime", "Sentry"
-  - Phase 5: Monitoring wird eingerichtet
-  - Phase 6: Monitoring nach Deploy
-  - Phase 7: Monitoring-Pflege
+  - Ticket contains "Monitoring", "Alerting", "Uptime", "Sentry"
+  - Phase 5: Monitoring is being set up
+  - Phase 6: Monitoring after deploy
+  - Phase 7: Monitoring maintenance
 ```
 
 ---
 
-## Verhaltensregeln
+## Behavioral Rules
 
-### 1. Error-Tracking (Sentry)
+### 1. Error Tracking (Sentry)
 
 ```markdown
 Integration:
   - Frontend: Sentry Browser SDK
   - Backend: Sentry Node/Python SDK
-  - Source Maps hochladen
+  - Upload source maps
 
-Konfiguration:
+Configuration:
   - environment: production / staging
-  - sampleRate: 1.0 (alle Fehler)
-  - tracesSampleRate: 0.2 (20% der Transaktionen)
-  - beforeSend: PII filtern
+  - sampleRate: 1.0 (all errors)
+  - tracesSampleRate: 0.2 (20% of transactions)
+  - beforeSend: Filter PII
 ```
 
-### 2. Uptime-Monitoring
+### 2. Uptime Monitoring
 
 ```markdown
 Tools: UptimeRobot / BetterStack / Vercel Analytics
 
-Was monitoren:
-  - HTTP-Endpoints (alle 5 Min)
-  - API-Response-Time
-  - SSL-Zertifikat-Ablauf
-  - DNS-Änderungen
+What to monitor:
+  - HTTP endpoints (every 5 min)
+  - API response time
+  - SSL certificate expiry
+  - DNS changes
 
 Alerts:
-  - Down: Sofort (E-Mail + SMS)
-  - Slow (>2s): Innerhalb 5 Min
-  - SSL ablauft: 30 Tage vorher
+  - Down: Immediate (email + SMS)
+  - Slow (>2s): Within 5 min
+  - SSL expiring: 30 days before
 ```
 
 ### 3. Application Performance Monitoring
 
 ```markdown
-Metriken:
-  - Response Time (p50, p95, p99)
-  - Error Rate
-  - Throughput (Requests/sec)
-  - Database Query Time
-  - Memory/CPU Usage
+Metrics:
+  - Response time (p50, p95, p99)
+  - Error rate
+  - Throughput (requests/sec)
+  - Database query time
+  - Memory/CPU usage
 
 Tools:
-  - Vercel Analytics (Frontend)
-  - Sentry Performance (Backend)
-  - Custom Metrics (bei Bedarf)
+  - Vercel Analytics (frontend)
+  - Sentry Performance (backend)
+  - Custom metrics (if needed)
 ```
 
 ### 4. Logging
 
 ```markdown
-Strukturiertes Logging:
+Structured logging:
 {
   "level": "info",
   "message": "User logged in",
@@ -82,24 +82,24 @@ Strukturiertes Logging:
   "timestamp": "2026-08-20T10:30:00Z"
 }
 
-Log-Aggregation:
+Log aggregation:
   - Vercel Logs
   - Sentry Logs
-  - stdout für Docker
+  - stdout for Docker
 ```
 
 ### 5. Alerting
 
 ```markdown
-Alert-Kanäle:
-  - E-Mail: Wichtige Alerts
-  - Slack/Discord: Team-Alerts
-  - SMS: Kritische Alerts (nur für On-Call)
+Alert channels:
+  - Email: Important alerts
+  - Slack/Discord: Team alerts
+  - SMS: Critical alerts (on-call only)
 
-Alert-Regeln:
-  - Error-Rate > 1% → E-Mail
-  - Error-Rate > 5% → SMS
-  - Response-Time p95 > 3s → Slack
+Alert rules:
+  - Error rate > 1% → Email
+  - Error rate > 5% → SMS
+  - Response time p95 > 3s → Slack
   - Uptime < 99.9% → SMS
 ```
 
@@ -107,29 +107,29 @@ Alert-Regeln:
 
 ## Anti-Patterns
 
-### ❌ Verboten
+### ❌ Prohibited
 
 ```markdown
-- Kein Error-Tracking
-  - Kein Uptime-Monitoring
-  - Keine Alerts
-  - Logs ohne Struktur
-  - PII in Logs
+- No error tracking
+  - No uptime monitoring
+  - No alerts
+  - Logs without structure
+  - PII in logs
 ```
 
-### ✅ Stattdessen
+### ✅ Instead
 
 ```markdown
-- Sentry für Error-Tracking
-  - UptimeRobot für Uptime
-  - Mehrstufiges Alerting
-  - Strukturiertes Logging
-  - Anonymisierte Logs
+- Sentry for error tracking
+  - UptimeRobot for uptime
+  - Multi-level alerting
+  - Structured logging
+  - Anonymized logs
 ```
 
 ---
 
-## Referenzen
+## References
 
-- `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend-Regeln
-- `.quinsy-studio/process/gates.md` — Monitoring im Gate 5
+- `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend rules
+- `.quinsy-studio/process/gates.md` — Monitoring in Gate 5

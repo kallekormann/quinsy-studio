@@ -15,6 +15,9 @@ intake/
 # Nur die skill-dependencies.json ist die Source of Truth.
 .quinsy-studio/external-skills/
 
+# Local agent session (regenerated via ./studio focus)
+.quinsy-studio/.active-project.json
+
 # Python
 __pycache__/
 *.pyc

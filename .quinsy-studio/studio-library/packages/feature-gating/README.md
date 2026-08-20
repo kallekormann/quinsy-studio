@@ -1,15 +1,15 @@
 # Feature Gating Package
 
-> Feature-Flags, Rollout-Strategien und Segmentierung für progressive Enthüllung.
+> Feature flags, rollout strategies, and segmentation for progressive disclosure.
 
 ## Features
 
-- Feature-Flags (boolean, string, JSON)
-- Percentage-Based Rollouts
-- User-Segmentation
-- A/B-Testing-Integration
-- Kill-Switch für Features
-- Audit-Log für Änderungen
+- Feature flags (boolean, string, JSON)
+- Percentage-based rollouts
+- User segmentation
+- A/B testing integration
+- Kill switch for features
+- Audit log for changes
 
 ## Architecture
 
