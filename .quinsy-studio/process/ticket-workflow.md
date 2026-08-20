@@ -220,7 +220,9 @@ pnpm build
 | **Output** | gate status (green/red) |
 | **Responsible** | QA Specialist, Anti-Slop Auditor |
 
-**Rule:** `./studio gate <project>` must be green before a ticket is marked done.
+**Rule:** `./studio gate <project> --level 5` must be green before a ticket is marked done. Level 2 (lint only) is **not** sufficient — it cannot catch runtime client crashes.
+
+**Enforced in CLI:** `./studio move … done` rejects unless `status.json` shows gate level ≥ 5 and `gate_status: passed`.
 
 **On failure:** the ticket goes back to step 4 (implementation)
 

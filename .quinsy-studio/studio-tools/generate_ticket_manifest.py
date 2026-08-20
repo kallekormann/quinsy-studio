@@ -358,7 +358,7 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
             "`npm run build` completes without errors",
             "`npm run lint` reports 0 errors",
             "CI workflow file is created (`.github/workflows/ci.yml`)",
-            "QA gate green (`./studio gate {project} --level 2`)"
+            "QA gate green (`./studio gate {project} --level 5`)"
         ],
         "dependencies": []
     })

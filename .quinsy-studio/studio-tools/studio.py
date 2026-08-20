@@ -330,6 +330,9 @@ def assign_open_tickets_to_sprint(project: str, sprint_name: str, max_tickets: i
 # DUAL-SPEED ORCHESTRATOR
 # =============================================================================
 
+# Minimum QA level required before ./studio move … done
+MIN_DONE_GATE_LEVEL = 5
+
 class StudioOrchestrator:
     """Main orchestrator for the Dual-Speed Operating Model."""
     
@@ -1412,6 +1415,18 @@ class StudioOrchestrator:
         if not ticket_file:
             print(f"  Ticket {ticket_id} not found in project {project}")
             return False
+
+        if new_status == "done":
+            status_pre = load_status(project)
+            gate_level = int(str(status_pre.get("gate", "0") or "0"))
+            gate_status = status_pre.get("gate_status")
+            if gate_status != "passed" or gate_level < MIN_DONE_GATE_LEVEL:
+                print(
+                    f"\n  ❌ Cannot mark {ticket_id} done without QA gate level {MIN_DONE_GATE_LEVEL} green."
+                )
+                print(f"     Current: gate={gate_level}, status={gate_status}")
+                print(f"     Run: ./studio gate {project} --level {MIN_DONE_GATE_LEVEL}")
+                return False
 
         if new_status == "implement":
             status_pre = load_status(project)

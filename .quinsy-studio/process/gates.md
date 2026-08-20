@@ -131,43 +131,60 @@ Result: GREEN ✓
 | # | Check | Method | Weight |
 |---|-------|--------|--------|
 | 4.1 | Tests green (`pnpm test` / `npm test`) | shell check | required |
-| 4.2 | Build successful (`pnpm build`) | shell check | required |
-| 4.3 | No critical/high security issues | dependency scan | required |
-| 4.4 | TypeScript/ESLint without errors | linter check | required |
-| 4.5 | Code review done | field check | recommended |
+| 4.2 | TypeScript without errors | `tsc --noEmit` | required |
+| 4.3 | ESLint + Prettier clean | linter check | required |
+| 4.4 | Code review done | field check | recommended |
 
-### Shell checks
-```bash
-# Test check
-pnpm test -- --reporter=json 2>/dev/null | jq '.numFailedTests == 0'
-
-# Build check
-pnpm build 2>&1 | tail -1 | grep -q "Successfully"
-
-# Lint check
-pnpm lint 2>&1 | grep -q "0 errors"
-```
+> **Note:** Level 4 does **not** include build or runtime smoke. Do not mark tickets `done` at level 4.
 
 ---
 
-## Gate 5 — QA Gate (the strictest gate)
+## Gate 5 — QA Gate (required before `done`)
 
 ```bash
 ./studio gate <project> --level 5
 ```
 
+**Enforced:** `./studio move <project> <TICKET> done` fails unless the latest gate run is level **5** and status **passed**.
+
 ### Checkpoints
 
 | # | Check | Method | Weight |
 |---|-------|--------|--------|
-| 5.1 | All E2E tests green | shell check | required |
-| 5.2 | Core web vitals in budget | performance check | required |
-| 5.3 | Lighthouse score ≥ 90 | shell check | required |
-| 5.4 | No critical/high security issues | OWASP scan | required |
-| 5.5 | GDPR compliant | compliance check | required |
-| 5.6 | Anti-slop audit: 0 violations | anti-slop check | required |
-| 5.7 | Accessibility checked | a11y check | required |
-| 5.8 | Cross-browser tested | field check | recommended |
+| 5.1 | Production build successful | `next build` | required |
+| 5.2 | **Runtime smoke routes** | Playwright via `docs/smoke-routes.json` | required (when config present) |
+| 5.3 | Unit tests green | Vitest/Jest | required |
+| 5.4 | No critical/high security issues | npm audit | warning |
+| 5.5 | Anti-slop audit: 0 violations | anti-slop check | required |
+| 5.6 | Skill-matching (studio registry) | studio check | required |
+
+### Runtime smoke (web apps)
+
+Add `projects/<p>/docs/smoke-routes.json`:
+
+```json
+{
+  "description": "Critical user paths",
+  "command": "npm run smoke",
+  "requires_build": true
+}
+```
+
+Implement `scripts/smoke-routes.mjs` (Playwright) to visit home, redirects, and client-heavy routes (e.g. canvas). Catches runtime crashes that lint/build miss — e.g. react-konva + Next.js bundling errors.
+
+---
+
+## Gate 5 (legacy doc) — extended QA
+
+The following are **planned** for level 6+; not yet automated in `run_qa_gate.py`:
+
+| # | Check | Method | Weight |
+|---|-------|--------|--------|
+| 5.7 | Core web vitals in budget | performance check | planned |
+| 5.8 | Lighthouse score ≥ 90 | shell check | planned |
+| 5.9 | GDPR compliant | compliance check | planned |
+| 5.10 | Accessibility checked | a11y check | planned |
+| 5.11 | Cross-browser tested | field check | recommended |
 
 ### Anti-slop audit (detail)
 ```bash

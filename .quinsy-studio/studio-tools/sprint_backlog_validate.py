@@ -18,9 +18,11 @@ STUDIO_ROOT = Path(__file__).parent.parent.parent
 PROJECTS_DIR = STUDIO_ROOT / "projects"
 
 AUTH_PATTERNS = re.compile(
-    r"\b(auth|authentication|authorization|oauth|login|registration|session|rbac)\b",
+    r"\b(authentication|authorization|oauth|login|registration|rbac)\b|(?<!no )\bauth\b",
     re.I,
 )
+# Dexie/local-first tickets legitimately mention browser sessions — not auth scope
+AUTH_ALLOWLIST = re.compile(r"\b(local[- ]session|session id|indexeddb)\b", re.I)
 SQL_MIGRATION_PATTERNS = re.compile(
     r"\b(sql|postgres|mysql|migration|schema\.md|database/migrations)\b",
     re.I,
@@ -192,7 +194,7 @@ def validate_sprint_backlog(project: str, sprint: Optional[str] = None) -> Dict:
                         )
                     )
 
-        if p0_no_auth and AUTH_PATTERNS.search(hay):
+        if p0_no_auth and AUTH_PATTERNS.search(hay) and not AUTH_ALLOWLIST.search(hay):
             findings.append(
                 Finding(
                     "error",

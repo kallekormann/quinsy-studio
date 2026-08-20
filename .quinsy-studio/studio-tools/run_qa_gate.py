@@ -136,6 +136,12 @@ def get_checks_for_level(level: int) -> List[QACheck]:
                 timeout=180
             ),
             QACheck(
+                name="smoke_routes",
+                command="",  # special handler
+                description="Runtime smoke tests (critical routes)",
+                timeout=180
+            ),
+            QACheck(
                 name="npm_audit",
                 command="npm audit --audit-level=moderate",
                 description="Dependency Security Check",
@@ -330,6 +336,72 @@ def check_status_json(project_dir: Path) -> QAResult:
             error=f"Invalid JSON: {e}"
         )
 
+
+def check_smoke_routes(project_dir: Path) -> QAResult:
+    """Run runtime smoke tests when docs/smoke-routes.json is present."""
+    smoke_config = project_dir / "docs" / "smoke-routes.json"
+    start_time = datetime.now()
+
+    if not smoke_config.exists():
+        return QAResult(
+            check="smoke_routes",
+            passed=True,
+            output="Skipped — no docs/smoke-routes.json (add smoke config for web apps)",
+            duration=0,
+        )
+
+    try:
+        with open(smoke_config, "r") as f:
+            config = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        return QAResult(
+            check="smoke_routes",
+            passed=False,
+            output="",
+            duration=0,
+            error=f"Invalid smoke-routes.json: {e}",
+        )
+
+    command = config.get("command", "npm run smoke")
+    playwright_install = "npx playwright install chromium"
+    full_command = f"{playwright_install} && {command}"
+
+    try:
+        result = subprocess.run(
+            full_command,
+            shell=True,
+            cwd=str(project_dir),
+            capture_output=True,
+            text=True,
+            timeout=240,
+        )
+        duration = (datetime.now() - start_time).total_seconds()
+        return QAResult(
+            check="smoke_routes",
+            passed=result.returncode == 0,
+            output=result.stdout + result.stderr,
+            duration=duration,
+            error=None if result.returncode == 0 else f"Exit code: {result.returncode}",
+        )
+    except subprocess.TimeoutExpired:
+        duration = (datetime.now() - start_time).total_seconds()
+        return QAResult(
+            check="smoke_routes",
+            passed=False,
+            output="",
+            duration=duration,
+            error="Timeout after 240s",
+        )
+    except Exception as e:
+        duration = (datetime.now() - start_time).total_seconds()
+        return QAResult(
+            check="smoke_routes",
+            passed=False,
+            output="",
+            duration=duration,
+            error=str(e),
+        )
+
 # =============================================================================
 # REPORTING
 # =============================================================================
@@ -434,6 +506,8 @@ def main():
             result = check_status_json(project_dir)
         elif check.name == "skill_matching":
             result = check_skill_matching()
+        elif check.name == "smoke_routes":
+            result = check_smoke_routes(project_dir)
         else:
             result = run_check(check, project_dir)
         

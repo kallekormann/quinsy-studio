@@ -30,7 +30,7 @@ After the ticket is done, if changes are generic:
 ```
 
 On `./studio move <project> <ID> implement` you get a library hint.  
-On `./studio move … done` → warns if registry paths changed without promotion.
+On `./studio move … done` → warns if registry paths changed without promotion; **requires `./studio gate <project> --level 5` green** (build + runtime smoke + tests — level 2 lint-only is not enough).
 
 **Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally.
 

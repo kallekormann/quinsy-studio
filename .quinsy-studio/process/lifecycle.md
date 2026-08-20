@@ -253,9 +253,10 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 4. GDPR compliance check
 5. Performance tests (core web vitals)
 6. Accessibility check (a11y)
-7. Anti-slop audit: 0 error violations
-8. Gate 5 must be green
-9. Generate the QA report
+7. Gate 5 must be green
+8. Generate the QA report
+
+**Before `./studio move … done`:** run `./studio gate <project> --level 5` (build + runtime smoke + tests). Level 2 lint-only passes miss client runtime crashes.
 
 ---
 
