@@ -2,6 +2,15 @@
 # Quinsy Studio — .gitignore
 # =============================================================================
 
+# =============================================================================
+# NUR DAS STUDIO COMMITTEN — NIEMALS PROJEKTE ODER INTAKE
+# =============================================================================
+# Das Repo enthält ausschließlich das Studio-HQ (.quinsy-studio/, studio, ...).
+# Projekte (projects/) und rohe Intake-Ideen (intake/) sind lokale Arbeit und
+# gehören NICHT in den Studio-Repository. Projekt-Code hat sein eigenes Repo.
+projects/
+intake/
+
 # Externe Skills: geklonte Repos (65MB+, regenerierbar via `./studio update-skills`)
 # Nur die skill-dependencies.json ist die Source of Truth.
 .quinsy-studio/external-skills/
@@ -33,9 +42,6 @@ build/
 .env.*.local
 *.pem
 *.key
-
-# QA-Reports (generiert)
-projects/*/docs/qa-report-*.json
 
 # Logs
 *.log
