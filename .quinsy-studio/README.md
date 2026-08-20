@@ -184,13 +184,37 @@ No separate plugin — the repo *is* the integration.
 
 ### What you say in chat
 
+See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet) for the full list. Essentials:
+
 | You want | Example prompt |
 |----------|----------------|
-| New project from PRD | *"Bootstrap nudge"* (after PRD in `intake/`) |
-| Continue current work | *"Resume nudge"* / *"Back on track"* |
-| Approve a gate | *"Gate 0 looks good — approve"* → agent runs `./studio approve …` |
-| Off-sprint idea | Agent should `./studio guard` → ticket or `learn`, not silent code |
-| Studio improvement | *"Log a tooling gap: …"* → `./studio learn` (LO-* backlog) |
+| **Start from PRD** | *"I added intake/nudge.md — bootstrap nudge and stop at gate 0 for my review"* |
+| **Continue** | *"Focus nudge and resume — what's the next step only?"* |
+| **Approve gate** | *"Gate 0 looks good — approve"* → `./studio approve nudge --gate 0` |
+| **Send back for revision** | *"Revise gate 1: no Supabase yet, IndexedDB only"* |
+| **Design** | *"Design nudge with scope core-views"* |
+| **Sprint + build** | *"Start sprint and implement the first P0 ticket"* |
+| **Sprint review** | *"Sprint review for nudge"* → try app → *"Approve review"* or `./studio feedback` |
+| **New idea (sprint)** | *"Feedback: I want offline mode"* — **not** "create a ticket for offline" |
+| **Drift recovery** | *"Back on track"* / *"Resume nudge"* |
+| **Status** | *"What's the status of nudge?"* |
+| **Off-sprint scope** | *"Is adding payments in scope?"* → agent runs `./studio guard` |
+| **Studio improvement** | *"Log a tooling gap: …"* → `./studio learn` (LO-* backlog) |
+
+### First session walkthrough
+
+```
+You:  I added intake/my-app.md. Bootstrap my-app and walk me through gate 0.
+Agent: verify-worlds → bootstrap → focus → resume → fills docs/definitions/
+You:  Gate 0 looks good — approve.
+Agent: ./studio approve my-app --gate 0 → blueprint phase
+You:  Continue with architecture.
+Agent: blueprint + ADRs → waits for gate 1
+You:  Approve gate 1. Design core views only.
+Agent: design --scope core-views → prototype + sticker sheet
+You:  Approve gate 2.
+Agent: tickets generated → sprint → library pull → implement first ticket
+```
 
 ### Two git worlds in Cursor
 

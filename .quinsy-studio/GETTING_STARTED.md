@@ -3,6 +3,146 @@
 > Canonical workflow: intake → architecture → design → implementation.  
 > Root overview: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md)
 
+## Start here: PRD in `intake/` → tell the agent
+
+**You do not run a long CLI chain by hand.** Drop a PRD, open Cursor, and talk to the agent. It runs `./studio` for you; you **approve gates** and **product decisions**.
+
+### 1. Add your PRD (local only — `intake/` is gitignored)
+
+```bash
+cp .quinsy-studio/studio-templates/prd_template.md intake/my-project.md
+# Edit intake/my-project.md — use a slug that matches the project name (e.g. nudge.md → project "nudge")
+```
+
+Or copy an existing PRD: `intake/nudge.md` → project `nudge`.
+
+### 2. Open the repo in Cursor
+
+Clone/open **quinsy-studio** (repo root, not `projects/<name>/` alone). Rules load from [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc).
+
+### 3. First message to the agent
+
+Pick one:
+
+| Situation | What you say |
+|-----------|----------------|
+| **New project** | *"I added `intake/my-project.md`. Bootstrap my-project and walk me through the next human gate."* |
+| **Same session, continue** | *"Focus my-project and resume — what's next?"* |
+| **Returning later** | *"Resume my-project. Back on track."* |
+
+The agent should run:
+
+```bash
+./studio verify-worlds
+./studio bootstrap my-project    # or intake if already bootstrapped
+./studio focus my-project
+./studio resume my-project
+```
+
+Then it does **only** what `resume` lists — usually filling artifacts until **you** approve a gate.
+
+### 4. End-to-end: example conversation (project `nudge`)
+
+| Phase | You say | Agent does | You approve |
+|-------|---------|------------|-------------|
+| **Intake** | *"Bootstrap nudge from intake/nudge.md"* | `./studio bootstrap nudge` → fills `docs/definitions/` | *"Gate 0 looks good — approve"* → `./studio approve nudge --gate 0` |
+| **Architecture** | *"Continue with blueprint"* | `./studio blueprint nudge` → architecture + ADRs | *"Approve gate 1"* |
+| **Design** | *"Design core views only"* | `./studio design nudge --scope core-views` → prototype + sticker sheet | *"Approve gate 2"* → tickets generated |
+| **Sprint** | *"Start the sprint and implement the first ticket"* | `./studio sprint nudge`, library pull, `./studio move … implement` | Review code / mocks as you like |
+| **Sprint review** | *"Give me a sprint review"* | `./studio review nudge` | *"Shipped looks good"* → `--approve`; ideas → `./studio feedback` |
+| **New idea** | *"I want offline mode"* | `./studio feedback nudge "…"` → clarify with you → ticket | Confirm clarified ticket before implement |
+
+**Tickets exist only after gate 2.** No implementation before that.
+
+---
+
+## Talk to the agent — prompt cheat sheet
+
+Use natural language. The agent maps your intent to `./studio` commands.
+
+### Starting & continuing
+
+| You want | Example message |
+|----------|-----------------|
+| New project from PRD | *"Bootstrap &lt;project&gt; from intake/&lt;project&gt;.md"* |
+| Set context | *"Focus &lt;project&gt;"* |
+| What's next? | *"Resume &lt;project&gt;"* / *"What should we do next?"* |
+| Recover from drift | *"Back on track"* / *"Resume project — only the next step"* |
+| Project status | *"What's the status of &lt;project&gt;?"* → `./studio status` + `./studio board` |
+
+### Human gates (you must approve)
+
+| Gate | You say when ready | You say when not ready |
+|------|--------------------|-------------------------|
+| **0** PRD + definitions | *"Approve gate 0"* | *"Revise gate 0: personas need more detail on …"* |
+| **1** Architecture | *"Approve gate 1"* | *"Revise gate 1: use IndexedDB only, no Supabase yet"* |
+| **2** Design + mocks | *"Approve gate 2"* / *"Approve design"* | *"Revise gate 2: sticker sheet missing dark mode"* |
+
+Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`.
+
+### Design scope (gate 2)
+
+| You want | Example message |
+|----------|-----------------|
+| Key screens only | *"Design &lt;project&gt; with scope core-views"* |
+| Full user journey | *"Design &lt;project&gt; with scope journey"* |
+
+### Implementation (after gate 2)
+
+| You want | Example message |
+|----------|-----------------|
+| Start sprint | *"Create sprint and show the board"* |
+| Work a ticket | *"Implement NUDG-0003"* (agent: library suggest/pull → move implement) |
+| Finish ticket | *"Mark NUDG-0003 done if DoD is met"* |
+| Off-sprint idea | *"Can we add X?"* → agent should **not** code silently; uses guard → feedback or ticket |
+
+### Sprint review & feedback (human in the loop)
+
+| You want | Example message |
+|----------|-----------------|
+| Review shipped work | *"Sprint review for &lt;project&gt;"* |
+| Approve sprint | *"Sprint looks good — approve review"* |
+| Raw product feedback | *"Feedback: users need offline habits"* (→ `./studio feedback`, **not** a direct ticket) |
+| Prioritize backlog | *"Run grooming"* |
+| Retro | *"Run retro for this sprint"* |
+
+### Studio / process (not project code)
+
+| You want | Example message |
+|----------|-----------------|
+| Log studio gap | *"Log a tooling gap: …"* → `./studio learn` |
+| Check if request is in scope | *"Is this in scope for nudge: …?"* → `./studio guard` |
+
+### What the agent should **not** do without you
+
+- Skip gates 0–2 and write product code
+- Create tickets directly from sprint-review chat (must: feedback → clarify → ticket)
+- Commit `projects/` to the studio repo
+- Implement features with no backlog ticket (after gate 2)
+
+---
+
+## Crucial commands (reference)
+
+You can run these yourself; in Cursor the agent usually runs them for you.
+
+| When | Command |
+|------|---------|
+| Session start | `./studio verify-worlds && ./studio focus <p> && ./studio resume <p>` |
+| New project from PRD | `./studio bootstrap <p>` |
+| Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` · `./studio revise <p> --gate N --feedback "..."` |
+| Architecture | `./studio blueprint <p>` |
+| Design | `./studio design <p> --scope journey\|core-views` |
+| Status / board | `./studio status <p>` · `./studio board <p>` |
+| Sprint | `./studio sprint <p>` · `./studio move <p> <ID> implement` · `./studio move <p> <ID> done` |
+| Library-first | `./studio library suggest <p> "auth billing"` · `./studio library pull <p> …` |
+| Sprint review | `./studio review <p>` · `./studio review <p> --approve` |
+| Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
+| Groom / retro | `./studio groom <p>` · `./studio retro <p>` |
+| Scope check | `./studio guard <p> "your request text"` |
+
+---
+
 ## Using Quinsy Studio in Cursor
 
 1. Open the **quinsy-studio** repo in Cursor (not a project subfolder alone).

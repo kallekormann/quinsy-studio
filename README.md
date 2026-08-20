@@ -14,12 +14,16 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 
 ## Quick start (AI-driven)
 
+**Fastest path:** add `intake/<project>.md` → in Cursor say *"Bootstrap &lt;project&gt; and walk me through gate 0"*.
+
 ```bash
 ./studio verify-worlds              # studio git ≠ project git
 ./studio bootstrap my-project     # from intake/<prd>.md
 ./studio focus my-project         # active context for agent
 ./studio resume my-project        # next step only
 ```
+
+Full agent prompts: [GETTING_STARTED — prompt cheat sheet](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet)
 
 **Three human gates before implementation:**
 
@@ -37,6 +41,22 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 ```
 
 Full guide: [`.quinsy-studio/GETTING_STARTED.md`](.quinsy-studio/GETTING_STARTED.md) · Agent contract: [`AGENTS.md`](AGENTS.md)
+
+## Talk to the agent (Cursor)
+
+Open this repo in Cursor. You approve; the agent runs `./studio`.
+
+| Step | You say |
+|------|---------|
+| 1. PRD in `intake/my-project.md` | *"Bootstrap my-project and walk me through the next gate."* |
+| 2. Gate 0 ready | *"Approve gate 0"* |
+| 3. Architecture ready | *"Approve gate 1"* |
+| 4. Design ready | *"Approve gate 2"* (or *"Design core-views first"*) |
+| 5. Build | *"Start sprint and implement the first ticket"* |
+| 6. Sprint done | *"Sprint review"* → *"Approve review"* · feedback via *"I want …"* (not blind tickets) |
+| Drift | *"Resume my-project — back on track"* |
+
+More examples: [GETTING_STARTED — from PRD to sprint](.quinsy-studio/GETTING_STARTED.md#start-here-prd-in-intake--tell-the-agent) · [prompt cheat sheet](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet)
 
 ## Using in Cursor
 
@@ -95,6 +115,8 @@ quinsy-studio/
 |-------|----------|
 | Operations manual | [.quinsy-studio/README.md](.quinsy-studio/README.md) |
 | Getting started | [.quinsy-studio/GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
+| Agent prompts (PRD → sprint) | [GETTING_STARTED § start here](.quinsy-studio/GETTING_STARTED.md#start-here-prd-in-intake--tell-the-agent) |
+| Prompt cheat sheet | [GETTING_STARTED § talk to the agent](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet) |
 | Using in Cursor | [.quinsy-studio/README.md §4](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor) |
 | External skills | [.quinsy-studio/README.md §8](.quinsy-studio/README.md#8-managing-skills) |
 | Lifecycle | [process/lifecycle.md](.quinsy-studio/process/lifecycle.md) |
