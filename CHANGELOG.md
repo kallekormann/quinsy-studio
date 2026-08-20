@@ -2,6 +2,29 @@
 
 Alle Änderungen am Quinsy Studio werden hier dokumentiert.
 
+## [1.3.0] — 2026-08-20
+
+### Strikte Ticket-Architektur (Projekt- + Studio-Ebene)
+
+Tickets waren zu vage (ein Satz + flache Checkboxen). Neues Schema für ALLE Tickets:
+
+- ✅ **Rollenzuweisung:** `assignee_role` (Director-Level) wird aus Skills abgeleitet (z.B. Login → Backend Architect (Director))
+- ✅ **Context & Value:** Ist-Zustand vs. Soll-Zustand statt vager Problembeschreibung
+- ✅ **Strikte Constraints:** Exakte Modifikationspfade, Regeln (keine externen Packages ohne ADR), zwingende Playbook-Referenz
+- ✅ **BDD-Akzeptanzkriterien:** Given / When / Then statt Implementierungs-Beschreibung
+- ✅ **Definition of Done:** Messbare Abschluss-Kriterien
+
+#### Umsetzung
+- ✅ `ticket_helpers.py` (neu) — gemeinsames Schema: Skill→Rolle-Mapping, Playbook-Mapping, BDD-Builder, Markdown-Renderer
+- ✅ `generate_ticket_manifest.py` — Setup-Tickets + Feature-Tickets mit neuem Schema; ID-Kollisionsfix beibehalten
+- ✅ `studio.py` — `cmd_ticket` (Projekt) + `cmd_learn` (Studio, Typ `studio-evolution`) auf neues Schema
+- ✅ `ticket_template.md` — Template mit Rolle, Ist/Soll, Constraints, BDD, DoD
+
+#### Bugfixes (durch Schema-Test gefunden)
+- ✅ Feature-Extraktion: `(.+?)`-Regex matchte nur 1 Zeichen → Name wurde verworfen (jetzt: Doppelpunkt-Split)
+- ✅ Template-Platzhalter (`_Noch nicht definiert_`) wurden als Features extrahiert → gefiltert
+- ✅ `{project}`/`{signal}`-Platzhalter in f-Strings waren nicht aufgelöst
+
 ## [1.2.0] — 2026-08-20
 
 ### Externe Skill-Quellen erweitert (Skill-Package-Manager)

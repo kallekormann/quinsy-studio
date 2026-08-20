@@ -22,6 +22,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 
+from ticket_helpers import render_ticket_markdown, role_for_skills
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -84,6 +86,10 @@ def extract_features_from_prd(prd_content: str) -> List[Dict]:
             if len(name) < 5 or name.startswith('**'):
                 continue
             
+            # Skip Template-Platzhalter (keine echten Features)
+            if re.search(r'noch nicht definiert|_TODO_|\[Zu definieren\]|\[.*\]', name, re.IGNORECASE):
+                continue
+            
             # Clean up
             name = re.sub(r'^[*_]+', '', name).strip()
             name = re.sub(r'[*_]+$', '', name).strip()
@@ -142,15 +148,28 @@ def extract_bullet_features(text: str, source: str) -> List[Dict]:
         
         # Check for bullet point with content
         # Handle both * and - bullets, with optional **bold** text
-        bullet_match = re.match(r'^[\-\*]\s+\*\*(.+?)\*\*\s*:?:?\s*(.*)', line)
-        if not bullet_match:
-            bullet_match = re.match(r'^[\-\*]\s+(.+?)\s*:?:?\s*(.*)', line)
+        # WICHTIG: (.+?) wäre non-greedy und matcht nur 1 Zeichen —
+        # deshalb Doppelpunkt-Split explizit (Name = Rest, nicht 1. Zeichen).
+        bullet_match = None
+        bold_match = re.match(r'^[\-\*]\s+\*\*(.+?)\*\*\s*:?\s*(.*)', line)
+        if bold_match:
+            bullet_match = (bold_match.group(1).strip(), bold_match.group(2).strip())
+        else:
+            content = re.sub(r'^[\-\*]\s*', '', line).strip()
+            if content:
+                parts = re.split(r'\s*:\s*', content, maxsplit=1)
+                bullet_match = (parts[0].strip(), parts[1].strip() if len(parts) > 1 else "")
         if bullet_match:
-            name = bullet_match.group(1).strip()
-            description = bullet_match.group(2).strip()
+            name, description = bullet_match
+            name = name.strip()
+            description = description.strip()
             
             # Skip empty or very short names (single characters, just punctuation)
             if len(name) < 3:
+                continue
+            
+            # Skip Template-Platzhalter (keine echten Features)
+            if re.search(r'noch nicht definiert|_TODO_|\[Zu definieren\]', name, re.IGNORECASE):
                 continue
             
             # Skip if name is just a label prefix like "P0:" or "P1:"
@@ -289,12 +308,34 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
         "estimate": "M",
         "skills": ["PE-001", "PE-002"],
         "team": "08-platform-enterprise-engineering",
-        "acceptance_criteria": [
-            "Monorepo initialisiert (Turborepo/pnpm)",
-            "Linting konfiguriert (ESLint, Prettier)",
-            "TypeScript konfiguriert",
-            "Build-Script funktioniert",
-            "Test-Framework eingerichtet"
+        "ist_zustand": f"Kein Projekt-Setup vorhanden. Der Ordner `projects/{project}/` existiert, aber ohne Tooling (package.json, Linting, CI/CD).",
+        "soll_zustand": f"`projects/{project}/` hat ein lauffähiges Setup: package.json mit Scripts (dev/build/test/lint), TypeScript-Konfiguration, ESLint/Prettier, CI/CD-Grundlage (GitHub Actions).",
+        "value": "Jedes weitere Ticket arbeitet auf einer stabilen Basis — keine Tooling-Blockaden während der Implementierung.",
+        "modification_files": [
+            f"projects/{project}/package.json",
+            f"projects/{project}/tsconfig.json",
+            f"projects/{project}/.eslintrc.json",
+            f"projects/{project}/.github/workflows/ci.yml"
+        ],
+        "constraints": [
+            "Keine externen Packages installieren, die nicht im PRD gefordert sind",
+            "Package-Manager aus dem PRD verwenden (pnpm/npm/yarn)",
+            "Keine Secrets, keine festen Versionen ohne ADR"
+        ],
+        "scenarios": [
+            {
+                "name": "Projekt-Setup ist vollständig",
+                "given": f"Ein neues Projekt `{project}` wurde mit `./studio init` angelegt",
+                "when": "Das Setup-Ticket abgearbeitet und `npm run build` ausgeführt wird",
+                "then": "Der Build läuft fehlerfrei durch und `npm run lint` meldet 0 Fehler"
+            }
+        ],
+        "definition_of_done": [
+            "`package.json` existiert mit dev/build/test/lint Scripts",
+            "`npm run build` läuft fehlerfrei",
+            "`npm run lint` meldet 0 Fehler",
+            "CI-Workflow-Datei ist angelegt (`.github/workflows/ci.yml`)",
+            "QA-Gate grün (`./studio gate {project} --level 2`)"
         ],
         "dependencies": []
     })
@@ -309,12 +350,33 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
         "estimate": "M",
         "skills": ["FE-002"],
         "team": "01-frontend-experience",
-        "acceptance_criteria": [
-            "Design Tokens (JSON) definiert",
-            "CSS Custom Properties generiert",
-            "Dark/Light Mode unterstützt",
-            "Typografie-Skala definiert",
-            "Spacing-System definiert"
+        "ist_zustand": "Keine Design-Tokens definiert. UI-Code würde mit Hardcoded-Werten entstehen (Anti-Slop-Verstoß U1-U5).",
+        "soll_zustand": f"`projects/{project}/ui/tokens/` enthält design-tokens.json + .css mit Farbpalette, Typografie-Skala, Spacing (8px-Grid), Dark/Light Mode.",
+        "value": "Konsistente UI über alle Komponenten; verhindert generisches LLM-Styling; Basis für Studio-Library-Promotion.",
+        "modification_files": [
+            f"projects/{project}/ui/tokens/design-tokens.json",
+            f"projects/{project}/ui/tokens/design-tokens.css"
+        ],
+        "constraints": [
+            "Nur Token-basierte Werte (keine Hardcoded Farben/Radii/Shadows)",
+            "8px-Grid für Spacing",
+            "Externen Skill `design/skills` (hallmark) laden und Slop-Gates anwenden",
+            "Dark Mode über CSS Custom Properties (kein separates Theme-Paket)"
+        ],
+        "scenarios": [
+            {
+                "name": "Tokens sind konsumierbar",
+                "given": "Ein frisches Projekt ohne Design-Tokens",
+                "when": "Die Token-Dateien erstellt und importiert wurden",
+                "then": "Jede UI-Komponente kann auf `var(--token)` zugreifen und Dark Mode funktioniert per Theme-Switch"
+            }
+        ],
+        "definition_of_done": [
+            "design-tokens.json + .css existieren unter `ui/tokens/`",
+            "Mindestens 5 Farbstufen + Typografie-Skala + 8px-Spacing definiert",
+            "Dark/Light Mode via CSS Custom Properties",
+            "Anti-Slop: kein Hardcoded-Wert in neuen Komponenten",
+            "QA-Gate grün (`./studio gate {project} --level 5`)"
         ],
         "dependencies": [f"{project[:4].upper()}-0001"]
     })
@@ -329,11 +391,32 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
         "estimate": "M",
         "skills": ["BE-002"],
         "team": "02-backend-systems",
-        "acceptance_criteria": [
-            "ER-Diagramm definiert",
-            "Migrationen erstellt",
-            "Seeds für Test-Daten",
-            "Indexierung definiert"
+        "ist_zustand": "Kein Datenmodell definiert. Es existieren keine Tabellen, Migrationen oder Seeds.",
+        "soll_zustand": f"`projects/{project}/docs/definitions/` enthält das Datenmodell; Migrationen sind versioniert und reversibel; Seeds liefern Test-Daten.",
+        "value": "Datenintegrität von Beginn an; verhindert Schema-Rework in späteren Phasen.",
+        "modification_files": [
+            f"projects/{project}/docs/definitions/schema.md",
+            f"projects/{project}/database/migrations/"
+        ],
+        "constraints": [
+            "UUIDs für externe IDs (kein Auto-Increment)",
+            "Jede Migration reversibel (up + down)",
+            "Externen Skill `all_domains/database/database-schema-design` laden",
+            "GIN-Index für JSONb-Spalten (falls EAV-Modell)"
+        ],
+        "scenarios": [
+            {
+                "name": "Migration ist ausführbar",
+                "given": "Ein leeres Datenbankschema",
+                "when": "`migrate` ausgeführt wird",
+                "then": "Alle Tabellen entstehen ohne Fehler und `rollback` stellt den Ausgangszustand wieder her"
+            }
+        ],
+        "definition_of_done": [
+            "Datenmodell in `docs/definitions/schema.md` dokumentiert",
+            "Migrationen versioniert + reversibel",
+            "Seeds erzeugen konsistente Test-Daten",
+            "QA-Gate grün (`./studio gate {project} --level 5`)"
         ],
         "dependencies": [f"{project[:4].upper()}-0001"]
     })
@@ -348,12 +431,39 @@ def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
         "estimate": "L",
         "skills": ["BE-003"],
         "team": "02-backend-systems",
-        "acceptance_criteria": [
-            "Login/Registration funktioniert",
-            "JWT/Session korrekt implementiert",
-            "Passwort-Hashing (bcrypt)",
-            "RBAC funktioniert",
-            "Logout funktioniert"
+        "ist_zustand": "Keine Authentifizierung vorhanden. Alle Routen sind öffentlich zugänglich.",
+        "soll_zustand": "Login, Registration, Session-Management und RBAC sind implementiert; geschützte Routen verweigern unautorisierten Zugriff.",
+        "value": "Sicherheits-Basis für alle geschützten Features; verhindert IDOR und Broken Access Control (OWASP A01).",
+        "modification_files": [
+            f"projects/{project}/backend/routes/auth.php",
+            f"projects/{project}/backend/middleware/auth.php"
+        ],
+        "constraints": [
+            "Passwort-Hashing mit bcrypt/argon2 (kein Klartext, kein md5)",
+            "Externen Skill `all_domains/api-and-integration/oauth-2-0-setup` laden (falls OAuth nötig)",
+            "Keine Secrets im Code — Environment Variables",
+            "Rate-Limiting auf Login/Registration-Endpoints"
+        ],
+        "scenarios": [
+            {
+                "name": "Login mit gültigen Credentials",
+                "given": "Ein registrierter Nutzer mit korrekten Credentials",
+                "when": "Der Nutzer sich einloggt",
+                "then": "Eine gültige Session/JWT entsteht und geschützte Routen sind erreichbar"
+            },
+            {
+                "name": "Zugriff ohne Auth",
+                "given": "Ein nicht eingeloggter Nutzer",
+                "when": "Der Nutzer eine geschützte Route aufruft",
+                "then": "Die Route antwortet mit 401/403 und kein Datenleck entsteht"
+            }
+        ],
+        "definition_of_done": [
+            "Login + Registration + Logout funktionieren",
+            "Passwort-Hashing (bcrypt/argon2) aktiv",
+            "RBAC für mindestens eine Rolle implementiert",
+            "Unautorisierter Zugriff → 401/403",
+            "QA-Gate grün (`./studio gate {project} --level 5`)"
         ],
         "dependencies": [
             f"{project[:4].upper()}-0001",
@@ -402,6 +512,23 @@ def create_ticket_from_feature(
     # Akzeptanzkriterien
     acceptance_criteria = generate_acceptance_criteria(feature)
     
+    # Strikter Kontext (Ist/Soll) + Constraints + BDD-Szenario
+    feature_name = title.lower()
+    ist = f"Das Feature '{title}' existiert noch nicht in `projects/{project}/`."
+    soll = f"Das Feature '{title}' ist umgesetzt und über die vorgesehene UI/API erreichbar."
+    value = feature.get("benefit", f"'{title}' liefert sichtbaren Wert für die Zielgruppe.")
+    constraints = [
+        "Keine unnötigen externen Packages ohne ADR installieren",
+        "Anti-Slop-Protocol einhalten (keine Floskeln, keine God-Functions)",
+        "Immer die zugeordneten Skill-Dateien laden (siehe `skills`)"
+    ]
+    scenarios = [{
+        "name": "Feature ist nutzbar",
+        "given": f"Ein Nutzer im Projekt {project}",
+        "when": f"Er das Feature '{title}' verwendet",
+        "then": acceptance_criteria[0] if acceptance_criteria else f"'{title}' funktioniert wie beschrieben"
+    }]
+    
     return {
         "id": ticket_id,
         "title": title,
@@ -411,7 +538,19 @@ def create_ticket_from_feature(
         "estimate": estimate_effort(feature),
         "skills": skills,
         "team": team,
+        "ist_zustand": ist,
+        "soll_zustand": soll,
+        "value": value,
+        "modification_files": [f"projects/{project}/"],
+        "constraints": constraints,
+        "scenarios": scenarios,
         "acceptance_criteria": acceptance_criteria,
+        "definition_of_done": [
+            "Feature funktioniert (BDD-Szenario grün)",
+            "Tests vorhanden und grün",
+            "Anti-Slop-Audit: 0 Verstöße",
+            "QA-Gate grün (`./studio gate <project> --level 5`)"
+        ],
         "dependencies": []
     }
 
@@ -632,7 +771,7 @@ def assign_sequential_ids(tickets: List[Dict], project: str) -> List[Dict]:
 
 
 def write_ticket_files(tickets: List[Dict], project: str):
-    """Schreibt Ticket-Dateien in das Projekt-Backlog."""
+    """Schreibt Ticket-Dateien in das Projekt-Backlog (striktes Studio-Schema)."""
     
     # Fortlaufende IDs ab bestehendem Counter (keine Kollisionen mit manuellen Tickets)
     tickets = assign_sequential_ids(tickets, project)
@@ -646,49 +785,8 @@ def write_ticket_files(tickets: List[Dict], project: str):
         filename = f"{ticket['id']}-{slug}.md"
         filepath = backlog_open / filename
         
-        content = f"""---
-id: {ticket['id']}
-title: {ticket['title']}
-status: open
-phase: {ticket['phase']}
-priority: {ticket['priority']}
-estimate: {ticket['estimate']}
-created: {datetime.now().strftime('%Y-%m-%d')}
-team: {ticket['team']}
-skills: {json.dumps(ticket['skills'])}
----
-
-# {ticket['id']} — {ticket['title']}
-
-{ticket['description']}
-
-## Akzeptanzkriterien
-
-"""
-        for criterion in ticket['acceptance_criteria']:
-            content += f"- [ ] {criterion}\n"
-        
-        content += f"""
-## Abhängigkeiten
-
-"""
-        for dep in ticket['dependencies']:
-            content += f"- {dep}\n"
-        
-        if not ticket['dependencies']:
-            content += "- Keine\n"
-        
-        content += f"""
-## Geschätzter Aufwand
-
-{ticket['estimate']}
-
-## Skills
-
-"""
-        for skill in ticket['skills']:
-            content += f"- {skill}\n"
-        
+        # Neues Schema: Rolle, Ist/Soll, Constraints, BDD, DoD
+        content = render_ticket_markdown(ticket)
         filepath.write_text(content)
     
     return len(tickets)

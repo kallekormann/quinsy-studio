@@ -56,6 +56,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
+from ticket_helpers import render_ticket_markdown, role_for_skills
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
@@ -540,7 +542,7 @@ class StudioOrchestrator:
     
     def cmd_ticket(self, project: str, title: str, phase: int = 4, 
                    priority: str = "P1", estimate: str = "M"):
-        """Erstellt ein neues Ticket im Projekt-Backlog."""
+        """Erstellt ein neues Ticket im Projekt-Backlog (striktes Studio-Schema)."""
         
         ticket_id = get_next_ticket_id(project)
         slug = slugify(title)
@@ -549,43 +551,125 @@ class StudioOrchestrator:
         ticket_dir = get_project_backlog_dir(project, "open")
         ticket_file = ticket_dir / f"{ticket_id}-{slug}.md"
         
-        template = f"""---
-id: {ticket_id}
-title: {title}
-status: open
-phase: {phase}
-priority: {priority}
-estimate: {estimate}
-created: {datetime.now().strftime('%Y-%m-%d')}
-assignee: 
----
-
-# {ticket_id} — {title}
-
-## Akzeptanzkriterien
-- [ ] Kriterium 1
-- [ ] Kriterium 2
-- [ ] Kriterium 3
-
-## Technische Anforderungen
-...
-
-## Abhängigkeiten
-- ...
-
-## Begründung
-Warum ist dieses Ticket wichtig?
-"""
-        ticket_file.write_text(template)
+        # Skills aus dem Titel ableiten (Registry-Matching)
+        skills = self._match_skills_from_text(title)
+        team = self._team_for_skills(skills)
+        role = self._role_for_skills(skills)
+        
+        ticket = {
+            "id": ticket_id,
+            "title": title,
+            "type": "feature",
+            "status": "open",
+            "phase": phase,
+            "priority": priority,
+            "estimate": estimate,
+            "team": team,
+            "skills": skills,
+            "ist_zustand": f"Das Feature '{title}' existiert noch nicht in `projects/{project}/`.",
+            "soll_zustand": f"Das Feature '{title}' ist umgesetzt und nutzbar.",
+            "value": f"'{title}' liefert sichtbaren Fortschritt im Projekt {project}.",
+            "modification_files": [f"projects/{project}/"],
+            "constraints": [
+                "Keine unnötigen externen Packages ohne ADR installieren",
+                "Anti-Slop-Protocol einhalten (keine Floskeln, keine God-Functions)",
+                "Zugeordnete Skill-Dateien laden (siehe `skills`)"
+            ],
+            "scenarios": [{
+                "name": "Feature ist nutzbar",
+                "given": f"Ein Nutzer im Projekt {project}",
+                "when": f"Er das Feature '{title}' verwendet",
+                "then": f"'{title}' funktioniert wie beschrieben und ist getestet"
+            }],
+            "acceptance_criteria": [
+                f"'{title}' ist implementiert",
+                f"'{title}' hat Tests",
+                "Code ist AI-slop-frei"
+            ],
+            "definition_of_done": [
+                "Feature funktioniert (BDD-Szenario grün)",
+                "Tests vorhanden und grün",
+                "Anti-Slop-Audit: 0 Verstöße",
+                "QA-Gate grün (`./studio gate <project> --level 5`)"
+            ],
+            "dependencies": []
+        }
+        
+        content = render_ticket_markdown(ticket)
+        ticket_file.write_text(content)
         
         print(f"\n  Ticket angelegt: {ticket_file}")
         print(f"  ID: {ticket_id}")
+        print(f"  Rolle: {role}")
+        print(f"  Team: {team}")
+        print(f"  Skills: {', '.join(skills) if skills else '(auto-match)'}")
         print(f"  Status: open")
         print(f"  Projekt: {project}")
         print(f"\n  Nächster Schritt:")
-        print(f"    ./studio move {project} {ticket_id} analyze")
+        print(f"    ./studio move {project} {ticket_id} implement")
         
         return ticket_id
+    
+    def _match_skills_from_text(self, text: str) -> List[str]:
+        """Matcht Skills aus einem Titel über Trigger-Wörter (Registry-Logik)."""
+        t = text.lower()
+        skill_triggers = {
+            "FE-001": ["komponente", "component", "button", "card", "modal", "ui", "interface"],
+            "FE-002": ["design system", "tokens", "farbpalette", "typografie", "theme"],
+            "FE-003": ["performance", "ladezeit", "speed", "bundle", "core web vitals"],
+            "FE-004": ["a11y", "barrierefreiheit", "accessibility", "wcag"],
+            "FE-005": ["pwa", "offline", "service worker"],
+            "FE-006": ["test", "testing", "coverage"],
+            "BE-001": ["api", "endpoint", "rest", "graphql"],
+            "BE-002": ["database", "schema", "migration", "query", "sql", "postgres"],
+            "BE-003": ["auth", "login", "jwt", "session", "rbac", "oauth"],
+            "BE-004": ["error", "exception", "retry", "logging"],
+            "BE-005": ["webhook", "stripe", "payment", "integration"],
+            "CL-001": ["dsgvo", "gdpr", "datenschutz", "privacy"],
+            "CL-002": ["cookie", "consent", "banner", "tracking"],
+            "CL-003": ["impressum", "agb", "widerruf"],
+            "CL-004": ["zero-data", "datenminimierung"],
+            "PS-001": ["strategie", "vision", "monetarisierung"],
+            "PS-002": ["architektur", "adr", "tech-stack"],
+            "GM-001": ["seo", "sichtbarkeit", "ranking", "schema.org"],
+            "GM-002": ["aeo", "ai search", "chatgpt", "perplexity", "vergleich"],
+            "GM-003": ["content", "copy", "blog", "newsletter"],
+            "GM-004": ["game", "godot", "unity", "unreal", "platformer", "spiel"],
+            "PE-001": ["docker", "infrastructure", "cloud", "deploy", "cdn"],
+            "PE-002": ["ci/cd", "pipeline", "github actions", "build"],
+            "PE-003": ["security", "owasp", "penetration", "vulnerability"],
+            "PE-004": ["monitoring", "alerting", "sentry", "uptime"],
+            "AI-001": ["ai", "llm", "gpt", "prompt", "ki"],
+            "AI-002": ["anti-slop", "slop"],
+            "SO-001": ["studio tools", "python", "tooling"],
+            "SO-002": ["prozess", "optimierung", "metriken"],
+            "SO-003": ["learning", "retro", "dual-loop"],
+            "SO-004": ["doku", "documentation", "changelog"],
+        }
+        hits = []
+        for skill_id, triggers in skill_triggers.items():
+            if any(trig in t for trig in triggers):
+                hits.append(skill_id)
+        return hits[:5]
+    
+    def _team_for_skills(self, skills: List[str]) -> str:
+        """Bestimmt das Team aus den Skill-Präfixen."""
+        team_mapping = {
+            "FE": "01-frontend-experience", "BE": "02-backend-systems",
+            "CL": "03-compliance-legal", "PS": "04-product-strategy-architecture",
+            "GM": "05-growth-marketing-content", "PM": "06-product-management-operating-model",
+            "AI": "07-ai-autonomous-systems", "PE": "08-platform-enterprise-engineering",
+            "SO": "09-studio-operations-evolution"
+        }
+        for skill in skills:
+            prefix = skill.split("-")[0]
+            if prefix in team_mapping:
+                return team_mapping[prefix]
+        return "01-frontend-experience"
+    
+    def _role_for_skills(self, skills: List[str]) -> str:
+        """Leitet die Director-Rolle aus den Skills ab."""
+        return role_for_skills(skills)
     
     def cmd_move(self, project: str, ticket_id: str, new_status: str, reason: str = ""):
         """Bewegt ein Ticket zu einem neuen Status im Projekt-Backlog."""
@@ -683,7 +767,7 @@ Warum ist dieses Ticket wichtig?
     # -------------------------------------------------------------------------
     
     def cmd_learn(self, title: str, signal: str, source: str = "Studio-Entwicklung"):
-        """Erstellt ein Learning Item."""
+        """Erstellt ein Learning Item (striktes Studio-Schema, Typ: studio-evolution)."""
         
         lo_dir = BACKLOG_DIR / "open"
         lo_dir.mkdir(parents=True, exist_ok=True)
@@ -700,37 +784,71 @@ Warum ist dieses Ticket wichtig?
         slug = slugify(title)
         lo_file = lo_dir / f"{lo_id}-{slug}.md"
         
-        template = f"""---
-id: {lo_id}
-title: {title}
-status: open
-signal: {signal}
-source: {source}
-priority: P2
-created: {datetime.now().strftime('%Y-%m-%d')}
-updated: {datetime.now().strftime('%Y-%m-%d')}
----
-
-# {lo_id} — {title}
-
-## Beobachtung
-Was ist passiert / was fehlt?
-
-## Auswirkung
-Welche Folge hatte das (Rework, Unsicherheit, Qualitätsrisiko)?
-
-## Vorschlag
-Wie soll Prozess / Skill / Tooling verbessert werden?
-
-## Status
-- [ ] Im Meta-Retro besprochen
-- [ ] Umgesetzt (CHANGELOG.md-Eintrag, Version aktualisiert)
-"""
-        lo_file.write_text(template)
+        # Rollenzuweisung je Signal (Studio-Ebene)
+        signal_roles = {
+            "tooling-gap": "Studio Automation Engineer (Director)",
+            "process-gap": "Process Guard (Director)",
+            "design-gap": "UI/Interaction Designer (Director)",
+            "quality-risk": "QA Specialist (Director)",
+            "conflict": "Process Guard (Director)",
+        }
+        role = signal_roles.get(signal, "Process Guard (Director)")
+        skills = {
+            "tooling-gap": ["SO-001"],
+            "process-gap": ["SO-002"],
+            "design-gap": ["FE-002"],
+            "quality-risk": ["SO-002"],
+            "conflict": ["SO-002", "SO-003"],
+        }.get(signal, ["SO-003"])
+        
+        ticket = {
+            "id": lo_id,
+            "title": title,
+            "type": "studio-evolution",
+            "status": "open",
+            "phase": 6,
+            "priority": "P2",
+            "estimate": "M",
+            "team": "09-studio-operations-evolution",
+            "skills": skills,
+            "assignee_role": role,
+            "ist_zustand": f"Beobachtung: {title} (Signal: {signal}, Quelle: {source})",
+            "soll_zustand": "Das Studio ist so verbessert, dass dieses Signal nicht erneut auftritt.",
+            "value": "Das Studio lernt aus Projekten (Dual-Loop) und verbessert Prozess, Skills oder Tooling.",
+            "modification_files": [".quinsy-studio/process/", ".quinsy-studio/studio-tools/", ".quinsy-studio/teams/"],
+            "constraints": [
+                "Keine Änderung an Kundenprojekten (nur Studio-HQ)",
+                "Jede Änderung → CHANGELOG.md-Eintrag",
+                "Nach Umsetzung: Skill-Matching-Test + QA-Gate grün",
+                f"Signal: {signal} — Quelle: {source}"
+            ],
+            "scenarios": [{
+                "name": "Studio-Verbesserung wirkt",
+                "given": f"Das Lern-Signal ({signal}) tritt erneut auf",
+                "when": "Der verbesserte Prozess/Skill/Tool angewendet wird",
+                "then": "Das Signal tritt nicht mehr auf oder wird korrekt abgefangen"
+            }],
+            "acceptance_criteria": [
+                "Verbesserung ist im Studio-HQ umgesetzt",
+                "CHANGELOG.md aktualisiert",
+                "Test grün"
+            ],
+            "definition_of_done": [
+                "Im Meta-Retro besprochen",
+                "Umgesetzt (CHANGELOG.md-Eintrag)",
+                "Skill-Matching-Test grün",
+                "QA-Gate grün"
+            ],
+            "dependencies": [],
+        }
+        
+        content = render_ticket_markdown(ticket)
+        lo_file.write_text(content)
         
         print(f"\n  Learning Item angelegt: {lo_file}")
         print(f"  ID: {lo_id}")
         print(f"  Signal: {signal}")
+        print(f"  Rolle: {role}")
         
         return lo_id
     
