@@ -32,6 +32,9 @@ REVIEW_PENDING = "pending"
 REVIEW_APPROVED = "approved"
 REVIEW_REJECTED = "rejected"
 
+RETRO_PENDING = "pending"
+RETRO_DONE = "done"
+
 
 def project_dir(project: str) -> Path:
     return PROJECTS_DIR / project
@@ -142,6 +145,8 @@ def get_sprint_hitl(status: Dict) -> Dict:
         "groom_validated_at": None,
         "groom_approved_at": None,
         "backlog_validation": None,
+        "retro_status": None,
+        "retro_completed_at": None,
     })
 
 
@@ -164,6 +169,102 @@ def maybe_flag_sprint_review(project: str, status: Dict) -> bool:
 def needs_sprint_review(status: Dict) -> bool:
     hitl = status.get("sprint_hitl", {})
     return hitl.get("review_status") == REVIEW_PENDING
+
+
+def is_sprint_closed(status: Dict, project: str) -> bool:
+    """All sprint tickets done and human approved review — implementation frozen until next sprint."""
+    sprint = status.get("current_sprint")
+    if not sprint:
+        return False
+    summary = sprint_ticket_summary(project, sprint)
+    if not summary["all_done"]:
+        return False
+    hitl = get_sprint_hitl(status)
+    return hitl.get("review_status") == REVIEW_APPROVED
+
+
+def is_autonomous_sprint_execution(status: Dict, project: str) -> bool:
+    """
+    Agent implements sprint tickets without human checkpoints until every sprint ticket is done.
+    """
+    sprint = status.get("current_sprint")
+    if not sprint or needs_sprint_review(status) or is_sprint_closed(status, project):
+        return False
+    hitl = get_sprint_hitl(status)
+    if hitl.get("groom_status") != "approved":
+        return False
+    summary = sprint_ticket_summary(project, sprint)
+    return summary["total"] > 0 and not summary["all_done"]
+
+
+def implement_blocked_reason(status: Dict, project: str) -> Optional[str]:
+    """Return a user-facing message when ./studio move … implement must be blocked."""
+    sprint = status.get("current_sprint") or "SPRINT-??"
+    if needs_sprint_review(status):
+        return (
+            f"\n  ⏸  Sprint review pending for {sprint} — human tests shipped work before more code.\n"
+            f"    ./studio review {project}\n"
+            f"    ./studio review {project} --approve"
+        )
+    if is_sprint_closed(status, project):
+        hitl = get_sprint_hitl(status)
+        if hitl.get("retro_status") != RETRO_DONE:
+            return (
+                f"\n  ⏸  Sprint {sprint} is closed (review approved) — retrospective required.\n"
+                f"    ./studio retro {project}"
+            )
+        return (
+            f"\n  ⏸  Sprint {sprint} is closed — plan and groom the next sprint before implementing.\n"
+            f"    ./studio groom {project}\n"
+            f"    ./studio sprint {project}\n"
+            f"    ./studio groom {project} --approve"
+        )
+    return None
+
+
+def can_plan_next_sprint(project: str, status: Dict) -> Tuple[bool, str]:
+    """
+    Next sprint planning requires: current sprint finished, human review approved, retro done.
+    """
+    sprint = status.get("current_sprint")
+    if not sprint:
+        return True, ""
+
+    summary = sprint_ticket_summary(project, sprint)
+    if not summary["all_done"]:
+        open_count = summary["total"] - summary["done"]
+        return (
+            False,
+            f"{sprint} still has {open_count} ticket(s) not done "
+            f"({summary['done']}/{summary['total']}). Finish the sprint before planning the next one.",
+        )
+
+    hitl = get_sprint_hitl(status)
+    review = hitl.get("review_status")
+    if review != REVIEW_APPROVED:
+        if review == REVIEW_PENDING:
+            return (
+                False,
+                f"Human sprint review pending for {sprint}. "
+                f"Run ./studio review {project} → try shipped work → ./studio review {project} --approve",
+            )
+        if review == REVIEW_REJECTED:
+            return (
+                False,
+                f"Sprint review rejected for {sprint}. Fix issues or re-open tickets, then re-approve review.",
+            )
+        return (
+            False,
+            f"Complete human sprint review for {sprint}: ./studio review {project} --approve",
+        )
+
+    if hitl.get("retro_status") != RETRO_DONE:
+        return (
+            False,
+            f"Retrospective required for {sprint} before the next sprint: ./studio retro {project}",
+        )
+
+    return True, ""
 
 
 def has_raw_feedback(project: str, sprint: str) -> bool:
@@ -249,11 +350,14 @@ See [plan.md](plan.md)
 - [ ] When satisfied: `./studio review {project} --approve`
 - [ ] If not satisfied: `./studio review {project} --reject "..."`
 
+> **Process:** During the sprint the agent implements autonomously. You are involved **here**, at sprint review — not ticket-by-ticket mid-sprint.
+
 ## After approval
 1. Clarify feedback: `./studio clarify {project} FB-001` (repeat per item)
-2. Groom backlog: `./studio groom {project}`
-3. Retro: `./studio retro {project}`
-4. Next sprint: `./studio sprint {project}` (when ready)
+2. Ticket from feedback: `./studio ticket {project} "..." --from-feedback FB-001`
+3. Groom backlog: `./studio groom {project}` (reprioritize for next sprint)
+4. Retro: `./studio retro {project}`
+5. Next sprint: `./studio sprint {project}` → `./studio groom {project} --approve` → implement
 {fb_section}
 """
     review_file.write_text(content, encoding="utf-8")
@@ -271,6 +375,7 @@ def approve_review(project: str, sprint: str, status: Dict, notes: str = "") -> 
     hitl["review_status"] = REVIEW_APPROVED
     hitl["last_review_at"] = datetime.now().isoformat()
     hitl["last_review_notes"] = notes.strip() or None
+    hitl["retro_status"] = RETRO_PENDING
 
     sprint_dir = sprint_directory(project, sprint)
     summary_file = sprint_dir / "summary.md"

@@ -34,7 +34,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 **Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally.
 
-**Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. Pause for `./studio review --approve` when sprint tickets are done.
+**Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **Autonomous mid-sprint:** agent implements all groomed sprint tickets without human checkpoints. **Human joins at sprint review** when all sprint tickets are `done`; then groom → retro → `./studio sprint` for the next sprint.
 
 ## Two worlds — never mix
 
@@ -67,7 +67,9 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 ## Sprint HITL (after gate 2)
 
-Human reviews shipped work; feedback becomes tickets only after clarification.
+**Mid-sprint:** agent implements autonomously — human does not approve ticket-by-ticket.
+
+**Sprint review:** when all sprint tickets are `done`, human reviews shipped work; feedback becomes tickets only after clarification.
 
 ```bash
 ./studio review <project>                          # status brief for human
@@ -75,7 +77,7 @@ Human reviews shipped work; feedback becomes tickets only after clarification.
 ./studio clarify <project> FB-001 ... --approve    # executable draft
 ./studio ticket <project> "..." --from-feedback FB-001
 ./studio review <project> --approve
-./studio groom <project> && ./studio retro <project>
+./studio groom <project> && ./studio retro <project> && ./studio sprint <project>
 ```
 
 See [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md#sprint-cadence-hitl-after-gate-2).

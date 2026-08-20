@@ -118,12 +118,16 @@ from sprint_backlog_validate import (
 from sprint_hitl import (
     add_feedback,
     approve_review,
+    can_plan_next_sprint,
     clarify_feedback,
     format_feedback_list,
     get_ready_feedback_for_ticket,
     get_sprint_hitl,
     has_raw_feedback,
     has_ready_feedback,
+    implement_blocked_reason,
+    is_autonomous_sprint_execution,
+    is_sprint_closed,
     link_feedback_to_ticket,
     load_feedback_queue,
     maybe_flag_sprint_review,
@@ -131,6 +135,7 @@ from sprint_hitl import (
     prepare_retro,
     prepare_review,
     reject_review,
+    RETRO_DONE,
     sprint_ticket_summary,
 )
 
@@ -505,19 +510,48 @@ class StudioOrchestrator:
             actions.append(f"⏸ HUMAN: sprint review pending — ./studio review {project}")
             actions.append(f"Human: try shipped work, then ./studio review {project} --approve")
             actions.append(f"New ideas: ./studio feedback {project} \"...\" (not direct tickets)")
+            actions.append("Agent: do NOT implement or ask for direction — wait for human review")
+        elif is_sprint_closed(status, project):
+            hitl = get_sprint_hitl(status)
+            actions.append(f"⏸ Sprint closed (review approved) — plan next sprint with human")
+            if hitl.get("retro_status") != RETRO_DONE:
+                actions.append(f"./studio retro {project}")
+            actions.append(f"./studio feedback {project} \"...\"  (ideas for next sprint)")
+            actions.append(f"./studio clarify {project} FB-001 ... --approve")
+            actions.append(f"./studio ticket {project} \"...\" --from-feedback FB-001")
+            actions.append(f"./studio groom {project}")
+            actions.append(f"./studio sprint {project}")
+            actions.append(f"./studio groom {project} --approve")
         else:
             sprint = status.get("current_sprint", "")
+            hitl = get_sprint_hitl(status)
+            if is_autonomous_sprint_execution(status, project):
+                summary = sprint_ticket_summary(project, sprint)
+                actions.append(
+                    f"🤖 AUTONOMOUS SPRINT ({sprint}): implement remaining tickets "
+                    f"({summary['done']}/{summary['total']} done) — no human checkpoint mid-sprint"
+                )
+                actions.append("Agent: do NOT pause for approval between tickets; human joins at sprint review")
+                next_open = next(
+                    (t for t in summary["tickets"] if t["status"] in ("open", "blocked")),
+                    None,
+                )
+                if next_open:
+                    actions.append(
+                        f"./studio move {project} {next_open['id']} implement --reason \"Sprint execution\""
+                    )
+            elif hitl.get("groom_status") != "approved":
+                actions.append(f"./studio groom {project}")
+                actions.append(f"./studio groom {project} --approve")
             if has_raw_feedback(project, sprint):
-                actions.append(f"Clarify feedback: ./studio feedback-list {project}")
-                actions.append(f"./studio clarify {project} FB-001 ... --approve")
+                actions.append(f"Queue only (act after review): ./studio feedback-list {project}")
             if has_ready_feedback(project, sprint):
-                actions.append(f"Ticket from feedback: ./studio ticket {project} \"...\" --from-feedback FB-NNN")
+                actions.append(
+                    f"Ticket from feedback after review: ./studio ticket {project} \"...\" --from-feedback FB-NNN"
+                )
             actions.append(f"./studio board {project}")
-            actions.append(f"./studio status {project}")
-            actions.append(f"./studio move {project} <TICKET-ID> implement --reason \"Started\"")
-            actions.append(f"Implement in projects/{project}/ — no code without a ticket")
             actions.append(f"./studio move {project} <TICKET-ID> done --reason \"DoD met\"")
-            actions.append(f"End of sprint: ./studio review {project} → groom → retro")
+            actions.append(f"When all sprint tickets done: ./studio review {project} → human --approve")
 
         print("\n  Next actions:")
         for i, action in enumerate(actions, 1):
@@ -550,6 +584,9 @@ class StudioOrchestrator:
             "in_scope": "✅",
             "needs_ticket": "🎫",
             "pre_impl": "⏸",
+            "sprint_review": "⏸",
+            "sprint_closed": "⏸",
+            "autonomous_sprint": "🤖",
             "studio_meta": "🏢",
             "unclear": "❓",
         }
@@ -993,6 +1030,12 @@ class StudioOrchestrator:
         if status.get("human_gates", {}).get("2", {}).get("status") != "approved":
             print(f"  ⚠️  Gate 2 (design) must be approved before sprint")
             return False
+
+        ok, reason = can_plan_next_sprint(project, status)
+        if not ok:
+            print(f"\n  ⚠️  Cannot plan next sprint yet.")
+            print(f"  {reason}")
+            return False
         
         print_header(f"PHASE 3: SPRINT PLANNING — {project}")
         
@@ -1053,6 +1096,8 @@ class StudioOrchestrator:
         hitl = get_sprint_hitl(status)
         hitl["review_status"] = None
         hitl["review_pending_since"] = None
+        hitl["retro_status"] = None
+        hitl["retro_completed_at"] = None
         save_status(project, status)
         
         validation = validate_sprint_backlog(project, sprint_name)
@@ -1094,11 +1139,14 @@ class StudioOrchestrator:
             approve_review(project, sprint, status, notes)
             save_status(project, status)
             print(f"\n  ✅ Sprint review approved")
+            print(f"  Implementation frozen until the next sprint is planned.")
             print(f"  Next:")
             print(f"    ./studio feedback {project} \"...\"  (capture new ideas)")
             print(f"    ./studio clarify {project} FB-001 ... --approve")
+            print(f"    ./studio ticket {project} \"...\" --from-feedback FB-001")
             print(f"    ./studio groom {project}")
             print(f"    ./studio retro {project}")
+            print(f"    ./studio sprint {project}  (plan next sprint)")
             return True
 
         if reject:
@@ -1329,6 +1377,10 @@ class StudioOrchestrator:
 
         if new_status == "implement":
             status_pre = load_status(project)
+            blocked = implement_blocked_reason(status_pre, project)
+            if blocked:
+                print(blocked)
+                return False
             hitl = get_sprint_hitl(status_pre)
             sprint = status_pre.get("current_sprint")
             content_pre = ticket_file.read_text()
@@ -1575,10 +1627,16 @@ class StudioOrchestrator:
         print_header(f"RETROSPECTIVE — {project} ({sprint})")
 
         retro_file = prepare_retro(project, sprint)
+        hitl = get_sprint_hitl(status)
+        hitl["retro_status"] = RETRO_DONE
+        hitl["retro_completed_at"] = datetime.now().isoformat()
+        save_status(project, status)
+
         print(f"\n  Project retro: {retro_file}")
         print(f"  Fill in went well / badly / improve, then:")
         print(f"    ./studio learn \"...\" --signal process-gap --source {project}")
-        print(f"    ./studio sprint {project}  (when ready for next sprint)")
+        print(f"    ./studio groom {project}  (reprioritize backlog for next sprint)")
+        print(f"    ./studio sprint {project}  (plan next sprint)")
 
         # Studio meta-retro for cross-project learnings (optional)
         meta_dir = QUINSY_STUDIO / "retros"

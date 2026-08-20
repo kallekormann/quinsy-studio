@@ -169,7 +169,7 @@ CLI: `./studio design <project> --scope journey|core-views`
 | **Output** | implemented code with local tests |
 | **Roles (lead)** | Frontend Engineer, Backend Engineer |
 | **Roles (support)** | Database Specialist, QA Specialist |
-| **Human gate** | No — agent works autonomously |
+| **Human gate** | No mid-sprint — agent runs the full sprint; **human joins at sprint review** (Phase 6) |
 
 ### Flow per ticket (9 steps)
 
@@ -186,6 +186,8 @@ CLI: `./studio design <project> --scope journey|core-views`
 ### Rules
 
 - **No code without a ticket**
+- **No human checkpoint between sprint tickets** — finish the sprint, then `./studio review`
+- **`./studio move … implement` blocked** when sprint review is pending or sprint is closed
 - **Test-first (TDD)**
 - **Clean code / SOLID**
 - **Follow anti-slop**
@@ -229,18 +231,19 @@ CLI: `./studio design <project> --scope journey|core-views`
 | **Output** | local learnings + global studio evolution |
 | **Roles (lead)** | Process Guard, Platform Architect |
 | **Roles (support)** | Documentation Writer, Agile Coach |
-| **Human gate** | No — agent works autonomously |
+| **Human gate** | **Yes** — sprint review (`./studio review --approve`) before the next sprint |
 
 ### Flow
 
-1. Run the sprint retrospective
-2. Collect learning items (`./studio learn`)
-3. **Local loop:** project-specific learnings → `projects/[name]/docs/local_learnings.md`
-4. **Global loop:** universal improvements → `.quinsy-studio/knowledge-base/`
-5. Update playbooks (global loop)
-6. Optimize python tools (global loop)
-7. Update CHANGELOG
-8. `./studio retro <project>`
+1. Human tries shipped work (`./studio review <project>`)
+2. Approve or reject sprint (`./studio review --approve` / `--reject`)
+3. Capture feedback (`./studio feedback`) — not direct tickets
+4. Clarify + ticket from feedback (`./studio clarify` → `./studio ticket --from-feedback`)
+5. Run the sprint retrospective (`./studio retro <project>`)
+6. Collect learning items (`./studio learn`)
+7. **Local loop:** project-specific learnings → `projects/[name]/docs/local_learnings.md`
+8. **Global loop:** universal improvements → `.quinsy-studio/knowledge-base/`
+9. Groom backlog (`./studio groom`) + plan next sprint (`./studio sprint <project>`)
 
 ---
 

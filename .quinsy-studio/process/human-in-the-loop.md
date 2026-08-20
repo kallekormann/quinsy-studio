@@ -33,28 +33,46 @@ Agent: "Implemented."
 
 ## Sprint cadence HITL (after gate 2)
 
-Pre-implementation uses gates 0–2 (`./studio approve`). **During sprints**, humans stay in the loop via review, feedback, grooming, and retro.
+Pre-implementation uses gates 0–2 (`./studio approve`). **During sprints**, the agent executes autonomously; the human joins at **sprint review**, then helps plan the **next** sprint.
+
+### Autonomous execution (mid-sprint)
+
+While sprint tickets are not all `done`:
+
+| Do | Don't |
+|----|-------|
+| Agent implements every groomed sprint ticket in order | Ask the human "should I continue?" between tickets |
+| Agent moves tickets `implement` → `done` without pausing | Let the human change direction mid-sprint |
+| Human may `./studio feedback` (queued for after review) | Turn feedback into tickets or code before sprint review |
+| `./studio resume` points at the next ticket to implement | Block on a single ticket for human approval |
+
+**Enforced by CLI:** `./studio move … implement` is blocked when sprint review is pending or the sprint is closed.
 
 ### Sprint ceremony flow
 
 ```
-Sprint work → ./studio review (human) → feedback → clarify → ticket → groom → retro → next sprint
+Groom sprint → autonomous implementation → ./studio review (human) → feedback → clarify → ticket → groom → retro → next sprint
 ```
 
 | Step | Who | Command |
 |------|-----|---------|
+| **Sprint groom** | **Human** + agent | `./studio groom <p> --approve` before first `implement` |
+| **Sprint work** | **Agent only** | `./studio move <p> <ID> implement` … `done` (all sprint tickets) |
 | **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |
-| **Sprint review** | **Human** tries shipped work | Read review.md, RUNBOOK, prototype |
+| **Sprint review** | **Human** tries shipped work | Read review.md, RUNBOOK, run the app |
 | **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` |
 | **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket** |
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
 | **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
-| **Grooming** | **Human** + agent | `./studio groom <p>` — validate backlog vs blueprint; `--approve` before implement |
+| **Grooming** | **Human** + agent | `./studio groom <p>` — reprioritize backlog for next sprint |
 | **Retro** | **Human** + agent | `./studio retro <p>` → `sprints/SPRINT-NN/retro.md` |
+| **Next sprint** | **Human** + agent | `./studio sprint <p>` → `./studio groom <p> --approve` |
 
 **Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
 
-When all sprint tickets reach `done`, `./studio resume` surfaces **sprint review pending**.
+**Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, and retro is complete.
+
+When all sprint tickets reach `done`, `./studio resume` surfaces **sprint review pending** and blocks further implementation.
 
 ### Example
 
@@ -68,9 +86,11 @@ When all sprint tickets reach `done`, `./studio resume` surfaces **sprint review
   --acceptance "Completing a habit works offline" \
   --approve
 ./studio ticket nudge "Offline habit tracking" --from-feedback FB-001
-./studio groom nudge
 ./studio review nudge --approve --notes "Sprint 1 shipped, offline next"
+./studio groom nudge
 ./studio retro nudge
+./studio sprint nudge
+./studio groom nudge --approve
 ```
 
 ---

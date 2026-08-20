@@ -46,7 +46,7 @@ Adapt pulled code in the project. After ticket done, promote if generic:
 
 ## Sprint HITL (after gate 2)
 
-Sprint-review ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. When sprint tickets are done: `./studio review` → human `--approve` → groom → retro.
+Autonomous mid-sprint execution; human at sprint review only. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. When sprint tickets are done: `./studio review` → human `--approve` → groom → retro → `./studio sprint`.
 
 ## Drift recovery
 

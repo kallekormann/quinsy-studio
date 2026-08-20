@@ -83,7 +83,9 @@ Projects **consume** library via `./studio sync <project>`; they **feed** librar
 
 ## Sprint HITL (after gate 2)
 
-When sprint tickets are done, pause for human review — never ticket sprint-review ideas directly:
+**Mid-sprint:** agent implements autonomously — do not ask the human for direction between tickets.
+
+**Sprint review:** when all sprint tickets are `done`, pause for human review — never ticket sprint-review ideas directly:
 
 ```bash
 ./studio review <project>
@@ -91,6 +93,7 @@ When sprint tickets are done, pause for human review — never ticket sprint-rev
 ./studio clarify <project> FB-001 --approve
 ./studio ticket <project> "..." --from-feedback FB-001
 ./studio review <project> --approve
+./studio groom <project> && ./studio retro <project> && ./studio sprint <project>
 ```
 
-See [human-in-the-loop.md](human-in-the-loop.md#sprint-cadence-hitl-after-gate-2).
+`./studio move … implement` is blocked during sprint review and after review until the next sprint is groomed.

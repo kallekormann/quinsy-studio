@@ -12,6 +12,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+try:
+    from sprint_hitl import (
+        is_autonomous_sprint_execution,
+        is_sprint_closed,
+        needs_sprint_review,
+    )
+except ImportError:
+    needs_sprint_review = lambda status: False  # type: ignore
+    is_sprint_closed = lambda status, project: False  # type: ignore
+    is_autonomous_sprint_execution = lambda status, project: False  # type: ignore
+
 STUDIO_ROOT = Path(__file__).parent.parent.parent
 QUINSY_STUDIO = STUDIO_ROOT / ".quinsy-studio"
 PROJECTS_DIR = STUDIO_ROOT / "projects"
@@ -103,6 +114,14 @@ def build_focus_report(project: str, status: Dict) -> str:
 
     sprint = status.get("current_sprint")
     if sprint:
+        if needs_sprint_review(status):
+            lines.append("⏸ SPRINT REVIEW PENDING — human tests shipped work; agent must not implement")
+        elif is_sprint_closed(status, project):
+            lines.append("⏸ SPRINT CLOSED — plan next sprint (retro → groom → ./studio sprint)")
+        elif is_autonomous_sprint_execution(status, project):
+            lines.append("🤖 AUTONOMOUS SPRINT — agent implements all tickets; human joins at sprint review only")
+
+    if sprint:
         sprint_tickets = _load_sprint_tickets(project, sprint)
         lines.append(f"Current sprint ({sprint}) tickets:")
         if sprint_tickets:
@@ -122,7 +141,7 @@ def build_focus_report(project: str, status: Dict) -> str:
 
     lines.extend([
         "",
-        "Sprint HITL: review → feedback → clarify → ticket (never blind tickets from review)",
+        "Sprint HITL: autonomous execution → human sprint review → groom → retro → next sprint",
         "Drift recovery: ./studio resume {p}  |  ./studio focus {p}".format(p=project),
     ])
     return "\n".join(lines)
@@ -132,11 +151,20 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     """
     Classify a user request against project/sprint scope.
     Returns (verdict, message).
-    verdict: in_scope | needs_ticket | pre_impl | studio_meta | unclear
+    verdict: in_scope | needs_ticket | pre_impl | sprint_review | sprint_closed | autonomous_sprint | studio_meta | unclear
     """
     req_tokens = _tokenize(request)
     if not req_tokens:
         return "unclear", "Could not parse request."
+
+    impl_signals = {
+        "implement", "build", "deploy", "feature", "code", "api", "database",
+        "continue", "next", "wire", "add", "create", "fix", "refactor",
+    }
+    direction_signals = {
+        "change", "direction", "instead", "pivot", "rethink", "pause", "stop",
+        "should", "continue", "proceed", "approve",
+    }
 
     studio_signals = {"studio", "quinsy", "backlog", "lo-", "skill", "process", "gate", "tooling"}
     if req_tokens & studio_signals and "projects" not in request.lower():
@@ -150,11 +178,38 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
 
     hg = status.get("human_gates", {})
     if hg.get("2", {}).get("status") != "approved":
-        impl_signals = {"implement", "build", "deploy", "feature", "code", "api", "database"}
         if req_tokens & impl_signals:
             return "pre_impl", (
                 f"Project is pre-gate-2 (phase {status.get('phase')}). "
                 "Complete intake → architecture → design approvals before implementation."
+            )
+
+    if needs_sprint_review(status):
+        if req_tokens & (impl_signals | direction_signals):
+            return "sprint_review", (
+                f"Sprint review pending — human tests all shipped work before more implementation. "
+                f"./studio review {project} → ./studio review {project} --approve. "
+                "Capture ideas with ./studio feedback (not direct tickets)."
+            )
+
+    if is_sprint_closed(status, project):
+        if req_tokens & impl_signals:
+            return "sprint_closed", (
+                f"Sprint closed (review approved). Plan the next sprint before implementing: "
+                f"./studio retro {project} → ./studio groom {project} → ./studio sprint {project}"
+            )
+        if req_tokens & direction_signals:
+            return "sprint_closed", (
+                f"Direction changes belong in sprint review or the next sprint plan — not mid-closure. "
+                f"Use ./studio feedback {project} \"...\" then ./studio sprint {project} after retro."
+            )
+
+    if is_autonomous_sprint_execution(status, project):
+        if req_tokens & direction_signals:
+            return "autonomous_sprint", (
+                f"Sprint {status.get('current_sprint')} is in autonomous execution — "
+                "agent finishes all sprint tickets without human checkpoints. "
+                f"Direction changes wait for ./studio review {project} when the sprint is done."
             )
 
     sprint = status.get("current_sprint")

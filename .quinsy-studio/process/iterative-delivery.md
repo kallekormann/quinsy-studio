@@ -26,27 +26,30 @@ No sprint is identical; every sprint learns from the previous one.
         │                                        │
         ▼                                        │
  ┌──────────────┐                                │
- │   GROOMING   │                                │
+ │   GROOMING   │  human approves backlog        │
  │   (Board)    │                                │
  └──────┬───────┘                                │
         │                                        │
         ▼                                        │
  ┌──────────────┐                                │
- │   TICKETS    │                                │
- │   WORK ON    │                                │
+ │   TICKETS    │  agent only — no human         │
+ │   WORK ON    │  checkpoints mid-sprint      │
  └──────┬───────┘                                │
         │                                        │
         ▼                                        │
  ┌──────────────┐                                │
- │   QA GATE    │                                │
+ │ SPRINT       │  human tries shipped work      │
+ │ REVIEW       │                                │
  └──────┬───────┘                                │
         │                                        │
         ▼                                        │
  ┌──────────────┐                                │
- │   RETRO      │ ──── learning items ──────────┘
- │   + REVIEW   │
+ │ FEEDBACK +   │  groom + retro + plan next     │
+ │ NEXT SPRINT  │ ───────────────────────────────┘
  └──────────────┘
 ```
+
+**Human involvement:** grooming (start), sprint review (end), then backlog grooming + retro before the next sprint. Not ticket-by-ticket during implementation.
 
 ---
 

@@ -263,7 +263,13 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 ## Sprint cadence (human in the loop)
 
-After gate 2, you review shipped work each sprint — ideas do **not** become tickets blindly.
+After gate 2, the **agent runs the sprint autonomously**; you join at **sprint review** when all sprint tickets are done. Ideas do **not** become tickets blindly.
+
+| Phase | Who | What |
+|-------|-----|------|
+| Mid-sprint | Agent | Implements all groomed sprint tickets — no "should I continue?" between tickets |
+| Sprint review | **You** | Try shipped work; approve or reject |
+| After review | **You** + agent | Feedback → clarify → ticket; groom; retro; plan next sprint |
 
 | Step | Command |
 |------|---------|
@@ -271,9 +277,9 @@ After gate 2, you review shipped work each sprint — ideas do **not** become ti
 | Your feedback | `./studio feedback <p> "..."` |
 | Clarify → ticket | `./studio clarify <p> FB-001 ... --approve` → `./studio ticket <p> "..." --from-feedback FB-001` |
 | Approve sprint | `./studio review <p> --approve` |
-| Groom + retro | `./studio groom <p>` · `./studio retro <p>` |
+| Groom + retro + next sprint | `./studio groom <p>` · `./studio retro <p>` · `./studio sprint <p>` · `./studio groom <p> --approve` |
 
-When all sprint tickets are `done`, `./studio resume` shows **sprint review pending**.
+When all sprint tickets are `done`, `./studio resume` shows **sprint review pending** and blocks further implementation until you approve.
 
 ## Studio-only improvements
 

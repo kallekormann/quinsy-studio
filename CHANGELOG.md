@@ -2,6 +2,18 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.7.0] — 2026-08-20
+
+### Sprint review boundary (autonomous execution)
+
+- ✅ **Mid-sprint:** agent implements all groomed sprint tickets without human checkpoints
+- ✅ **Sprint review:** human involvement when all sprint tickets are `done` (`./studio review` → `--approve`)
+- ✅ **Blocked:** `./studio move … implement` during review pending or after review until next sprint
+- ✅ **Blocked:** `./studio sprint` until review approved + retro complete
+- ✅ `./studio guard` returns `sprint_review` / `sprint_closed` for direction-change requests mid-sprint
+- ✅ `./studio resume` and focus banner show autonomous vs review-pending mode
+- ✅ Docs: [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md), [iterative-delivery.md](.quinsy-studio/process/iterative-delivery.md), [AGENTS.md](AGENTS.md)
+
 ## [1.6.0] — 2026-08-20
 
 ### Sprint human-in-the-loop (review, feedback, clarify)
