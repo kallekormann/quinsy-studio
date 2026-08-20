@@ -38,6 +38,10 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 
 Full guide: [`.quinsy-studio/GETTING_STARTED.md`](.quinsy-studio/GETTING_STARTED.md) · Agent contract: [`AGENTS.md`](AGENTS.md)
 
+## Using in Cursor
+
+Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `focus` → `resume`. You approve gates; the agent runs `./studio` and fills artifacts. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
+
 ## Library-first (UI + code)
 
 Before writing new code, pull from the studio library:
@@ -91,6 +95,8 @@ quinsy-studio/
 |-------|----------|
 | Operations manual | [.quinsy-studio/README.md](.quinsy-studio/README.md) |
 | Getting started | [.quinsy-studio/GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
+| Using in Cursor | [.quinsy-studio/README.md §4](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor) |
+| External skills | [.quinsy-studio/README.md §8](.quinsy-studio/README.md#8-managing-skills) |
 | Lifecycle | [process/lifecycle.md](.quinsy-studio/process/lifecycle.md) |
 | Human gates 0–2 | [process/gates.md](.quinsy-studio/process/gates.md) |
 | Ticket workflow (9 steps) | [process/ticket-workflow.md](.quinsy-studio/process/ticket-workflow.md) |

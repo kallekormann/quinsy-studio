@@ -12,15 +12,16 @@
 1. [What is Quinsy Studio?](#1-what-is-quinsy-studio)
 2. [Folder Structure](#2-folder-structure)
 3. [Quick Start: Launch a Project (5 Minutes)](#3-quick-start-launch-a-project)
-4. [Where Is What? (Templates, PRDs, Tickets)](#4-where-is-what)
-5. [The Studio Process (Dual-Speed)](#5-the-studio-process-dual-speed)
-6. [All CLI Commands](#6-all-cli-commands)
-7. [Managing Skills (Internal + External)](#7-managing-skills)
-8. [Optimizing the Process (Learning Loop)](#8-optimizing-the-process)
-9. [The Dual-Loop: Studio Learns from Projects](#9-the-dual-loop)
-10. [Studio Library: Reusable Assets](#10-studio-library)
-11. [Quality Assurance & Gates](#11-quality-assurance)
-12. [Troubleshooting](#12-troubleshooting)
+4. [Using Quinsy Studio in Cursor](#4-using-quinsy-studio-in-cursor)
+5. [Where Is What? (Templates, PRDs, Tickets)](#5-where-is-what)
+6. [The Studio Process (Dual-Speed)](#6-the-studio-process-dual-speed)
+7. [All CLI Commands](#7-all-cli-commands)
+8. [Managing Skills (Internal + External)](#8-managing-skills)
+9. [Optimizing the Process (Learning Loop)](#9-optimizing-the-process)
+10. [The Dual-Loop: Studio Learns from Projects](#10-the-dual-loop)
+11. [Studio Library: Reusable Assets](#11-studio-library)
+12. [Quality Assurance & Gates](#12-quality-assurance)
+13. [Troubleshooting](#13-troubleshooting)
 
 ---
 
@@ -159,7 +160,60 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 
 ---
 
-## 4. Where Is What?
+## 4. Using Quinsy Studio in Cursor
+
+Quinsy Studio is designed to run **inside Cursor** with the agent driving `./studio` CLI commands.
+
+### Setup (once)
+
+1. Clone/open this repo in Cursor (`kallekormann/quinsy-studio`).
+2. **Always-on rules** load from [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc).
+3. The agent reads [`AGENTS.md`](../AGENTS.md) + [process/agent-context.md](process/agent-context.md) at session start.
+
+No separate plugin — the repo *is* the integration.
+
+### Session ritual
+
+```bash
+./studio verify-worlds
+./studio focus <project>
+./studio resume <project>
+```
+
+`resume` prints the **next action only** — the agent should not skip ahead of human gates.
+
+### What you say in chat
+
+| You want | Example prompt |
+|----------|----------------|
+| New project from PRD | *"Bootstrap nudge"* (after PRD in `intake/`) |
+| Continue current work | *"Resume nudge"* / *"Back on track"* |
+| Approve a gate | *"Gate 0 looks good — approve"* → agent runs `./studio approve …` |
+| Off-sprint idea | Agent should `./studio guard` → ticket or `learn`, not silent code |
+| Studio improvement | *"Log a tooling gap: …"* → `./studio learn` (LO-* backlog) |
+
+### Two git worlds in Cursor
+
+| World | Path | Commit from |
+|-------|------|-------------|
+| Studio HQ | `.quinsy-studio/`, `AGENTS.md` | Studio repo root |
+| Project | `projects/<name>/` | **Inside** `projects/<name>/` (separate `.git`) |
+
+`projects/` and `intake/` are gitignored in the studio repo. Run `./studio verify-worlds` if unsure.
+
+### Agent vs. you
+
+| You (human) | Agent |
+|-------------|-------|
+| Approve gates 0–2 | Fill definitions, blueprint, design artifacts |
+| Review PRs / mocks | Run CLI, match tickets to skills |
+| Final product decisions | Library pull before coding; promote when generic |
+
+See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflow.
+
+---
+
+## 5. Where Is What?
 
 | What | Where? |
 |------|--------|
@@ -185,7 +239,7 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 
 ---
 
-## 5. The Studio Process (Dual-Speed)
+## 6. The Studio Process (Dual-Speed)
 
 ### CORE Mode (New Platforms, Complex Systems)
 
@@ -210,7 +264,7 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 
 ---
 
-## 6. All CLI Commands
+## 7. All CLI Commands
 
 ```bash
 # Project management
@@ -266,7 +320,7 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 
 ---
 
-## 7. Managing Skills
+## 8. Managing Skills
 
 ### Internal Skills (`.quinsy-studio/teams/`)
 
@@ -313,9 +367,45 @@ Then check `INDEX.md` and update the conflict matrix
 **Important:** External skills are ALWAYS subordinate to the internal anti-slop protocol and
 Zero-Data Architecture. They are tools, not authority.
 
+### Adding a new external skill
+
+1. **Declare the source** in [`.quinsy-studio/skill-dependencies.json`](skill-dependencies.json):
+
+```json
+"my_domain": {
+  "repo": "github:owner/repo@main",
+  "install": "npx skills add owner/repo",
+  "why": "One-line reason for the studio",
+  "team": "05-growth-marketing-content",
+  "usage": "when to activate (trigger words or workflow)"
+}
+```
+
+2. **Import into the studio** (git clone → `.quinsy-studio/external-skills/<my_domain>/`):
+
+```bash
+./studio update-skills my_domain    # single domain
+./studio update-skills              # all domains
+./studio update-skills --list         # show declared sources
+```
+
+3. **Register for ticket matching** — add a row in [`teams/skill-registry.md`](teams/skill-registry.md) (external source → internal team/skill, activation triggers).
+
+4. **Check conflicts** — review/update [`knowledge-base/external_skills_conflict_matrix.md`](knowledge-base/external_skills_conflict_matrix.md) if the external skill contradicts anti-slop or Zero-Data rules.
+
+5. **Verify** — `python3 .quinsy-studio/studio-tools/test_skill_matching.py`
+
+**Optional — install into your local Cursor agent** (not the studio repo):
+
+```bash
+./studio update-skills --npx my_domain
+```
+
+Uses `npx skills add` per the `install` field (e.g. into `~/.cursor/skills`). Default studio import uses **git clone** so skills are versioned with the project and referenced from `external-skills/INDEX.md`.
+
 ---
 
-## 8. Optimizing the Process
+## 9. Optimizing the Process
 
 The studio optimizes itself via **Learning Items** (LO-*):
 
@@ -343,7 +433,7 @@ Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`,
 
 ---
 
-## 9. The Dual-Loop: Studio Learns from Projects
+## 10. The Dual-Loop: Studio Learns from Projects
 
 ### Loop 1: Local Project Loop (Project World)
 
@@ -380,7 +470,7 @@ The next project starts with `./studio library pull` from an improved library.
 
 ---
 
-## 10. Studio Library
+## 11. Studio Library
 
 The reusable assets are located in `.quinsy-studio/studio-library/`:
 
@@ -404,7 +494,7 @@ studio-library/
 
 See [library_registry.md](studio-library/library_registry.md).
 
-## 11. Quality Assurance
+## 12. Quality Assurance
 
 | Check | When | How |
 |-------|------|-----|
@@ -423,7 +513,7 @@ See [library_registry.md](studio-library/library_registry.md).
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 | Problem | Solution |
 |---------|----------|

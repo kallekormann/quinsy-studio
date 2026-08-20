@@ -3,6 +3,24 @@
 > Canonical workflow: intake → architecture → design → implementation.  
 > Root overview: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md)
 
+## Using Quinsy Studio in Cursor
+
+1. Open the **quinsy-studio** repo in Cursor (not a project subfolder alone).
+2. Cursor loads [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc) automatically.
+3. Start each session:
+
+```bash
+./studio verify-worlds
+./studio focus <project>
+./studio resume <project>
+```
+
+4. Talk to the agent in plain language — e.g. *"Bootstrap nudge"*, *"Resume nudge"*, *"Approve gate 0"*. The agent runs `./studio` commands; you approve gates and product decisions.
+
+5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root.
+
+Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in-cursor) · [agent-context](process/agent-context.md)
+
 ## Session ritual (IDE + agent)
 
 ```bash
@@ -88,6 +106,18 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 | Two git worlds | [process/worlds.md](process/worlds.md) · `./studio verify-worlds` |
 | Off-sprint work | `./studio guard <p> "request"` |
 | Ticket workflow | [process/ticket-workflow.md](process/ticket-workflow.md) |
+
+## External skills (optional)
+
+Subscribe to best-in-class skill packages (design, marketing, gamedev, compliance):
+
+```bash
+./studio update-skills --list
+./studio update-skills              # import all into .quinsy-studio/external-skills/
+./studio update-skills design       # one domain only
+```
+
+To **add** a new source: edit `skill-dependencies.json` → `./studio update-skills <name>` → register in `teams/skill-registry.md`. Full guide: [Managing Skills](README.md#8-managing-skills).
 
 ## Studio-only improvements
 
