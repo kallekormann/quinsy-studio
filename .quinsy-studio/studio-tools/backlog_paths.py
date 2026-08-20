@@ -174,6 +174,9 @@ def list_unscheduled_backlog(project: str) -> List[Dict]:
         meta = read_ticket_meta(path)
         if meta.get("sprint"):
             continue
+        status = (meta.get("status") or "backlog").lower()
+        if status in ("cancelled", "done", "superseded"):
+            continue
         meta["from_feedback"] = "## Source feedback" in meta.get("body", "")
         tickets.append(meta)
     return tickets
