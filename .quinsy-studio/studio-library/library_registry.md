@@ -32,6 +32,8 @@
 | `package-auth` | `packages/auth/` | `packages/auth/` | `auth` |
 | `package-billing` | `packages/billing/` | `packages/billing/` | `billing` |
 | `package-feature-gating` | `packages/feature-gating/` | `packages/feature-gating/` | `feature-gating`, `gating` |
+| `package-color-extraction` | `packages/color-extraction/` | `packages/color-extraction/` | `color-extraction`, `palette`, `extract-palette` |
+| `package-qa-smoke` | `scripts/qa/` | `packages/qa-smoke/` | `qa-smoke`, `smoke-routes`, `smoke` |
 | `sticker-sheet` | `design/prototype/app/sticker-sheet/` | `ui/sticker-sheet/` | (reference only) |
 
 ---

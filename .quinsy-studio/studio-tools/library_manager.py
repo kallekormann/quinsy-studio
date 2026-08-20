@@ -323,7 +323,11 @@ def promote_path(
 
     if asset_path_norm.startswith("packages/"):
         name = asset_path_norm.split("/")[1]
-        kind = f"package-{name}" if name in ("auth", "billing", "feature-gating") else "package"
+        kind = (
+            f"package-{name}"
+            if name in ("auth", "billing", "feature-gating", "color-extraction", "qa-smoke")
+            else "package"
+        )
         dest = STUDIO_LIBRARY / asset_path_norm
         if dest.exists() and not force:
             return {"error": f"Exists in library (use --force): {asset_path_norm}", "promoted": []}

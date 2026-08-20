@@ -1,26 +1,21 @@
 # Studio Library — Sticker Sheet Catalog
 
-Updated: 2026-08-20  
-**Source:** studio-owned generic artifacts (not project copies)
+Updated: 2026-08-20
+Gate 2 validated project: `moody`
+**Components listed are studio-owned generics.**
 
-## Atoms
+## Components
 
-- `button` — Button
-- `input` — Input
-- `badge` — Badge
-- `icon` — CheckIcon, PlusIcon, SparkIcon
+- `badge`
+- `button`
+- `checklist-item`
+- `icon`
+- `inline-form`
+- `input`
+- `pageshell`
+- `palette-strip`
 
-## Molecules
+## Packages
 
-- `inline-form` — InlineForm
-- `checklist-item` — ChecklistItem
-
-## Organisms
-
-- `pageshell` — PageShell
-
-## Tokens
-
-- `ui/tokens/design-tokens.json`
-- `ui/tokens/design-tokens.css`
-- `ui/tokens/tailwind.preset.ts`
+- `color-extraction` — dominant-color palette from images (browser + vitest)
+- `qa-smoke` — Playwright smoke-routes runner + JSON config template

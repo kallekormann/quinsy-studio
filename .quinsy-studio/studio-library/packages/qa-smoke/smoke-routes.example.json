@@ -1,0 +1,19 @@
+{
+  "$schema": "./smoke-routes.schema.json",
+  "description": "Example smoke routes — copy to docs/smoke-routes.json and adapt paths + copy.",
+  "host": "127.0.0.1",
+  "port": 3456,
+  "startCwd": ".",
+  "startCommand": ["npx", "next", "start", "-p", "{port}", "-H", "{host}"],
+  "routes": [
+    {
+      "path": "/",
+      "expectText": "Welcome"
+    },
+    {
+      "path": "/app",
+      "waitForUrl": "/app/.+",
+      "expectSelector": "[data-testid=\"main-canvas\"]"
+    }
+  ]
+}

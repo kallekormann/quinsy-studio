@@ -55,6 +55,16 @@
       "library_path": "packages/feature-gating/",
       "aliases": ["feature-gating", "gating", "feature-gating"]
     },
+    "package-color-extraction": {
+      "project_path": "packages/color-extraction/",
+      "library_path": "packages/color-extraction/",
+      "aliases": ["color-extraction", "palette", "extract-palette"]
+    },
+    "package-qa-smoke": {
+      "project_path": "scripts/qa/",
+      "library_path": "packages/qa-smoke/",
+      "aliases": ["qa-smoke", "smoke-routes", "smoke"]
+    },
     "sticker-sheet": {
       "project_path": "design/prototype/app/sticker-sheet/",
       "library_path": "ui/sticker-sheet/",

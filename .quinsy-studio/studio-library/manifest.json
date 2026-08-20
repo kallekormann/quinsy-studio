@@ -116,6 +116,33 @@
       "source_project": "studio",
       "promoted": "2026-08-19",
       "title": "Feature gating stub"
+    },
+    {
+      "name": "color-extraction",
+      "kind": "package-color-extraction",
+      "path": "packages/color-extraction/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Dominant-color palette extraction (browser + test)"
+    },
+    {
+      "name": "qa-smoke",
+      "kind": "package-qa-smoke",
+      "path": "packages/qa-smoke/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Playwright smoke-routes runner + JSON template"
+    },
+    {
+      "name": "palette-strip",
+      "kind": "ui-molecule",
+      "path": "ui/components/palette-strip/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-20",
+      "title": "Horizontal color swatch strip"
     }
   ],
   "last_promotion": {
