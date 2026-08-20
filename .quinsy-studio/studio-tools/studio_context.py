@@ -86,20 +86,25 @@ def _load_sprint_tickets(project: str, sprint: str) -> List[Dict]:
 
 
 def _load_open_tickets(project: str) -> List[Dict]:
-    root = PROJECTS_DIR / project
-    open_dir = root / "backlog" / "open"
+    from backlog_paths import queue_ticket_paths, read_ticket_meta
+
     tickets: List[Dict] = []
-    if not open_dir.exists():
-        return tickets
-    prefix = project[:4].upper()
-    for f in open_dir.glob(f"{prefix}-*.md"):
-        text = f.read_text(encoding="utf-8", errors="ignore")
-        title_match = re.search(r"^title:\s*(.+)$", text, re.MULTILINE)
-        tid_match = re.search(r"^id:\s*(\S+)", text, re.MULTILINE)
+    for path in queue_ticket_paths(project):
+        meta = read_ticket_meta(path)
         tickets.append({
-            "id": tid_match.group(1) if tid_match else f.stem,
-            "title": title_match.group(1).strip() if title_match else f.stem,
+            "id": meta.get("id", path.stem),
+            "title": meta.get("title", path.stem),
         })
+    # Legacy open/ folder
+    open_dir = PROJECTS_DIR / project / "backlog" / "open"
+    if open_dir.exists():
+        prefix = project[:4].upper()
+        for f in open_dir.glob(f"{prefix}-*.md"):
+            meta = read_ticket_meta(f)
+            tickets.append({
+                "id": meta.get("id", f.stem),
+                "title": meta.get("title", f.stem),
+            })
     return tickets
 
 

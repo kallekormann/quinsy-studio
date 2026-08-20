@@ -2,6 +2,18 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.8.0] — 2026-08-20
+
+### Product backlog layout + sprint scope approval
+
+- ✅ **Product backlog** = `projects/<p>/backlog/*.md` (replaces confusing `backlog/open/`)
+- ✅ Sprint folders simplified: `backlog/` → `implement/` → `done/` (+ `blocked`)
+- ✅ Legacy folders (`analyze`, `plan`, `design`, `qa`, `review`, `reuse`, `open`) auto-migrated on `./studio sprint`
+- ✅ `./studio sprint` writes **scope proposal** — does not tag tickets until human approves
+- ✅ `./studio sprint <p> --approve-scope` — human gate before groom/implement
+- ✅ Immature tickets flagged in `scope-proposal.md` + `planning-questions.md` (stay in product backlog)
+- ✅ Docs: [backlog-model.md](.quinsy-studio/process/backlog-model.md)
+
 ## [1.7.2] — 2026-08-20
 
 ### Feedback dedupe, backlog-first tickets, sprint planning maturity

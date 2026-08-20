@@ -55,21 +55,25 @@ While sprint tickets are not all `done`:
 Sprint review feedback (once per theme)
   → ./studio feedback (deduped)
   → ./studio clarify --approve
-  → ./studio ticket --from-feedback  → backlog (no sprint tag)
+  → ./studio ticket --from-feedback  → product backlog (backlog/*.md, no sprint tag)
   → ./studio review --approve → retro
-  → ./studio sprint  → assigns mature backlog + writes planning-questions.md for immature
+  → ./studio sprint  → scope proposal (mature tickets proposed; immature flagged)
+  → ./studio sprint --approve-scope  → human approves sprint scope
   → ./studio groom --approve → implement
 ```
 
 | Step | What happens |
 |------|----------------|
 | **Feedback** | One FB item per theme; similar text merges to existing FB-NNN |
-| **Ticket** | `--from-feedback` creates backlog ticket **without** `sprint:` |
-| **Sprint plan** | `./studio sprint` pulls from backlog (feedback tickets first), skips immature |
-| **Immature** | `sprints/SPRINT-NN/planning-questions.md` — agent asks human, then updates ticket |
+| **Ticket** | `--from-feedback` creates ticket in **product backlog** (`backlog/`) **without** `sprint:` |
+| **Sprint plan** | `./studio sprint` proposes mature tickets in `scope-proposal.md`; immature stay in backlog |
+| **Scope approval** | Human runs `./studio sprint --approve-scope` after reviewing proposal |
+| **Immature** | `planning-questions.md` — owner (design/arch/eng) fills gaps before next planning |
 
 | Step | Who | Command |
 |------|-----|---------|
+| **Scope proposal** | Agent | `./studio sprint <p>` → read `scope-proposal.md` |
+| **Approve scope** | **Human** | `./studio sprint <p> --approve-scope` |
 | **Sprint groom** | **Human** + agent | `./studio groom <p> --approve` before first `implement` |
 | **Sprint work** | **Agent only** | `./studio move <p> <ID> implement` … `done` (all sprint tickets) |
 | **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |

@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
 """
-Sprint planning: assign mature backlog tickets, defer immature ones with questions.
+Sprint planning: propose scope from product backlog, human approves, then assign.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-STUDIO_ROOT = Path(__file__).parent.parent.parent
-PROJECTS_DIR = STUDIO_ROOT / "projects"
+from backlog_paths import (
+    PROJECTS_DIR,
+    list_unscheduled_backlog,
+    read_ticket_meta,
+)
 
 GENERIC_ACCEPTANCE = re.compile(
     r"^['\"].+['\"] is implemented$|^['\"].+['\"] has tests$",
@@ -20,22 +24,9 @@ GENERIC_ACCEPTANCE = re.compile(
 PRIORITY_ORDER = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
 
 
-def _read_ticket(path: Path) -> Dict:
-    text = path.read_text(encoding="utf-8")
-    meta: Dict = {"path": path, "body": text, "file": path}
-    for key in ("id", "title", "priority", "phase", "estimate", "sprint", "status"):
-        match = re.search(rf"^{key}:\s*(.+)$", text, re.MULTILINE)
-        if match:
-            meta[key] = match.group(1).strip().strip("'\"")
-    tid_match = re.match(r"^([A-Z]+-\d+)", path.name)
-    if tid_match and "id" not in meta:
-        meta["id"] = tid_match.group(1)
-    return meta
-
-
 def _extract_acceptance_criteria(body: str) -> List[str]:
     section = re.search(
-        r"##\s*Acceptance Criteria.*?\n(.*?)(?:\n## |\Z)",
+        r"##\s*(?:\d+\.\s*)?Acceptance Criteria.*?\n(.*?)(?:\n## |\Z)",
         body,
         re.DOTALL | re.I,
     )
@@ -53,7 +44,7 @@ def _extract_acceptance_criteria(body: str) -> List[str]:
 
 def assess_ticket_maturity(ticket_path: Path) -> Tuple[bool, List[str], Dict]:
     """Return (is_mature, open_questions, meta)."""
-    meta = _read_ticket(ticket_path)
+    meta = read_ticket_meta(ticket_path)
     questions: List[str] = []
     body = meta.get("body", "")
     acceptance = _extract_acceptance_criteria(body)
@@ -77,36 +68,20 @@ def assess_ticket_maturity(ticket_path: Path) -> Tuple[bool, List[str], Dict]:
     return len(questions) == 0, questions, meta
 
 
-def list_open_backlog_tickets(project: str) -> List[Dict]:
-    """Open tickets not yet assigned to a sprint."""
-    open_dir = PROJECTS_DIR / project / "backlog" / "open"
-    if not open_dir.exists():
-        return []
-    tickets: List[Dict] = []
-    prefix = project[:4].upper()
-    for path in sorted(open_dir.glob(f"{prefix}-*.md")):
-        meta = _read_ticket(path)
-        if meta.get("sprint"):
-            continue
-        meta["from_feedback"] = "## Source feedback" in meta.get("body", "")
-        tickets.append(meta)
-    return tickets
-
-
 def _priority_rank(priority: str) -> int:
     return PRIORITY_ORDER.get((priority or "P1").upper(), 9)
 
 
-def assign_backlog_to_sprint(
+def propose_sprint_scope(
     project: str,
     sprint_name: str,
     max_tickets: int = 6,
 ) -> Dict:
     """
-    Tag mature backlog tickets with sprint. Defer immature tickets with questions.
-    Prioritize feedback-sourced tickets, then P0/P1.
+    Assess backlog and build a scope proposal. Does NOT write sprint: tags yet.
+  Human approves via ./studio sprint <p> --approve-scope.
     """
-    candidates = list_open_backlog_tickets(project)
+    candidates = list_unscheduled_backlog(project)
     candidates.sort(
         key=lambda t: (
             0 if t.get("from_feedback") else 1,
@@ -115,7 +90,7 @@ def assign_backlog_to_sprint(
         ),
     )
 
-    assigned: List[Dict] = []
+    proposed: List[Dict] = []
     deferred_immature: List[Dict] = []
     deferred_capacity: List[Dict] = []
     planning_questions: List[Dict] = []
@@ -133,19 +108,16 @@ def assign_backlog_to_sprint(
                     "questions": questions,
                 },
             )
-            planning_questions.append({"id": tid, "title": meta.get("title", ""), "questions": questions})
+            planning_questions.append(
+                {"id": tid, "title": meta.get("title", ""), "questions": questions},
+            )
             continue
 
-        if len(assigned) >= max_tickets:
+        if len(proposed) >= max_tickets:
             deferred_capacity.append({"id": tid, "title": meta.get("title", path.stem)})
             continue
 
-        content = path.read_text(encoding="utf-8")
-        if "sprint:" not in content:
-            content = content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
-            path.write_text(content)
-
-        assigned.append(
+        proposed.append(
             {
                 "id": tid,
                 "title": meta.get("title", path.stem),
@@ -157,19 +129,133 @@ def assign_backlog_to_sprint(
         )
 
     return {
-        "assigned": assigned,
+        "sprint": sprint_name,
+        "proposed": proposed,
         "deferred_immature": deferred_immature,
         "deferred_capacity": deferred_capacity,
         "planning_questions": planning_questions,
     }
 
 
-def write_planning_questions_report(project: str, sprint: str, planning: Dict) -> Optional[Path]:
-    questions = planning.get("planning_questions") or []
+def apply_sprint_scope(project: str, sprint_name: str, proposal: Dict) -> int:
+    """Tag proposed tickets with sprint: after human --approve-scope. Returns count."""
+    count = 0
+    for item in proposal.get("proposed", []):
+        tid = item["id"]
+        for path in list_unscheduled_backlog(project):
+            if path.get("id") != tid:
+                continue
+            file_path = path["path"]
+            content = file_path.read_text(encoding="utf-8")
+            if "sprint:" not in content:
+                content = content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
+                file_path.write_text(content, encoding="utf-8")
+                count += 1
+            break
+        else:
+            # find by id in queue
+            from backlog_paths import queue_ticket_paths
+
+            for file_path in queue_ticket_paths(project):
+                if file_path.name.startswith(f"{tid}-"):
+                    content = file_path.read_text(encoding="utf-8")
+                    if "sprint:" not in content:
+                        content = content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
+                        file_path.write_text(content, encoding="utf-8")
+                        count += 1
+                    break
+    return count
+
+
+def write_scope_proposal(project: str, sprint: str, proposal: Dict) -> Path:
+    sprint_dir = PROJECTS_DIR / project / "sprints" / sprint
+    sprint_dir.mkdir(parents=True, exist_ok=True)
+    path = sprint_dir / "scope-proposal.md"
+    proposed = proposal.get("proposed", [])
+    immature = proposal.get("deferred_immature", [])
+    overflow = proposal.get("deferred_capacity", [])
+
+    lines = [
+        f"# Sprint Scope Proposal — {sprint}",
+        "",
+        f"**Project:** {project}",
+        f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        f"**Status:** pending human approval",
+        "",
+        "Human: review this list, then run:",
+        f"`./studio sprint {project} --approve-scope`",
+        "",
+        "## Proposed for this sprint (mature)",
+        "",
+        "| Ticket | Title | Priority | Estimate |",
+        "|--------|-------|----------|----------|",
+    ]
+    if proposed:
+        for t in proposed:
+            lines.append(
+                f"| {t['id']} | {t.get('title', '')[:50]} | {t.get('priority', '?')} | {t.get('estimate', '?')} |",
+            )
+    else:
+        lines.append("| (none) | — | — | — |")
+
+    lines.extend(
+        [
+            "",
+            "## Not ready — immature (stay in product backlog)",
+            "",
+            "These tickets need design/architecture/engineering input before they can enter a sprint.",
+            "Update the ticket acceptance criteria, or run `./studio clarify` on linked feedback.",
+            "",
+        ],
+    )
+    if immature:
+        for t in immature:
+            lines.append(f"### {t['id']} — {t.get('title', '')}")
+            for q in t.get("questions", []):
+                lines.append(f"- [ ] {q}")
+            lines.append(
+                "- [ ] **Human decision:** defer / clarify / update blueprint",
+            )
+            lines.append("")
+    else:
+        lines.append("(none)")
+
+    if overflow:
+        lines.extend(["", "## Deferred — capacity (next sprint)", ""])
+        for t in overflow:
+            lines.append(f"- {t['id']}: {t.get('title', '')[:60]}")
+
+    lines.extend(
+        [
+            "",
+            "## Human checklist",
+            "",
+            "- [ ] Proposed tickets match sprint goal",
+            "- [ ] Immature tickets have an owner action (defer vs clarify)",
+            "- [ ] `./studio sprint {project} --approve-scope`",
+            "- [ ] `./studio groom {project} --approve`",
+            "",
+        ],
+    )
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+    json_path = sprint_dir / "scope-proposal.json"
+    json_path.write_text(json.dumps(proposal, indent=2), encoding="utf-8")
+    return path
+
+
+def load_scope_proposal(project: str, sprint: str) -> Optional[Dict]:
+    json_path = PROJECTS_DIR / project / "sprints" / sprint / "scope-proposal.json"
+    if not json_path.exists():
+        return None
+    return json.loads(json_path.read_text(encoding="utf-8"))
+
+
+def write_planning_questions_report(project: str, sprint: str, proposal: Dict) -> Optional[Path]:
+    questions = proposal.get("planning_questions") or []
     if not questions:
         return None
     sprint_dir = PROJECTS_DIR / project / "sprints" / sprint
-    sprint_dir.mkdir(parents=True, exist_ok=True)
     path = sprint_dir / "planning-questions.md"
     lines = [
         f"# Sprint Planning Questions — {sprint}",
@@ -177,30 +263,35 @@ def write_planning_questions_report(project: str, sprint: str, planning: Dict) -
         f"**Project:** {project}",
         f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}",
         "",
-        "These backlog tickets were **not** assigned — they need clarification before the sprint.",
-        "The agent should ask the human, then update tickets or run `./studio clarify` on linked feedback.",
+        "These tickets stay in **product backlog** (`backlog/`) until mature.",
+        "Owner (design / architecture / engineering) fills gaps, then re-run planning.",
         "",
     ]
     for item in questions:
         lines.append(f"## {item['id']} — {item.get('title', '')}")
         for q in item.get("questions", []):
             lines.append(f"- [ ] {q}")
+        lines.append("- [ ] Human: defer to later sprint OR update ticket and re-plan")
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
 
 
-def format_planning_brief(planning: Dict) -> str:
-    assigned = planning.get("assigned", [])
-    immature = planning.get("deferred_immature", [])
-    overflow = planning.get("deferred_capacity", [])
+def format_planning_brief(proposal: Dict) -> str:
+    proposed = proposal.get("proposed", [])
+    immature = proposal.get("deferred_immature", [])
+    overflow = proposal.get("deferred_capacity", [])
     lines = [
-        f"  Assigned: {len(assigned)} ticket(s)",
-        f"  Deferred (immature): {len(immature)}",
+        f"  Proposed (mature): {len(proposed)} ticket(s)",
+        f"  Stay in backlog (immature): {len(immature)}",
         f"  Deferred (capacity): {len(overflow)}",
     ]
+    if proposed:
+        lines.append("  Proposed for sprint:")
+        for t in proposed[:8]:
+            lines.append(f"    • {t['id']}: {t.get('title', '')[:50]}")
     if immature:
-        lines.append("  Immature backlog tickets (ask human before next sprint):")
+        lines.append("  Immature — need clarification before any sprint:")
         for t in immature[:6]:
             lines.append(f"    • {t['id']}: {t.get('title', '')[:50]}")
     if overflow:
@@ -208,3 +299,19 @@ def format_planning_brief(planning: Dict) -> str:
         for t in overflow[:4]:
             lines.append(f"    • {t['id']}")
     return "\n".join(lines)
+
+
+# Backward-compatible alias used during transition
+def assign_backlog_to_sprint(project: str, sprint_name: str, max_tickets: int = 6) -> Dict:
+    proposal = propose_sprint_scope(project, sprint_name, max_tickets=max_tickets)
+    apply_sprint_scope(project, sprint_name, proposal)
+    return {
+        "assigned": proposal["proposed"],
+        "deferred_immature": proposal["deferred_immature"],
+        "deferred_capacity": proposal["deferred_capacity"],
+        "planning_questions": proposal["planning_questions"],
+    }
+
+
+def list_open_backlog_tickets(project: str) -> List[Dict]:
+    return list_unscheduled_backlog(project)

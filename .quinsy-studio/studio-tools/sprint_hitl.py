@@ -17,10 +17,14 @@ from typing import Dict, List, Optional, Tuple
 STUDIO_ROOT = Path(__file__).parent.parent.parent
 PROJECTS_DIR = STUDIO_ROOT / "projects"
 
-BACKLOG_STATUSES = [
-    "open", "plan", "analyze", "design", "implement",
-    "qa", "review", "reuse", "blocked", "done",
-]
+from backlog_paths import (
+    QUEUE_STATUS,
+    WORKFLOW_FOLDERS,
+    all_ticket_locations,
+    read_ticket_meta,
+)
+
+BACKLOG_STATUSES = [QUEUE_STATUS, *WORKFLOW_FOLDERS]
 
 FEEDBACK_RAW = "raw"
 FEEDBACK_CLARIFYING = "clarifying"
@@ -89,28 +93,19 @@ def next_feedback_id(project: str, sprint: str) -> str:
 def list_sprint_tickets(project: str, sprint: str) -> List[Dict]:
     """All backlog tickets tagged with this sprint, with current folder status."""
     root = project_dir(project)
-    prefix = ticket_prefix(project)
     tickets: List[Dict] = []
 
-    for status in BACKLOG_STATUSES:
-        ticket_dir = root / "backlog" / status
-        if not ticket_dir.exists():
+    for path, folder_status in all_ticket_locations(project):
+        meta = read_ticket_meta(path)
+        if meta.get("sprint") != sprint:
             continue
-        for f in ticket_dir.glob(f"{prefix}-*.md"):
-            text = f.read_text(encoding="utf-8", errors="ignore")
-            sprint_match = re.search(r"^sprint:\s*(\S+)", text, re.MULTILINE)
-            if not sprint_match or sprint_match.group(1) != sprint:
-                continue
-            title_match = re.search(r"^title:\s*(.+)$", text, re.MULTILINE)
-            tid_match = re.search(r"^id:\s*(\S+)", text, re.MULTILINE)
-            prio_match = re.search(r"^priority:\s*(\S+)", text, re.MULTILINE)
-            tickets.append({
-                "id": tid_match.group(1) if tid_match else f.stem.split("-")[0] + "-" + f.stem.split("-")[1],
-                "title": title_match.group(1).strip() if title_match else f.stem,
-                "status": status,
-                "priority": prio_match.group(1) if prio_match else "?",
-                "file": str(f.relative_to(root)),
-            })
+        tickets.append({
+            "id": meta.get("id", path.stem),
+            "title": meta.get("title", path.stem),
+            "status": folder_status,
+            "priority": meta.get("priority", "?"),
+            "file": str(path.relative_to(root)),
+        })
     return sorted(tickets, key=lambda t: t["id"])
 
 
@@ -122,13 +117,14 @@ def sprint_ticket_summary(project: str, sprint: str) -> Dict:
     done = by_status.get("done", 0)
     total = len(tickets)
     in_progress = sum(
-        by_status.get(s, 0) for s in ("implement", "qa", "review", "reuse", "design", "analyze", "plan")
+        by_status.get(s, 0) for s in ("implement",)
     )
+    queued = by_status.get(QUEUE_STATUS, 0)
     return {
         "tickets": tickets,
         "total": total,
         "done": done,
-        "open": by_status.get("open", 0) + by_status.get("blocked", 0),
+        "open": queued + by_status.get("blocked", 0),
         "in_progress": in_progress,
         "by_status": by_status,
         "all_done": total > 0 and done == total,
@@ -141,6 +137,8 @@ def get_sprint_hitl(status: Dict) -> Dict:
         "review_pending_since": None,
         "last_review_at": None,
         "last_review_notes": None,
+        "scope_status": None,
+        "scope_approved_at": None,
         "groom_status": None,
         "groom_validated_at": None,
         "groom_approved_at": None,
@@ -217,6 +215,8 @@ def is_autonomous_sprint_execution(status: Dict, project: str) -> bool:
     if not sprint or needs_sprint_review(status) or is_sprint_closed(status, project):
         return False
     hitl = get_sprint_hitl(status)
+    if hitl.get("scope_status") != "approved":
+        return False
     if hitl.get("groom_status") != "approved":
         return False
     summary = sprint_ticket_summary(project, sprint)
@@ -241,10 +241,24 @@ def implement_blocked_reason(status: Dict, project: str) -> Optional[str]:
             )
         return (
             f"\n  ⏸  Sprint {sprint} is closed — plan and groom the next sprint before implementing.\n"
-            f"    ./studio groom {project}\n"
             f"    ./studio sprint {project}\n"
+            f"    ./studio sprint {project} --approve-scope\n"
             f"    ./studio groom {project} --approve"
         )
+    hitl = get_sprint_hitl(status)
+    if hitl.get("scope_status") not in (None, "approved") and sprint:
+        return (
+            f"\n  ⏸  Sprint scope pending approval for {sprint}.\n"
+            f"    Read sprints/{sprint}/scope-proposal.md\n"
+            f"    ./studio sprint {project} --approve-scope"
+        )
+    if hitl.get("scope_status") != "approved" and sprint:
+        summary = sprint_ticket_summary(project, sprint)
+        if summary["total"] > 0 and not summary["all_done"]:
+            return (
+                f"\n  ⏸  Approve sprint scope before implementing.\n"
+                f"    ./studio sprint {project} --approve-scope"
+            )
     return None
 
 
@@ -365,8 +379,9 @@ See [plan.md](plan.md)
 | Completion rate | {rate}% |
 
 ## What to try (human)
-- Run prototype: `cd projects/{project}/design/prototype && npm run dev`
-- Check RUNBOOK: `projects/{project}/RUNBOOK.md`
+- Run app: `cd projects/{project} && npm run dev` (use the port shown in the terminal)
+- Open **/mocks/today** or **/** on that port — shipped sprint work lives in the project root app
+- Gate-2 design mocks only: `cd projects/{project}/design/prototype && npm run dev` (not for sprint review after implementation)
 - Board: `./studio board {project}`
 
 ## Human review checklist

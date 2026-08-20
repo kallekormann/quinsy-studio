@@ -1,9 +1,32 @@
 # Quinsy Studio — Ticket Workflow
 
-> Every ticket goes through a strict 9-step workflow.
-> No step is skipped; every step is documented.
+> **Sprint HITL (after gate 2):** use the [product backlog model](backlog-model.md) — `backlog/` → `implement/` → `done/`.
+> The 9-step workflow below describes **quality gates inside a ticket**, not folder moves.
 
-## Workflow overview
+## Sprint ticket folders (canonical)
+
+| Folder | When |
+|--------|------|
+| `backlog/*.md` | Product backlog (unscheduled) or sprint-planned (has `sprint:` tag) |
+| `backlog/implement/` | Active sprint work |
+| `backlog/done/` | Completed |
+
+Create tickets:
+
+```bash
+./studio ticket <project> "<title>"   # → backlog/TICKET-NNN.md (status: backlog)
+```
+
+Move during sprint:
+
+```bash
+./studio move <project> TICKET-NNN implement
+./studio move <project> TICKET-NNN done
+```
+
+---
+
+## Legacy: 9-step workflow (quality gates, not folders)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -60,7 +83,7 @@
 | Aspect | Description |
 |--------|-------------|
 | **Action** | create ticket with all metadata |
-| **Output** | `<project>/backlog/open/TICKET-NNN-<slug>.md` |
+| **Output** | `<project>/backlog/TICKET-NNN-<slug>.md` |
 | **Responsible** | Project Manager |
 
 **Ticket template:**

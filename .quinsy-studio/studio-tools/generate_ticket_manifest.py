@@ -10,7 +10,7 @@ Usage:
   python3 generate_ticket_manifest.py nudge
 
 Output:
-  projects/<project>/backlog/open/TICKET-NNNN-<slug>.md
+  projects/<project>/backlog/TICKET-NNNN-<slug>.md
   projects/<project>/docs/ticket-manifest.json
 """
 
@@ -670,13 +670,14 @@ def write_ticket_files(tickets: List[Dict], project: str):
     tickets = assign_sequential_ids(tickets, project)
     
     # Tickets liegen im Projekt-Backlog
-    backlog_open = PROJECTS_DIR / project / "backlog" / "open"
-    backlog_open.mkdir(parents=True, exist_ok=True)
+    backlog_queue = PROJECTS_DIR / project / "backlog"
+    backlog_queue.mkdir(parents=True, exist_ok=True)
     
     for ticket in tickets:
         slug = re.sub(r'[^a-z0-9]+', '-', ticket["title"].lower())[:50]
         filename = f"{ticket['id']}-{slug}.md"
-        filepath = backlog_open / filename
+        filepath = backlog_queue / filename
+        ticket["status"] = "backlog"
         
         # Neues Schema: Rolle, Ist/Soll, Constraints, BDD, DoD
         content = render_ticket_markdown(ticket)

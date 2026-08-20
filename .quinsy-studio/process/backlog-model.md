@@ -1,0 +1,63 @@
+# Product Backlog Model (Sprint HITL)
+
+> After gate 2, tickets use a **simple folder model** — not the legacy 9-step Kanban folders.
+
+## Folders
+
+| Location | Meaning |
+|----------|---------|
+| `projects/<p>/backlog/*.md` | **Product backlog** — unscheduled tickets (`status: backlog`, no `sprint:` tag) |
+| `projects/<p>/backlog/*.md` + `sprint: SPRINT-NN` | **Sprint planned** — tagged, still in backlog until implementation starts |
+| `projects/<p>/backlog/implement/` | **In progress** — current sprint execution |
+| `projects/<p>/backlog/done/` | **Completed** |
+| `projects/<p>/backlog/blocked/` | **Blocked** — waiting on human |
+
+### Retired folders (legacy)
+
+`open`, `analyze`, `plan`, `design`, `qa`, `review`, `reuse` — migrated to the layout above on `./studio sprint` or `./studio focus`.
+
+**Do not use** `backlog/open/` for new tickets. The product backlog **is** `backlog/` (ticket files at the root of that directory).
+
+## Sprint flow
+
+```
+Product backlog (backlog/*.md, no sprint tag)
+  → ./studio sprint <p>           # proposes scope (scope-proposal.md)
+  → Human approves scope
+  → ./studio sprint <p> --approve-scope
+  → ./studio groom <p> --approve
+  → backlog → implement → done   (autonomous mid-sprint)
+  → ./studio review --approve
+  → retro → next sprint
+```
+
+### Scope proposal
+
+`./studio sprint` writes:
+
+- `sprints/SPRINT-NN/scope-proposal.md` — human-readable proposed tickets + immature list
+- `sprints/SPRINT-NN/planning-questions.md` — tickets **not ready** (need design/architecture/engineering input)
+
+**Immature tickets stay in product backlog** until acceptance criteria are specific enough.
+
+Human checklist:
+
+1. Review proposed tickets
+2. Decide what to do with immature tickets (defer, clarify, update blueprint)
+3. `./studio sprint <p> --approve-scope`
+4. `./studio groom <p> --approve`
+
+## Ticket lifecycle (sprint HITL)
+
+```
+backlog/  →  implement/  →  done/
+```
+
+The 9-step workflow (analyze, plan, design, qa, review, reuse) remains as **quality gates inside implementation** (tests, gate, reuse on `move … done`) — not as folder moves.
+
+## Studio HQ vs project
+
+| World | Backlog path | Folders |
+|-------|--------------|---------|
+| Studio LO items | `.quinsy-studio/backlog/open/` | open, done, blocked |
+| Project tickets | `projects/<p>/backlog/` | backlog root + implement, done, blocked |

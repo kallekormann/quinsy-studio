@@ -61,14 +61,25 @@ def _parse_ticket_meta(path: Path) -> Dict:
 def _collect_sprint_tickets(project_dir: Path, sprint: str) -> List[Dict]:
     tickets: List[Dict] = []
     backlog = project_dir / "backlog"
-    for folder in ("open", "implement", "qa", "review", "done", "blocked"):
+    if not backlog.exists():
+        return tickets
+    prefix_match = re.compile(r"^[A-Z]+-\d+")
+    # Product backlog queue (backlog/*.md)
+    for f in backlog.glob("*.md"):
+        if not prefix_match.match(f.name):
+            continue
+        meta = _parse_ticket_meta(f)
+        if meta.get("sprint") == sprint:
+            meta["folder"] = "backlog"
+            tickets.append(meta)
+    for folder in ("implement", "done", "blocked", "open"):
         d = backlog / folder
         if not d.exists():
             continue
         for f in d.glob("*.md"):
             meta = _parse_ticket_meta(f)
             if meta.get("sprint") == sprint:
-                meta["folder"] = folder
+                meta["folder"] = "backlog" if folder == "open" else folder
                 tickets.append(meta)
     return tickets
 

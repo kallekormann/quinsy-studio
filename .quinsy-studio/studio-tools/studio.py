@@ -115,10 +115,23 @@ from sprint_backlog_validate import (
     validate_sprint_backlog,
     write_validation_report,
 )
+from backlog_paths import (
+    QUEUE_STATUS,
+    WORKFLOW_FOLDERS,
+    ensure_backlog_layout,
+    find_ticket,
+    list_unscheduled_backlog,
+    migrate_legacy_backlog,
+    queue_ticket_paths,
+    workflow_dir,
+)
 from sprint_planning import (
-    assign_backlog_to_sprint,
+    apply_sprint_scope,
     format_planning_brief,
+    load_scope_proposal,
+    propose_sprint_scope,
     write_planning_questions_report,
+    write_scope_proposal,
 )
 from sprint_hitl import (
     add_feedback,
@@ -182,23 +195,23 @@ def get_next_ticket_id(project: str) -> str:
     """Return the next ticket ID for a project (unified counter + scan)."""
     return allocate_ticket_id(project)
 
-def get_project_backlog_dir(project: str, status: str = "open") -> Path:
-    """Return the backlog directory for a project."""
-    backlog_dir = PROJECTS_DIR / project / "backlog"
-    target_dir = backlog_dir / status
-    target_dir.mkdir(parents=True, exist_ok=True)
-    return target_dir
+def get_project_backlog_dir(project: str, status: str = QUEUE_STATUS) -> Path:
+    """Return the folder for a ticket status. 'backlog' = product backlog queue at backlog/*.md."""
+    ensure_backlog_layout(project)
+    root = PROJECTS_DIR / project / "backlog"
+    if status in (QUEUE_STATUS, "open"):
+        root.mkdir(parents=True, exist_ok=True)
+        return root
+    if status in WORKFLOW_FOLDERS:
+        return workflow_dir(project, status)
+    return workflow_dir(project, "implement")
 
 def find_project_ticket(project: str, ticket_id: str) -> tuple:
     """Find a ticket in the project backlog. Returns (filepath, current_status)."""
-    project_backlog = PROJECTS_DIR / project / "backlog"
-    
-    for status in ["open", "done", "blocked", "plan", "analyze", "implement", "design", "qa", "review", "reuse"]:
-        ticket_dir = project_backlog / status
-        if ticket_dir.exists():
-            for f in ticket_dir.glob(f"{ticket_id}-*.md"):
-                return f, status
-    
+    ensure_backlog_layout(project)
+    path, status = find_ticket(project, ticket_id)
+    if path:
+        return path, status
     return None, None
 
 def load_status(project: str) -> Dict:
@@ -503,8 +516,8 @@ class StudioOrchestrator:
             actions.append(f"./studio feedback {project} \"...\"  (ideas for next sprint)")
             actions.append(f"./studio clarify {project} FB-001 ... --approve")
             actions.append(f"./studio ticket {project} \"...\" --from-feedback FB-001")
-            actions.append(f"./studio groom {project}")
             actions.append(f"./studio sprint {project}")
+            actions.append(f"./studio sprint {project} --approve-scope")
             actions.append(f"./studio groom {project} --approve")
         else:
             sprint = status.get("current_sprint", "")
@@ -517,13 +530,16 @@ class StudioOrchestrator:
                 )
                 actions.append("Agent: do NOT pause for approval between tickets; human joins at sprint review")
                 next_open = next(
-                    (t for t in summary["tickets"] if t["status"] in ("open", "blocked")),
+                    (t for t in summary["tickets"] if t["status"] in ("backlog", "blocked")),
                     None,
                 )
                 if next_open:
                     actions.append(
                         f"./studio move {project} {next_open['id']} implement --reason \"Sprint execution\""
                     )
+            elif hitl.get("scope_status") != "approved":
+                actions.append(f"⏸ HUMAN: approve sprint scope — read sprints/{sprint}/scope-proposal.md")
+                actions.append(f"./studio sprint {project} --approve-scope")
             elif hitl.get("groom_status") != "approved":
                 actions.append(f"./studio groom {project}")
                 actions.append(f"./studio groom {project} --approve")
@@ -1003,10 +1019,38 @@ class StudioOrchestrator:
     # PHASE 3: SPRINT MANAGEMENT
     # -------------------------------------------------------------------------
     
-    def cmd_sprint(self, project: str):
-        """Create a new sprint."""
+    def cmd_sprint(self, project: str, approve_scope: bool = False):
+        """Propose or approve sprint scope from product backlog."""
         
         status = load_status(project)
+        ensure_backlog_layout(project)
+        migrated = migrate_legacy_backlog(project)
+        if migrated:
+            print(f"  ℹ️  Migrated legacy backlog folders → backlog/ ({len(migrated)} file(s))")
+        
+        if approve_scope:
+            sprint = status.get("current_sprint")
+            if not sprint:
+                print(f"  ⚠️  No active sprint — run ./studio sprint {project} first")
+                return False
+            proposal = load_scope_proposal(project, sprint)
+            if not proposal:
+                print(f"  ⚠️  No scope proposal for {sprint} — run ./studio sprint {project}")
+                return False
+            print_header(f"APPROVE SPRINT SCOPE — {project} ({sprint})")
+            tagged = apply_sprint_scope(project, sprint, proposal)
+            hitl = get_sprint_hitl(status)
+            hitl["scope_status"] = "approved"
+            hitl["scope_approved_at"] = datetime.now().isoformat()
+            hitl["groom_status"] = "pending"
+            save_status(project, status)
+            validation = validate_sprint_backlog(project, sprint)
+            report = write_validation_report(project, validation)
+            print(f"\n  ✅ Sprint scope approved — {tagged} ticket(s) tagged")
+            print(f"  Scope: {report.relative_to(PROJECTS_DIR / project)}")
+            print(format_validation_brief(validation))
+            print(f"\n  Next: ./studio groom {project} --approve")
+            return True
         
         if status["phase"] not in [PHASE_SPRINT, PHASE_IMPLEMENT, "4", "5"]:
             print(f"  ⚠️  Sprint requires design approval (gate 2). Current phase: {status['phase']}")
@@ -1024,7 +1068,6 @@ class StudioOrchestrator:
         
         print_header(f"PHASE 3: SPRINT PLANNING — {project}")
         
-        # Determine next sprint number
         sprints_dir = PROJECTS_DIR / project / "sprints"
         sprints_dir.mkdir(parents=True, exist_ok=True)
         
@@ -1039,22 +1082,23 @@ class StudioOrchestrator:
         sprint_dir = sprints_dir / sprint_name
         sprint_dir.mkdir(exist_ok=True)
         
-        # Create sprint plan
-        plan_file = sprint_dir / "plan.md"
-        planning = assign_backlog_to_sprint(project, sprint_name)
-        assigned = planning["assigned"]
-        questions_file = write_planning_questions_report(project, sprint_name, planning)
+        proposal = propose_sprint_scope(project, sprint_name)
+        scope_file = write_scope_proposal(project, sprint_name, proposal)
+        questions_file = write_planning_questions_report(project, sprint_name, proposal)
+        proposed = proposal["proposed"]
+        
         rows = "\n".join(
             f"| {t['id']} | {t['title'][:40]} | {t['phase']} | {t['priority']} | {t['estimate']} |"
-            for t in assigned
-        ) or "| (none — mature backlog empty) | — | — | — | — |"
+            for t in proposed
+        ) or "| (pending approval) | — | — | — | — |"
+        plan_file = sprint_dir / "plan.md"
         plan_template = f"""# Sprint Plan — {sprint_name}
 
 **Project:** {project}
-**Goal:** Complete setup tickets (0001–0004) and first P0 features
+**Goal:** _Edit after scope approval_
 **Start:** {datetime.now().strftime('%Y-%m-%d')}
 **End:** YYYY-MM-DD
-**Capacity:** {len(assigned)} tickets assigned
+**Capacity:** {len(proposed)} tickets proposed (scope pending)
 
 ## Tickets in this sprint
 
@@ -1062,8 +1106,10 @@ class StudioOrchestrator:
 |--------|-------|-------|----------|----------|
 {rows}
 
+> **Scope not final** until `./studio sprint {project} --approve-scope`
+
 ## Dependencies
-- Setup tickets (0001–0002) before feature tickets
+- ...
 
 ## Risks
 - ...
@@ -1077,14 +1123,13 @@ class StudioOrchestrator:
 """
         plan_file.write_text(plan_template)
 
-        print(format_planning_brief(planning))
+        print(format_planning_brief(proposal))
+        rel_scope = scope_file.relative_to(PROJECTS_DIR / project)
+        print(f"\n  Scope proposal: {rel_scope}")
         if questions_file:
             rel = questions_file.relative_to(PROJECTS_DIR / project)
-            print(f"\n  ⚠️  Immature backlog tickets need human input before groom --approve:")
-            print(f"    {rel}")
-            print(f"    Agent: ask questions in planning-questions.md, then update tickets.")
+            print(f"  Immature tickets: {rel}")
 
-        # Update project status
         status["current_sprint"] = sprint_name
         status["phase"] = PHASE_IMPLEMENT
         hitl = get_sprint_hitl(status)
@@ -1092,27 +1137,17 @@ class StudioOrchestrator:
         hitl["review_pending_since"] = None
         hitl["retro_status"] = None
         hitl["retro_completed_at"] = None
-        save_status(project, status)
-        
-        validation = validate_sprint_backlog(project, sprint_name)
-        report = write_validation_report(project, validation)
-        print(f"\n  Backlog validation: {report.relative_to(PROJECTS_DIR / project)}")
-        print(format_validation_brief(validation))
-        hitl = get_sprint_hitl(status)
-        hitl["groom_status"] = "pending"
-        hitl["groom_validated_at"] = validation.get("validated_at")
-        hitl["backlog_validation"] = validation.get("summary", {})
+        hitl["scope_status"] = "pending"
+        hitl["scope_approved_at"] = None
+        hitl["groom_status"] = None
         save_status(project, status)
 
-        print(f"\n  Sprint created: {sprint_name}")
-        print(f"  Tickets assigned: {len(assigned)}")
-        print(f"  Directory: {sprint_dir}")
-        print(f"\n  Next step (required before implement):")
-        print(f"    ./studio groom {project}   # review backlog-validation.md")
-        if validation.get("summary", {}).get("errors"):
-            print(f"    Fix validation errors, edit plan.md, then:")
-        print(f"    ./studio groom {project} --approve")
-        print(f"    ./studio move {project} {assigned[0]['id'] if assigned else 'TICKET-ID'} implement")
+        print(f"\n  Sprint created: {sprint_name} (scope **pending**)")
+        print(f"  Human steps:")
+        print(f"    1. Read {rel_scope}")
+        print(f"    2. Edit sprints/{sprint_name}/plan.md goal if needed")
+        print(f"    3. ./studio sprint {project} --approve-scope")
+        print(f"    4. ./studio groom {project} --approve")
         
         return True
     
@@ -1283,7 +1318,7 @@ class StudioOrchestrator:
         ticket_id = get_next_ticket_id(project)
         slug = slugify(title)
         
-        ticket_dir = get_project_backlog_dir(project, "open")
+        ticket_dir = get_project_backlog_dir(project, QUEUE_STATUS)
         ticket_file = ticket_dir / f"{ticket_id}-{slug}.md"
         
         skills = match_skills(title)
@@ -1309,7 +1344,7 @@ class StudioOrchestrator:
             "id": ticket_id,
             "title": title,
             "type": "feature",
-            "status": "open",
+            "status": "backlog",
             "phase": phase,
             "priority": priority,
             "estimate": estimate,
@@ -1389,11 +1424,17 @@ class StudioOrchestrator:
             content_pre = ticket_file.read_text()
             sprint_match = re.search(r"^sprint:\s*(\S+)", content_pre, re.MULTILINE)
             ticket_sprint = sprint_match.group(1) if sprint_match else None
-            if sprint and ticket_sprint == sprint and hitl.get("groom_status") != "approved":
-                print(f"\n  ⚠️  Sprint backlog not groomed/approved for {sprint}.")
-                print(f"    ./studio groom {project}")
-                print(f"    ./studio groom {project} --approve")
-                return False
+            if sprint and ticket_sprint == sprint:
+                hitl = get_sprint_hitl(status_pre)
+                if hitl.get("scope_status") != "approved":
+                    print(f"\n  ⚠️  Sprint scope not approved for {sprint}.")
+                    print(f"    ./studio sprint {project} --approve-scope")
+                    return False
+                if hitl.get("groom_status") != "approved":
+                    print(f"\n  ⚠️  Sprint backlog not groomed/approved for {sprint}.")
+                    print(f"    ./studio groom {project}")
+                    print(f"    ./studio groom {project} --approve")
+                    return False
         
         # Determine new directory (within project)
         new_dir = get_project_backlog_dir(project, new_status)
@@ -1785,23 +1826,29 @@ What next steps result?
         """Show the ticket board of a project."""
         
         print_header(f"BACKLOG BOARD: {project}")
-        
-        project_backlog = PROJECTS_DIR / project / "backlog"
-        statuses = [
-            "open", "analyze", "plan", "design", "implement",
-            "qa", "review", "reuse", "blocked", "done"
-        ]
-        
-        for status in statuses:
-            ticket_dir = project_backlog / status
+        ensure_backlog_layout(project)
+
+        queue = queue_ticket_paths(project)
+        unscheduled = [p for p in queue if "sprint:" not in p.read_text(encoding="utf-8")]
+        sprint_planned = [p for p in queue if "sprint:" in p.read_text(encoding="utf-8")]
+
+        print(f"\n  PRODUCT BACKLOG: {len(unscheduled)}")
+        for t in sorted(unscheduled)[:10]:
+            print(f"    - {t.stem}")
+
+        if sprint_planned:
+            print(f"\n  SPRINT PLANNED (in backlog/, tagged): {len(sprint_planned)}")
+            for t in sorted(sprint_planned)[:10]:
+                print(f"    - {t.stem}")
+
+        for status in WORKFLOW_FOLDERS:
+            ticket_dir = PROJECTS_DIR / project / "backlog" / status
             if ticket_dir.exists():
                 tickets = list(ticket_dir.glob(f"{project[:4].upper()}-*.md"))
-                if tickets or status in ("open", "implement", "done"):
+                if tickets or status in ("implement", "done"):
                     print(f"\n  {status.upper()}: {len(tickets)}")
                     for t in sorted(tickets)[:8]:
                         print(f"    - {t.stem}")
-            elif status in ("open", "done"):
-                print(f"\n  {status.upper()}: 0")
     
     def cmd_groom(self, project: str, approve: bool = False):
         """Run a grooming session with sprint backlog validation."""
@@ -1847,14 +1894,9 @@ What next steps result?
                 for t in blocked:
                     print(f"    - {t.stem}")
         
-        # Show open tickets
-        open_dir = project_backlog / "open"
-        if open_dir.exists():
-            open_tickets = list(open_dir.glob(f"{project[:4].upper()}-*.md"))
-            if open_tickets:
-                print(f"\n  Open tickets: {len(open_tickets)}")
-                for t in open_tickets:
-                    print(f"    - {t.stem}")
+        # Show product backlog tickets
+        for path in queue_ticket_paths(project):
+            print(f"    - {path.stem}")
         
         # Create grooming protocol
         sprint_dir = PROJECTS_DIR / project / "sprints" / sprint
@@ -2338,7 +2380,8 @@ def main():
         orchestrator.cmd_approve(project, gate)
     
     elif command == "sprint" and len(args) >= 1:
-        orchestrator.cmd_sprint(args[0])
+        approve_scope = "--approve-scope" in args
+        orchestrator.cmd_sprint(args[0], approve_scope=approve_scope)
 
     elif command == "review" and len(args) >= 1:
         project = args[0]
