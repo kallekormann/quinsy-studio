@@ -226,6 +226,27 @@ def validate_sprint_backlog(project: str, sprint: Optional[str] = None) -> Dict:
         if t.get("folder") == "done" and tid in {x.get("id") for x in tickets}:
             pass  # ok
 
+        ticket_path = Path(t.get("path", ""))
+        if ticket_path.exists():
+            try:
+                from sprint_planning import assess_ticket_maturity
+
+                mature, questions, _ = assess_ticket_maturity(ticket_path)
+                if not mature:
+                    findings.append(
+                        Finding(
+                            "error",
+                            tid,
+                            "IMMATURE_TICKET",
+                            "Ticket lacks mature acceptance criteria / scope for sprint work.",
+                            "Ask human: "
+                            + "; ".join(questions[:3])
+                            + " Then update ticket or ./studio clarify on source feedback.",
+                        )
+                    )
+            except ImportError:
+                pass
+
     # Sprint goal sanity
     plan = _read(project_dir / "sprints" / sprint / "plan.md")
     if plan and "0001–0004" in plan and p0_no_auth:

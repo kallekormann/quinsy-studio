@@ -49,11 +49,24 @@ While sprint tickets are not all `done`:
 
 **Enforced by CLI:** `./studio move … implement` is blocked when sprint review is pending or the sprint is closed.
 
-### Sprint ceremony flow
+### Feedback → backlog → sprint planning
 
 ```
-Groom sprint → autonomous implementation → ./studio review (human) → feedback → clarify → ticket → groom → retro → next sprint
+Sprint review feedback (once per theme)
+  → ./studio feedback (deduped)
+  → ./studio clarify --approve
+  → ./studio ticket --from-feedback  → backlog (no sprint tag)
+  → ./studio review --approve → retro
+  → ./studio sprint  → assigns mature backlog + writes planning-questions.md for immature
+  → ./studio groom --approve → implement
 ```
+
+| Step | What happens |
+|------|----------------|
+| **Feedback** | One FB item per theme; similar text merges to existing FB-NNN |
+| **Ticket** | `--from-feedback` creates backlog ticket **without** `sprint:` |
+| **Sprint plan** | `./studio sprint` pulls from backlog (feedback tickets first), skips immature |
+| **Immature** | `sprints/SPRINT-NN/planning-questions.md` — agent asks human, then updates ticket |
 
 | Step | Who | Command |
 |------|-----|---------|
@@ -72,6 +85,10 @@ Groom sprint → autonomous implementation → ./studio review (human) → feedb
 **Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
 
 **Rule:** During sprint review, the agent **never implements** feedback in project code — only `./studio feedback` → clarify → ticket for the **next** sprint.
+
+**Rule:** One feedback item per theme per sprint — `./studio feedback` dedupes similar notes (use `--force` to split).
+
+**Rule:** Feedback tickets land in **backlog without a sprint tag** until `./studio sprint` assigns mature tickets; immature tickets get `planning-questions.md` for the agent to ask the human.
 
 **Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, and retro is complete.
 

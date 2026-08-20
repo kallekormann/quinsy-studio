@@ -2,6 +2,16 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.7.2] — 2026-08-20
+
+### Feedback dedupe, backlog-first tickets, sprint planning maturity
+
+- ✅ `./studio feedback` dedupes similar items per sprint (`--force` to override)
+- ✅ `--from-feedback` tickets go to **backlog without sprint tag**; `./studio sprint` assigns mature tickets
+- ✅ Sprint planning prioritizes feedback-sourced backlog tickets; defers immature with `planning-questions.md`
+- ✅ Groom validation: `IMMATURE_TICKET` when acceptance criteria are too generic
+- ✅ Docs: feedback → backlog → sprint planning flow in [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md)
+
 ## [1.7.1] — 2026-08-20
 
 ### Sprint review feedback — capture only, never implement

@@ -115,6 +115,11 @@ from sprint_backlog_validate import (
     validate_sprint_backlog,
     write_validation_report,
 )
+from sprint_planning import (
+    assign_backlog_to_sprint,
+    format_planning_brief,
+    write_planning_questions_report,
+)
 from sprint_hitl import (
     add_feedback,
     approve_review,
@@ -303,32 +308,10 @@ def design_stack_hints(project: str, archetype: str) -> Dict[str, str]:
     return hints
 
 
-def assign_open_tickets_to_sprint(project: str, sprint_name: str, max_tickets: int = 10) -> List[Dict]:
-    """Tag open P0/P1 tickets with sprint and return metadata for plan.md."""
-    open_dir = PROJECTS_DIR / project / "backlog" / "open"
-    if not open_dir.exists():
-        return []
-    tickets = sorted(open_dir.glob(f"{project[:4].upper()}-*.md"))
-    assigned = []
-    for ticket_file in tickets[:max_tickets]:
-        content = ticket_file.read_text(encoding="utf-8")
-        title_match = re.search(r'^title:\s*(.+)$', content, re.MULTILINE)
-        priority_match = re.search(r'^priority:\s*(.+)$', content, re.MULTILINE)
-        phase_match = re.search(r'^phase:\s*(\d+)', content, re.MULTILINE)
-        estimate_match = re.search(r'^estimate:\s*(.+)$', content, re.MULTILINE)
-        tid_match = re.match(r'^([A-Z]+-\d+)', ticket_file.name)
-        tid = tid_match.group(1) if tid_match else ticket_file.stem[:12]
-        if "sprint:" not in content:
-            content = content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
-            ticket_file.write_text(content)
-        assigned.append({
-            "id": tid,
-            "title": title_match.group(1).strip() if title_match else ticket_file.stem,
-            "phase": phase_match.group(1) if phase_match else "?",
-            "priority": priority_match.group(1).strip() if priority_match else "P1",
-            "estimate": estimate_match.group(1).strip() if estimate_match else "M",
-        })
-    return assigned
+def assign_open_tickets_to_sprint(project: str, sprint_name: str, max_tickets: int = 6) -> List[Dict]:
+    """Tag mature open backlog tickets with sprint (feedback-sourced first)."""
+    planning = assign_backlog_to_sprint(project, sprint_name, max_tickets=max_tickets)
+    return planning["assigned"]
 
 # =============================================================================
 # DUAL-SPEED ORCHESTRATOR
@@ -1058,11 +1041,13 @@ class StudioOrchestrator:
         
         # Create sprint plan
         plan_file = sprint_dir / "plan.md"
-        assigned = assign_open_tickets_to_sprint(project, sprint_name)
+        planning = assign_backlog_to_sprint(project, sprint_name)
+        assigned = planning["assigned"]
+        questions_file = write_planning_questions_report(project, sprint_name, planning)
         rows = "\n".join(
             f"| {t['id']} | {t['title'][:40]} | {t['phase']} | {t['priority']} | {t['estimate']} |"
             for t in assigned
-        ) or "| ... | ... | ... | ... | ... |"
+        ) or "| (none — mature backlog empty) | — | — | — | — |"
         plan_template = f"""# Sprint Plan — {sprint_name}
 
 **Project:** {project}
@@ -1091,7 +1076,14 @@ class StudioOrchestrator:
 - [ ] Summary written
 """
         plan_file.write_text(plan_template)
-        
+
+        print(format_planning_brief(planning))
+        if questions_file:
+            rel = questions_file.relative_to(PROJECTS_DIR / project)
+            print(f"\n  ⚠️  Immature backlog tickets need human input before groom --approve:")
+            print(f"    {rel}")
+            print(f"    Agent: ask questions in planning-questions.md, then update tickets.")
+
         # Update project status
         status["current_sprint"] = sprint_name
         status["phase"] = PHASE_IMPLEMENT
@@ -1178,7 +1170,7 @@ class StudioOrchestrator:
         print(f"       or: ./studio review {project} --reject --reason \"...\"")
         return True
 
-    def cmd_feedback(self, project: str, text: str, source: str = "sprint-review"):
+    def cmd_feedback(self, project: str, text: str, source: str = "sprint-review", force: bool = False):
         """Capture raw human feedback — does not create a ticket."""
         status = load_status(project)
         sprint = status.get("current_sprint")
@@ -1190,11 +1182,19 @@ class StudioOrchestrator:
             return False
 
         print_header(f"FEEDBACK — {project} ({sprint})")
-        fb_id, md_file = add_feedback(project, sprint, text, source)
+        fb_id, md_file, is_duplicate = add_feedback(project, sprint, text, source, force=force)
+        if is_duplicate:
+            print(f"\n  ⚠️  Similar feedback already captured as {fb_id} — not creating a duplicate.")
+            print(f"  File: {md_file}")
+            print(f"  Update existing item:")
+            print(f"    ./studio clarify {project} {fb_id} --title \"...\" --scope \"...\" --acceptance \"...\"")
+            print(f"  Or force a separate item: ./studio feedback {project} \"...\" --force")
+            return True
+
         print(f"\n  Captured {fb_id} (status: raw — NOT a ticket)")
         print(f"  File: {md_file}")
         print(f"\n  ⛔ DO NOT implement this in project code during sprint review.")
-        print(f"     Feedback becomes work only after: clarify → ticket --from-feedback → next sprint.")
+        print(f"     Flow: clarify → ticket --from-feedback → **backlog** → ./studio sprint assigns.")
         print(f"\n  Next:")
         print(f"    ./studio clarify {project} {fb_id} --title \"...\" --scope \"...\" --acceptance \"...\"")
         print(f"    ./studio clarify {project} {fb_id} --approve")
@@ -1341,8 +1341,6 @@ class StudioOrchestrator:
         }
         
         content = render_ticket_markdown(ticket)
-        if sprint and "sprint:" not in content:
-            content = content.replace("created:", f"sprint: {sprint}\ncreated:", 1)
         if rationale_extra:
             content += rationale_extra
         ticket_file.write_text(content)
@@ -1354,6 +1352,7 @@ class StudioOrchestrator:
         print(f"  ID: {ticket_id}")
         if from_feedback:
             print(f"  From feedback: {from_feedback.upper()}")
+            print(f"  Backlog: unscheduled (no sprint tag) — assigned at ./studio sprint {project}")
         print(f"  Role: {role}")
         print(f"  Team: {team}")
         print(f"  Skills: {', '.join(skills) if skills else '(auto-match)'}")
@@ -2358,10 +2357,11 @@ def main():
         project = args[0]
         text = args[1]
         source = "sprint-review"
+        force = "--force" in args
         for i, arg in enumerate(args):
             if arg == "--source" and i + 1 < len(args):
                 source = args[i + 1]
-        orchestrator.cmd_feedback(project, text, source=source)
+        orchestrator.cmd_feedback(project, text, source=source, force=force)
 
     elif command == "feedback-list" and len(args) >= 1:
         orchestrator.cmd_feedback_list(args[0])

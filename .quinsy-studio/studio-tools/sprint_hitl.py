@@ -379,11 +379,11 @@ See [plan.md](plan.md)
 > **Process:** During the sprint the agent implements autonomously. You are involved **here**, at sprint review — not ticket-by-ticket mid-sprint.
 
 ## After approval
-1. Clarify feedback: `./studio clarify {project} FB-001` (repeat per item)
-2. Ticket from feedback: `./studio ticket {project} "..." --from-feedback FB-001`
+1. Clarify feedback: `./studio clarify {project} FB-001` (one item per theme — duplicates rejected)
+2. Ticket from feedback: `./studio ticket {project} "..." --from-feedback FB-001` → **backlog** (no sprint tag)
 3. Groom backlog: `./studio groom {project}` (reprioritize for next sprint)
 4. Retro: `./studio retro {project}`
-5. Next sprint: `./studio sprint {project}` → `./studio groom {project} --approve` → implement
+5. Next sprint: `./studio sprint {project}` pulls mature backlog tickets → `./studio groom {project} --approve`
 {fb_section}
 """
     review_file.write_text(content, encoding="utf-8")
@@ -440,13 +440,80 @@ def reject_review(project: str, sprint: str, status: Dict, reason: str) -> None:
         )
 
 
+def _feedback_tokens(text: str) -> set:
+    stop = {
+        "the", "and", "for", "with", "from", "that", "this", "needs", "need", "task",
+        "sprint", "review", "when", "not", "just", "more", "like", "should", "have",
+    }
+    words = re.findall(r"[a-z0-9]{3,}", text.lower())
+    return {w for w in words if w not in stop}
+
+
+def _feedback_themes(tokens: set) -> set:
+    themes: set = set()
+    if tokens & {"confetti", "burst", "spark", "completion"}:
+        themes.add("completion_fx")
+    if tokens & {"animation", "motion", "transform", "transformation", "juicy"}:
+        themes.add("motion")
+    if tokens & {"task", "add", "remove", "create", "complete", "quick"}:
+        themes.add("tasks")
+    return themes
+
+
+def find_similar_feedback(project: str, sprint: str, text: str, threshold: float = 0.32) -> Optional[Dict]:
+    """Find active feedback item similar to new text (dedupe per sprint)."""
+    new_tokens = _feedback_tokens(text)
+    if not new_tokens:
+        return None
+    new_themes = _feedback_themes(new_tokens)
+    best: Optional[Dict] = None
+    best_score = 0.0
+    for item in load_feedback_queue(project, sprint):
+        if item.get("status") in (FEEDBACK_TICKETED, FEEDBACK_REJECTED):
+            continue
+        old_text = " ".join(
+            filter(
+                None,
+                [
+                    item.get("raw", ""),
+                    item.get("draft_title") or "",
+                    item.get("draft_scope") or "",
+                ],
+            ),
+        )
+        old_tokens = _feedback_tokens(old_text)
+        if not old_tokens:
+            continue
+        union = new_tokens | old_tokens
+        score = len(new_tokens & old_tokens) / max(len(union), 1)
+        theme_overlap = new_themes & _feedback_themes(old_tokens)
+        if len(theme_overlap) >= 2 and len(new_tokens & old_tokens) >= 3:
+            score = max(score, 0.5)
+        if score >= threshold and score > best_score:
+            best_score = score
+            best = item
+    return best
+
+
 def add_feedback(
     project: str,
     sprint: str,
     text: str,
     source: str = "sprint-review",
-) -> Tuple[str, Path]:
-    """Capture raw human feedback — does NOT create a ticket."""
+    force: bool = False,
+) -> Tuple[str, Path, bool]:
+    """
+    Capture raw human feedback — does NOT create a ticket.
+    Returns (fb_id, md_path, is_duplicate_existing).
+    """
+    if not force:
+        existing = find_similar_feedback(project, sprint, text)
+        if existing:
+            fb_id = existing["id"]
+            sprint_dir = sprint_directory(project, sprint)
+            md_file = sprint_dir / f"{fb_id.lower()}-feedback.md"
+            return fb_id, md_file, True
+
     items = load_feedback_queue(project, sprint)
     fb_id = next_feedback_id(project, sprint)
     item = {
@@ -483,10 +550,11 @@ def add_feedback(
 1. Agent + human clarify: `./studio clarify {project} {fb_id} --title "..." --scope "..." --acceptance "..."`
 2. Human approves draft: `./studio clarify {project} {fb_id} --approve`
 3. Create ticket: `./studio ticket {project} "<title>" --from-feedback {fb_id}`
+   (ticket lands in **backlog** — sprint assigned at `./studio sprint`)
 """,
         encoding="utf-8",
     )
-    return fb_id, md_file
+    return fb_id, md_file, False
 
 
 def find_feedback(project: str, sprint: str, fb_id: str) -> Optional[Dict]:
