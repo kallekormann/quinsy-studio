@@ -50,7 +50,17 @@ After gate 2:
 - **No code** without a ticket
 - Sprint-review ideas: `./studio feedback` → `clarify` → `ticket --from-feedback` (never direct ticket)
 - Scoped new work: `./studio ticket <project> "..."` → groom → sprint
-- Emergency scope change: user explicitly approves; log in `docs/phases/revisions.md`
+- Emergency scope change: user explicitly approves; log in `docs/phases/revisions.md` or the active milestone doc
+
+## Milestones (post gate 2)
+
+1. Agent drafts `docs/phases/README.md` + milestone outlines (M0, M1, …)
+2. Human approves roadmap before sprints or milestone tickets
+3. Agent populates product backlog for **active milestone only** (`milestone: M0` in ticket frontmatter)
+4. Sprints run within the milestone; sprint review unchanged
+5. When all milestone tickets are `done` → **milestone review** before next milestone planning
+
+See [milestone-planning.md](../.quinsy-studio/process/milestone-planning.md).
 
 ## Drift recovery
 

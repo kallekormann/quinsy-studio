@@ -34,6 +34,7 @@ def init_project(project: str, archetype: str = 'saas-application'):
     
     # 1. Create directory structure
     create_directories(project_dir)
+    create_phases_scaffold(project_dir)
     
     # 2. Create status.json
     create_status(project_dir, project, archetype)
@@ -91,6 +92,39 @@ def create_directories(project_dir: Path):
     seed_definitions(project_dir)
     
     print(f"  ✓ Directory structure created")
+
+
+def create_phases_scaffold(project_dir: Path):
+    """Seed docs/phases/ with index and revisions log."""
+    phases = project_dir / "docs" / "phases"
+    readme = phases / "README.md"
+    if not readme.exists():
+        readme.write_text(
+            """# Project phases (milestones)
+
+> Filled after gate 2. See `.quinsy-studio/process/milestone-planning.md`.
+
+| Milestone | Goal | Status |
+|-----------|------|--------|
+| M0 | _TBD after execution planning_ | planned |
+| M1 | _TBD_ | planned |
+
+**Current milestone:** — (set after roadmap approval)
+
+## Documents
+
+- [revisions.md](revisions.md) — pre-implementation gate feedback
+- _M0-*.md, M1-*.md added during execution planning_
+""",
+            encoding="utf-8",
+        )
+    revisions = phases / "revisions.md"
+    if not revisions.exists():
+        revisions.write_text(
+            "# Pre-implementation revisions\n\n_Log gate 0–2 feedback here via `./studio revise`._\n",
+            encoding="utf-8",
+        )
+    print(f"  ✓ docs/phases/ scaffold created")
 
 
 DEFINITION_TEMPLATES = {
@@ -151,7 +185,8 @@ You run the project `{project}` autonomously through the Quinsy Studio operating
 1. **Gate 0** — Fill `docs/definitions/` from PRD; user approves: `./studio approve {project} --gate 0`
 2. **Gate 1** — Fill `docs/architecture/` + ADRs; user approves: `./studio approve {project} --gate 1`
 3. **Gate 2** — Build `design/prototype/` (Next.js), tokens, atomic UI, sticker sheet; user picks mock scope (`journey` | `core-views`); user approves: `./studio approve {project} --gate 2`
-4. **Then** — Tickets are generated; sprint + implementation (phases 4–7).
+4. **Milestones** — Draft `docs/phases/` roadmap; user approves: `./studio approve {project} --milestones`; agent writes tickets for active milestone only
+5. **Then** — Sprint + implementation within current milestone (see `.quinsy-studio/process/milestone-planning.md`)
 
 ## Iteration
 - User feedback: `./studio revise {project} --gate <0|1|2> --feedback "..."`
@@ -172,7 +207,7 @@ You run the project `{project}` autonomously through the Quinsy Studio operating
 - `./studio focus {project}` / `./studio resume {project}` / `./studio guard {project} "..."`
 - `./studio verify-worlds` — studio vs project git must be separate
 - `./studio blueprint {project}` / `./studio design {project} --scope journey|core-views`
-- `./studio approve {project} --gate 0|1|2` — tickets + library promotion after gate 2
+- `./studio approve {project} --gate 0|1|2` — library promotion after gate 2; milestone roadmap after gate 2 (`--milestones`)
 - `./studio promote-library {project}` — re-sync design system to studio-library
 - `./studio revise {project} --gate <n> --feedback "..."` — iteration loop
 """
@@ -200,9 +235,15 @@ Autonomous flow from intake to gate 7. The agent works through this document.
 ## Phase 3 — Design (HUMAN GATE 2)
 1. User chooses: `./studio design {project} --scope journey` OR `--scope core-views`
 2. Build Next.js prototype in `design/prototype/`, tokens, atomic components, sticker sheet
-3. User approves: `./studio approve {project} --gate 2` → **tickets generated**
+3. User approves: `./studio approve {project} --gate 2` → library promotion
 
-## Phase 4 — Sprint setup
+## Execution planning — Milestones (HITL)
+1. Agent drafts `docs/phases/README.md` + M0/M1 outlines from PRD + blueprint
+2. User approves: `./studio approve {project} --milestones`
+3. Agent writes tickets for **active milestone only** → product backlog (`milestone: M0`)
+4. See `.quinsy-studio/process/milestone-planning.md`
+
+## Phase 4 — Sprint setup (within milestone)
 Roles: Product Manager, Backlog Owner.
 Artifact: backlog board with estimated tickets.
 Create tickets: `./studio ticket {project} "<title>" --phase 3 --priority P1 --estimate M`.

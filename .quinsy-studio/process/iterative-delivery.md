@@ -1,14 +1,27 @@
 # Quinsy Studio — Iterative Delivery
 
-> From phase 3 on, work is iterative. Sprints, grooming and the backlog board are the engines.
+> From execution planning on, work is iterative. **Milestones** set version scope; **sprints** deliver within the active milestone.
 
 ## Core principle
 
 ```
-Iterative = plan → build → check → learn → repeat
+Iterative = milestone plan → sprint plan → build → check → learn → repeat
 ```
 
-No sprint is identical; every sprint learns from the previous one.
+No sprint is identical; every sprint learns from the previous one. A **milestone** may span many sprints; **milestone review** happens only when that version's tickets and success criteria are complete.
+
+---
+
+## Milestone cycle (above sprints)
+
+```
+Gate 2 → docs/phases/ roadmap → human approves
+  → tickets for M0 → sprint loop …
+  → all M0 tickets done → milestone review → human approves
+  → tickets for M1 → sprint loop …
+```
+
+See [milestone-planning.md](milestone-planning.md).
 
 ---
 

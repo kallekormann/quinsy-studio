@@ -1,6 +1,17 @@
 # Product Backlog Model (Sprint HITL)
 
-> After gate 2, tickets use a **simple folder model** — not the legacy 9-step Kanban folders.
+> After gate 2 and **milestone roadmap approval**, tickets use a **simple folder model** — not the legacy 9-step Kanban folders.
+
+## Milestones vs sprints
+
+| Layer | Doc | Human gate |
+|-------|-----|------------|
+| **Milestone** (M0, M1, …) | `docs/phases/M0-*.md` | Roadmap approval; milestone review when all M* tickets done |
+| **Sprint** (SPRINT-NN) | `sprints/SPRINT-NN/` | Scope proposal; sprint review |
+
+Tickets carry `milestone: M0` in frontmatter. Sprint planning pulls from the **current milestone** in product backlog (+ blocked / feedback tickets groom approves).
+
+See [milestone-planning.md](milestone-planning.md).
 
 ## Folders
 
@@ -21,14 +32,17 @@
 ## Sprint flow
 
 ```
-Product backlog (backlog/*.md, no sprint tag)
+Milestone roadmap approved (docs/phases/)
+  → Agent writes active-milestone tickets → product backlog
+Product backlog (backlog/*.md, milestone: M0, no sprint tag)
   → ./studio sprint <p>           # proposes scope (scope-proposal.md)
   → Human approves scope
   → ./studio sprint <p> --approve-scope
   → ./studio groom <p> --approve
   → backlog → implement → done   (autonomous mid-sprint)
   → ./studio review --approve
-  → retro → next sprint
+  → retro → next sprint (same milestone)
+  → milestone review when all M* tickets done → plan next milestone
 ```
 
 ### Scope proposal

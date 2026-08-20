@@ -1,6 +1,6 @@
 # Quinsy Studio — Ticket Workflow
 
-> **Sprint HITL (after gate 2):** use the [product backlog model](backlog-model.md) — `backlog/` → `implement/` → `done/`.
+> **Sprint HITL (after milestone roadmap):** use the [product backlog model](backlog-model.md) and [milestone planning](milestone-planning.md).
 > The 9-step workflow below describes **quality gates inside a ticket**, not folder moves.
 
 ## Sprint ticket folders (canonical)

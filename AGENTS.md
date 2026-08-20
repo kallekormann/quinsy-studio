@@ -34,7 +34,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 **Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally.
 
-**Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **Autonomous mid-sprint:** agent implements all groomed sprint tickets without human checkpoints. **Human joins at sprint review** when all sprint tickets are `done`. **During review:** capture feedback only — never implement in project code until the next sprint. **Product backlog** lives in `projects/<p>/backlog/*.md` (not `open/`). **Sprint planning:** `./studio sprint` proposes scope → human `./studio sprint --approve-scope` → `./studio groom --approve`.
+**Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **Autonomous mid-sprint:** agent implements all groomed sprint tickets without human checkpoints. **Human joins at sprint review** when all sprint tickets are `done`. **During review:** capture feedback only — never implement in project code until the next sprint. **Milestones:** after gate 2, agent drafts `docs/phases/` roadmap → human approves → tickets for active milestone only → sprints. **Milestone review** when all milestone tickets are done, before next milestone backlog. **Product backlog** lives in `projects/<p>/backlog/*.md` (not `open/`). **Sprint planning:** `./studio sprint` proposes scope → human `./studio sprint --approve-scope` → `./studio groom --approve`.
 
 ## Two worlds — never mix
 
@@ -51,12 +51,17 @@ On `./studio move … done` → warns if registry paths changed without promotio
 |------|----------|----------|
 | 0 | PRD + definitions | No |
 | 1 | Architecture | No |
-| 2 | Design + mocks | Yes + **design → library** |
+| 2 | Design + mocks | No — **milestone roadmap** next |
+| Milestones | Version plan (`docs/phases/`) | Yes — before sprints |
+| Milestone review | Version complete (M0, M1, …) | Yes — before next milestone backlog |
 
 ```bash
 ./studio approve <p> --gate 2    # validates design + refreshes library catalog (no project → library merge)
+./studio approve <p> --milestones   # approve milestone roadmap (after docs/phases/ drafted)
 ./studio library promote-design <p> [--force]
 ```
+
+After `--milestones`, agent writes tickets for the active milestone only, then sprint planning begins.
 
 ## Context & drift
 

@@ -27,19 +27,25 @@ Project (execution level)  ──▶  executed by the studio, local loop
 │  ═══════════════ HUMAN PHASE GATE 1 ═══════════════                    │
 │     └─▶ ./studio approve <project> --gate 1                            │
 │                                                                         │
-│  Phase 3: Sprint Setup & Backlog Grooming                              │
-│     └─▶ move tickets into sprint folders                               │
+│  Phase 3: Design (prototype) + HUMAN GATE 2                            │
+│     └─▶ tokens, mocks, sticker sheet                                   │
 │                                                                         │
-│  Phase 4: Autonomous Sprint Execution                                  │
+│  Execution planning — milestone roadmap (HITL)                           │
+│     └─▶ docs/phases/ — versions M0, M1, … + backlog for active only  │
+│                                                                         │
+│  Phase 4: Sprint Setup & Backlog Grooming                              │
+│     └─▶ sprint scope within current milestone                          │
+│                                                                         │
+│  Phase 5: Autonomous Sprint Execution                                  │
 │     └─▶ write code, test locally in the docker container               │
 │                                                                         │
-│  Phase 5: Comprehensive QA & Compliance Gate                           │
+│  Phase 6: Comprehensive QA & Compliance Gate                           │
 │     └─▶ validate_anti_slop.py + run_qa_gate.py                         │
 │                                                                         │
-│  Phase 6: Dual-Loop Knowledge Harvesting                               │
+│  Phase 7: Dual-Loop Knowledge Harvesting                               │
 │     └─▶ retro: local learnings (project) + global evolution (studio)   │
 │                                                                         │
-│  Phase 7: Deployment & Iteration                                       │
+│  Phase 8: Deployment & Iteration                                       │
 │     └─▶ zero-downtime deployment, monitoring                           │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -126,9 +132,41 @@ CLI: `./studio design <project> --scope journey|core-views`
 
 ## ═══════════════ HUMAN GATE 2 — Design ═══════════════
 
-> User approves visual direction + mocks. **Tickets are generated here.**
+> User approves visual direction + mocks. **Library promotion** runs here; execution backlog is **not** filled until milestone kickoff.
 > CLI: `./studio approve <project> --gate 2`
 > Iteration: `./studio revise <project> --gate 2 --feedback "..."`
+
+---
+
+## Execution planning — Milestone roadmap (post gate 2)
+
+**Goal:** outline product versions (milestones) so humans see maturity and scope beyond “backlog empty.”
+
+| Aspect | Description |
+|--------|-------------|
+| **Input** | Approved PRD, blueprint, design, gate 2 artifacts |
+| **Output** | `docs/phases/README.md` + `M0-*.md`, `M1-*.md`, …; tickets for **active milestone only** |
+| **Roles (lead)** | Product Manager, Systems Architect |
+| **Human gate** | **Yes** — approve milestone roadmap before sprints |
+
+### Flow
+
+1. Agent drafts milestone index + outlines from PRD P0/P1/P2 and blueprint boundaries
+2. Human reviews goals, in/out scope, and HITL decision points per milestone
+3. Human approves roadmap (`./studio approve <project> --milestones` — see [milestone-planning.md](milestone-planning.md))
+4. Agent writes tickets for the **first active milestone** → product backlog (`milestone: M0`)
+5. Human confirms milestone kickoff ticket list (may adjust before first `./studio sprint`)
+
+### Milestone boundary (repeat)
+
+When all tickets for the current milestone are `done` and milestone success criteria are met:
+
+1. Human **milestone review** — approve version complete or send back
+2. Agent plans **next milestone** — update `docs/phases/`, write new tickets to backlog
+3. Carry over `backlog/blocked/` and feedback-sourced tickets; re-tag `milestone` if needed
+4. Resume sprint loop (`./studio sprint` → `--approve-scope` → …)
+
+See [milestone-planning.md](milestone-planning.md) for templates and ticket rules.
 
 ---
 
@@ -138,7 +176,7 @@ CLI: `./studio design <project> --scope journey|core-views`
 
 | Aspect | Description |
 |--------|-------------|
-| **Input** | approved architecture blueprint |
+| **Input** | approved milestone roadmap + product backlog for current milestone |
 | **Output** | first sprint with assigned tickets |
 | **Roles (lead)** | Product Manager, Backlog Owner |
 | **Roles (support)** | Systems Architect |
@@ -159,7 +197,7 @@ CLI: `./studio design <project> --scope journey|core-views`
 
 ---
 
-## Phase 4: Autonomous Sprint Execution
+## Phase 5: Autonomous Sprint Execution
 
 **Goal:** write code, test locally, deliver iteratively.
 
@@ -169,7 +207,7 @@ CLI: `./studio design <project> --scope journey|core-views`
 | **Output** | implemented code with local tests |
 | **Roles (lead)** | Frontend Engineer, Backend Engineer |
 | **Roles (support)** | Database Specialist, QA Specialist |
-| **Human gate** | No mid-sprint — agent runs the full sprint; **human joins at sprint review** (Phase 6) |
+| **Human gate** | No mid-sprint — agent runs the full sprint; **human joins at sprint review** (Phase 7) |
 
 ### Flow per ticket (9 steps)
 
@@ -195,7 +233,7 @@ CLI: `./studio design <project> --scope journey|core-views`
 
 ---
 
-## Phase 5: Comprehensive QA & Compliance Gate
+## Phase 6: Comprehensive QA & Compliance Gate
 
 **Goal:** formal QA, security audit, anti-slop audit, GDPR check.
 
@@ -221,7 +259,7 @@ CLI: `./studio design <project> --scope journey|core-views`
 
 ---
 
-## Phase 6: Dual-Loop Knowledge Harvesting
+## Phase 7: Dual-Loop Knowledge Harvesting
 
 **Goal:** learn from the sprint — strict separation local vs. global.
 
@@ -244,10 +282,11 @@ CLI: `./studio design <project> --scope journey|core-views`
 7. **Local loop:** project-specific learnings → `projects/[name]/docs/local_learnings.md`
 8. **Global loop:** universal improvements → `.quinsy-studio/knowledge-base/`
 9. Groom backlog (`./studio groom`) + plan next sprint (`./studio sprint <project>`)
+10. If milestone tickets are all `done` → **milestone review** before next milestone planning (see [milestone-planning.md](milestone-planning.md))
 
 ---
 
-## Phase 7: Deployment & Iteration
+## Phase 8: Deployment & Iteration
 
 **Goal:** deploy the production environment, monitor, plan the next iteration.
 
@@ -277,9 +316,11 @@ CLI: `./studio design <project> --scope journey|core-views`
 |------|-------|-------------|
 | **Gate 0** | Phase 1→2 | PRD + definitions — **user approval** |
 | **Gate 1** | Phase 2→3 | architecture blueprint — **user approval** |
-| **Gate 2** | Phase 3→4 | design + mocks — **user approval** (tickets generated) |
+| **Gate 2** | Design→execution | design + mocks — **user approval** (library promotion) |
+| **Milestones** | Post gate 2 | milestone roadmap — **user approval** (`--milestones`) |
+| **Milestone review** | End of M0, M1, … | version complete — **user approval** before next milestone backlog |
 | **Gate 3** | Phase 4 (internal) | sprint planned, tickets assigned |
-| **Gate 5** | Phase 5 (internal) | QA, security, anti-slop, GDPR — all green |
+| **Gate 5** | Phase 6 (internal) | QA, security, anti-slop, GDPR — all green |
 
 ---
 
@@ -311,5 +352,6 @@ CLI: `./studio design <project> --scope journey|core-views`
 - `.quinsy-studio/process/gates.md` — gate definitions in detail
 - `.quinsy-studio/process/learning-loop.md` — dual-loop learning
 - `.quinsy-studio/process/ticket-workflow.md` — 9-step ticket workflow
+- `.quinsy-studio/process/milestone-planning.md` — milestone roadmap + version gates
 - `.quinsy-studio/knowledge-base/` — playbooks & protocols
 - `studio-tools/` — python automation

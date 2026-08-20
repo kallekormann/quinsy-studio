@@ -24,6 +24,8 @@ Agent: "Implemented."
 | **Architecture** | large architecture changes | **Yes** |
 | **Release** | production release | **Yes** |
 | **Sprint review** | approve shipped sprint work | **Yes** |
+| **Milestone roadmap** | approve version plan after gate 2 | **Yes** |
+| **Milestone review** | approve completed product version (M0, M1, …) | **Yes** |
 | **Sprint feedback** | new ideas from review → backlog | **Yes** (clarify before ticket) |
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
@@ -31,9 +33,11 @@ Agent: "Implemented."
 
 ---
 
-## Sprint cadence HITL (after gate 2)
+## Sprint cadence HITL (after gate 2 + milestone roadmap)
 
-Pre-implementation uses gates 0–2 (`./studio approve`). **During sprints**, the agent executes autonomously; the human joins at **sprint review**, then helps plan the **next** sprint.
+Pre-implementation uses gates 0–2 (`./studio approve`). **After gate 2**, the agent drafts a **milestone roadmap** (`docs/phases/`); the human approves it before tickets and sprints. **During sprints**, the agent executes autonomously; the human joins at **sprint review**, then helps plan the **next** sprint. **Between milestones**, the human approves milestone completion before the next milestone backlog is written.
+
+See [milestone-planning.md](milestone-planning.md) for roadmap and milestone-review ceremony.
 
 ### Autonomous execution (mid-sprint)
 
@@ -48,6 +52,16 @@ While sprint tickets are not all `done`:
 | `./studio resume` points at the next ticket to implement | Block on a single ticket for human approval |
 
 **Enforced by CLI:** `./studio move … implement` is blocked when sprint review is pending or the sprint is closed.
+
+### Post gate 2 — before first sprint
+
+```
+Gate 2 approved
+  → Agent drafts docs/phases/ (M0, M1, … outlines)
+  → Human approves milestone roadmap
+  → Agent writes tickets for active milestone only → product backlog
+  → ./studio sprint → --approve-scope → groom → implement
+```
 
 ### Feedback → backlog → sprint planning
 
@@ -94,9 +108,9 @@ Sprint review feedback (once per theme)
 
 **Rule:** Feedback tickets land in **backlog without a sprint tag** until `./studio sprint` assigns mature tickets; immature tickets get `planning-questions.md` for the agent to ask the human.
 
-**Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, and retro is complete.
+**Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, retro is complete, and (for the first sprint) the **milestone roadmap** is approved.
 
-When all sprint tickets reach `done`, `./studio resume` surfaces **sprint review pending** and blocks further implementation.
+**Rule:** When all tickets for the **current milestone** are `done`, `./studio resume` surfaces **milestone review pending** — do not write next-milestone tickets until the human approves milestone completion.
 
 ### Example
 

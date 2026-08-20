@@ -2,6 +2,17 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.9.0] — 2026-08-20
+
+### Milestone execution planning (post gate 2)
+
+- ✅ **Execution planning** after design: `docs/phases/` milestone roadmap (M0, M1, …)
+- ✅ Human approves roadmap before sprints; **tickets for active milestone only** (not full dump at gate 2)
+- ✅ **Milestone review** when all milestone tickets done — before next milestone backlog + sprints
+- ✅ Sprint HITL unchanged within a milestone (scope proposal → groom → autonomous implement → review)
+- ✅ New project scaffold: `docs/phases/README.md` + `revisions.md`
+- ✅ Docs: [milestone-planning.md](.quinsy-studio/process/milestone-planning.md); updates to lifecycle, HITL, backlog-model, iterative-delivery, AGENTS.md
+
 ## [1.8.0] — 2026-08-20
 
 ### Product backlog layout + sprint scope approval
