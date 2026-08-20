@@ -25,19 +25,21 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 
 Full agent prompts: [GETTING_STARTED — prompt cheat sheet](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet)
 
-**Three human gates before implementation:**
+**Three human gates before implementation, then milestone planning:**
 
 | Gate | You approve | Then |
 |------|-------------|------|
 | 0 | PRD + definitions | `./studio blueprint` |
 | 1 | Architecture + ADRs | `./studio design --scope journey\|core-views` |
-| 2 | Design mocks + sticker sheet | Tickets generated + library promotion |
+| 2 | Design mocks + sticker sheet | Library promotion |
+| Milestones | Version roadmap (`docs/phases/`) | Tickets for **active milestone** → sprints |
 
 ```bash
 ./studio approve my-project --gate 0
 ./studio blueprint my-project && ./studio approve my-project --gate 1
 ./studio design my-project --scope core-views && ./studio approve my-project --gate 2
-./studio sprint my-project
+./studio approve my-project --milestones    # after agent drafts docs/phases/
+./studio sprint my-project --approve-scope  # after scope proposal
 ```
 
 Full guide: [`.quinsy-studio/GETTING_STARTED.md`](.quinsy-studio/GETTING_STARTED.md) · Agent contract: [`AGENTS.md`](AGENTS.md)
@@ -52,8 +54,9 @@ Open this repo in Cursor. You approve; the agent runs `./studio`.
 | 2. Gate 0 ready | *"Approve gate 0"* |
 | 3. Architecture ready | *"Approve gate 1"* |
 | 4. Design ready | *"Approve gate 2"* (or *"Design core-views first"*) |
-| 5. Build | *"Start sprint and implement the first ticket"* |
-| 6. Sprint done | *"Sprint review"* → *"Approve review"* · feedback via *"I want …"* (not blind tickets) |
+| 5. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
+| 6. Build | *"Start sprint and implement the first ticket"* |
+| 7. Sprint done | *"Sprint review"* → *"Approve review"* · feedback via *"I want …"* (not blind tickets) |
 | Drift | *"Resume my-project — back on track"* |
 
 More examples: [GETTING_STARTED — from PRD to sprint](.quinsy-studio/GETTING_STARTED.md#start-here-prd-in-intake--tell-the-agent) · [prompt cheat sheet](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet)
@@ -120,6 +123,8 @@ quinsy-studio/
 | Using in Cursor | [.quinsy-studio/README.md §4](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor) |
 | External skills | [.quinsy-studio/README.md §8](.quinsy-studio/README.md#8-managing-skills) |
 | Lifecycle | [process/lifecycle.md](.quinsy-studio/process/lifecycle.md) |
+| Milestone planning | [process/milestone-planning.md](.quinsy-studio/process/milestone-planning.md) |
+| Product backlog | [process/backlog-model.md](.quinsy-studio/process/backlog-model.md) |
 | Human gates 0–2 | [process/gates.md](.quinsy-studio/process/gates.md) |
 | Ticket workflow (9 steps) | [process/ticket-workflow.md](.quinsy-studio/process/ticket-workflow.md) |
 | Studio library | [studio-library/library_registry.md](.quinsy-studio/studio-library/library_registry.md) |
@@ -131,9 +136,10 @@ quinsy-studio/
 1. **Library-first** — suggest + pull before coding; promote when generic
 2. **No code without a ticket** (after gate 2)
 3. **Three human gates** — no implementation before gate 2
-4. **Sprint HITL** — review → feedback → clarify → ticket (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
-5. **Two git worlds** — never commit `projects/` to this repo
-6. **Anti-slop + ADRs + HITL** — see process docs
+4. **Sprint HITL** — scope approval → review → feedback → clarify → ticket (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
+5. **Milestones** — roadmap after gate 2; milestone review before next version backlog
+6. **Two git worlds** — never commit `projects/` to this repo
+7. **Anti-slop + ADRs + HITL** — see process docs
 
 ## CLI overview
 
@@ -153,5 +159,5 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-**Version:** 1.6.0  
+**Version:** 1.9.0  
 **Date:** 2026-08-20

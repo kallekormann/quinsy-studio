@@ -11,7 +11,7 @@ All changes to Quinsy Studio are documented here.
 - ✅ **Milestone review** when all milestone tickets done — before next milestone backlog + sprints
 - ✅ Sprint HITL unchanged within a milestone (scope proposal → groom → autonomous implement → review)
 - ✅ New project scaffold: `docs/phases/README.md` + `revisions.md`
-- ✅ Docs: [milestone-planning.md](.quinsy-studio/process/milestone-planning.md); updates to lifecycle, HITL, backlog-model, iterative-delivery, AGENTS.md
+- ✅ Docs: [milestone-planning.md](.quinsy-studio/process/milestone-planning.md); updates to lifecycle, HITL, backlog-model, iterative-delivery, AGENTS.md, README, GETTING_STARTED, operations manual
 
 ## [1.8.0] — 2026-08-20
 

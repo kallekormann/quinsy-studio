@@ -115,7 +115,7 @@ cp studio-templates/prd_template.md ../intake/my-project.md
 ./studio start my-project --mode core
 ```
 
-Intake does **not** create tickets until gate 2.
+Intake does **not** create implementation tickets. After gate 2, the agent drafts a **milestone roadmap** (`docs/phases/`); you approve it before M0 tickets and sprints.
 
 ### Step 3: Human gate 0 — PRD + definitions
 
@@ -138,20 +138,30 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 ```bash
 ./studio design my-project --scope core-views   # or: journey
 # Next.js prototype in design/prototype/, sticker sheet, ui/tokens
-./studio approve my-project --gate 2             # tickets + promote-library
+./studio approve my-project --gate 2             # library promotion (design → studio-library)
 ```
 
-### Step 6: Library-first implementation
+### Step 6: Milestone roadmap
+
+```bash
+# Agent drafts docs/phases/README.md + M0/M1 outlines
+./studio approve my-project --milestones         # human approves roadmap
+# Agent writes M0 tickets → product backlog (milestone: M0)
+```
+
+### Step 7: Library-first implementation
 
 ```bash
 ./studio library suggest my-project "auth billing"
 ./studio library pull my-project auth billing button
 ./studio sprint my-project
+./studio sprint my-project --approve-scope
+./studio groom my-project --approve
 ./studio move my-project MY-0001 implement
 # on done: ./studio library promote my-project packages/... --ticket MY-0001
 ```
 
-### Step 7: QA & learning
+### Step 8: QA & learning
 
 ```bash
 ./studio gate my-project --level 5
@@ -193,7 +203,8 @@ See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-a
 | **Approve gate** | *"Gate 0 looks good — approve"* → `./studio approve nudge --gate 0` |
 | **Send back for revision** | *"Revise gate 1: no Supabase yet, IndexedDB only"* |
 | **Design** | *"Design nudge with scope core-views"* |
-| **Sprint + build** | *"Start sprint and implement the first P0 ticket"* |
+| **Milestones** | *"Draft milestone roadmap"* → *"Approve milestones"* |
+| **Sprint + build** | *"Plan sprint, approve scope, implement first ticket"* |
 | **Sprint review** | *"Sprint review for nudge"* → try app → *"Approve review"* or `./studio feedback` |
 | **New idea (sprint)** | *"Feedback: I want offline mode"* — **not** "create a ticket for offline" |
 | **Drift recovery** | *"Back on track"* / *"Resume nudge"* |
@@ -213,7 +224,7 @@ Agent: blueprint + ADRs → waits for gate 1
 You:  Approve gate 1. Design core views only.
 Agent: design --scope core-views → prototype + sticker sheet
 You:  Approve gate 2.
-Agent: tickets generated → sprint → library pull → implement first ticket
+Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → sprint scope → implement
 ```
 
 ### Two git worlds in Cursor
@@ -244,7 +255,8 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **PRD Template** | `.quinsy-studio/studio-templates/prd_template.md` |
 | **PRD (edited)** | `projects/<name>/docs/intake/prd.md` |
 | **Raw Idea/Input** | `intake/<name>.md` |
-| **Tickets** | `projects/<name>/backlog/open|done|blocked/` |
+| **Milestone roadmap** | `projects/<name>/docs/phases/` |
+| **Tickets** | `projects/<name>/backlog/*.md` (+ `implement/`, `done/`, `blocked/`) |
 | **ADRs** | `projects/<name>/docs/adr/` |
 | **Decision Records** | `projects/<name>/docs/decisions/` |
 | **Sprints** | `projects/<name>/sprints/SPRINT-NN/` |
@@ -271,8 +283,9 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 |-------|--------|----------|------|
 | **1. Intake** | PRD, definitions | `docs/intake/`, `docs/definitions/` | **HUMAN 0** |
 | **2. Architecture** | Blueprint, ADRs | `docs/architecture/`, `docs/adr/` | **HUMAN 1** |
-| **3. Design** | Mocks, tokens, sticker sheet | `design/prototype/`, `ui/` | **HUMAN 2** (+ tickets) |
-| **4. Sprint planning** | Groom, sprint | `sprints/SPRINT-01/` | — |
+| **3. Design** | Mocks, tokens, sticker sheet | `design/prototype/`, `ui/` | **HUMAN 2** |
+| **3b. Milestones** | Version roadmap, M0/M1 outlines | `docs/phases/` | **HUMAN** (`--milestones`) |
+| **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Scope approval |
 | **5. Implementation** | Library-first, tickets | Code in project | Reuse on `done` |
 | **6. QA** | Anti-slop, tests | QA report | Gate 5 (QA level) |
 | **7. Learning** | Retro, promote | Library, LO-* | — |
@@ -307,6 +320,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 ./studio blueprint <project>
 ./studio design <project> --scope journey|core-views
 ./studio approve <project> --gate 0|1|2
+./studio approve <project> --milestones
 ./studio revise <project> --gate <n> --feedback "..."
 
 # Studio library (library-first)
@@ -319,6 +333,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 
 # Sprints & tickets (human in the loop)
 ./studio sprint <project>
+./studio sprint <project> --approve-scope
 ./studio review <project> [--approve|--reject --reason "..."]
 ./studio feedback <project> "raw idea"
 ./studio clarify <project> FB-001 [--title ...] [--acceptance ...] [--approve]

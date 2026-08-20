@@ -47,12 +47,13 @@ Then it does **only** what `resume` lists — usually filling artifacts until **
 |-------|---------|------------|-------------|
 | **Intake** | *"Bootstrap nudge from intake/nudge.md"* | `./studio bootstrap nudge` → fills `docs/definitions/` | *"Gate 0 looks good — approve"* → `./studio approve nudge --gate 0` |
 | **Architecture** | *"Continue with blueprint"* | `./studio blueprint nudge` → architecture + ADRs | *"Approve gate 1"* |
-| **Design** | *"Design core views only"* | `./studio design nudge --scope core-views` → prototype + sticker sheet | *"Approve gate 2"* → tickets generated |
-| **Sprint** | *"Start the sprint and implement the first ticket"* | `./studio sprint nudge`, library pull, `./studio move … implement` | Review code / mocks as you like |
+| **Design** | *"Design core views only"* | `./studio design nudge --scope core-views` → prototype + sticker sheet | *"Approve gate 2"* → library promotion |
+| **Milestones** | *"Draft the milestone roadmap"* | Fills `docs/phases/` (M0, M1, …) | *"Approve milestones"* → agent writes M0 tickets |
+| **Sprint** | *"Start the sprint and implement the first ticket"* | `./studio sprint nudge` → `--approve-scope`, library pull, `./studio move … implement` | Review scope proposal; groom |
 | **Sprint review** | *"Give me a sprint review"* | `./studio review nudge` | *"Shipped looks good"* → `--approve`; ideas → `./studio feedback` |
 | **New idea** | *"I want offline mode"* | `./studio feedback nudge "…"` → clarify with you → ticket | Confirm clarified ticket before implement |
 
-**Tickets exist only after gate 2.** No implementation before that.
+**No product implementation before gate 2.** After gate 2, approve the **milestone roadmap** before sprints; tickets populate per active milestone (M0, M1, …).
 
 ---
 
@@ -77,8 +78,18 @@ Use natural language. The agent maps your intent to `./studio` commands.
 | **0** PRD + definitions | *"Approve gate 0"* | *"Revise gate 0: personas need more detail on …"* |
 | **1** Architecture | *"Approve gate 1"* | *"Revise gate 1: use IndexedDB only, no Supabase yet"* |
 | **2** Design + mocks | *"Approve gate 2"* / *"Approve design"* | *"Revise gate 2: sticker sheet missing dark mode"* |
+| **Milestones** | *"Approve milestones"* / *"Roadmap looks good"* | *"Revise M0 scope: defer legal pages to M1"* |
 
-Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`.
+Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Milestone roadmap lives in `docs/phases/` — see [milestone-planning.md](process/milestone-planning.md).
+
+### Milestone planning (after gate 2)
+
+| You want | Example message |
+|----------|-----------------|
+| Draft roadmap | *"Draft milestone roadmap for &lt;project&gt; from the PRD"* |
+| Approve roadmap | *"Approve milestones"* → `./studio approve &lt;p&gt; --milestones` |
+| Start M0 work | *"Write M0 tickets and plan the first sprint"* |
+| Milestone complete | *"M0 is done — milestone review"* (before M1 tickets) |
 
 ### Design scope (gate 2)
 
@@ -87,11 +98,13 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`.
 | Key screens only | *"Design &lt;project&gt; with scope core-views"* |
 | Full user journey | *"Design &lt;project&gt; with scope journey"* |
 
-### Implementation (after gate 2)
+### Implementation (after milestones approved)
 
 | You want | Example message |
 |----------|-----------------|
-| Start sprint | *"Create sprint and show the board"* |
+| Propose sprint scope | *"Plan the next sprint"* → `./studio sprint &lt;p&gt;` → review `scope-proposal.md` |
+| Approve sprint scope | *"Approve sprint scope"* → `./studio sprint &lt;p&gt; --approve-scope` |
+| Start sprint | *"Groom and implement the first ticket"* |
 | Work a ticket | *"Implement NUDG-0003"* (agent: library suggest/pull → move implement) |
 | Finish ticket | *"Mark NUDG-0003 done if DoD is met"* |
 | Off-sprint idea | *"Can we add X?"* → agent should **not** code silently; uses guard → feedback or ticket |
@@ -131,10 +144,11 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Session start | `./studio verify-worlds && ./studio focus <p> && ./studio resume <p>` |
 | New project from PRD | `./studio bootstrap <p>` |
 | Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` · `./studio revise <p> --gate N --feedback "..."` |
+| Milestones | `./studio approve <p> --milestones` (after `docs/phases/` drafted) |
 | Architecture | `./studio blueprint <p>` |
 | Design | `./studio design <p> --scope journey\|core-views` |
 | Status / board | `./studio status <p>` · `./studio board <p>` |
-| Sprint | `./studio sprint <p>` · `./studio move <p> <ID> implement` · `./studio move <p> <ID> done` |
+| Sprint | `./studio sprint <p>` · `./studio sprint <p> --approve-scope` · `./studio move <p> <ID> implement` · `./studio move <p> <ID> done` |
 | Library-first | `./studio library suggest <p> "auth billing"` · `./studio library pull <p> …` |
 | Sprint review | `./studio review <p>` · `./studio review <p> --approve` |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
@@ -177,7 +191,18 @@ Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in
 | **1** | Architecture blueprint + ADRs | `./studio approve <p> --gate 1` |
 | **2** | Design + Next.js mocks + sticker sheet | `./studio approve <p> --gate 2` |
 
-Tickets are created **only after gate 2**. Gate 2 also promotes design artifacts to [studio-library](studio-library/library_registry.md).
+Gate 2 promotes design artifacts to [studio-library](studio-library/library_registry.md). **Tickets** are written for the **active milestone** after you approve the roadmap (`./studio approve <p> --milestones`).
+
+## Milestone roadmap (before first sprint)
+
+1. Agent drafts `docs/phases/README.md` + M0/M1 outlines from PRD + blueprint
+2. You approve: `./studio approve <p> --milestones`
+3. Agent writes **M0 tickets only** → product backlog (`backlog/*.md`, `milestone: M0`)
+4. Sprint planning: `./studio sprint <p>` → you `--approve-scope` → groom → implement
+
+When all M0 tickets are done → **milestone review** → plan M1 tickets → sprints resume.
+
+See [milestone-planning.md](process/milestone-planning.md).
 
 ## AI-driven bootstrap
 
@@ -192,7 +217,10 @@ Tickets are created **only after gate 2**. Gate 2 also promotes design artifacts
 ./studio blueprint my-project && ./studio approve my-project --gate 1
 ./studio design my-project --scope core-views
 ./studio approve my-project --gate 2
+./studio approve my-project --milestones
 ./studio sprint my-project
+./studio sprint my-project --approve-scope
+./studio groom my-project --approve
 ./studio move my-project MY-0001 implement
 ```
 
@@ -232,7 +260,9 @@ On `./studio move … done` → warns if registry paths changed without promotio
 | Atomic UI | `ui/components/atoms\|molecules\|organisms/` |
 | Sticker sheet | `design/prototype/app/sticker-sheet/` |
 | Packages | `packages/auth/`, `packages/billing/`, … |
-| Tickets | `backlog/open/` (after gate 2) |
+| Milestone roadmap | `docs/phases/README.md`, `docs/phases/M0-*.md`, … |
+| Revisions log | `docs/phases/revisions.md` |
+| Tickets | `backlog/*.md` (product backlog; `implement/`, `done/`, `blocked/`) |
 | Library pull log | `docs/library-usage.json` |
 | Library promote log | `docs/library-promotions.json` |
 
@@ -263,16 +293,20 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 ## Sprint cadence (human in the loop)
 
-After gate 2, the **agent runs the sprint autonomously**; you join at **sprint review** when all sprint tickets are done. Ideas do **not** become tickets blindly.
+After the **milestone roadmap** is approved, the **agent runs each sprint autonomously**; you join at **sprint scope approval** and **sprint review**. Ideas do **not** become tickets blindly.
 
 | Phase | Who | What |
 |-------|-----|------|
+| Sprint scope | **You** | Review `scope-proposal.md` → `./studio sprint <p> --approve-scope` |
 | Mid-sprint | Agent | Implements all groomed sprint tickets — no "should I continue?" between tickets |
 | Sprint review | **You** | Try shipped work; approve or reject |
+| Milestone done | **You** | Approve milestone complete before next milestone backlog |
 | After review | **You** + agent | Feedback → clarify → ticket; groom; retro; plan next sprint |
 
 | Step | Command |
 |------|---------|
+| Propose scope | `./studio sprint <p>` |
+| Approve scope | `./studio sprint <p> --approve-scope` |
 | Status brief | `./studio review <p>` |
 | Your feedback | `./studio feedback <p> "..."` |
 | Clarify → ticket | `./studio clarify <p> FB-001 ... --approve` → `./studio ticket <p> "..." --from-feedback FB-001` |

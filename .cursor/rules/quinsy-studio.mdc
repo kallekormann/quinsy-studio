@@ -44,9 +44,9 @@ Adapt pulled code in the project. After ticket done, promote if generic:
 ./studio library promote <project> packages/billing --ticket <ID> [--force]
 ```
 
-## Sprint HITL (after gate 2)
+## Sprint HITL (after milestone roadmap)
 
-Autonomous mid-sprint execution; human at sprint review only. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. **Never implement feedback during review.** When sprint tickets are done: `./studio review` → human `--approve` → groom → retro → `./studio sprint`.
+Autonomous mid-sprint execution; human at **sprint scope approval** and **sprint review**. Milestone review when all M* tickets done. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. **Never implement feedback during review.** When sprint tickets are done: `./studio review` → human `--approve` → groom → retro → `./studio sprint`.
 
 ## Drift recovery
 
