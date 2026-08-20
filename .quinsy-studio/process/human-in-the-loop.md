@@ -44,6 +44,7 @@ While sprint tickets are not all `done`:
 | Agent implements every groomed sprint ticket in order | Ask the human "should I continue?" between tickets |
 | Agent moves tickets `implement` → `done` without pausing | Let the human change direction mid-sprint |
 | Human may `./studio feedback` (queued for after review) | Turn feedback into tickets or code before sprint review |
+| Agent captures feedback only during review | Agent implements feedback in project code during review |
 | `./studio resume` points at the next ticket to implement | Block on a single ticket for human approval |
 
 **Enforced by CLI:** `./studio move … implement` is blocked when sprint review is pending or the sprint is closed.
@@ -69,6 +70,8 @@ Groom sprint → autonomous implementation → ./studio review (human) → feedb
 | **Next sprint** | **Human** + agent | `./studio sprint <p>` → `./studio groom <p> --approve` |
 
 **Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
+
+**Rule:** During sprint review, the agent **never implements** feedback in project code — only `./studio feedback` → clarify → ticket for the **next** sprint.
 
 **Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, and retro is complete.
 

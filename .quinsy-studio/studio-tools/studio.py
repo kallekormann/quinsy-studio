@@ -509,8 +509,9 @@ class StudioOrchestrator:
         elif needs_sprint_review(status):
             actions.append(f"⏸ HUMAN: sprint review pending — ./studio review {project}")
             actions.append(f"Human: try shipped work, then ./studio review {project} --approve")
-            actions.append(f"New ideas: ./studio feedback {project} \"...\" (not direct tickets)")
-            actions.append("Agent: do NOT implement or ask for direction — wait for human review")
+            actions.append(f"Product feedback: ./studio feedback {project} \"...\" (NOT implementation)")
+            actions.append(f"Flow: feedback → clarify → ticket --from-feedback → next sprint")
+            actions.append("Agent: do NOT edit projects/{p}/ for review feedback — backlog only".format(p=project))
         elif is_sprint_closed(status, project):
             hitl = get_sprint_hitl(status)
             actions.append(f"⏸ Sprint closed (review approved) — plan next sprint with human")
@@ -587,6 +588,7 @@ class StudioOrchestrator:
             "sprint_review": "⏸",
             "sprint_closed": "⏸",
             "autonomous_sprint": "🤖",
+            "feedback_only": "📝",
             "studio_meta": "🏢",
             "unclear": "❓",
         }
@@ -1171,7 +1173,7 @@ class StudioOrchestrator:
         print(f"\n  Human steps:")
         print(f"    1. Read {review_file.relative_to(STUDIO_ROOT)}")
         print(f"    2. Try the project (RUNBOOK / prototype)")
-        print(f"    3. ./studio feedback {project} \"your ideas\"")
+        print(f"    3. ./studio feedback {project} \"your ideas\"  (agent: capture only — never implement)")
         print(f"    4. ./studio review {project} --approve [--notes \"...\"]")
         print(f"       or: ./studio review {project} --reject --reason \"...\"")
         return True
@@ -1191,6 +1193,8 @@ class StudioOrchestrator:
         fb_id, md_file = add_feedback(project, sprint, text, source)
         print(f"\n  Captured {fb_id} (status: raw — NOT a ticket)")
         print(f"  File: {md_file}")
+        print(f"\n  ⛔ DO NOT implement this in project code during sprint review.")
+        print(f"     Feedback becomes work only after: clarify → ticket --from-feedback → next sprint.")
         print(f"\n  Next:")
         print(f"    ./studio clarify {project} {fb_id} --title \"...\" --scope \"...\" --acceptance \"...\"")
         print(f"    ./studio clarify {project} {fb_id} --approve")
@@ -2026,11 +2030,55 @@ What does this decision mean for the project?
             print(f"\n  Showing docker logs...")
             print(f"  (cd {docker_dir} && docker-compose logs -f)")
     
-    def cmd_repo(self, project: str, action: str):
-        """Manage the GitHub repository."""
-        
+    def cmd_repo(self, project: str, action: str, url: str = ""):
+        """Manage the project GitHub repository (project world — not studio HQ)."""
+        project_dir = PROJECTS_DIR / project
+        if not project_dir.exists():
+            print(f"\n  ❌ Project '{project}' not found.")
+            return False
+
         print_header(f"GITHUB REPO: {project}")
-        
+
+        if action == "link":
+            if not url.strip():
+                print(f"\n  Usage: ./studio repo {project} link <git-url>")
+                print(f"  Example: ./studio repo {project} link https://github.com/kallekormann/nudge.git")
+                return False
+
+            git_dir = project_dir / ".git"
+            if not git_dir.exists() or not (git_dir / "HEAD").exists():
+                subprocess.run(["git", "init"], cwd=str(project_dir), check=False, capture_output=True)
+                subprocess.run(["git", "checkout", "-B", "main"], cwd=str(project_dir), check=False, capture_output=True)
+                print(f"\n  ✓ Git initialized in projects/{project}/")
+
+            existing = subprocess.run(
+                ["git", "remote", "get-url", "origin"],
+                cwd=str(project_dir),
+                capture_output=True,
+                text=True,
+            )
+            if existing.returncode == 0:
+                subprocess.run(
+                    ["git", "remote", "set-url", "origin", url.strip()],
+                    cwd=str(project_dir),
+                    check=False,
+                )
+                print(f"\n  ✓ Updated origin: {url.strip()}")
+            else:
+                subprocess.run(
+                    ["git", "remote", "add", "origin", url.strip()],
+                    cwd=str(project_dir),
+                    check=False,
+                )
+                print(f"\n  ✓ Linked origin: {url.strip()}")
+
+            status = load_status(project)
+            status["repository_url"] = url.strip()
+            save_status(project, status)
+            print(f"  Saved to status.json → repository_url")
+            print(f"\n  Project git ops run inside projects/{project}/ — never from studio root.")
+            return True
+
         if action == "create":
             print(f"\n  Create repository: {project}")
             print(f"  (gh repo create {project} --private --source=.)")
@@ -2431,7 +2479,8 @@ def main():
         orchestrator.cmd_env(args[0], args[1])
     
     elif command == "repo" and len(args) >= 2:
-        orchestrator.cmd_repo(args[0], args[1])
+        url = args[2] if len(args) >= 3 else ""
+        orchestrator.cmd_repo(args[0], args[1], url=url)
     
     elif command == "promote" and len(args) >= 2:
         orchestrator.cmd_promote(args[0], args[1])

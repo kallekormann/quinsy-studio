@@ -14,14 +14,18 @@ from typing import Dict, List, Optional, Tuple
 
 try:
     from sprint_hitl import (
+        feedback_only_message,
         is_autonomous_sprint_execution,
         is_sprint_closed,
+        looks_like_review_product_feedback,
         needs_sprint_review,
     )
 except ImportError:
     needs_sprint_review = lambda status: False  # type: ignore
     is_sprint_closed = lambda status, project: False  # type: ignore
     is_autonomous_sprint_execution = lambda status, project: False  # type: ignore
+    looks_like_review_product_feedback = lambda request: False  # type: ignore
+    feedback_only_message = lambda project: "Sprint review pending."  # type: ignore
 
 STUDIO_ROOT = Path(__file__).parent.parent.parent
 QUINSY_STUDIO = STUDIO_ROOT / ".quinsy-studio"
@@ -115,7 +119,7 @@ def build_focus_report(project: str, status: Dict) -> str:
     sprint = status.get("current_sprint")
     if sprint:
         if needs_sprint_review(status):
-            lines.append("⏸ SPRINT REVIEW PENDING — human tests shipped work; agent must not implement")
+            lines.append("⏸ SPRINT REVIEW — capture feedback only; agent must NOT implement product changes")
         elif is_sprint_closed(status, project):
             lines.append("⏸ SPRINT CLOSED — plan next sprint (retro → groom → ./studio sprint)")
         elif is_autonomous_sprint_execution(status, project):
@@ -151,7 +155,7 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     """
     Classify a user request against project/sprint scope.
     Returns (verdict, message).
-    verdict: in_scope | needs_ticket | pre_impl | sprint_review | sprint_closed | autonomous_sprint | studio_meta | unclear
+    verdict: in_scope | needs_ticket | pre_impl | sprint_review | sprint_closed | autonomous_sprint | feedback_only | studio_meta | unclear
     """
     req_tokens = _tokenize(request)
     if not req_tokens:
@@ -185,11 +189,21 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
             )
 
     if needs_sprint_review(status):
+        read_only = {
+            "review", "feedback", "approve", "reject", "board", "resume", "focus",
+            "status", "clarify", "retro", "groom", "list",
+        }
+        if req_tokens & impl_signals or looks_like_review_product_feedback(request):
+            return "feedback_only", feedback_only_message(project)
+        if not (req_tokens & read_only):
+            return "feedback_only", feedback_only_message(project)
+        if req_tokens & {"feedback"} or "feedback" in request.lower():
+            return "feedback_only", feedback_only_message(project)
         if req_tokens & (impl_signals | direction_signals):
             return "sprint_review", (
-                f"Sprint review pending — human tests all shipped work before more implementation. "
+                f"Sprint review pending — human tests shipped work before more implementation. "
                 f"./studio review {project} → ./studio review {project} --approve. "
-                "Capture ideas with ./studio feedback (not direct tickets)."
+                "Product ideas: ./studio feedback (never implement mid-review)."
             )
 
     if is_sprint_closed(status, project):

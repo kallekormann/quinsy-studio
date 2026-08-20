@@ -2,6 +2,15 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.7.1] — 2026-08-20
+
+### Sprint review feedback — capture only, never implement
+
+- ✅ `./studio guard` returns `feedback_only` during sprint review for product/polish requests
+- ✅ `./studio feedback` warns: do NOT implement mid-review — clarify → ticket → next sprint
+- ✅ `./studio repo <p> link <url>` — link project git remote (project world)
+- ✅ Docs + resume: explicit rule — review feedback is backlog-only until next sprint
+
 ## [1.7.0] — 2026-08-20
 
 ### Sprint review boundary (autonomous execution)

@@ -171,6 +171,32 @@ def needs_sprint_review(status: Dict) -> bool:
     return hitl.get("review_status") == REVIEW_PENDING
 
 
+def feedback_only_message(project: str) -> str:
+    """Agent-facing message: sprint-review feedback is backlog-only until the next sprint."""
+    return (
+        f"Sprint review pending — product feedback must NOT be implemented in code now.\n"
+        f"  1. ./studio feedback {project} \"...\"  (raw — not a ticket)\n"
+        f"  2. ./studio clarify {project} FB-NNN ... --approve\n"
+        f"  3. ./studio ticket {project} \"...\" --from-feedback FB-NNN\n"
+        f"  4. ./studio review {project} --approve → groom → retro → ./studio sprint {project}\n"
+        f"  Work lands in the **next** sprint backlog — never mid-review."
+    )
+
+
+def looks_like_review_product_feedback(request: str) -> bool:
+    """Heuristic: user is describing product polish/features during sprint review."""
+    lower = request.lower()
+    if "feedback" in lower:
+        return True
+    polish = {
+        "animation", "confetti", "nicer", "juicier", "prettier", "better", "improve",
+        "polish", "transform", "burst", "motion", "should", "needs", "could", "want",
+        "wish", "instead", "more", "less", "fix", "change", "add", "remove",
+    }
+    tokens = set(re.findall(r"[a-z0-9]{3,}", lower))
+    return bool(tokens & polish)
+
+
 def is_sprint_closed(status: Dict, project: str) -> bool:
     """All sprint tickets done and human approved review — implementation frozen until next sprint."""
     sprint = status.get("current_sprint")
@@ -202,9 +228,9 @@ def implement_blocked_reason(status: Dict, project: str) -> Optional[str]:
     sprint = status.get("current_sprint") or "SPRINT-??"
     if needs_sprint_review(status):
         return (
-            f"\n  ⏸  Sprint review pending for {sprint} — human tests shipped work before more code.\n"
-            f"    ./studio review {project}\n"
-            f"    ./studio review {project} --approve"
+            f"\n  ⏸  Sprint review pending for {sprint} — no project code changes.\n"
+            f"    Product ideas: ./studio feedback {project} \"...\" (never implement mid-review)\n"
+            f"    ./studio review {project} --approve when ready"
         )
     if is_sprint_closed(status, project):
         hitl = get_sprint_hitl(status)

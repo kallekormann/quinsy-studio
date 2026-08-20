@@ -85,7 +85,7 @@ Projects **consume** library via `./studio sync <project>`; they **feed** librar
 
 **Mid-sprint:** agent implements autonomously — do not ask the human for direction between tickets.
 
-**Sprint review:** when all sprint tickets are `done`, pause for human review — never ticket sprint-review ideas directly:
+**Sprint review:** when all sprint tickets are `done`, pause for human review — never ticket sprint-review ideas directly. **Never implement review feedback in code** — only `./studio feedback` → clarify → ticket for the **next** sprint.
 
 ```bash
 ./studio review <project>
