@@ -1,0 +1,58 @@
+version: '3.8'
+
+# =============================================================================
+# Quinsy Studio — Basis-Docker-Template
+# =============================================================================
+# Wird beim Projekt-Setup (./studio env <project> init) als Basis in den
+# Projektordner kopiert und dort projektspezifisch erweitert.
+#
+# Platzhalter, die beim Init ersetzt werden:
+#   {{PROJECT_NAME}}  → Projektname
+#
+# Projekt-spezifische Erweiterungen (Services, Builds, Volumes) gehören NUR
+# in projects/<name>/docker/ — NIEMALS in dieses Template.
+# =============================================================================
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${PROJECT_NAME}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Optional: App-Service (für Full-Stack-Projekte einblenden)
+  # app:
+  #   build: .
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     DATABASE_URL: postgresql://postgres:postgres@db:5432/${PROJECT_NAME}
+  #     REDIS_URL: redis://redis:6379
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+
+volumes:
+  postgres_data:

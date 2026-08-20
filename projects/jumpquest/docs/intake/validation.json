@@ -1,0 +1,37 @@
+{
+  "project": "jumpquest",
+  "archetype": "game",
+  "is_valid": false,
+  "sections_found": [
+    "problem",
+    "target_audience",
+    "scope_in",
+    "monetization"
+  ],
+  "sections_missing": [
+    "title",
+    "goals",
+    "requirements_functional"
+  ],
+  "problems": [
+    {
+      "section": "title",
+      "type": "missing",
+      "message": "Pflicht-Sektion 'title' fehlt",
+      "severity": "critical"
+    },
+    {
+      "section": "goals",
+      "type": "missing",
+      "message": "Pflicht-Sektion 'goals' fehlt",
+      "severity": "critical"
+    },
+    {
+      "section": "requirements_functional",
+      "type": "missing",
+      "message": "Pflicht-Sektion 'requirements_functional' fehlt",
+      "severity": "critical"
+    }
+  ],
+  "generated_at": "2026-08-20T09:31:52.918047"
+}

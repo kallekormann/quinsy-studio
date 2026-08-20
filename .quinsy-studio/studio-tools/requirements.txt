@@ -1,0 +1,9 @@
+# Quinsy Studio - Python Dependencies
+# No external dependencies required - uses only stdlib
+# 
+# If you want enhanced features, install these optionally:
+#
+# rich>=13.0.0          # Pretty terminal output
+# click>=8.0.0          # CLI framework
+# pyyaml>=6.0           # YAML support
+# toml>=0.10.0          # TOML support

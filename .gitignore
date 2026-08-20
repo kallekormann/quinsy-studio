@@ -1,0 +1,42 @@
+# =============================================================================
+# Quinsy Studio — .gitignore
+# =============================================================================
+
+# Externe Skills: geklonte Repos (65MB+, regenerierbar via `./studio update-skills`)
+# Nur die skill-dependencies.json ist die Source of Truth.
+.quinsy-studio/external-skills/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Node (Projekt-Builds)
+node_modules/
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+# macOS
+.DS_Store
+
+# IDE
+.freebuff/
+.idea/
+.vscode/
+*.swp
+
+# Secrets & Env
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# QA-Reports (generiert)
+projects/*/docs/qa-report-*.json
+
+# Logs
+*.log
+npm-debug.log*

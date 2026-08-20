@@ -1,0 +1,46 @@
+{
+  "assets": [
+    {
+      "name": "button",
+      "kind": "component",
+      "source_project": "studio",
+      "promoted": "2026-08-19",
+      "title": "Generischer Button (token-basiert, Varianten)"
+    },
+    {
+      "name": "comparison",
+      "kind": "page-type",
+      "source_project": "studio",
+      "promoted": "2026-08-19",
+      "title": "Seitentyp: Vergleich/Alternativen"
+    },
+    {
+      "name": "auth",
+      "kind": "package",
+      "source_project": "studio",
+      "promoted": "2026-08-19",
+      "title": "Auth-Bausteine (Sanctum/Session, RBAC-Hooks)"
+    },
+    {
+      "name": "billing",
+      "kind": "package",
+      "source_project": "studio",
+      "promoted": "2026-08-19",
+      "title": "Billing-Bausteine (Subscription, Metering, Steuer)"
+    },
+    {
+      "name": "feature-gating",
+      "kind": "package",
+      "source_project": "studio",
+      "promoted": "2026-08-19",
+      "title": "Feature-Gating (Flags, Rollout, Segmente)"
+    },
+    {
+      "name": "testbtn",
+      "kind": "component",
+      "source_project": "testproj",
+      "promoted": "2026-08-20",
+      "title": "testbtn (promoted from testproj)"
+    }
+  ]
+}

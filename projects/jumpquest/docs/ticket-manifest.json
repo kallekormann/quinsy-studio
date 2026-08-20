@@ -1,0 +1,49 @@
+{
+  "project": "jumpquest",
+  "archetype": "",
+  "generated_at": "2026-08-20T09:31:52.940542",
+  "ticket_count": 4,
+  "tickets": [
+    {
+      "id": "JUMP-0001",
+      "title": "Projekt-Setup & Tooling",
+      "phase": 2,
+      "priority": "P0",
+      "team": "08-platform-enterprise-engineering",
+      "skills": [
+        "PE-001",
+        "PE-002"
+      ]
+    },
+    {
+      "id": "JUMP-0002",
+      "title": "Design System & Tokens",
+      "phase": 2,
+      "priority": "P0",
+      "team": "01-frontend-experience",
+      "skills": [
+        "FE-002"
+      ]
+    },
+    {
+      "id": "JUMP-0003",
+      "title": "Datenbank-Schema & Migrationen",
+      "phase": 2,
+      "priority": "P0",
+      "team": "02-backend-systems",
+      "skills": [
+        "BE-002"
+      ]
+    },
+    {
+      "id": "JUMP-0004",
+      "title": "Authentifizierung & Autorisierung",
+      "phase": 3,
+      "priority": "P0",
+      "team": "02-backend-systems",
+      "skills": [
+        "BE-003"
+      ]
+    }
+  ]
+}

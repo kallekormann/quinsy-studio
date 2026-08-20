@@ -1,0 +1,54 @@
+{
+  "//": "Quinsy Studio — Skill Dependencies (Agent-as-a-Dependency).",
+  "//2": "Format: <domain> → Quelle. install via `npx skills add <owner>/<repo>` oder git clone (Fallback).",
+  "//3": "Immer dem internen anti_ai_slop_protocol.md und Zero-Data-Architecture untergeordnet.",
+  "design": {
+    "repo": "github:Nutlope/hallmark@main",
+    "install": "npx skills add nutlope/hallmark",
+    "why": "Anti-AI-Slop-Design-Skill: 57 Slop-Test-Gates, Macrostructure-Auswahl, Theme-System. Für UI/Interaction Designer & Design-Tokens.",
+    "team": "01-frontend-experience",
+    "usage": "audit|redesign|study|build"
+  },
+  "design_awesome": {
+    "repo": "github:bergside/awesome-design-skills@main",
+    "install": "npx skills add bergside/awesome-design-skills",
+    "why": "67 kuratierte DESIGN.md/SKILL.md-Design-Skills (Corporate, Minimal, Glassmorphism, ...) für agentic Tools.",
+    "team": "01-frontend-experience",
+    "usage": "Referenz-Bibliothek für UI-Entwürfe (SKILL.md + DESIGN.md pro Stil)"
+  },
+  "all_domains": {
+    "repo": "github:seb1n/awesome-ai-agent-skills@main",
+    "install": "npx skills add seb1n/awesome-ai-agent-skills",
+    "why": "103 fertige SKILL.md-Workflows: Database, Security, Legal/Compliance, Marketing/SEO, Copywriting, Project Management, DevOps, API-Design.",
+    "team": "alle",
+    "usage": "--skill <name> gezielt installieren"
+  },
+  "marketing_aeo": {
+    "repo": "github:coreyhaines31/marketingskills@main",
+    "install": "npx skills add coreyhaines31/marketingskills",
+    "why": "Marketing-Skills von Corey Haines: CRO, Copywriting, SEO, Analytics, Growth Engineering — inkl. ai-seo (AEO: in AI-Search/LLM-Antworten zitiert werden).",
+    "team": "05-growth-marketing-content",
+    "usage": "product-marketing (Basis) → ai-seo, seo-audit, copywriting, ab-testing, analytics"
+  },
+  "gamedev": {
+    "repo": "github:gamedev-skills/awesome-gamedev-agent-skills@main",
+    "install": "npx skills add gamedev-skills/awesome-gamedev-agent-skills",
+    "why": "67 Game-Dev-Skills mit Router (Godot, Unity, Unreal, Phaser, PixiJS, three.js, Bevy, pygame, LÖVE, Roblox).",
+    "team": "01-frontend-experience / 02-backend-systems",
+    "usage": "Router erkennt Engine + Task automatisch (z.B. godot-2d-movement + platformer)"
+  },
+  "compliance_cookies": {
+    "repo": "github:samir-abis/cookiecomply-skills@main",
+    "install": "npx skills add samir-abis/cookiecomply-skills",
+    "why": "DSGVO/Cookie-Compliance-Skills (CookieBanner, Consent-Management) für Cursor, Claude, Codex.",
+    "team": "03-compliance-legal",
+    "usage": "Cookie-Banner + Consent-Workflows für CL-002"
+  },
+  "geo_visibility": {
+    "repo": "github:bloomprotocol/agent-visibility-skill@main",
+    "install": "npx skills add bloomprotocol/agent-visibility-skill",
+    "why": "GEO/AI-Visibility (vendor-neutral): llms.txt, JSON-LD-Schema, Comparison Pages, AI-Visibility-Audit. Referenz für AEO/GEO.",
+    "team": "05-growth-marketing-content",
+    "usage": "AI-Visibility-Audit, llms.txt, Vergleichsseiten (GM-002 AEO)"
+  }
+}
