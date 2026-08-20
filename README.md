@@ -109,8 +109,9 @@ quinsy-studio/
 1. **Library-first** — suggest + pull before coding; promote when generic
 2. **No code without a ticket** (after gate 2)
 3. **Three human gates** — no implementation before gate 2
-4. **Two git worlds** — never commit `projects/` to this repo
-5. **Anti-slop + ADRs + HITL** — see process docs
+4. **Sprint HITL** — review → feedback → clarify → ticket (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
+5. **Two git worlds** — never commit `projects/` to this repo
+6. **Anti-slop + ADRs + HITL** — see process docs
 
 ## CLI overview
 
@@ -118,6 +119,8 @@ quinsy-studio/
 ./studio --help
 ./studio library list
 ./studio bootstrap <project>
+./studio review <project>
+./studio feedback <project> "..."
 ./studio board <project>
 ./studio learn "..." --signal tooling-gap
 ```
@@ -128,5 +131,5 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-**Version:** 1.5.0  
+**Version:** 1.6.0  
 **Date:** 2026-08-20

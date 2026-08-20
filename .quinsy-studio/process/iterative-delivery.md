@@ -222,39 +222,78 @@ The board shows all tickets by their current status:
 
 ## Sprint review
 
-At the end of each sprint:
+Human reviews shipped work before feedback becomes backlog items.
+
+```bash
+./studio review <project>              # prepare review.md + status brief
+./studio review <project> --approve    # human signed off
+./studio review <project> --reject --reason "..."
+```
+
+When all sprint-tagged tickets are `done`, status flags **review pending** and `./studio resume` blocks autonomous “next sprint” until you approve.
+
+Artifact: `projects/<p>/sprints/SPRINT-NN/review.md`
 
 ```markdown
 # Sprint Review — SPRINT-NN
 
+## Shipped (done)
+- [x] TICKET-001: ...
+
+## Human review checklist
+- [ ] Reviewed done tickets
+- [ ] Tried the project (RUNBOOK / prototype)
+- [ ] Captured ideas via ./studio feedback (not direct tickets)
+```
+
+---
+
+## Feedback → clarify → ticket
+
+**Never** create tickets directly from sprint-review conversation.
+
+```bash
+./studio feedback <project> "raw idea from human"
+./studio clarify <project> FB-001 --title "..." --scope "..." --acceptance "..." --approve
+./studio ticket <project> "..." --from-feedback FB-001
+./studio feedback-list <project>
+```
+
+Queue: `projects/<p>/sprints/SPRINT-NN/feedback-queue.json`
+
+| Status | Meaning |
+|--------|---------|
+| `raw` | Human feedback captured |
+| `clarifying` | Draft being refined |
+| `ready` | Executable — may create ticket |
+| `ticketed` | Linked to backlog ticket |
+
+---
+
+## Sprint metrics (in review.md / summary.md)
+
+```markdown
 ## Achieved
 - [x] TICKET-001: ...
-- [x] TICKET-002: ...
 
 ## Not achieved (moved)
 - [ ] TICKET-003: ... (reason: ...)
 
 ## Metrics
-- Planned: 5 tickets
-- Completed: 3 tickets
-- Rate: 60%
-- Average duration: 2 days/ticket
-
-## Velocity
-- SPRINT-01: 3 tickets
-- SPRINT-02: 4 tickets (+1)
-- Trend: 📈
+- Planned: 5 tickets | Completed: 3 | Rate: 60%
 ```
 
 ---
 
 ## Retrospective
 
-After each sprint:
+After review is approved:
 
 ```bash
 ./studio retro <project>
 ```
+
+Creates `projects/<p>/sprints/SPRINT-NN/retro.md` (project retro). Optional studio-wide learnings: `./studio learn "..."`.
 
 ### Retro template
 
@@ -368,6 +407,9 @@ Every project has a `status.json`:
 - `.quinsy-studio/process/gates.md` — gate definitions
 - `.quinsy-studio/process/lifecycle.md` — phase overview
 - `./studio sprint <project>` — create a sprint
+- `./studio review <project>` — human sprint review brief
+- `./studio feedback <project> "..."` — raw feedback (not a ticket)
+- `./studio clarify <project> FB-001` — clarify feedback
 - `./studio groom <project>` — run grooming
 - `./studio board <project>` — show the board
 - `./studio move <project> <id> <status>` — move a ticket

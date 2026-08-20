@@ -30,7 +30,9 @@ After the ticket is done, if changes are generic:
 ```
 
 On `./studio move <project> <ID> implement` you get a library hint.  
-On `./studio move … done` unpromoted changes under `packages/`, `ui/components/`, etc. → **warning**.
+On `./studio move … done` → warns if registry paths changed without promotion.
+
+**Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. Pause for `./studio review --approve` when sprint tickets are done.
 
 ## Two worlds — never mix
 
@@ -60,6 +62,21 @@ On `./studio move … done` unpromoted changes under `packages/`, `ui/components
 ./studio guard <project> "user request"
 ./studio focus <project> && ./studio resume <project>   # drift recovery
 ```
+
+## Sprint HITL (after gate 2)
+
+Human reviews shipped work; feedback becomes tickets only after clarification.
+
+```bash
+./studio review <project>                          # status brief for human
+./studio feedback <project> "idea"                 # raw — not a ticket
+./studio clarify <project> FB-001 ... --approve    # executable draft
+./studio ticket <project> "..." --from-feedback FB-001
+./studio review <project> --approve
+./studio groom <project> && ./studio retro <project>
+```
+
+See [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md#sprint-cadence-hitl-after-gate-2).
 
 ## Reference
 

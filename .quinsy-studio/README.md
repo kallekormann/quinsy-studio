@@ -293,9 +293,13 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 ./studio library promote-design <project> [--force]
 ./studio promote-library <project> [--force]    # alias: design promotion
 
-# Sprints & tickets
+# Sprints & tickets (human in the loop)
 ./studio sprint <project>
-./studio ticket <project> "title"
+./studio review <project> [--approve|--reject --reason "..."]
+./studio feedback <project> "raw idea"
+./studio clarify <project> FB-001 [--title ...] [--acceptance ...] [--approve]
+./studio feedback-list <project>
+./studio ticket <project> "title" [--from-feedback FB-001]
 ./studio move <project> <id> <status> [--reason "..."]
 ./studio groom <project>
 

@@ -44,6 +44,10 @@ Adapt pulled code in the project. After ticket done, promote if generic:
 ./studio library promote <project> packages/billing --ticket <ID> [--force]
 ```
 
+## Sprint HITL (after gate 2)
+
+Sprint-review ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. When sprint tickets are done: `./studio review` → human `--approve` → groom → retro.
+
 ## Drift recovery
 
 User: "back on track" / "resume project" → `./studio focus <p>` then first item from `./studio resume <p>` only.

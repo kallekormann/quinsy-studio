@@ -23,9 +23,55 @@ Agent: "Implemented."
 | **Security** | security exceptions, access rights | **Yes** |
 | **Architecture** | large architecture changes | **Yes** |
 | **Release** | production release | **Yes** |
-| **Feature** | new features (incremental) | No |
+| **Sprint review** | approve shipped sprint work | **Yes** |
+| **Sprint feedback** | new ideas from review → backlog | **Yes** (clarify before ticket) |
+| **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |
+
+---
+
+## Sprint cadence HITL (after gate 2)
+
+Pre-implementation uses gates 0–2 (`./studio approve`). **During sprints**, humans stay in the loop via review, feedback, grooming, and retro.
+
+### Sprint ceremony flow
+
+```
+Sprint work → ./studio review (human) → feedback → clarify → ticket → groom → retro → next sprint
+```
+
+| Step | Who | Command |
+|------|-----|---------|
+| **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |
+| **Sprint review** | **Human** tries shipped work | Read review.md, RUNBOOK, prototype |
+| **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` |
+| **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket** |
+| **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
+| **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
+| **Grooming** | **Human** + agent | `./studio groom <p>` — prioritize clarified tickets |
+| **Retro** | **Human** + agent | `./studio retro <p>` → `sprints/SPRINT-NN/retro.md` |
+
+**Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
+
+When all sprint tickets reach `done`, `./studio resume` surfaces **sprint review pending**.
+
+### Example
+
+```bash
+./studio review nudge
+# human tries the app, then:
+./studio feedback nudge "Habits should work offline"
+./studio clarify nudge FB-001 \
+  --title "Offline habit tracking" \
+  --scope "Cache today's habits in IndexedDB" \
+  --acceptance "Completing a habit works offline" \
+  --approve
+./studio ticket nudge "Offline habit tracking" --from-feedback FB-001
+./studio groom nudge
+./studio review nudge --approve --notes "Sprint 1 shipped, offline next"
+./studio retro nudge
+```
 
 ---
 

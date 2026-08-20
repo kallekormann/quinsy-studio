@@ -122,6 +122,7 @@ def build_focus_report(project: str, status: Dict) -> str:
 
     lines.extend([
         "",
+        "Sprint HITL: review → feedback → clarify → ticket (never blind tickets from review)",
         "Drift recovery: ./studio resume {p}  |  ./studio focus {p}".format(p=project),
     ])
     return "\n".join(lines)
@@ -176,8 +177,9 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
 
     if hg.get("2", {}).get("status") == "approved":
         return "needs_ticket", (
-            "No matching sprint/backlog ticket. Create one first: "
-            f'./studio ticket {project} "<title>" or discuss scope change with user.'
+            "No matching sprint/backlog ticket. For sprint-review ideas use: "
+            f'./studio feedback {project} "<idea>" → ./studio clarify → ticket --from-feedback. '
+            f'For scoped work: ./studio ticket {project} "<title>".'
         )
 
     return "in_scope", "Pre-implementation phase — align with ./studio resume next steps."

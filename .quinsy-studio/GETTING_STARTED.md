@@ -119,6 +119,22 @@ Subscribe to best-in-class skill packages (design, marketing, gamedev, complianc
 
 To **add** a new source: edit `skill-dependencies.json` → `./studio update-skills <name>` → register in `teams/skill-registry.md`. Full guide: [Managing Skills](README.md#8-managing-skills).
 
+On `./studio move … done` → warns if registry paths changed without promotion.
+
+## Sprint cadence (human in the loop)
+
+After gate 2, you review shipped work each sprint — ideas do **not** become tickets blindly.
+
+| Step | Command |
+|------|---------|
+| Status brief | `./studio review <p>` |
+| Your feedback | `./studio feedback <p> "..."` |
+| Clarify → ticket | `./studio clarify <p> FB-001 ... --approve` → `./studio ticket <p> "..." --from-feedback FB-001` |
+| Approve sprint | `./studio review <p> --approve` |
+| Groom + retro | `./studio groom <p>` · `./studio retro <p>` |
+
+When all sprint tickets are `done`, `./studio resume` shows **sprint review pending**.
+
 ## Studio-only improvements
 
 Use **LO-*** tickets in `.quinsy-studio/backlog/` — not project code.

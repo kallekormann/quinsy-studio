@@ -44,6 +44,10 @@ Commands:
 
   # Phase 3: Sprint Management
   ./studio sprint <project>                      Create sprint
+  ./studio review <project> [--approve|--reject] Sprint review (human)
+  ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
+  ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
+  ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
   ./studio groom <project>                       Run grooming
@@ -105,6 +109,24 @@ from library_manager import (
     pull_assets,
     snapshot_registry_files,
     suggest_assets,
+)
+from sprint_hitl import (
+    add_feedback,
+    approve_review,
+    clarify_feedback,
+    format_feedback_list,
+    get_ready_feedback_for_ticket,
+    get_sprint_hitl,
+    has_raw_feedback,
+    has_ready_feedback,
+    link_feedback_to_ticket,
+    load_feedback_queue,
+    maybe_flag_sprint_review,
+    needs_sprint_review,
+    prepare_retro,
+    prepare_review,
+    reject_review,
+    sprint_ticket_summary,
 )
 
 # =============================================================================
@@ -474,11 +496,23 @@ class StudioOrchestrator:
             actions.append(f"Human: review mocks → ./studio approve {project} --gate 2")
         elif not status.get("current_sprint"):
             actions.append(f"./studio sprint {project}")
+        elif needs_sprint_review(status):
+            actions.append(f"⏸ HUMAN: sprint review pending — ./studio review {project}")
+            actions.append(f"Human: try shipped work, then ./studio review {project} --approve")
+            actions.append(f"New ideas: ./studio feedback {project} \"...\" (not direct tickets)")
         else:
+            sprint = status.get("current_sprint", "")
+            if has_raw_feedback(project, sprint):
+                actions.append(f"Clarify feedback: ./studio feedback-list {project}")
+                actions.append(f"./studio clarify {project} FB-001 ... --approve")
+            if has_ready_feedback(project, sprint):
+                actions.append(f"Ticket from feedback: ./studio ticket {project} \"...\" --from-feedback FB-NNN")
             actions.append(f"./studio board {project}")
+            actions.append(f"./studio status {project}")
             actions.append(f"./studio move {project} <TICKET-ID> implement --reason \"Started\"")
             actions.append(f"Implement in projects/{project}/ — no code without a ticket")
             actions.append(f"./studio move {project} <TICKET-ID> done --reason \"DoD met\"")
+            actions.append(f"End of sprint: ./studio review {project} → groom → retro")
 
         print("\n  Next actions:")
         for i, action in enumerate(actions, 1):
@@ -666,6 +700,15 @@ class StudioOrchestrator:
         print(f"  Archetyp:     {status['archetype']}")
         print(f"  Sprint:       {status.get('current_sprint', '-')}")
         print(f"  Ticket:       {status.get('active_ticket', '-')}")
+        hitl = status.get("sprint_hitl", {})
+        if hitl.get("review_status"):
+            print(f"  Sprint review: {hitl.get('review_status')}")
+        sprint = status.get("current_sprint")
+        if sprint:
+            summary = sprint_ticket_summary(project, sprint)
+            print(f"  Sprint progress: {summary['done']}/{summary['total']} done")
+            if summary["all_done"] and hitl.get("review_status") != "approved":
+                print(f"  ⏸ Human sprint review pending: ./studio review {project}")
         print(f"  Created:     {status['created']}")
         print(f"  Updated:     {status['last_update']}")
         
@@ -1002,6 +1045,9 @@ class StudioOrchestrator:
         # Update project status
         status["current_sprint"] = sprint_name
         status["phase"] = PHASE_IMPLEMENT
+        hitl = get_sprint_hitl(status)
+        hitl["review_status"] = None
+        hitl["review_pending_since"] = None
         save_status(project, status)
         
         print(f"\n  Sprint created: {sprint_name}")
@@ -1012,10 +1058,157 @@ class StudioOrchestrator:
         
         return True
     
+    def cmd_review(self, project: str, approve: bool = False, reject: bool = False,
+                   notes: str = "", reason: str = ""):
+        """Prepare or complete a human sprint review."""
+        status = load_status(project)
+        sprint = status.get("current_sprint")
+        if not sprint:
+            print(f"  ⚠️  No active sprint — run ./studio sprint {project}")
+            return False
+
+        print_header(f"SPRINT REVIEW — {project} ({sprint})")
+
+        if approve:
+            if not notes:
+                notes = "Human approved sprint deliverables."
+            approve_review(project, sprint, status, notes)
+            save_status(project, status)
+            print(f"\n  ✅ Sprint review approved")
+            print(f"  Next:")
+            print(f"    ./studio feedback {project} \"...\"  (capture new ideas)")
+            print(f"    ./studio clarify {project} FB-001 ... --approve")
+            print(f"    ./studio groom {project}")
+            print(f"    ./studio retro {project}")
+            return True
+
+        if reject:
+            if not reason.strip():
+                print(f"  ⚠️  --reject requires --reason \"...\"")
+                return False
+            reject_review(project, sprint, status, reason)
+            save_status(project, status)
+            print(f"\n  ❌ Sprint review rejected")
+            print(f"  Logged in sprints/{sprint}/review.md")
+            print(f"  Re-open or create tickets, then ./studio review {project} --prepare")
+            return True
+
+        review_file = prepare_review(project, sprint, status)
+        save_status(project, status)
+        summary = sprint_ticket_summary(project, sprint)
+
+        print(f"\n  Review brief: {review_file}")
+        print(f"  Progress: {summary['done']}/{summary['total']} tickets done")
+        if summary["all_done"]:
+            print(f"\n  ⏸ All sprint tickets done — human review required")
+        print(f"\n  Human steps:")
+        print(f"    1. Read {review_file.relative_to(STUDIO_ROOT)}")
+        print(f"    2. Try the project (RUNBOOK / prototype)")
+        print(f"    3. ./studio feedback {project} \"your ideas\"")
+        print(f"    4. ./studio review {project} --approve [--notes \"...\"]")
+        print(f"       or: ./studio review {project} --reject --reason \"...\"")
+        return True
+
+    def cmd_feedback(self, project: str, text: str, source: str = "sprint-review"):
+        """Capture raw human feedback — does not create a ticket."""
+        status = load_status(project)
+        sprint = status.get("current_sprint")
+        if not sprint:
+            print(f"  ⚠️  No active sprint — run ./studio sprint {project}")
+            return False
+        if not text.strip():
+            print(f"  ⚠️  Feedback text is required")
+            return False
+
+        print_header(f"FEEDBACK — {project} ({sprint})")
+        fb_id, md_file = add_feedback(project, sprint, text, source)
+        print(f"\n  Captured {fb_id} (status: raw — NOT a ticket)")
+        print(f"  File: {md_file}")
+        print(f"\n  Next:")
+        print(f"    ./studio clarify {project} {fb_id} --title \"...\" --scope \"...\" --acceptance \"...\"")
+        print(f"    ./studio clarify {project} {fb_id} --approve")
+        print(f"    ./studio ticket {project} \"<title>\" --from-feedback {fb_id}")
+        return True
+
+    def cmd_feedback_list(self, project: str):
+        """List feedback queue for current sprint."""
+        status = load_status(project)
+        sprint = status.get("current_sprint")
+        if not sprint:
+            print(f"  ⚠️  No active sprint")
+            return False
+        print_header(f"FEEDBACK QUEUE — {project} ({sprint})")
+        print(format_feedback_list(project, sprint))
+        print(f"\n  Flow: feedback → clarify → --approve → ticket --from-feedback")
+        return True
+
+    def cmd_clarify(
+        self,
+        project: str,
+        fb_id: str,
+        title: str = "",
+        scope: str = "",
+        out_of_scope: str = "",
+        acceptance: Optional[List[str]] = None,
+        approve: bool = False,
+    ):
+        """Clarify raw feedback into an executable ticket draft."""
+        status = load_status(project)
+        sprint = status.get("current_sprint")
+        if not sprint:
+            print(f"  ⚠️  No active sprint")
+            return False
+
+        print_header(f"CLARIFY FEEDBACK — {fb_id}")
+        try:
+            item, clarify_file = clarify_feedback(
+                project, sprint, fb_id,
+                title=title,
+                scope=scope,
+                out_of_scope=out_of_scope,
+                acceptance=acceptance or [],
+                approve=approve,
+            )
+        except ValueError as e:
+            print(f"  ⚠️  {e}")
+            return False
+
+        if not item:
+            print(f"  ⚠️  {fb_id} not found — ./studio feedback-list {project}")
+            return False
+
+        print(f"\n  Status: {item['status']}")
+        print(f"  Draft: {clarify_file}")
+        if item["status"] == "ready":
+            print(f"\n  ✅ Ready for ticket:")
+            print(f"    ./studio ticket {project} \"{item.get('draft_title')}\" --from-feedback {fb_id}")
+        elif approve:
+            print(f"  ⚠️  Could not approve — check draft_title and acceptance criteria")
+        else:
+            print(f"\n  Add fields, then: ./studio clarify {project} {fb_id} --approve")
+        return True
+
     def cmd_ticket(self, project: str, title: str, phase: int = 4, 
-                   priority: str = "P1", estimate: str = "M"):
+                   priority: str = "P1", estimate: str = "M", from_feedback: str = ""):
         """Create a new ticket in the project backlog (strict studio schema)."""
         
+        status = load_status(project)
+        sprint = status.get("current_sprint", "")
+        fb_item = None
+        if from_feedback:
+            if not sprint:
+                print(f"  ⚠️  --from-feedback requires an active sprint")
+                return False
+            try:
+                fb_item = get_ready_feedback_for_ticket(project, sprint, from_feedback)
+            except ValueError as e:
+                print(f"  ⚠️  {e}")
+                return False
+            title = fb_item.get("draft_title") or title
+            if not title.strip():
+                print(f"  ⚠️  Title required (or set via clarify --title)")
+                return False
+
         ticket_id = get_next_ticket_id(project)
         slug = slugify(title)
         
@@ -1025,6 +1218,21 @@ class StudioOrchestrator:
         skills = match_skills(title)
         team = team_for_skills(skills)
         role = role_for_skills(skills)
+
+        acceptance = [
+            f"'{title}' is implemented",
+            f"'{title}' has tests",
+            "Code is free of AI slop",
+        ]
+        rationale_extra = ""
+        if fb_item:
+            acceptance = fb_item.get("draft_acceptance") or acceptance
+            rationale_extra = (
+                f"\n\n## Source feedback\n"
+                f"- **{from_feedback.upper()}:** {fb_item.get('raw', '')}\n"
+                f"- **Scope:** {fb_item.get('draft_scope', '-')}\n"
+                f"- **Out of scope:** {fb_item.get('draft_out_of_scope', '-')}\n"
+            )
         
         ticket = {
             "id": ticket_id,
@@ -1051,11 +1259,7 @@ class StudioOrchestrator:
                 "when": f"They use the feature '{title}'",
                 "then": f"'{title}' works as described and is tested"
             }],
-            "acceptance_criteria": [
-                f"'{title}' is implemented",
-                f"'{title}' has tests",
-                "Code is free of AI slop"
-            ],
+            "acceptance_criteria": acceptance,
             "definition_of_done": [
                 "Feature works (BDD scenario green)",
                 "Tests present and green",
@@ -1066,16 +1270,26 @@ class StudioOrchestrator:
         }
         
         content = render_ticket_markdown(ticket)
+        if sprint and "sprint:" not in content:
+            content = content.replace("created:", f"sprint: {sprint}\ncreated:", 1)
+        if rationale_extra:
+            content += rationale_extra
         ticket_file.write_text(content)
+
+        if fb_item and sprint:
+            link_feedback_to_ticket(project, sprint, from_feedback, ticket_id)
         
         print(f"\n  Ticket created: {ticket_file}")
         print(f"  ID: {ticket_id}")
+        if from_feedback:
+            print(f"  From feedback: {from_feedback.upper()}")
         print(f"  Role: {role}")
         print(f"  Team: {team}")
         print(f"  Skills: {', '.join(skills) if skills else '(auto-match)'}")
         print(f"  Status: open")
         print(f"  Project: {project}")
         print(f"\n  Next step:")
+        print(f"    ./studio groom {project}  (prioritize before implement)")
         print(f"    ./studio move {project} {ticket_id} implement")
         
         return ticket_id
@@ -1135,6 +1349,10 @@ class StudioOrchestrator:
             elif snap:
                 print(f"\n  ✓ Reuse check: no unpromoted registry changes (or promotions logged).")
             status["active_ticket"] = None
+            if maybe_flag_sprint_review(project, status):
+                sprint = status.get("current_sprint", "")
+                print(f"\n  ⏸ All sprint tickets done — human review required")
+                print(f"    ./studio review {project}")
             save_status(project, status)
         
         # If moving to done, check if all tickets are done
@@ -1143,9 +1361,10 @@ class StudioOrchestrator:
             open_dir = project_backlog / "open"
             if open_dir.exists():
                 open_tickets = list(open_dir.glob(f"{project[:4].upper()}-*.md"))
-                if not open_tickets:
-                    print(f"\n  🎉 All tickets completed!")
+                if not open_tickets and not needs_sprint_review(status):
+                    print(f"\n  🎉 All open backlog tickets completed!")
                     print(f"  Next step:")
+                    print(f"    ./studio review {project}")
                     print(f"    ./studio gate {project} --level 5")
                     print(f"    ./studio retro {project}")
         
@@ -1317,35 +1536,39 @@ class StudioOrchestrator:
             print(f"  - {lo.stem} [Signal: {signal}]")
     
     def cmd_retro(self, project: str):
-        """Start a retrospective."""
-        
-        retro_dir = QUINSY_STUDIO / "retros"
-        retro_dir.mkdir(parents=True, exist_ok=True)
-        
+        """Start a project sprint retrospective."""
+        status = load_status(project)
+        sprint = status.get("current_sprint", "SPRINT-01")
+
+        print_header(f"RETROSPECTIVE — {project} ({sprint})")
+
+        retro_file = prepare_retro(project, sprint)
+        print(f"\n  Project retro: {retro_file}")
+        print(f"  Fill in went well / badly / improve, then:")
+        print(f"    ./studio learn \"...\" --signal process-gap --source {project}")
+        print(f"    ./studio sprint {project}  (when ready for next sprint)")
+
+        # Studio meta-retro for cross-project learnings (optional)
+        meta_dir = QUINSY_STUDIO / "retros"
+        meta_dir.mkdir(parents=True, exist_ok=True)
         date_str = datetime.now().strftime("%Y-%m-%d")
-        retro_file = retro_dir / f"meta-retro-{date_str}.md"
-        
-        template = f"""# Meta-Retro — {date_str}
+        meta_file = meta_dir / f"meta-retro-{date_str}.md"
+        if not meta_file.exists():
+            meta_file.write_text(
+                f"""# Meta-Retro — {date_str}
+
+## Project: {project} ({sprint})
+- See: projects/{project}/sprints/{sprint}/retro.md
 
 ## Incoming learning items
 - LO-0000: ...
 
-## Skill Review
-| Skill | Quality signal | Action |
-|-------|----------------|--------|
-| ... | ... | ... |
-
-## Decisions
-- ... (every change → CHANGELOG.md entry)
-
 ## Action Items
 - [ ] ... (Owner: ...)
 """
-        retro_file.write_text(template)
-        
-        print(f"\n  Retrospective started: {retro_file}")
-        print(f"  Include learning items: ./studio learn-list")
-        
+            )
+            print(f"  Studio meta-retro (if needed): {meta_file}")
+
         return retro_file
     
     def cmd_update_skills(self, extra_args=None):
@@ -1548,6 +1771,15 @@ What next steps result?
 """
         grooming_file.write_text(grooming_template)
         print(f"\n  Grooming protocol: {grooming_file}")
+
+        print(f"\n  Feedback queue:")
+        print(format_feedback_list(project, sprint))
+        ready = [i for i in load_feedback_queue(project, sprint) if i.get("status") == "ready"]
+        if ready:
+            print(f"\n  Ready for tickets ({len(ready)}):")
+            for item in ready:
+                print(f"    ./studio ticket {project} \"{item.get('draft_title')}\" --from-feedback {item['id']}")
+        print(f"\n  Rule: sprint-review ideas → ./studio feedback (never direct ticket)")
         
         return grooming_file
     
@@ -1789,6 +2021,10 @@ Commands:
 
   # Phase 3: Sprint Management
   ./studio sprint <project>                      Create sprint
+  ./studio review <project> [--approve|--reject] Sprint review (human)
+  ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
+  ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
+  ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
   ./studio groom <project>                       Run grooming
@@ -1941,6 +2177,61 @@ def main():
     
     elif command == "sprint" and len(args) >= 1:
         orchestrator.cmd_sprint(args[0])
+
+    elif command == "review" and len(args) >= 1:
+        project = args[0]
+        approve = "--approve" in args
+        reject = "--reject" in args
+        notes = ""
+        reason = ""
+        for i, arg in enumerate(args):
+            if arg == "--notes" and i + 1 < len(args):
+                notes = args[i + 1]
+            elif arg == "--reason" and i + 1 < len(args):
+                reason = args[i + 1]
+        orchestrator.cmd_review(project, approve=approve, reject=reject, notes=notes, reason=reason)
+
+    elif command == "feedback" and len(args) >= 2:
+        project = args[0]
+        text = args[1]
+        source = "sprint-review"
+        for i, arg in enumerate(args):
+            if arg == "--source" and i + 1 < len(args):
+                source = args[i + 1]
+        orchestrator.cmd_feedback(project, text, source=source)
+
+    elif command == "feedback-list" and len(args) >= 1:
+        orchestrator.cmd_feedback_list(args[0])
+
+    elif command == "clarify" and len(args) >= 2:
+        project = args[0]
+        fb_id = args[1]
+        title = ""
+        scope = ""
+        out_of_scope = ""
+        acceptance: List[str] = []
+        approve = "--approve" in args
+        i = 2
+        while i < len(args):
+            arg = args[i]
+            if arg == "--title" and i + 1 < len(args):
+                title = args[i + 1]
+                i += 2
+            elif arg == "--scope" and i + 1 < len(args):
+                scope = args[i + 1]
+                i += 2
+            elif arg == "--out-of-scope" and i + 1 < len(args):
+                out_of_scope = args[i + 1]
+                i += 2
+            elif arg == "--acceptance" and i + 1 < len(args):
+                acceptance.append(args[i + 1])
+                i += 2
+            else:
+                i += 1
+        orchestrator.cmd_clarify(
+            project, fb_id, title=title, scope=scope,
+            out_of_scope=out_of_scope, acceptance=acceptance, approve=approve,
+        )
     
     elif command == "ticket" and len(args) >= 2:
         project = args[0]
@@ -1948,6 +2239,7 @@ def main():
         phase = 4
         priority = "P1"
         estimate = "M"
+        from_feedback = ""
         for i, arg in enumerate(args):
             if arg == "--phase" and i + 1 < len(args):
                 phase = int(args[i + 1])
@@ -1955,7 +2247,9 @@ def main():
                 priority = args[i + 1]
             elif arg == "--estimate" and i + 1 < len(args):
                 estimate = args[i + 1]
-        orchestrator.cmd_ticket(project, title, phase, priority, estimate)
+            elif arg == "--from-feedback" and i + 1 < len(args):
+                from_feedback = args[i + 1]
+        orchestrator.cmd_ticket(project, title, phase, priority, estimate, from_feedback=from_feedback)
     
     elif command == "move" and len(args) >= 3:
         project = args[0]

@@ -2,6 +2,19 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.6.0] — 2026-08-20
+
+### Sprint human-in-the-loop (review, feedback, clarify)
+
+- ✅ `./studio review <p>` — sprint review brief (`sprints/SPRINT-NN/review.md`); `--approve` / `--reject`
+- ✅ `./studio feedback <p> "..."` — capture raw human feedback (not a ticket)
+- ✅ `./studio clarify <p> FB-001` — clarify feedback → executable draft; `--approve`
+- ✅ `./studio ticket <p> "..." --from-feedback FB-001` — ticket only after clarification
+- ✅ `./studio feedback-list <p>` — feedback queue status
+- ✅ `./studio retro <p>` — project sprint `retro.md` (was studio meta-retro only)
+- ✅ `./studio resume` surfaces **sprint review pending** when all sprint tickets are done
+- ✅ `sprint_hitl.py` + docs: [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md), [iterative-delivery.md](.quinsy-studio/process/iterative-delivery.md)
+
 ## [1.5.0] — 2026-08-20
 
 ### Pre-implementation: three human gates (0, 1, 2)

@@ -48,7 +48,8 @@ If the request is unrelated to active project **and** not studio-meta:
 After gate 2:
 
 - **No code** without a ticket
-- If user wants new work: `./studio ticket <project> "..."` → groom → sprint
+- Sprint-review ideas: `./studio feedback` → `clarify` → `ticket --from-feedback` (never direct ticket)
+- Scoped new work: `./studio ticket <project> "..."` → groom → sprint
 - Emergency scope change: user explicitly approves; log in `docs/phases/revisions.md`
 
 ## Drift recovery
@@ -79,3 +80,17 @@ On design approval, base UI flows to studio-library (see `library_promotion.py`)
 - Sticker sheet → `studio-library/ui/sticker-sheet/`
 
 Projects **consume** library via `./studio sync <project>`; they **feed** library on gate 2.
+
+## Sprint HITL (after gate 2)
+
+When sprint tickets are done, pause for human review — never ticket sprint-review ideas directly:
+
+```bash
+./studio review <project>
+./studio feedback <project> "..."
+./studio clarify <project> FB-001 --approve
+./studio ticket <project> "..." --from-feedback FB-001
+./studio review <project> --approve
+```
+
+See [human-in-the-loop.md](human-in-the-loop.md#sprint-cadence-hitl-after-gate-2).
