@@ -127,14 +127,26 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 export async function downloadPdfFromPng(dataUrl: string, filename: string): Promise<void> {
   const { jsPDF } = await import('jspdf');
   const image = await loadImage(dataUrl);
-  const width = image.naturalWidth || image.width;
-  const height = image.naturalHeight || image.height;
-  const doc = new jsPDF({
-    orientation: width >= height ? 'landscape' : 'portrait',
-    unit: 'px',
-    format: [width, height],
-  });
-  doc.addImage(dataUrl, 'PNG', 0, 0, width, height);
+  const imgWidth = image.naturalWidth || image.width;
+  const imgHeight = image.naturalHeight || image.height;
+  if (imgWidth <= 0 || imgHeight <= 0) {
+    throw new Error('Export image has no dimensions');
+  }
+
+  const orientation = imgWidth >= imgHeight ? 'landscape' : 'portrait';
+  const doc = new jsPDF({ orientation, unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 36;
+  const maxWidth = pageWidth - margin * 2;
+  const maxHeight = pageHeight - margin * 2;
+  const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+  const width = imgWidth * scale;
+  const height = imgHeight * scale;
+  const x = (pageWidth - width) / 2;
+  const y = (pageHeight - height) / 2;
+
+  doc.addImage(dataUrl, 'PNG', x, y, width, height);
   doc.save(`${filename}.pdf`);
 }
 

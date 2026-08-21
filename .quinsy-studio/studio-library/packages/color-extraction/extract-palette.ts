@@ -69,7 +69,9 @@ async function rasterizeToImageData(
   source: CanvasImageSource,
   options: ResolvedExtractPaletteOptions,
 ): Promise<ImageData | null> {
-  if (typeof document === 'undefined') return null;
+  if (typeof document === 'undefined') {
+    return null;
+  }
 
   const canvas = document.createElement('canvas');
   canvas.width = options.size;
@@ -95,8 +97,9 @@ export async function extractPaletteFromBlob(
   const imageData = await rasterizeToImageData(bitmap, opts);
   bitmap.close();
 
-  if (!imageData) return opts.fallback.slice(0, opts.count);
-  return extractPaletteFromImageData(imageData, options);
+  return imageData
+    ? extractPaletteFromImageData(imageData, options)
+    : opts.fallback.slice(0, opts.count);
 }
 
 /** Extract palette from a File input (browser). */

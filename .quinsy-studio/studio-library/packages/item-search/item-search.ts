@@ -19,8 +19,7 @@ function parseFrameTitle(item: SearchableItem): string {
 function parsePalette(item: SearchableItem): string[] {
   const parsed = parseContentRecord(item.contentJson);
   const raw = parsed.palette;
-  if (!Array.isArray(raw)) return [];
-  return raw.filter((c): c is string => typeof c === 'string');
+  return Array.isArray(raw) ? raw.filter((c): c is string => typeof c === 'string') : [];
 }
 
 /** Concatenate searchable metadata (tags, text, filename, palette, type). */

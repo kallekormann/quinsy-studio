@@ -5,6 +5,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Input } from '../input/Input';
 
 export type SearchCommandResult = {
@@ -52,9 +53,9 @@ export function SearchCommandDialog({
     return null;
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-neutral-900/40 px-4 pt-[12vh] backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-neutral-900/40 px-4 backdrop-blur-sm"
       onMouseDown={onClose}
     >
       <div
@@ -99,6 +100,7 @@ export function SearchCommandDialog({
           )}
         </ul>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
