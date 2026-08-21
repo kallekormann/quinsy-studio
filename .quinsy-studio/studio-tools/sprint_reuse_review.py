@@ -312,8 +312,16 @@ def approve_reuse_review(project: str, sprint: str, status: Dict, notes: str = "
     return True, "", data
 
 
-def find_sprint_needing_reuse(project: str) -> Optional[str]:
-    """Latest sprint with approved review (summary.md) but reuse not approved."""
+def find_sprint_needing_reuse(project: str, status: Optional[Dict] = None) -> Optional[str]:
+    """Sprint with summary.md that still needs reuse approval.
+
+    Sprints closed before mandatory reuse (no reuse-review.json) are grandfathered.
+    """
+    if status:
+        hitl = get_sprint_hitl(status)
+        if hitl.get("reuse_sprint") and hitl.get("reuse_status") not in (None, REUSE_APPROVED):
+            return hitl["reuse_sprint"]
+
     sprints_root = project_dir(project) / "sprints"
     if not sprints_root.exists():
         return None
@@ -322,6 +330,8 @@ def find_sprint_needing_reuse(project: str) -> Optional[str]:
         sprint = sprint_dir.name
         if not (sprint_dir / "summary.md").exists():
             continue
+        if not reuse_review_json_path(project, sprint).exists():
+            continue
         reuse = load_reuse_review(project, sprint)
         if reuse.get("status") != REUSE_APPROVED:
             return sprint
@@ -329,7 +339,7 @@ def find_sprint_needing_reuse(project: str) -> Optional[str]:
 
 
 def resolve_reuse_sprint(project: str, status: Dict) -> Optional[str]:
-    pending = find_sprint_needing_reuse(project)
+    pending = find_sprint_needing_reuse(project, status)
     if pending:
         return pending
     hitl = get_sprint_hitl(status)
@@ -343,7 +353,7 @@ def resolve_reuse_sprint(project: str, status: Dict) -> Optional[str]:
 
 
 def reuse_gate_message(project: str, status: Dict) -> Optional[str]:
-    sprint = find_sprint_needing_reuse(project)
+    sprint = find_sprint_needing_reuse(project, status)
     if not sprint:
         return None
     reuse = load_reuse_review(project, sprint)

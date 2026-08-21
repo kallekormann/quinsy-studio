@@ -80,6 +80,21 @@ class TestFindSprintNeedingReuse(unittest.TestCase):
                 found = find_sprint_needing_reuse(project)
             self.assertIsNone(found)
 
+    def test_grandfathers_sprint_without_reuse_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            project = "demo"
+            sprint = "SPRINT-01"
+            sprint_dir = root / "projects" / project / "sprints" / sprint
+            sprint_dir.mkdir(parents=True)
+            (sprint_dir / "summary.md").write_text("# summary", encoding="utf-8")
+
+            with patch("sprint_reuse_review.project_dir", return_value=root / "projects" / project), patch(
+                "sprint_hitl.project_dir", return_value=root / "projects" / project
+            ):
+                found = find_sprint_needing_reuse(project)
+            self.assertIsNone(found)
+
 
 class TestRecordDecision(unittest.TestCase):
     def test_record_writes_json(self):
