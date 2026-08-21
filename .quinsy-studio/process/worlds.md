@@ -32,6 +32,24 @@ Fails if:
 - Studio git tracks anything under `projects/` or `intake/`
 - A project folder exists without `.git/`
 
+## Git remotes (two repos)
+
+| Location | `origin` should be |
+|----------|-------------------|
+| Quinsy Studio root (`quinsy-studio/`) | `https://github.com/kallekormann/quinsy-studio.git` |
+| Project (`projects/<name>/`) | That project's repo (e.g. `moody.git`) |
+
+Studio HQ commits: `.quinsy-studio/`, `studio`, `AGENTS.md` only.  
+Project commits: everything under `projects/<name>/` from **inside** that folder.
+
+```bash
+# Studio root
+git remote -v   # → quinsy-studio
+
+# Project
+cd projects/moody && git remote -v   # → moody
+```
+
 ## Agent rules
 
 1. **Never** `git add projects/` from the studio repo root

@@ -182,22 +182,21 @@ def pull_assets(project: str, names: List[str], force: bool = False) -> Dict[str
             continue
         kind_id, cfg = resolved
         comp_lib = STUDIO_LIBRARY / "ui" / "components" / _slug(name)
-        if comp_lib.exists() and kind_id.startswith("ui-"):
-            for f in comp_lib.glob("*.tsx"):
-                dest = project_dir / "ui" / "components" / "atoms" / f.name
-                if dest.exists() and not force:
-                    continue
-                dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(f, dest)
+        if comp_lib.is_dir() and kind_id.startswith("ui-"):
+            dest_dir = project_dir / "ui" / "components" / _slug(name)
+            files = _copy_tree(comp_lib, dest_dir, force=force)
+            if files:
                 entry = {
                     "name": name,
-                    "kind": "ui-atom",
+                    "kind": kind_id,
                     "at": datetime.now().isoformat(),
-                    "paths": [str(dest.relative_to(project_dir))],
+                    "paths": [str(Path(f).relative_to(project_dir)) for f in files],
                 }
                 usage["pulls"].append(entry)
                 pulled.append({**entry, "status": "ok"})
-            if pulled and pulled[-1].get("name") == name:
+                continue
+            if not force and any(dest_dir.iterdir()) if dest_dir.exists() else False:
+                pulled.append({"name": name, "kind": kind_id, "status": "skipped_exists"})
                 continue
 
         lib_path = _library_path_for_kind(kind_id, cfg, name)
