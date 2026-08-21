@@ -4,8 +4,9 @@ export const SUPABASE_ANON_KEY_ENV = 'NEXT_PUBLIC_SUPABASE_ANON_KEY';
 export const SUPABASE_SERVICE_ROLE_ENV = 'SUPABASE_SERVICE_ROLE_KEY';
 
 export function readSupabasePublicEnv(): { url: string; anonKey: string } | null {
-  const url = process.env[SUPABASE_URL_ENV];
-  const anonKey = process.env[SUPABASE_ANON_KEY_ENV];
+  // Literal property names — Next.js only inlines NEXT_PUBLIC_* for static access (not process.env[variable]).
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) {
     return null;
   }

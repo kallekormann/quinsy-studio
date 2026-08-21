@@ -10,7 +10,6 @@ export const stubAuthProvider: AuthProvider = {
     return null;
   },
   hasPermission(user: SessionUser, permission: string) {
-    if (user.roles.includes('admin')) return true;
-    return permission === 'read';
+    return user.roles.includes('admin') || permission === 'read';
   },
 };
