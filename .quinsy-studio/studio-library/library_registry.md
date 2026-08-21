@@ -29,7 +29,7 @@
 | `ui-page-type` | `ui/page-types/<name>/` | `ui/page-types/<name>/` | page-type name |
 | `ui-token` | `ui/tokens/design-tokens.json` + `.css` | `ui/tokens/` | `tokens` |
 | `ui-hook` | `hooks/<name>.ts` | `ui/hooks/<name>.ts` | hook name |
-| `package-auth` | `packages/auth/` | `packages/auth/` | `auth` |
+| `package-auth` | `packages/auth/` | `packages/auth/` | `auth`, `supabase-auth`, `supabase` |
 | `package-billing` | `packages/billing/` | `packages/billing/` | `billing` |
 | `package-feature-gating` | `packages/feature-gating/` | `packages/feature-gating/` | `feature-gating`, `gating` |
 | `package-color-extraction` | `packages/color-extraction/` | `packages/color-extraction/` | `color-extraction`, `palette`, `extract-palette` |

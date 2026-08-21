@@ -1,0 +1,38 @@
+# Supabase local — {{PROJECT_NAME}}
+# Copy to projects/<name>/supabase/config.toml and customize ports/branding.
+# Email inbox: add Mailpit to project docker (port 54324 UI, 54325 SMTP).
+
+project_id = "{{PROJECT_NAME}}"
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+# Avoid 54323 if another local Supabase stack uses it
+port = 54328
+api_url = "http://127.0.0.1"
+
+[inbucket]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+enable_signup = true
+
+[auth.email.smtp]
+# Local dev: Mailpit via ./studio env <project> up
+enabled = true
+host = "host.docker.internal"
+port = 54325
+user = "mailpit"
+pass = "mailpit"
+admin_email = "auth@{{PROJECT_NAME}}.local"
+sender_name = "{{PROJECT_NAME}}"

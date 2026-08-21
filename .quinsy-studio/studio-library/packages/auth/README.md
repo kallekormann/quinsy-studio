@@ -1,86 +1,73 @@
-# Auth Package
+# Auth package — Supabase + Next.js App Router
 
-> Authentication and authorization for SaaS applications.
+> Boilerplate from **Moody M2** (MOOD-0004). Pull into projects and adapt branding + protected routes.
 
-## Features
+## Pull
 
-- JWT-based authentication
-- Refresh token rotation
-- RBAC (Role-Based Access Control)
-- OAuth integration (Google, GitHub)
-- Session management
-- Rate limiting for login
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    AUTH FLOW                             │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  1. Login Request                                       │
-│     └─▶ Validate Credentials                           │
-│     └─▶ Generate JWT (short-lived)                     │
-│     └─▶ Generate Refresh Token                         │
-│                                                         │
-│  2. API Request                                         │
-│     └─▶ Validate JWT                                   │
-│     └─▶ Check Permissions (RBAC)                       │
-│     └─▶ Process Request                                │
-│                                                         │
-│  3. Token Refresh                                       │
-│     └─▶ Validate Refresh Token                         │
-│     └─▶ Rotate Refresh Token                           │
-│     └─▶ Issue new JWT                                  │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+```bash
+./studio library pull <project> auth
+# aliases: supabase-auth, supabase
 ```
 
-## Configuration
+Peer dependencies in the project: `@supabase/ssr`, `@supabase/supabase-js`, `next`. Optional: `resend` for welcome emails.
+
+## Env vars (critical)
+
+| Variable | Source |
+|----------|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `supabase status -o env` → `API_URL` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `ANON_KEY` (JWT `eyJ…`) — **not** the status table “Publishable” label |
+
+```bash
+npx supabase start
+node packages/auth/scripts/sync-supabase-env.mjs   # or npm run supabase:env
+npm run dev   # restart after env change
+```
+
+## Next.js wiring
 
 ```typescript
-// auth.config.ts
-export const authConfig = {
-  jwt: {
-    secret: process.env.JWT_SECRET,
-    expiresIn: '15m',
-  },
-  refresh: {
-    expiresIn: '7d',
-    rotation: true,
-  },
-  rbac: {
-    roles: ['admin', 'user', 'viewer'],
-    permissions: {
-      admin: ['*'],
-      user: ['read', 'write'],
-      viewer: ['read'],
-    },
-  },
-};
-```
+// src/lib/supabase/client.ts
+export { createBrowserSupabaseClient as createClient, isSupabaseConfigured } from '@packages/auth/next/client';
 
-## Usage
+// src/middleware.ts
+import { updateSession } from '@packages/auth/next/middleware';
+export async function middleware(request) {
+  return updateSession(request);
+}
 
-```typescript
-import { authenticate, authorize, rbac } from '@studio/auth';
-
-// Middleware
-app.use(authenticate);
-
-// Route Protection
-app.get('/admin', authorize('admin'), adminHandler);
-
-// RBAC Check
-if (rbac.hasPermission(user, 'write')) {
-  // Allow
+// app/auth/callback/route.ts
+import { handleAuthCallback } from '@packages/auth/next/callback';
+export async function GET(request: Request) {
+  return handleAuthCallback(request, { defaultNext: '/settings' });
 }
 ```
 
-## Security
+Custom protected routes:
 
-- Never store secrets in code
-- JWT with short expiration
-- Refresh token rotation
-- Rate limiting for login
-- CSRF protection
+```typescript
+import { createSessionMiddleware } from '@packages/auth/next/middleware';
+export const updateSession = createSessionMiddleware({
+  protectedPathPrefixes: ['/settings', '/dashboard', '/api/account'],
+});
+```
+
+## Flows
+
+| Flow | Implementation |
+|------|----------------|
+| Sign up / sign in | Supabase client `signUp` / `signInWithPassword` |
+| Magic link | `signInWithOtp` → `/auth/callback` |
+| Welcome email | `sendWelcomeEmail()` via Resend (separate from magic link SMTP) |
+| Local magic link inbox | Mailpit in project Docker + Supabase SMTP → `host.docker.internal:54325` |
+| RBAC | `getUserRoles`, `hasPermission` from `./rbac` |
+
+## Templates
+
+- `supabase/config.local.toml.template` — local Supabase + Mailpit SMTP
+- `supabase/migrations/profile_on_signup.sql.template` — profile row on register
+- `scripts/sync-supabase-env.mjs` — CLI → `.env.local`
+
+## UI
+
+Generic login form molecule: `./studio library pull <project> auth-login` → `ui/components/auth-login/`

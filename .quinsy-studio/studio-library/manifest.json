@@ -94,10 +94,10 @@
       "name": "auth",
       "kind": "package-auth",
       "path": "packages/auth/",
-      "version": "1.0.0",
-      "source_project": "studio",
-      "promoted": "2026-08-19",
-      "title": "Auth package stub"
+      "version": "2.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-21",
+      "title": "Supabase + Next.js auth (SSR, middleware, RBAC, Resend welcome, env sync)"
     },
     {
       "name": "billing",
@@ -181,6 +181,15 @@
       "title": "CMD-K search command dialog"
     },
     {
+      "name": "auth-login",
+      "kind": "ui-molecule",
+      "path": "ui/components/auth-login/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-21",
+      "title": "Sign-in / sign-up / magic-link form (Supabase)"
+    },
+    {
       "name": "item-inspector",
       "kind": "ui-molecule",
       "path": "ui/components/item-inspector/",
@@ -192,8 +201,8 @@
   ],
   "last_promotion": {
     "project": "moody",
-    "at": "2026-08-20T22:30:00.000000",
-    "note": "SPRINT-05 generics: item-tags, item-search, canvas-export, search-command, item-inspector"
+    "at": "2026-08-21T18:00:00.000000",
+    "note": "LO-0001: Supabase auth package + AuthLoginForm from MOOD-0004"
   },
   "schema_version": 2
 }

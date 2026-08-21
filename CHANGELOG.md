@@ -2,6 +2,15 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.9.2] — 2026-08-21
+
+### Studio library: Supabase auth boilerplate (LO-0001)
+
+- ✅ **`packages/auth` v2.0.0** — Next.js App Router + `@supabase/ssr`: client, server, middleware, callback, RBAC, Resend welcome, `sync-supabase-env.mjs`, Supabase/Mailpit templates (from Moody MOOD-0004)
+- ✅ **`ui/components/auth-login/`** — generic `AuthLoginForm` molecule (sign-in, sign-up, magic link)
+- ✅ Registry aliases: `supabase-auth`, `supabase`, `auth-login`
+- ✅ Learning item **LO-0001** (library-gap, moody SPRINT-08)
+
 ## [1.9.1] — 2026-08-20
 
 ### Docker env runs compose with project name

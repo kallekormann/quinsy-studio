@@ -43,7 +43,7 @@
     "package-auth": {
       "project_path": "packages/auth/",
       "library_path": "packages/auth/",
-      "aliases": ["auth"]
+      "aliases": ["auth", "supabase-auth", "supabase"]
     },
     "package-billing": {
       "project_path": "packages/billing/",
