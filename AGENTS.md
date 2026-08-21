@@ -82,6 +82,7 @@ After `--milestones`, agent writes tickets for the active milestone only, then s
 ./studio clarify <project> FB-001 ... --approve    # executable draft
 ./studio ticket <project> "..." --from-feedback FB-001
 ./studio review <project> --approve
+./studio reuse <project> && ./studio reuse <project> --approve   # mandatory library review
 ./studio groom <project> && ./studio retro <project> && ./studio sprint <project>
 ```
 

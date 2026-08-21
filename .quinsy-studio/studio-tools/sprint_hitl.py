@@ -36,6 +36,9 @@ REVIEW_PENDING = "pending"
 REVIEW_APPROVED = "approved"
 REVIEW_REJECTED = "rejected"
 
+REUSE_PENDING = "pending"
+REUSE_APPROVED = "approved"
+
 RETRO_PENDING = "pending"
 RETRO_DONE = "done"
 
@@ -145,6 +148,10 @@ def get_sprint_hitl(status: Dict) -> Dict:
         "backlog_validation": None,
         "retro_status": None,
         "retro_completed_at": None,
+        "reuse_status": None,
+        "reuse_sprint": None,
+        "reuse_pending_since": None,
+        "reuse_approved_at": None,
     })
 
 
@@ -176,7 +183,7 @@ def feedback_only_message(project: str) -> str:
         f"  1. ./studio feedback {project} \"...\"  (raw — not a ticket)\n"
         f"  2. ./studio clarify {project} FB-NNN ... --approve\n"
         f"  3. ./studio ticket {project} \"...\" --from-feedback FB-NNN\n"
-        f"  4. ./studio review {project} --approve → groom → retro → ./studio sprint {project}\n"
+        f"  4. ./studio review {project} --approve → reuse → retro → ./studio sprint {project}\n"
         f"  Work lands in the **next** sprint backlog — never mid-review."
     )
 
@@ -264,8 +271,14 @@ def implement_blocked_reason(status: Dict, project: str) -> Optional[str]:
 
 def can_plan_next_sprint(project: str, status: Dict) -> Tuple[bool, str]:
     """
-    Next sprint planning requires: current sprint finished, human review approved, retro done.
+    Next sprint planning requires: current sprint finished, human review approved,
+    reuse review approved, retro done.
     """
+    from sprint_reuse_review import reuse_gate_message
+
+    reuse_msg = reuse_gate_message(project, status)
+    if reuse_msg:
+        return False, reuse_msg
     sprint = status.get("current_sprint")
     if not sprint:
         return True, ""
@@ -394,11 +407,12 @@ See [plan.md](plan.md)
 > **Process:** During the sprint the agent implements autonomously. You are involved **here**, at sprint review — not ticket-by-ticket mid-sprint.
 
 ## After approval
-1. Clarify feedback: `./studio clarify {project} FB-001` (one item per theme — duplicates rejected)
-2. Ticket from feedback: `./studio ticket {project} "..." --from-feedback FB-001` → **backlog** (no sprint tag)
-3. Groom backlog: `./studio groom {project}` (reprioritize for next sprint)
-4. Retro: `./studio retro {project}`
-5. Next sprint: `./studio sprint {project}` pulls mature backlog tickets → `./studio groom {project} --approve`
+1. **Reuse review (mandatory):** `./studio reuse {project}` → promote / LO ticket / `--record local` → `./studio reuse {project} --approve`
+2. Clarify feedback: `./studio clarify {project} FB-001` (one item per theme — duplicates rejected)
+3. Ticket from feedback: `./studio ticket {project} "..." --from-feedback FB-001` → **backlog** (no sprint tag)
+4. Groom backlog: `./studio groom {project}` (reprioritize for next sprint)
+5. Retro: `./studio retro {project}`
+6. Next sprint: `./studio sprint {project}` pulls mature backlog tickets → `./studio groom {project} --approve`
 {fb_section}
 """
     review_file.write_text(content, encoding="utf-8")
@@ -417,6 +431,10 @@ def approve_review(project: str, sprint: str, status: Dict, notes: str = "") -> 
     hitl["last_review_at"] = datetime.now().isoformat()
     hitl["last_review_notes"] = notes.strip() or None
     hitl["retro_status"] = RETRO_PENDING
+    hitl["reuse_status"] = REUSE_PENDING
+    hitl["reuse_sprint"] = sprint
+    hitl["reuse_pending_since"] = datetime.now().isoformat()
+    hitl["reuse_approved_at"] = None
 
     sprint_dir = sprint_directory(project, sprint)
     summary_file = sprint_dir / "summary.md"

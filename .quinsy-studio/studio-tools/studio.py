@@ -45,6 +45,7 @@ Commands:
   # Phase 3: Sprint Management
   ./studio sprint <project>                      Create sprint
   ./studio review <project> [--approve|--reject] Sprint review (human)
+  ./studio reuse <project> [--approve|--record path action] Mandatory reuse review after sprint approval
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
   ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
   ./studio feedback-list <project>               Show feedback queue
@@ -133,6 +134,14 @@ from sprint_planning import (
     write_planning_questions_report,
     write_scope_proposal,
 )
+from sprint_reuse_review import (
+    approve_reuse_review,
+    format_reuse_brief,
+    prepare_reuse_review,
+    record_reuse_decision,
+    resolve_reuse_sprint,
+    reuse_gate_message,
+)
 from sprint_hitl import (
     add_feedback,
     approve_review,
@@ -154,6 +163,7 @@ from sprint_hitl import (
     prepare_review,
     reject_review,
     RETRO_DONE,
+    REVIEW_APPROVED,
     sprint_ticket_summary,
 )
 
@@ -481,6 +491,12 @@ class StudioOrchestrator:
         print(f"  Ticket:        {status.get('active_ticket') or '-'}")
 
         actions: List[str] = []
+        reuse_msg = reuse_gate_message(project, status)
+        if reuse_msg:
+            actions.append("⏸ Mandatory reuse review before retro / next sprint scope")
+            actions.append(f"./studio reuse {project}")
+            actions.append(f"./studio reuse {project} --approve")
+
         prd_file = project_dir / "docs" / "intake" / "prd.md"
 
         if not prd_file.exists():
@@ -513,15 +529,21 @@ class StudioOrchestrator:
             actions.append("Agent: do NOT edit projects/{p}/ for review feedback — backlog only".format(p=project))
         elif is_sprint_closed(status, project):
             hitl = get_sprint_hitl(status)
-            actions.append(f"⏸ Sprint closed (review approved) — plan next sprint with human")
-            if hitl.get("retro_status") != RETRO_DONE:
+            reuse_msg = reuse_gate_message(project, status)
+            if reuse_msg:
+                actions.append(f"⏸ Mandatory reuse review before retro / next sprint")
+                actions.append(f"./studio reuse {project}")
+                actions.append(f"./studio reuse {project} --approve")
+            elif hitl.get("retro_status") != RETRO_DONE:
                 actions.append(f"./studio retro {project}")
+            else:
+                actions.append(f"⏸ Sprint closed (review approved) — plan next sprint with human")
+                actions.append(f"./studio sprint {project}")
+                actions.append(f"./studio sprint {project} --approve-scope")
+                actions.append(f"./studio groom {project} --approve")
             actions.append(f"./studio feedback {project} \"...\"  (ideas for next sprint)")
             actions.append(f"./studio clarify {project} FB-001 ... --approve")
             actions.append(f"./studio ticket {project} \"...\" --from-feedback FB-001")
-            actions.append(f"./studio sprint {project}")
-            actions.append(f"./studio sprint {project} --approve-scope")
-            actions.append(f"./studio groom {project} --approve")
         else:
             sprint = status.get("current_sprint", "")
             hitl = get_sprint_hitl(status)
@@ -1036,6 +1058,11 @@ class StudioOrchestrator:
             if not sprint:
                 print(f"  ⚠️  No active sprint — run ./studio sprint {project} first")
                 return False
+            reuse_msg = reuse_gate_message(project, status)
+            if reuse_msg:
+                print(f"\n  ⚠️  Cannot approve sprint scope until reuse review is complete.")
+                print(f"  {reuse_msg}")
+                return False
             proposal = load_scope_proposal(project, sprint)
             if not proposal:
                 print(f"  ⚠️  No scope proposal for {sprint} — run ./studio sprint {project}")
@@ -1140,6 +1167,10 @@ class StudioOrchestrator:
         hitl["review_pending_since"] = None
         hitl["retro_status"] = None
         hitl["retro_completed_at"] = None
+        hitl["reuse_status"] = None
+        hitl["reuse_sprint"] = None
+        hitl["reuse_pending_since"] = None
+        hitl["reuse_approved_at"] = None
         hitl["scope_status"] = "pending"
         hitl["scope_approved_at"] = None
         hitl["groom_status"] = None
@@ -1172,7 +1203,10 @@ class StudioOrchestrator:
             save_status(project, status)
             print(f"\n  ✅ Sprint review approved")
             print(f"  Implementation frozen until the next sprint is planned.")
-            print(f"  Next:")
+            print(f"  Next (mandatory):")
+            print(f"    ./studio reuse {project}  (library / reuse review)")
+            print(f"    ./studio reuse {project} --approve")
+            print(f"  Then:")
             print(f"    ./studio feedback {project} \"...\"  (capture new ideas)")
             print(f"    ./studio clarify {project} FB-001 ... --approve")
             print(f"    ./studio ticket {project} \"...\" --from-feedback FB-001")
@@ -1206,6 +1240,76 @@ class StudioOrchestrator:
         print(f"    3. ./studio feedback {project} \"your ideas\"  (agent: capture only — never implement)")
         print(f"    4. ./studio review {project} --approve [--notes \"...\"]")
         print(f"       or: ./studio review {project} --reject --reason \"...\"")
+        return True
+
+    def cmd_reuse(
+        self,
+        project: str,
+        approve: bool = False,
+        record_path: str = "",
+        record_action: str = "",
+        record_ref: str = "",
+        record_note: str = "",
+        notes: str = "",
+    ):
+        """Mandatory library reuse review after sprint review approval."""
+        status = load_status(project)
+        sprint = resolve_reuse_sprint(project, status)
+        if not sprint:
+            hitl = get_sprint_hitl(status)
+            if hitl.get("review_status") != REVIEW_APPROVED:
+                print(f"  ⚠️  Reuse review runs after ./studio review {project} --approve")
+                return False
+            print(f"  ✅ No sprint pending reuse review")
+            return True
+
+        print_header(f"REUSE REVIEW — {project} ({sprint})")
+
+        if record_path and record_action:
+            try:
+                record_reuse_decision(
+                    project, sprint, record_path, record_action,
+                    ref=record_ref, note=record_note,
+                )
+                print(f"\n  ✅ Recorded: {record_path} → {record_action}")
+            except ValueError as exc:
+                print(f"  ⚠️  {exc}")
+                return False
+            md_path, data = prepare_reuse_review(project, sprint, status)
+            print(format_reuse_brief(project, {**data, "ticket_count": len(data.get('items', []))}))
+            print(f"\n  Report: {md_path.relative_to(STUDIO_ROOT)}")
+            return True
+
+        if approve:
+            ok, reason, _data = approve_reuse_review(project, sprint, status, notes=notes)
+            if not ok:
+                print(f"\n  ⚠️  Cannot approve reuse review yet.")
+                print(f"  {reason}")
+                print(f"\n  Record decisions:")
+                print(f"    ./studio reuse {project} --record <path> promote --ref MOOD-0026")
+                print(f"    ./studio reuse {project} --record ui/components/foo local --note \"project-specific\"")
+                print(f"    ./studio library promote {project} packages/auth --ticket MOOD-0026 --force")
+                return False
+            save_status(project, status)
+            print(f"\n  ✅ Reuse review approved for {sprint}")
+            print(f"  Next:")
+            print(f"    ./studio retro {project}")
+            print(f"    ./studio sprint {project}")
+            return True
+
+        md_path, data = prepare_reuse_review(project, sprint, status)
+        hitl = get_sprint_hitl(status)
+        hitl["reuse_status"] = hitl.get("reuse_status") or "pending"
+        hitl["reuse_sprint"] = sprint
+        save_status(project, status)
+
+        analysis_ticket_count = len([
+            t for t in sprint_ticket_summary(project, sprint)["tickets"] if t["status"] == "done"
+        ])
+        print(format_reuse_brief(project, {**data, "ticket_count": analysis_ticket_count}))
+        print(f"\n  Report: {md_path.relative_to(STUDIO_ROOT)}")
+        print(f"\n  Agent: promote generic code or record project-local decisions.")
+        print(f"  Human: ./studio reuse {project} --approve when satisfied")
         return True
 
     def cmd_feedback(self, project: str, text: str, source: str = "sprint-review", force: bool = False):
@@ -1684,6 +1788,12 @@ class StudioOrchestrator:
         sprint = status.get("current_sprint", "SPRINT-01")
 
         print_header(f"RETROSPECTIVE — {project} ({sprint})")
+
+        reuse_msg = reuse_gate_message(project, status)
+        if reuse_msg:
+            print(f"\n  ⚠️  Retrospective blocked until reuse review is complete.")
+            print(f"  {reuse_msg}")
+            return False
 
         retro_file = prepare_retro(project, sprint)
         hitl = get_sprint_hitl(status)
@@ -2314,6 +2424,7 @@ Commands:
   # Phase 3: Sprint Management
   ./studio sprint <project>                      Create sprint
   ./studio review <project> [--approve|--reject] Sprint review (human)
+  ./studio reuse <project> [--approve|--record path action] Mandatory reuse review after sprint approval
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
   ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
   ./studio feedback-list <project>               Show feedback queue
@@ -2483,6 +2594,42 @@ def main():
             elif arg == "--reason" and i + 1 < len(args):
                 reason = args[i + 1]
         orchestrator.cmd_review(project, approve=approve, reject=reject, notes=notes, reason=reason)
+
+    elif command == "reuse" and len(args) >= 1:
+        project = args[0]
+        approve = "--approve" in args
+        notes = ""
+        record_path = ""
+        record_action = ""
+        record_ref = ""
+        record_note = ""
+        i = 1
+        while i < len(args):
+            arg = args[i]
+            if arg == "--notes" and i + 1 < len(args):
+                notes = args[i + 1]
+                i += 2
+            elif arg == "--record" and i + 2 < len(args):
+                record_path = args[i + 1]
+                record_action = args[i + 2]
+                i += 3
+            elif arg == "--ref" and i + 1 < len(args):
+                record_ref = args[i + 1]
+                i += 2
+            elif arg == "--note" and i + 1 < len(args):
+                record_note = args[i + 1]
+                i += 2
+            else:
+                i += 1
+        orchestrator.cmd_reuse(
+            project,
+            approve=approve,
+            record_path=record_path,
+            record_action=record_action,
+            record_ref=record_ref,
+            record_note=record_note,
+            notes=notes,
+        )
 
     elif command == "feedback" and len(args) >= 2:
         project = args[0]

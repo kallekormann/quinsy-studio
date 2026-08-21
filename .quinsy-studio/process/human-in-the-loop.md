@@ -70,7 +70,7 @@ Sprint review feedback (once per theme)
   → ./studio feedback (deduped)
   → ./studio clarify --approve
   → ./studio ticket --from-feedback  → product backlog (backlog/*.md, no sprint tag)
-  → ./studio review --approve → retro
+  → ./studio review --approve → **reuse review** → retro
   → ./studio sprint  → scope proposal (mature tickets proposed; immature flagged)
   → ./studio sprint --approve-scope  → human approves sprint scope
   → ./studio groom --approve → implement
@@ -93,6 +93,7 @@ Sprint review feedback (once per theme)
 | **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |
 | **Sprint review** | **Human** tries shipped work | Read review.md, RUNBOOK, run the app |
 | **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` |
+| **Reuse review** | **Agent** + **Human** | `./studio reuse <p>` → promote / LO ticket / `--record local` → `./studio reuse <p> --approve` |
 | **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket** |
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
 | **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
@@ -108,7 +109,9 @@ Sprint review feedback (once per theme)
 
 **Rule:** Feedback tickets land in **backlog without a sprint tag** until `./studio sprint` assigns mature tickets; immature tickets get `planning-questions.md` for the agent to ask the human.
 
-**Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, retro is complete, and (for the first sprint) the **milestone roadmap** is approved.
+**Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, **reuse review is approved**, retro is complete, and (for the first sprint) the **milestone roadmap** is approved.
+
+**Rule:** `./studio retro` and `./studio sprint --approve-scope` are blocked until `./studio reuse --approve` completes for the closed sprint.
 
 **Rule:** When all tickets for the **current milestone** are `done`, `./studio resume` surfaces **milestone review pending** — do not write next-milestone tickets until the human approves milestone completion.
 
@@ -125,6 +128,8 @@ Sprint review feedback (once per theme)
   --approve
 ./studio ticket nudge "Offline habit tracking" --from-feedback FB-001
 ./studio review nudge --approve --notes "Sprint 1 shipped, offline next"
+./studio reuse nudge
+./studio reuse nudge --approve
 ./studio groom nudge
 ./studio retro nudge
 ./studio sprint nudge

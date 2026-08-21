@@ -126,7 +126,7 @@ def build_focus_report(project: str, status: Dict) -> str:
         if needs_sprint_review(status):
             lines.append("⏸ SPRINT REVIEW — capture feedback only; agent must NOT implement product changes")
         elif is_sprint_closed(status, project):
-            lines.append("⏸ SPRINT CLOSED — plan next sprint (retro → groom → ./studio sprint)")
+            lines.append("⏸ SPRINT CLOSED — reuse review → retro → groom → ./studio sprint")
         elif is_autonomous_sprint_execution(status, project):
             lines.append("🤖 AUTONOMOUS SPRINT — agent implements all tickets; human joins at sprint review only")
 
@@ -150,7 +150,7 @@ def build_focus_report(project: str, status: Dict) -> str:
 
     lines.extend([
         "",
-        "Sprint HITL: autonomous execution → human sprint review → groom → retro → next sprint",
+        "Sprint HITL: autonomous execution → human sprint review → reuse → retro → next sprint",
         "Drift recovery: ./studio resume {p}  |  ./studio focus {p}".format(p=project),
     ])
     return "\n".join(lines)
@@ -214,8 +214,8 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     if is_sprint_closed(status, project):
         if req_tokens & impl_signals:
             return "sprint_closed", (
-                f"Sprint closed (review approved). Plan the next sprint before implementing: "
-                f"./studio retro {project} → ./studio groom {project} → ./studio sprint {project}"
+                f"Sprint closed (review approved). Complete reuse review, then plan next sprint: "
+                f"./studio reuse {project} --approve → ./studio retro {project} → ./studio groom {project} → ./studio sprint {project}"
             )
         if req_tokens & direction_signals:
             return "sprint_closed", (
