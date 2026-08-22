@@ -334,6 +334,11 @@ def promote_path(
                 "item-tags",
                 "item-search",
                 "canvas-export",
+                "rate-limit",
+                "slug",
+                "password-gate",
+                "rect-selection",
+                "viewport-fit",
             )
             else "package"
         )

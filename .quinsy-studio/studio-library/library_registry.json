@@ -80,6 +80,31 @@
       "library_path": "packages/canvas-export/",
       "aliases": ["canvas-export", "board-export", "export"]
     },
+    "package-rate-limit": {
+      "project_path": "packages/rate-limit/",
+      "library_path": "packages/rate-limit/",
+      "aliases": ["rate-limit", "ratelimit"]
+    },
+    "package-slug": {
+      "project_path": "packages/slug/",
+      "library_path": "packages/slug/",
+      "aliases": ["slug", "slugify"]
+    },
+    "package-password-gate": {
+      "project_path": "packages/password-gate/",
+      "library_path": "packages/password-gate/",
+      "aliases": ["password-gate", "password", "bcrypt-gate"]
+    },
+    "package-rect-selection": {
+      "project_path": "packages/rect-selection/",
+      "library_path": "packages/rect-selection/",
+      "aliases": ["rect-selection", "marquee-selection", "marquee"]
+    },
+    "package-viewport-fit": {
+      "project_path": "packages/viewport-fit/",
+      "library_path": "packages/viewport-fit/",
+      "aliases": ["viewport-fit", "zoom-to-fit", "fit-viewport"]
+    },
     "sticker-sheet": {
       "project_path": "design/prototype/app/sticker-sheet/",
       "library_path": "ui/sticker-sheet/",

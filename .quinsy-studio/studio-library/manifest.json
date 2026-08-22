@@ -197,12 +197,57 @@
       "source_project": "moody",
       "promoted": "2026-08-20",
       "title": "Selected item metadata / tags panel"
+    },
+    {
+      "name": "rate-limit",
+      "kind": "package-rate-limit",
+      "path": "packages/rate-limit/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-22",
+      "title": "In-memory failure rate limiter + clientIp helper"
+    },
+    {
+      "name": "slug",
+      "kind": "package-slug",
+      "path": "packages/slug/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-22",
+      "title": "URL-safe slug helpers"
+    },
+    {
+      "name": "password-gate",
+      "kind": "package-password-gate",
+      "path": "packages/password-gate/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-22",
+      "title": "bcrypt password hash + verify cookie helpers"
+    },
+    {
+      "name": "rect-selection",
+      "kind": "package-rect-selection",
+      "path": "packages/rect-selection/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-22",
+      "title": "Marquee selection geometry for canvas"
+    },
+    {
+      "name": "viewport-fit",
+      "kind": "package-viewport-fit",
+      "path": "packages/viewport-fit/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-22",
+      "title": "Zoom-to-fit viewport math"
     }
   ],
   "last_promotion": {
     "project": "moody",
-    "at": "2026-08-21T18:00:00.000000",
-    "note": "LO-0001: Supabase auth package + AuthLoginForm from MOOD-0004"
+    "at": "2026-08-22T10:58:00.000000",
+    "note": "SPRINT-14 reuse: rate-limit, slug, password-gate, rect-selection, viewport-fit"
   },
   "schema_version": 2
 }

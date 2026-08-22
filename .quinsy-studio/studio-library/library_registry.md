@@ -37,6 +37,11 @@
 | `package-item-tags` | `packages/item-tags/` | `packages/item-tags/` | `item-tags`, `tags` |
 | `package-item-search` | `packages/item-search/` | `packages/item-search/` | `item-search`, `search`, `discover` |
 | `package-canvas-export` | `packages/canvas-export/` | `packages/canvas-export/` | `canvas-export`, `board-export`, `export` |
+| `package-rate-limit` | `packages/rate-limit/` | `packages/rate-limit/` | `rate-limit`, `ratelimit` |
+| `package-slug` | `packages/slug/` | `packages/slug/` | `slug`, `slugify` |
+| `package-password-gate` | `packages/password-gate/` | `packages/password-gate/` | `password-gate`, `password`, `bcrypt-gate` |
+| `package-rect-selection` | `packages/rect-selection/` | `packages/rect-selection/` | `rect-selection`, `marquee-selection`, `marquee` |
+| `package-viewport-fit` | `packages/viewport-fit/` | `packages/viewport-fit/` | `viewport-fit`, `zoom-to-fit`, `fit-viewport` |
 | `sticker-sheet` | `design/prototype/app/sticker-sheet/` | `ui/sticker-sheet/` | (reference only) |
 
 ---
