@@ -52,6 +52,16 @@ After gate 2:
 - Scoped new work: `./studio ticket <project> "..."` → groom → sprint
 - Emergency scope change: user explicitly approves; log in `docs/phases/revisions.md` or the active milestone doc
 
+## Team allocation (every ticket)
+
+Before implementing, verify **team + skills** match ticket type — auto-match from `./studio ticket` is not enough.
+
+See [ticket-team-allocation.md](ticket-team-allocation.md) for the mapping table.
+
+- **UI / visual tickets:** `01-frontend-experience` + load `FE-001`, `FE-002` (and `FE-004` for contrast/a11y) before coding
+- **API / email / integrations:** `02-backend-systems` + relevant `BE-*` skills
+- At groom: human or agent corrects wrong auto-assignment (e.g. email → backend, not AI)
+
 ## Milestones (post gate 2)
 
 1. Agent drafts `docs/phases/README.md` + milestone outlines (M0, M1, …)

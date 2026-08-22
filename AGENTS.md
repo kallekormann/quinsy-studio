@@ -10,7 +10,7 @@ You operate **Quinsy Studio** in the IDE. Stay in context. Separate worlds. **Li
 ./studio resume <project>
 ```
 
-Read: [agent-context.md](.quinsy-studio/process/agent-context.md) | [library_registry.md](.quinsy-studio/studio-library/library_registry.md)
+Read: [agent-context.md](.quinsy-studio/process/agent-context.md) | [ticket-team-allocation.md](.quinsy-studio/process/ticket-team-allocation.md) | [library_registry.md](.quinsy-studio/studio-library/library_registry.md)
 
 ## Library-first (UI + code)
 
@@ -30,6 +30,7 @@ After the ticket is done, if changes are generic:
 ```
 
 On `./studio move <project> <ID> implement` you get a library hint.  
+**UI tickets:** load team skills from [ticket-team-allocation.md](.quinsy-studio/process/ticket-team-allocation.md) (`FE-001` + `FE-002` minimum) before writing component code.
 On `./studio move … done` → warns if registry paths changed without promotion; **requires `./studio gate <project> --level 5` green** (build + runtime smoke + tests — level 2 lint-only is not enough).
 
 **Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally.
