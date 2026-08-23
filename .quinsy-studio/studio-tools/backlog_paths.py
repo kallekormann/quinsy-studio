@@ -158,13 +158,35 @@ def read_ticket_meta(path: Path) -> Dict:
     text = path.read_text(encoding="utf-8")
     meta: Dict = {"path": path, "body": text, "file": path}
     for key in ("id", "title", "priority", "phase", "estimate", "sprint", "status"):
-        match = re.search(rf"^{key}:\s*(.+)$", text, re.MULTILINE)
+        # [ \t]* only — \s would swallow the newline after empty `sprint:` fields
+        match = re.search(rf"^{key}:[ \t]*([^\n]*)$", text, re.MULTILINE)
         if match:
-            meta[key] = match.group(1).strip().strip("'\"")
+            value = match.group(1).strip().strip("'\"")
+            if value:
+                meta[key] = value
     tid_match = re.match(r"^([A-Z]+-\d+)", path.name)
     if tid_match and "id" not in meta:
         meta["id"] = tid_match.group(1)
     return meta
+
+
+def set_ticket_sprint(content: str, sprint_name: str) -> str:
+    """Set or replace frontmatter sprint: on a ticket body."""
+    if re.search(rf"^sprint:[ \t]*{re.escape(sprint_name)}[ \t]*$", content, re.MULTILINE):
+        return content
+    if re.search(r"^sprint:[ \t]*\S", content, re.MULTILINE):
+        return content
+    if re.search(r"^sprint:[ \t]*$", content, re.MULTILINE):
+        return re.sub(
+            r"^sprint:[ \t]*$",
+            f"sprint: {sprint_name}",
+            content,
+            count=1,
+            flags=re.MULTILINE,
+        )
+    if "sprint:" not in content:
+        return content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
+    return content
 
 
 def list_unscheduled_backlog(project: str) -> List[Dict]:

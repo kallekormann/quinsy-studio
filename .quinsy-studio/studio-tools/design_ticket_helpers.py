@@ -43,8 +43,9 @@ def infer_ticket_type(text: str) -> str:
         return "marketing-page"
     if any(x in t for x in WORKFLOW_TRIGGERS):
         return "workflow-explainer"
-    if any(x in t for x in IA_TRIGGERS):
-        return "ia-navigation"
+    if "information architecture" in t or re.search(r"\bia\b", t):
+        if any(x in t for x in ("navigation", "nav structure", "wayfinding")):
+            return "ia-navigation"
     if any(x in t for x in NEW_COMPONENT_TRIGGERS):
         return "ui-new-component"
     if any(x in t for x in ("component", "modal", "dialog", "menu", "ui", "layout")):

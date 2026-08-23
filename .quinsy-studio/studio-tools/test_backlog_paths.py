@@ -9,6 +9,7 @@ from backlog_paths import (
     list_unscheduled_backlog,
     migrate_legacy_backlog,
     queue_ticket_paths,
+    read_ticket_meta,
 )
 
 
@@ -35,3 +36,21 @@ def test_migrate_open_to_backlog_root():
             assert not open_dir.exists() or not list(open_dir.glob("*.md"))
         finally:
             bp.PROJECTS_DIR = old_projects
+
+
+def test_read_ticket_meta_empty_sprint_not_next_line():
+    body = (
+        "---\n"
+        "id: TEST-0002\n"
+        "sprint: \n"
+        "created: 2026-08-22\n"
+        "---\n"
+    )
+    with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as f:
+        f.write(body)
+        path = Path(f.name)
+    try:
+        meta = read_ticket_meta(path)
+        assert "sprint" not in meta
+    finally:
+        path.unlink()

@@ -15,6 +15,7 @@ from backlog_paths import (
     PROJECTS_DIR,
     list_unscheduled_backlog,
     read_ticket_meta,
+    set_ticket_sprint,
 )
 
 GENERIC_ACCEPTANCE = re.compile(
@@ -147,9 +148,9 @@ def apply_sprint_scope(project: str, sprint_name: str, proposal: Dict) -> int:
                 continue
             file_path = path["path"]
             content = file_path.read_text(encoding="utf-8")
-            if "sprint:" not in content:
-                content = content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
-                file_path.write_text(content, encoding="utf-8")
+            updated = set_ticket_sprint(content, sprint_name)
+            if updated != content:
+                file_path.write_text(updated, encoding="utf-8")
                 count += 1
             break
         else:
@@ -159,9 +160,9 @@ def apply_sprint_scope(project: str, sprint_name: str, proposal: Dict) -> int:
             for file_path in queue_ticket_paths(project):
                 if file_path.name.startswith(f"{tid}-"):
                     content = file_path.read_text(encoding="utf-8")
-                    if "sprint:" not in content:
-                        content = content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
-                        file_path.write_text(content, encoding="utf-8")
+                    updated = set_ticket_sprint(content, sprint_name)
+                    if updated != content:
+                        file_path.write_text(updated, encoding="utf-8")
                         count += 1
                     break
     return count
