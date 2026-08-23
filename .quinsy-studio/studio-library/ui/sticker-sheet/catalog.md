@@ -1,26 +1,50 @@
 # Studio Library — Sticker Sheet Catalog
 
-Updated: 2026-08-20
-Gate 2 validated project: `moody`
-**Components listed are studio-owned generics.**
+Updated: 2026-08-23  
+**UI reference:** [ui/docs/README.md](../docs/README.md)
 
-## Components
+## Primitives (Headless UI — full v2 coverage)
+
+Peer dependency: `@headlessui/react`
+
+**Overlays & navigation:** `dialog`, `menu`, `popover`, `disclosure`, `tabs`  
+**Selection:** `listbox`, `combobox`, `radio-group`, `select`  
+**Forms:** `field`, `checkbox`, `switch`, `input`, `textarea`, `button`  
+**Motion:** `transition`, `close-button`
+
+> Pull styled atoms (`button`, `input`, …) for token-styled controls. Primitives live at `ui/primitives/headless/<name>/`.
+
+## Atoms
 
 - `badge`
-- `button`
-- `checklist-item`
+- `button` — primary, secondary, outline, ghost, **link**, destructive
+- `card`
+- `checkbox`
 - `icon`
-- `inline-form`
 - `input`
-- `pageshell`
+- `select`
+- `switch`
+- `textarea`
+
+## Molecules
+
+- `checklist-item`
+- `dropdown-menu`
+- `inline-form`
 - `palette-strip`
-- `search-command`
+- `radio-group`
+- `search-command` (Dialog + Combobox)
 - `item-inspector`
+- `auth-login`
+
+## Organisms
+
+- `pageshell`
 
 ## Packages
 
-- `color-extraction` — dominant-color palette from images (browser + vitest)
-- `qa-smoke` — Playwright smoke-routes runner + JSON config template
-- `item-tags` — parse/normalize tags in contentJson
-- `item-search` — metadata search over canvas items
-- `canvas-export` — Konva PNG/PDF export helpers
+- `color-extraction` — dominant-color palette from images
+- `qa-smoke` — Playwright smoke-routes runner
+- `item-tags` — tag parse/normalize
+- `item-search` — metadata search (CMD-K)
+- `canvas-export` — Konva PNG/PDF export

@@ -68,6 +68,20 @@ TEST_TICKETS = [
         "expect_internal": ["GM-003"],
         "expect_external": ["marketing_aeo/skills/copywriting"],
     },
+    {
+        "id": "NUDG-1008",
+        "title": "New settings modal component",
+        "text": "Add new modal dialog for settings panel. UI component with dropdown menu.",
+        "expect_internal": ["UX-002", "UX-005", "UX-006"],
+        "expect_external": ["design-agent/ux-interaction-patterns"],
+    },
+    {
+        "id": "NUDG-1009",
+        "title": "Information architecture for main navigation",
+        "text": "Redesign navigation structure and wayfinding. IA audit: top-level nav items.",
+        "expect_internal": ["UX-003"],
+        "expect_external": ["design-agent/ux-information-architecture"],
+    },
 ]
 
 

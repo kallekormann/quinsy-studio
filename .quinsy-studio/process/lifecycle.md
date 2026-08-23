@@ -213,8 +213,8 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 
 1. Intake & understanding
 2. Decomposition & dependencies
-3. Conception/design
-4. Implementation (clean code, TDD)
+3. Conception/design — **UI design-track:** Team 10 writes `docs/design-specs/<TICKET>.md`; human `./studio approve-design`
+4. Implementation (clean code, TDD) — blocked until design approved for design-track types
 5. Self-check (tests, lint, review)
 6. QA gate (`./studio gate <project>`)
 7. Docs & ADR sync

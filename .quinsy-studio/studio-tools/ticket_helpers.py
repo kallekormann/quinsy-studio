@@ -66,6 +66,14 @@ SKILL_ROLE_MAP = {
     "SO-002": "Process Guard (Director)",
     "SO-003": "Process Guard / Agile Coach (Directors)",
     "SO-004": "Documentation Writer (Lead)",
+    # Team 10 — Product Design & Experience
+    "UX-001": "Product Designer (Director)",
+    "UX-002": "UX Designer (Director)",
+    "UX-003": "Information Architect (Director)",
+    "UX-004": "UX Researcher (Director)",
+    "UX-005": "UI/Visual Designer (Director)",
+    "UX-006": "Brand Guardian (Director)",
+    "UX-007": "Visual Storyteller (Director)",
 }
 
 # Mandatory playbook reference per team (in the constraints block)
@@ -79,6 +87,7 @@ TEAM_PLAYBOOK_MAP = {
     "07-ai-autonomous-systems": "knowledge-base/ai_automation_playbook.md",
     "08-platform-enterprise-engineering": "knowledge-base/backend_playbook.md",
     "09-studio-operations-evolution": "process/learning-loop.md",
+    "10-product-design-experience": "knowledge-base/design-science-playbook.md",
 }
 
 # =============================================================================
@@ -174,6 +183,12 @@ def render_ticket_markdown(ticket: Dict) -> str:
     ]
     if ticket.get("sprint"):
         lines.insert(-1, f"sprint: {ticket['sprint']}")
+    if ticket.get("ticket_type"):
+        lines.insert(-1, f"ticket_type: {ticket['ticket_type']}")
+    if ticket.get("design_status"):
+        lines.insert(-1, f"design_status: {ticket['design_status']}")
+    if ticket.get("design_spec"):
+        lines.insert(-1, f"design_spec: {ticket['design_spec']}")
     lines += [
         "---",
         "",

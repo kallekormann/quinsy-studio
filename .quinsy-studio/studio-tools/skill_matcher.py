@@ -121,6 +121,32 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
     "SO-004": {"name": "Documentation Governance", "triggers": [
         "documentation", "readme", "changelog", "docs", "doku"
     ]},
+    "UX-001": {"name": "Product Design", "triggers": [
+        "product design", "user flow", "jobs to be done", "end-to-end flow", "desktop app",
+        "mobile app", "webapp", "browser extension", "platform"
+    ]},
+    "UX-002": {"name": "UX Design", "triggers": [
+        "interaction", "microcopy", "error state", "ux design", "form flow", "wireframe",
+        "modal", "dialog", "dropdown", "settings panel", "new component", "menu"
+    ]},
+    "UX-003": {"name": "Information Architecture", "triggers": [
+        "information architecture", "navigation", "nav structure", "wayfinding", "ia ", "labeling"
+    ]},
+    "UX-004": {"name": "UX Research", "triggers": [
+        "persona", "usability test", "mental model", "user research", "interview"
+    ]},
+    "UX-005": {"name": "Visual UI Design", "triggers": [
+        "visual design", "typography", "color theory", "layout", "gestalt", "golden ratio",
+        "new component", "ui component", "component design"
+    ]},
+    "UX-006": {"name": "Brand Guardian", "triggers": [
+        "brand", "brand voice", "visual identity", "brand consistency", "tone",
+        "component", "modal", "ui component"
+    ]},
+    "UX-007": {"name": "Visual Storyteller", "triggers": [
+        "homepage", "landing page", "marketing page", "storyboard", "workflow diagram",
+        "explainer", "hero section", "pricing page", "narrative"
+    ]},
 }
 
 TEAM_MAPPING = {
@@ -133,6 +159,7 @@ TEAM_MAPPING = {
     "AI": "07-ai-autonomous-systems",
     "PE": "08-platform-enterprise-engineering",
     "SO": "09-studio-operations-evolution",
+    "UX": "10-product-design-experience",
 }
 
 EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
@@ -145,6 +172,18 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
         "design/skills (hallmark)",
         "design_awesome/skills/<style>",
     ],
+    "UX-001": ["design-agent/ux-design-process", "design-agent/ux-desktop-app", "design-agent/ux-web-app", "design-agent/ux-knowledge-work"],
+    "UX-002": ["design-agent/ux-interaction-patterns", "design-agent/ux-form-design"],
+    "UX-003": ["design-agent/ux-information-architecture"],
+    "UX-004": ["design-agent/ux-mental-models", "design-agent/ux-design-process"],
+    "UX-005": [
+        "design-agent/ux-visual-design",
+        "design-agent/ux-typography",
+        "design-agent/ux-color-theory",
+        "design-agent/taste-skill",
+    ],
+    "UX-006": ["design-agent/brandkit", "design-agent/design-brand-guardian"],
+    "UX-007": ["design-agent/design-visual-storyteller", "marketing_aeo/skills/copywriting"],
     "BE-001": [
         "all_domains/api-and-integration/api-design",
         "all_domains/api-and-integration/oauth-2-0-setup",

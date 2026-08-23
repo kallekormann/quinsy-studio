@@ -9,7 +9,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve(__dirname, '..', '..', '..');
+const root = process.argv[2]
+  ? path.resolve(process.argv[2])
+  : path.resolve(__dirname, '..', '..', '..');
 
 const envPath = path.join(root, '.env.local');
 

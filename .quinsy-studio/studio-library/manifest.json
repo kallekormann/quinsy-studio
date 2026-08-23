@@ -10,6 +10,90 @@
       "title": "Tailwind-default design tokens (JSON + CSS + preset)"
     },
     {
+      "name": "dialog",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/dialog/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI Dialog primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "menu",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/menu/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI Menu primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "popover",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/popover/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI Popover primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "listbox",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/listbox/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI Listbox primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "combobox",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/combobox/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI Combobox primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "disclosure",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/disclosure/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI Disclosure primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "tabs",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/tabs/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI Tabs primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
       "name": "button",
       "kind": "ui-atom",
       "path": "ui/components/button/",
@@ -94,10 +178,12 @@
       "name": "auth",
       "kind": "package-auth",
       "path": "packages/auth/",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "source_project": "moody",
-      "promoted": "2026-08-21",
-      "title": "Supabase + Next.js auth (SSR, middleware, RBAC, Resend welcome, env sync)"
+      "promoted": "2026-08-22",
+      "promoted_at": "2026-08-22T16:05:45.500224",
+      "title": "auth (promoted from moody)",
+      "ticket_id": "MOOD-0045"
     },
     {
       "name": "billing",
@@ -175,10 +261,10 @@
       "name": "search-command",
       "kind": "ui-molecule",
       "path": "ui/components/search-command/",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "source_project": "moody",
       "promoted": "2026-08-20",
-      "title": "CMD-K search command dialog"
+      "title": "CMD-K search (Dialog + Combobox)"
     },
     {
       "name": "auth-login",
@@ -242,12 +328,101 @@
       "source_project": "moody",
       "promoted": "2026-08-22",
       "title": "Zoom-to-fit viewport math"
+    },
+    {
+      "name": "checkbox",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/checkbox/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI checkbox",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "switch",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/switch/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI switch",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "radio-group",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/radio-group/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI radio-group",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "field",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/field/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI field",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "transition",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/transition/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI transition",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "close-button",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/close-button/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI close-button",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "card",
+      "kind": "ui-atom",
+      "path": "ui/components/card/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Card surface container"
+    },
+    {
+      "name": "dropdown-menu",
+      "kind": "ui-molecule",
+      "path": "ui/components/dropdown-menu/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Dropdown menu (Headless Menu)"
     }
   ],
   "last_promotion": {
     "project": "moody",
-    "at": "2026-08-22T10:58:00.000000",
-    "note": "SPRINT-14 reuse: rate-limit, slug, password-gate, rect-selection, viewport-fit"
+    "at": "2026-08-22T16:05:45.500360"
   },
   "schema_version": 2
 }

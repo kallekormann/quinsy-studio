@@ -20,9 +20,16 @@ activation_triggers:
 
 ---
 
-## Behavior rules
+## Library-first + Tailwind (mandatory)
 
-### 1. Atomic design hierarchy
+Before any new UI markup:
+
+1. Read [ui/docs/README.md](../../../../studio-library/ui/docs/README.md)
+2. `./studio library suggest <project> "<feature>"` → `./studio library pull`
+3. Use **Tailwind utility classes** ([docs](https://tailwindcss.com/docs/)) — no ad-hoc CSS files for components
+4. Use **Headless UI primitives** via studio-library — never hand-roll modals, menus, or focus traps
+5. Styled controls: `button`, `input`, `card`, `dropdown-menu`, `checkbox`, `switch`, `select`, `textarea`
+
 
 ```markdown
 Every component is assigned to the correct level:

@@ -90,6 +90,23 @@ def _resolve_alias(name: str) -> Optional[Tuple[str, Dict]]:
     if page_dir.exists():
         return "ui-page-type", reg["kinds"].get("ui-page-type", {})
 
+    prim_dir = STUDIO_LIBRARY / "ui" / "primitives" / "headless" / _slug(name)
+    if prim_dir.exists():
+        return "ui-primitive", reg["kinds"].get("ui-primitive", {
+            "library_pattern": "ui/primitives/headless/{slug}/",
+            "project_pattern": "ui/primitives/headless/{slug}/",
+        })
+
+    for asset in _load_manifest().get("assets", []):
+        if asset.get("name", "").lower() == name_lower:
+            kind = asset.get("kind", "other")
+            if kind == "ui-primitive":
+                return "ui-primitive", reg["kinds"].get("ui-primitive", {
+                    "library_pattern": "ui/primitives/headless/{slug}/",
+                    "project_pattern": "ui/primitives/headless/{slug}/",
+                })
+            break
+
     return None
 
 
@@ -104,21 +121,62 @@ def list_library_assets() -> List[Dict]:
     for comp in (STUDIO_LIBRARY / "ui" / "components").glob("*"):
         if comp.is_dir() and comp.name not in seen:
             assets.append({"name": comp.name, "kind": "ui-component", "path": f"ui/components/{comp.name}/", "version": "0.0.0"})
+    for prim in (STUDIO_LIBRARY / "ui" / "primitives" / "headless").glob("*"):
+        if prim.is_dir() and prim.name not in seen:
+            assets.append({
+                "name": prim.name,
+                "kind": "ui-primitive",
+                "path": f"ui/primitives/headless/{prim.name}/",
+                "version": "0.0.0",
+                "title": f"Headless UI {prim.name}",
+            })
     return assets
+
+
+_HEADLESS_HINTS = {
+    "modal": ["dialog"],
+    "dialog": ["dialog"],
+    "dropdown": ["dropdown-menu", "menu", "listbox"],
+    "menu": ["dropdown-menu", "menu"],
+    "select": ["select", "listbox", "combobox"],
+    "checkbox": ["checkbox"],
+    "toggle": ["switch"],
+    "switch": ["switch"],
+    "radio": ["radio-group"],
+    "card": ["card"],
+    "textarea": ["textarea"],
+    "button": ["button"],
+    "search": ["combobox", "search-command"],
+    "accordion": ["disclosure"],
+    "tabs": ["tabs"],
+    "popover": ["popover"],
+    "tooltip": ["popover"],
+    "transition": ["transition"],
+    "fieldset": ["field"],
+    "form": ["field", "input", "textarea", "select", "checkbox", "switch"],
+}
 
 
 def suggest_assets(query: str) -> List[Dict]:
     q = query.lower()
     tokens = set(re.findall(r"[a-z0-9]+", q))
+    boost_names: set[str] = set()
+    for hint, names in _HEADLESS_HINTS.items():
+        if hint in q:
+            boost_names.update(names)
     results = []
     for asset in list_library_assets():
         hay = " ".join(
             str(asset.get(k, "")) for k in ("name", "kind", "title", "path")
         ).lower()
         score = sum(1 for t in tokens if t in hay)
+        if asset.get("name") in boost_names:
+            score += 3
+        if asset.get("kind") == "ui-primitive" and any(t in hay for t in tokens):
+            score += 1
         if score > 0 or q in hay:
             results.append({**asset, "_score": score})
-    results.sort(key=lambda x: x["_score"], reverse=True)
+    results.sort(key=lambda x: (-x["_score"], x.get("kind") == "ui-primitive", x.get("name", "")))
     return results[:10]
 
 
@@ -182,6 +240,22 @@ def pull_assets(project: str, names: List[str], force: bool = False) -> Dict[str
             continue
         kind_id, cfg = resolved
         comp_lib = STUDIO_LIBRARY / "ui" / "components" / _slug(name)
+        if kind_id == "ui-primitive":
+            prim_lib = STUDIO_LIBRARY / "ui" / "primitives" / "headless" / _slug(name)
+            dest_dir = project_dir / "ui" / "primitives" / "headless" / _slug(name)
+            files = _copy_tree(prim_lib, dest_dir, force=force)
+            if files:
+                entry = {
+                    "name": name,
+                    "kind": kind_id,
+                    "at": datetime.now().isoformat(),
+                    "paths": [str(Path(f).relative_to(project_dir)) for f in files],
+                }
+                usage["pulls"].append(entry)
+                pulled.append({**entry, "status": "ok"})
+            else:
+                pulled.append({"name": name, "kind": kind_id, "status": "skipped_exists"})
+            continue
         if comp_lib.is_dir() and kind_id.startswith("ui-"):
             dest_dir = project_dir / "ui" / "components" / _slug(name)
             files = _copy_tree(comp_lib, dest_dir, force=force)

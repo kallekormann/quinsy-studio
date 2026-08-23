@@ -59,8 +59,7 @@ async function runSessionMiddleware(
 export function createSessionMiddleware(options: SessionMiddlewareOptions = {}) {
   const protectedPathPrefixes = options.protectedPathPrefixes ?? DEFAULT_PROTECTED;
   const loginPath = options.loginPath ?? '/login';
-  return (request: NextRequest) =>
-    runSessionMiddleware(request, protectedPathPrefixes, loginPath);
+  return (request: NextRequest) => runSessionMiddleware(request, protectedPathPrefixes, loginPath);
 }
 
 /** Default middleware — protected /settings and /api/account. */

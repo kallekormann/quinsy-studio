@@ -5,6 +5,7 @@ You operate **Quinsy Studio** in the IDE. Stay in context. Separate worlds. **Li
 ## Session start (mandatory)
 
 ```bash
+./studio install                  # once after git clone (skip if node_modules exists)
 ./studio verify-worlds
 ./studio focus <project>
 ./studio resume <project>
@@ -30,10 +31,10 @@ After the ticket is done, if changes are generic:
 ```
 
 On `./studio move <project> <ID> implement` you get a library hint.  
-**UI tickets:** load team skills from [ticket-team-allocation.md](.quinsy-studio/process/ticket-team-allocation.md) (`FE-001` + `FE-002` minimum) before writing component code.
+**UI tickets:** design-track types require Team 10 design spec + human `./studio approve-design <p> <ID>` before implement. **All UI/FE tickets:** Tailwind CSS + studio-library ([ui/docs/README.md](.quinsy-studio/studio-library/ui/docs/README.md)) — no hand-rolled modals or unstyled form controls.
 On `./studio move … done` → warns if registry paths changed without promotion; **requires `./studio gate <project> --level 5` green** (build + runtime smoke + tests — level 2 lint-only is not enough).
 
-**Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally.
+**Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally. **New components** go in studio-library first ([component-creation-playbook.md](.quinsy-studio/knowledge-base/component-creation-playbook.md)); Headless UI primitives live under `ui/primitives/headless/`.
 
 **Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **Autonomous mid-sprint:** agent implements all groomed sprint tickets without human checkpoints. **Human joins at sprint review** when all sprint tickets are `done`. **During review:** capture feedback only — never implement in project code until the next sprint. **Milestones:** after gate 2, agent drafts `docs/phases/` roadmap → human approves → tickets for active milestone only → sprints. **Milestone review** when all milestone tickets are done, before next milestone backlog. **Product backlog** lives in `projects/<p>/backlog/*.md` (not `open/`). **Sprint planning:** `./studio sprint` proposes scope → human `./studio sprint --approve-scope` → `./studio groom --approve`.
 
@@ -58,6 +59,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 ```bash
 ./studio approve <p> --gate 2    # validates design + refreshes library catalog (no project → library merge)
+./studio approve-design <p> <TICKET>   # HITL after Team 10 design spec (UI tickets)
 ./studio approve <p> --milestones   # approve milestone roadmap (after docs/phases/ drafted)
 ./studio library promote-design <p> [--force]
 ```

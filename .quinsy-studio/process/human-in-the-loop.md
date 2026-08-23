@@ -27,6 +27,7 @@ Agent: "Implemented."
 | **Milestone roadmap** | approve version plan after gate 2 | **Yes** |
 | **Milestone review** | approve completed product version (M0, M1, …) | **Yes** |
 | **Sprint feedback** | new ideas from review → backlog | **Yes** (clarify before ticket) |
+| **UI design spec** | new component / marketing / workflow UI | **Yes** (`./studio approve-design`) |
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |

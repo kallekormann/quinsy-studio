@@ -117,6 +117,13 @@ Result: GREEN ✓
 | 3.4 | Page types defined | file check | required |
 | 3.5 | Color mode (dark/light) defined | content check | recommended |
 | 3.6 | Animation defined | content check | recommended |
+| 3.7 | Design science audit (`design_math.py`) on token pairs + nav | script check | recommended |
+
+Run contrast / IA checks when `ui/tokens/design-tokens.css` exists:
+
+```bash
+python3 .quinsy-studio/studio-tools/design_math.py --audit-tokens projects/<p>/ui/tokens/design-tokens.css
+```
 
 ---
 

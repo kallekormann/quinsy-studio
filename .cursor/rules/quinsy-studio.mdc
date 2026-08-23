@@ -10,10 +10,12 @@ Read [AGENTS.md](../../AGENTS.md) and [.quinsy-studio/process/agent-context.md](
 ## Session start
 
 ```bash
-./studio verify-worlds && ./studio focus <project> && ./studio resume <project>
+./studio install && ./studio verify-worlds && ./studio focus <project> && ./studio resume <project>
 ```
 
 Active project: `.quinsy-studio/.active-project.json`
+
+**Fresh clone:** run `./studio install` once (installs `tailwindcss`, `@tailwindcss/vite`, `@headlessui/react` for studio-library). `node_modules/` is gitignored.
 
 ## Two worlds — never mix
 
@@ -55,3 +57,7 @@ User: "back on track" / "resume project" → `./studio focus <p>` then first ite
 ## Library (gate 2)
 
 Design approval promotes base UI to `studio-library/` (tokens, components, sticker sheet). Project styling stays in project tokens.
+
+## UI design HITL (post gate 2)
+
+Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`): Team 10 spec → `./studio approve-design <p> <ID>` → Team 01 implement. New components in studio-library first (`component-creation-playbook.md`).

@@ -4,56 +4,85 @@ Every backlog ticket must declare **who owns the work** before implementation. A
 
 ## Principle
 
-| Ticket kind | Primary team | Required skills (load before coding) |
-|-------------|--------------|-------------------------------------|
-| **UI / visual** (components, layout, dark mode, polish) | `01-frontend-experience` | FE-001 UI Component Design, FE-002 Design System; read `design/prototype` + project tokens |
-| **Canvas / interaction** | `01-frontend-experience` | FE-001, FE-002; read `docs/definitions/10-canvas-interactions.md` |
-| **API / data / auth** | `02-backend-systems` | BE-001–BE-003 as applicable |
-| **Email / integrations** | `02-backend-systems` | BE-005 Third-Party Integrations |
-| **Legal / privacy** | `03-compliance-legal` | CL-001, CL-003 |
-| **Architecture / ADR** | `04-product-strategy-architecture` | PS-002 Architecture Decisions |
-| **Growth / copy** | `05-growth-marketing-content` | GM-003 Content Strategy |
-| **Process / studio** | `09-studio-operations-evolution` | SO-002 Process Optimization |
+| Ticket kind | Design phase (Team 10) | Implement phase (Team 01) |
+|-------------|------------------------|---------------------------|
+| **UI new component** | UX-001/002/005 + UX-006 | FE-001, FE-002, FE-004 after `approve-design` |
+| **UI composition** | UX-002, UX-003, UX-006 | FE-001, FE-002 |
+| **UI styling** (tokens, dark mode) | UX-006 review optional | FE-001, FE-002, UX-006, AI-002 |
+| **Marketing page** | UX-007, UX-006, UX-005, GM-003 | FE-001, FE-002 after HITL |
+| **Workflow explainer** | UX-007, UX-002, UX-001 | FE-001 after HITL |
+| **IA / navigation** | UX-003 only | — (spec for gate 2 / milestone) |
+| **Canvas / interaction** | UX-002 as needed | FE-001, FE-002 |
+| **API / data / auth** | — | `02-backend-systems` BE-001–BE-003 |
+| **Email / integrations** | — | BE-005 |
+| **Legal / privacy** | — | CL-001, CL-003 |
+| **Architecture / ADR** | — | PS-002 |
+| **Growth / copy** | UX-007 optional | GM-003 |
+| **Process / studio** | — | SO-002 |
 
-## UI tickets — design gate (mandatory)
+## Design HITL gate (mandatory)
 
-Tickets that touch **visible UI** (new components, styling, layout, themes) must:
+Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, `ia-navigation`:
 
-1. Set `team: 01-frontend-experience` in frontmatter
-2. List skills: `FE-001`, `FE-002` (and `FE-004` if contrast/a11y)
-3. Agent loads before implement:
-   - `teams/01-frontend-experience/skills/ui-component-design.md`
-   - `teams/01-frontend-experience/skills/design-system.md`
-   - Project `design/prototype` sticker sheet or `ui/tokens/design-tokens.css`
-4. Acceptance criteria include **light + dark mode** when the surface appears on the canvas or in chrome
+1. Team 10 writes `docs/design-specs/<TICKET>.md` (template: `knowledge-base/design-spec-template.md`)
+2. Spec includes **Atomic Inventory** + **Design Rationale** (contrast table, Gestalt grouping)
+3. Human: `./studio approve-design <project> <ticket-id>`
+4. `./studio move … implement` is **blocked** until `design_status: approved`
 
-**Gap this addresses:** UI tickets were auto-assigned to frontend by keyword but implemented without loading design-system skills — causing regressions like unreadable dark-mode hint bars.
+`ui-styling` tickets skip design HITL but still require FE-001 + FE-002 + UX-006 + AI-002 on implement.
 
-## How allocation works in tooling
+## Skill loads by phase
 
-| Step | Command / file |
-|------|----------------|
-| Auto-match skills | `skill_matcher.py` → `match_skills(title + body)` |
-| Auto-match team | `team_for_skills()` → first skill prefix (FE → 01-frontend…) |
-| Override at groom | Human edits ticket `team` + `skills` in frontmatter |
-| Verify at implement | `./studio move … implement` prints library hint; agent reads `skills` |
+| Phase | Command | Load |
+|-------|---------|------|
+| Design | `./studio move … design` (or groom assigns Team 10) | UX skills per `ticket_type`; `brand-guardian-checklist.md` |
+| Approve | `./studio approve-design` | Human only |
+| Implement | `./studio move … implement` | FE-001, FE-002; FE-004 if color/a11y; `./studio library pull` |
 
-## Ticket frontmatter template (UI example)
+## Library-first rule
 
-```yaml
-team: 01-frontend-experience
-skills: [FE-001, FE-002, FE-004]
+Before custom markup:
+
+```bash
+./studio library list
+./studio library suggest <project> "<feature>"
+./studio library pull <project> dialog button card dropdown-menu
 ```
 
-## Grooming checklist (human + agent)
+**Tailwind + Headless UI required** for all UI implement tickets. Read [ui/docs/README.md](../studio-library/ui/docs/README.md).
 
-- [ ] Ticket `team` matches the mapping table above
-- [ ] UI tickets include FE-001 + FE-002 in `skills`
-- [ ] API tickets include BE-* skills, not default frontend
+
+New atoms/molecules → `component-creation-playbook.md` → studio-library first.
+
+## Ticket frontmatter (UI example)
+
+```yaml
+team: 10-product-design-experience
+ticket_type: ui-new-component
+design_status: pending
+design_spec: docs/design-specs/MOOD-0100.md
+skills: [UX-002, UX-005, UX-006, AI-002]
+```
+
+After approval:
+
+```yaml
+design_status: approved
+design_approved_at: 2026-08-23 12:00
+team: 01-frontend-experience
+skills: [FE-001, FE-002, FE-004, UX-006, AI-002]
+```
+
+## Grooming checklist
+
+- [ ] `ticket_type` set (auto on `./studio ticket` or manual)
+- [ ] Design-track tickets have `design_spec` path
+- [ ] Team 10 skills for design; Team 01 for implement (after approval)
+- [ ] Atomic inventory lists library pulls vs new studio-library work
 - [ ] `./studio groom --approve` only after skills are explicit
 
 ## Related
 
-- [skill-registry.md](../teams/skill-registry.md)
-- [human-in-the-loop.md](human-in-the-loop.md) — sprint review feedback flow
-- [agent-context.md](agent-context.md)
+- [skill-registry.md](../teams/skill-registry.md) — Team 10 UX-001–UX-007
+- [human-in-the-loop.md](human-in-the-loop.md) — `approve-design`
+- [component-creation-playbook.md](../knowledge-base/component-creation-playbook.md)

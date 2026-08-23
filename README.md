@@ -14,10 +14,16 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 
 ## Quick start (AI-driven)
 
+**After git clone:**
+
+```bash
+./studio install                    # tailwindcss + @headlessui/react (once)
+./studio verify-worlds              # studio git ≠ project git
+```
+
 **Fastest path:** add `intake/<project>.md` → in Cursor say *"Bootstrap &lt;project&gt; and walk me through gate 0"*.
 
 ```bash
-./studio verify-worlds              # studio git ≠ project git
 ./studio bootstrap my-project     # from intake/<prd>.md
 ./studio focus my-project         # active context for agent
 ./studio resume my-project        # next step only
@@ -98,6 +104,7 @@ Docs: [agent-context](.quinsy-studio/process/agent-context.md) · [two worlds](.
 ```
 quinsy-studio/
 ├── AGENTS.md                 # IDE agent contract (read first)
+├── package.json              # Studio UI deps (Tailwind + Headless UI)
 ├── .cursor/rules/            # Cursor always-on rules
 ├── .quinsy-studio/
 │   ├── process/              # Lifecycle, gates, ticket workflow, worlds
@@ -145,6 +152,7 @@ quinsy-studio/
 
 ```bash
 ./studio --help
+./studio install                  # after git clone
 ./studio library list
 ./studio bootstrap <project>
 ./studio review <project>

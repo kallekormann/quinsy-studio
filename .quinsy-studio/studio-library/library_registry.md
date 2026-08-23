@@ -23,6 +23,7 @@
 
 | Kind | Project path | Library path | Pull alias |
 |------|--------------|--------------|------------|
+| `ui-primitive` | `ui/primitives/headless/<slug>/` | `ui/primitives/headless/<slug>/` | primitive name (`dialog`, `menu`, …) |
 | `ui-atom` | `ui/components/atoms/<Name>.tsx` | `ui/components/<slug>/` | component name |
 | `ui-molecule` | `ui/components/molecules/<Name>.tsx` | `ui/components/<slug>/` | component name |
 | `ui-organism` | `ui/components/organisms/<Name>.tsx` | `ui/components/<slug>/` | component name |
@@ -73,8 +74,10 @@ Generic library UI/tokens are edited in `.quinsy-studio/studio-library/` directl
 ## Pull into project
 
 ```bash
-./studio library pull nudge tokens button input pageshell
+./studio library pull nudge tokens button input dialog menu pageshell
 ```
+
+**Peer dependency:** Headless UI primitives require `@headlessui/react` in the project.
 
 - Copies **library → project** (never overwrites without `--force`)
 - Logs to `projects/<p>/docs/library-usage.json`

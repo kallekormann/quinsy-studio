@@ -13,9 +13,9 @@ Peer dependencies in the project: `@supabase/ssr`, `@supabase/supabase-js`, `nex
 
 ## Env vars (critical)
 
-| Variable | Source |
-|----------|--------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `supabase status -o env` → `API_URL` |
+| Variable                        | Source                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | `supabase status -o env` → `API_URL`                                   |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `ANON_KEY` (JWT `eyJ…`) — **not** the status table “Publishable” label |
 
 ```bash
@@ -28,7 +28,10 @@ npm run dev   # restart after env change
 
 ```typescript
 // src/lib/supabase/client.ts
-export { createBrowserSupabaseClient as createClient, isSupabaseConfigured } from '@packages/auth/next/client';
+export {
+  createBrowserSupabaseClient as createClient,
+  isSupabaseConfigured,
+} from '@packages/auth/next/client';
 
 // src/middleware.ts
 import { updateSession } from '@packages/auth/next/middleware';
@@ -54,13 +57,13 @@ export const updateSession = createSessionMiddleware({
 
 ## Flows
 
-| Flow | Implementation |
-|------|----------------|
-| Sign up / sign in | Supabase client `signUp` / `signInWithPassword` |
-| Magic link | `signInWithOtp` → `/auth/callback` |
-| Welcome email | `sendWelcomeEmail()` via Resend (separate from magic link SMTP) |
+| Flow                   | Implementation                                                           |
+| ---------------------- | ------------------------------------------------------------------------ |
+| Sign up / sign in      | Supabase client `signUp` / `signInWithPassword`                          |
+| Magic link             | `signInWithOtp` → `/auth/callback`                                       |
+| Welcome email          | `sendWelcomeEmail()` via Resend (separate from magic link SMTP)          |
 | Local magic link inbox | Mailpit in project Docker + Supabase SMTP → `host.docker.internal:54325` |
-| RBAC | `getUserRoles`, `hasPermission` from `./rbac` |
+| RBAC                   | `getUserRoles`, `hasPermission` from `./rbac`                            |
 
 ## Templates
 

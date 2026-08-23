@@ -92,6 +92,7 @@ See also: [GETTING_STARTED.md](GETTING_STARTED.md) (canonical) · [`AGENTS.md`](
 ### AI-driven (recommended)
 
 ```bash
+./studio install                   # once after git clone
 ./studio verify-worlds
 ./studio bootstrap my-project          # intake → stop at next human gate
 ./studio focus my-project
@@ -185,6 +186,7 @@ No separate plugin — the repo *is* the integration.
 ### Session ritual
 
 ```bash
+./studio install                 # once after git clone
 ./studio verify-worlds
 ./studio focus <project>
 ./studio resume <project>
@@ -313,6 +315,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 ./studio focus <project>
 ./studio resume <project>
 ./studio guard <project> "request"
+./studio install [--with-skills]     # after git clone: npm UI deps (+ optional skills)
 ./studio verify-worlds
 
 # Intake & pre-implementation (gates 0–2)

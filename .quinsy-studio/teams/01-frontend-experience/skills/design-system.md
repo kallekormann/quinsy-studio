@@ -21,6 +21,15 @@ activation_triggers:
 
 ---
 
+## Tailwind + tokens (mandatory)
+
+- Install Tailwind v4 per [installation guide](../../../../studio-library/ui/docs/getting-started/installation.md)
+- Pull `tokens` + `tailwind.preset.ts` from studio-library
+- Semantic classes: `primary-*`, `neutral-*`, `surface`, `error-*`
+- Dark mode: `dark:` variants on every chrome surface (see [dark-mode pattern](../../../../studio-library/ui/docs/patterns/dark-mode.md))
+
+External reference: [Tailwind CSS documentation](https://tailwindcss.com/docs/) — utility vocabulary for all FE tickets.
+
 ## Behavior rules
 
 ### 1. Design token hierarchy

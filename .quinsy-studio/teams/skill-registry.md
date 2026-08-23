@@ -17,7 +17,8 @@
 | 07 AI & Autonomous Systems | 3 Skills | Autonomous Systems Director |
 | 08 Platform & Enterprise Engineering | 4 Skills | Platform Architect |
 | 09 Studio Operations & Evolution | 4 Skills | Studio Automation Engineer, Process Guard, Agile Coach |
-| **Total** | **36 Skills** | |
+| 10 Product Design & Experience | 7 Skills | Product Designer, UX Designer, Brand Guardian, Visual Storyteller |
+| **Total** | **43 Skills** | |
 
 ---
 
@@ -81,6 +82,20 @@ compare with internal rules → execute.
 | a11y, Accessibility, WCAG, Screenreader | Accessibility | FE-004 |
 | PWA, Offline, Service Worker, Manifest, Installable | PWA Implementation | FE-005 |
 | Test, Testing, Coverage, Unit-Test, E2E | Frontend Testing | FE-006 |
+
+#### Product Design & Experience (Team 10)
+
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| User flow, jobs-to-be-done, platform UX | Product Design | UX-001 |
+| Interaction, microcopy, form UX, modal states | UX Design | UX-002 |
+| Navigation, IA, wayfinding, nav structure | Information Architecture | UX-003 |
+| Persona, usability, mental model, research | UX Research | UX-004 |
+| Typography, color, layout, visual hierarchy | Visual UI Design | UX-005 |
+| Brand, voice, tone, consistency | Brand Guardian | UX-006 |
+| Homepage, landing, storytelling, workflow diagram | Visual Storyteller | UX-007 |
+
+**External (reference, not duplicated):** `.quinsy-studio/external-skills/design-agent/` → `ux-*`, `taste-skill`, aesthetic presets.
 
 #### Backend (Team 02)
 
@@ -285,5 +300,19 @@ compare with internal rules → execute.
 │       ├── process-optimization.md
 │       ├── dual-loop-learning.md
 │       └── documentation-governance.md
+├── 10-product-design-experience/
+│   ├── README.md
+│   ├── agents/
+│   │   ├── design-brand-guardian.md
+│   │   ├── design-ux-researcher.md
+│   │   └── design-visual-storyteller.md
+│   └── skills/
+│       ├── product-design.md
+│       ├── ux-design.md
+│       ├── information-architecture.md
+│       ├── ux-research.md
+│       ├── visual-ui-design.md
+│       ├── brand-guardian.md
+│       └── visual-storyteller.md
 └── skill-registry.md  ← THIS FILE
 ```

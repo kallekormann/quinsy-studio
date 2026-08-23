@@ -4,7 +4,7 @@
  */
 import type { ComponentProps, ReactNode } from 'react';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'link' | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps extends Omit<ComponentProps<'button'>, 'size'> {
@@ -20,6 +20,7 @@ const variantClass: Record<ButtonVariant, string> = {
   secondary: 'bg-neutral-100 text-neutral-900 hover:bg-neutral-200',
   outline: 'border border-neutral-300 bg-surface text-neutral-900 hover:bg-neutral-50',
   ghost: 'text-neutral-700 hover:bg-neutral-100',
+  link: 'text-primary-600 underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-primary-500',
   destructive:
     'bg-error-500 text-white hover:bg-error-700 focus-visible:ring-2 focus-visible:ring-error-500',
 };

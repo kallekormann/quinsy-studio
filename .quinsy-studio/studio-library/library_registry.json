@@ -35,6 +35,14 @@
       "studio_owned": true,
       "promote_from_project": false
     },
+    "ui-primitive": {
+      "library_pattern": "ui/primitives/headless/{slug}/",
+      "project_pattern": "ui/primitives/headless/{slug}/",
+      "aliases": ["primitives", "headless"],
+      "studio_owned": true,
+      "promote_from_project": false,
+      "peer_dependencies": ["@headlessui/react"]
+    },
     "ui-hook": {
       "project_glob": "hooks/*.{ts,tsx}",
       "library_pattern": "ui/hooks/{name}",

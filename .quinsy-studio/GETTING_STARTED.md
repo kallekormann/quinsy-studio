@@ -33,6 +33,7 @@ Pick one:
 The agent should run:
 
 ```bash
+./studio install                    # once after clone (Tailwind + Headless UI)
 ./studio verify-worlds
 ./studio bootstrap my-project    # or intake if already bootstrapped
 ./studio focus my-project
@@ -141,6 +142,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 | When | Command |
 |------|---------|
+| **After git clone** | `./studio install` · optional `./studio install --with-skills` |
 | Session start | `./studio verify-worlds && ./studio focus <p> && ./studio resume <p>` |
 | New project from PRD | `./studio bootstrap <p>` |
 | Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` · `./studio revise <p> --gate N --feedback "..."` |
@@ -178,10 +180,20 @@ Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in
 ## Session ritual (IDE + agent)
 
 ```bash
+./studio install                 # once after git clone
 ./studio verify-worlds
 ./studio focus <project>
 ./studio resume <project>
 ```
+
+## Install (fresh clone)
+
+```bash
+./studio install                 # npm: tailwindcss, @headlessui/react
+./studio install --with-skills   # optional: external skill packages
+```
+
+Requires Node.js 20+. `node_modules/` is not committed.
 
 ## Three human gates (before coding)
 

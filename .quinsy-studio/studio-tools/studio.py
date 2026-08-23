@@ -17,6 +17,7 @@ Commands:
   ./studio focus <project>                       Set active project + scope banner
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
+  ./studio install [--with-skills]               npm deps after git clone (+ optional skills)
   ./studio library list                           List studio-library assets
   ./studio library pull <project> auth billing    Copy library → project
   ./studio library promote <project> packages/billing [--force]
@@ -83,6 +84,14 @@ from typing import Dict, List, Optional, Any
 from ticket_helpers import render_ticket_markdown, role_for_skills
 from ticket_ids import allocate_ticket_id
 from skill_matcher import match_skills, team_for_skills
+from design_ticket_helpers import (
+    default_design_spec_path,
+    design_implement_blocked_message,
+    enrich_design_skills,
+    infer_ticket_type,
+    requires_design_approval,
+    set_design_approved,
+)
 from init_project_env import init_project
 from pre_impl_workflow import (
     PHASE_BLUEPRINT,
@@ -627,12 +636,50 @@ class StudioOrchestrator:
         print_header("VERIFY WORLDS")
         if ok:
             print("\n  ✅ Studio HQ and project repos are separated correctly.")
-            return True
-        print("\n  ❌ Issues found:")
-        for issue in issues:
-            print(f"    • {issue}")
-        print("\n  See: .quinsy-studio/process/worlds.md")
-        return False
+        else:
+            print("\n  ❌ Issues found:")
+            for issue in issues:
+                print(f"    • {issue}")
+            print("\n  See: .quinsy-studio/process/worlds.md")
+        if not (STUDIO_ROOT / "node_modules").is_dir():
+            print("\n  ⚠️  Studio UI dependencies not installed — run: ./studio install")
+        return ok
+
+    def cmd_install(self, with_skills: bool = False):
+        """Install studio HQ dependencies after git clone (npm + optional external skills)."""
+        import shutil
+        import subprocess
+
+        print_header("STUDIO INSTALL")
+        pkg = STUDIO_ROOT / "package.json"
+        if not pkg.exists():
+            print("\n  ❌ package.json not found at repo root")
+            return False
+        if not shutil.which("npm"):
+            print("\n  ❌ npm not found. Install Node.js 20+ (https://nodejs.org/)")
+            return False
+
+        print("\n  Installing npm dependencies (tailwindcss, @headlessui/react)…")
+        try:
+            subprocess.run(
+                ["npm", "install"],
+                cwd=STUDIO_ROOT,
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            print("\n  ❌ npm install failed")
+            return False
+
+        print("\n  ✅ npm dependencies installed")
+        print(f"     {STUDIO_ROOT / 'node_modules'}")
+
+        if with_skills:
+            print("\n  Importing external skill packages…")
+            self.cmd_update_skills([])
+        else:
+            print("\n  Optional: ./studio install --with-skills  (external skill packages)")
+            print("  UI reference: .quinsy-studio/studio-library/ui/docs/README.md")
+        return True
 
     def cmd_promote_library(self, project: str, dry_run: bool = False, force: bool = False):
         """Promote design system artifacts to studio-library."""
@@ -1429,8 +1476,21 @@ class StudioOrchestrator:
         ticket_file = ticket_dir / f"{ticket_id}-{slug}.md"
         
         skills = match_skills(title)
-        team = team_for_skills(skills)
+        ticket_type = infer_ticket_type(title)
+        if ticket_type.startswith("ui-") or ticket_type in (
+            "marketing-page",
+            "workflow-explainer",
+            "ia-navigation",
+        ):
+            skills = enrich_design_skills(skills, ticket_type)
+            team = team_for_skills(skills)
+        else:
+            team = team_for_skills(skills)
         role = role_for_skills(skills)
+        design_status = "pending" if requires_design_approval(
+            f"ticket_type: {ticket_type}\n{title}"
+        ) else "n/a"
+        design_spec = default_design_spec_path(ticket_id) if design_status == "pending" else ""
 
         acceptance = [
             f"'{title}' is implemented",
@@ -1481,6 +1541,10 @@ class StudioOrchestrator:
             ],
             "dependencies": []
         }
+        if design_status != "n/a":
+            ticket["ticket_type"] = ticket_type
+            ticket["design_status"] = design_status
+            ticket["design_spec"] = design_spec
         
         content = render_ticket_markdown(ticket)
         if rationale_extra:
@@ -1498,6 +1562,9 @@ class StudioOrchestrator:
         print(f"  Role: {role}")
         print(f"  Team: {team}")
         print(f"  Skills: {', '.join(skills) if skills else '(auto-match)'}")
+        if design_status == "pending":
+            print(f"  Ticket type: {ticket_type}")
+            print(f"  Design spec: {design_spec} (Team 10 → ./studio approve-design)")
         print(f"  Status: open")
         print(f"  Project: {project}")
         print(f"\n  Next step:")
@@ -1554,6 +1621,10 @@ class StudioOrchestrator:
                     print(f"    ./studio groom {project}")
                     print(f"    ./studio groom {project} --approve")
                     return False
+            design_block = design_implement_blocked_message(ticket_id, content_pre)
+            if design_block:
+                print(design_block)
+                return False
         
         # Determine new directory (within project)
         new_dir = get_project_backlog_dir(project, new_status)
@@ -1615,6 +1686,32 @@ class StudioOrchestrator:
                     print(f"    ./studio gate {project} --level 5")
                     print(f"    ./studio retro {project}")
         
+        return True
+
+    def cmd_approve_design(self, project: str, ticket_id: str, notes: str = ""):
+        """Human HITL: approve Team 10 design spec before FE implement."""
+        ticket_file, _status = find_project_ticket(project, ticket_id)
+        if not ticket_file:
+            print(f"  Ticket {ticket_id} not found in project {project}")
+            return False
+        content = ticket_file.read_text()
+        if not requires_design_approval(content):
+            print(f"  Ticket {ticket_id} is not a design-track UI ticket (no design approval needed).")
+            return True
+        spec_match = re.search(r"^design_spec:\s*(.+)$", content, re.MULTILINE)
+        spec_rel = spec_match.group(1).strip() if spec_match else default_design_spec_path(ticket_id)
+        spec_path = PROJECTS_DIR / project / spec_rel
+        if not spec_path.exists():
+            print(f"\n  ⚠️  Design spec not found: {spec_path}")
+            print(f"    Team 10 must write spec using knowledge-base/design-spec-template.md")
+            return False
+        updated = set_design_approved(content)
+        if notes:
+            updated += f"\n\n## Design approval\n- **Approved:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n- **Notes:** {notes}\n"
+        ticket_file.write_text(updated)
+        print(f"\n  ✓ Design approved for {ticket_id}")
+        print(f"    Spec: {spec_rel}")
+        print(f"  Next: ./studio move {project} {ticket_id} implement")
         return True
     
     # -------------------------------------------------------------------------
@@ -2396,6 +2493,7 @@ Commands:
   ./studio focus <project>                       Set active project + scope banner
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
+  ./studio install [--with-skills]               npm deps after git clone (+ optional skills)
   ./studio library list                           List studio-library assets
   ./studio library pull <project> auth billing    Copy library → project
   ./studio library promote <project> packages/billing [--force]
@@ -2510,6 +2608,10 @@ def main():
 
     elif command == "verify-worlds":
         orchestrator.cmd_verify_worlds()
+
+    elif command == "install":
+        with_skills = "--with-skills" in args
+        orchestrator.cmd_install(with_skills=with_skills)
 
     elif command == "promote-library" and len(args) >= 1:
         positional = [a for a in args if not a.startswith("--")]
@@ -2701,6 +2803,15 @@ def main():
             if arg == "--reason" and i + 1 < len(args):
                 reason = args[i + 1]
         orchestrator.cmd_move(project, ticket_id, new_status, reason)
+
+    elif command == "approve-design" and len(args) >= 2:
+        project = args[0]
+        ticket_id = args[1]
+        notes = ""
+        for i, arg in enumerate(args):
+            if arg == "--notes" and i + 1 < len(args):
+                notes = args[i + 1]
+        orchestrator.cmd_approve_design(project, ticket_id, notes=notes)
     
     elif command == "gate" and len(args) >= 1:
         project = args[0]
