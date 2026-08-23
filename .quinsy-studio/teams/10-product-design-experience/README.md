@@ -14,6 +14,18 @@ Owns **what** and **why** for UI/UX. Team 01 (Frontend) implements after design 
 | UX-006 | Brand Guardian |
 | UX-007 | Visual Storyteller |
 
+## Aesthetic presets (visual repertoire)
+
+Team 10 selects from **17 studio aesthetic presets** when writing design specs:
+
+- Catalog: [knowledge-base/aesthetic-presets/README.md](../../knowledge-base/aesthetic-presets/README.md)
+- Skill: [skills/aesthetic-presets.md](skills/aesthetic-presets.md)
+- Foundation: `soft-ui`, `minimalist-ui`, `brutalist-ui`
+- Industry: `stripe-like-ui`, `apple-like-ui`, `linear-like-ui`, `notion-like-ui`, `adobe-like-ui`, `paypal-like-ui`, `amazon-like-ui`, `nike-like-ui`, `space-x-like-ui`
+- Specialty: `nordic-design-ui`, `cosmic-void-ui`, `technical-blueprint-ui`, `technical-ui`, `academic-editorial-ui`
+
+Every UI design spec must declare **one primary preset** (or `project-brand-only`).
+
 ## Workflow
 
 1. `./studio ticket` → design-track tickets get `design_status: pending`
@@ -23,7 +35,7 @@ Owns **what** and **why** for UI/UX. Team 01 (Frontend) implements after design 
 
 ## Agents
 
-See `agents/` — Brand Guardian, Visual Storyteller, UX Researcher, Image Prompt Engineer, Inclusive Visuals, Whimsy Injector.
+See `agents/` — Brand Guardian, Visual Storyteller, UX Researcher.
 
 ## Playbooks
 
@@ -31,3 +43,4 @@ See `agents/` — Brand Guardian, Visual Storyteller, UX Researcher, Image Promp
 - `knowledge-base/design-science-playbook.md`
 - `knowledge-base/visual-storytelling-playbook.md`
 - `knowledge-base/brand-guardian-checklist.md`
+- `knowledge-base/aesthetic-presets/README.md`

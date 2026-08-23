@@ -43,6 +43,18 @@ What reads as one unit (proximity, similarity, closure).
 
 - [ ] Desktop  - [ ] Mobile web  - [ ] Webapp  - [ ] Extension
 
+## 3b. Aesthetic preset (Team 10 — required)
+
+| Field | Value |
+|-------|-------|
+| **Preset slug** | e.g. `stripe-like-ui` or `project-brand-only` |
+| **SKILL path** | `.quinsy-studio/knowledge-base/aesthetic-presets/<slug>/SKILL.md` |
+| **Rationale** | Why this preset fits audience + surface |
+| **Token mapping** | Preset colors → project token names |
+| **Motion / Headless UI** | Transitions, focus, active states from preset |
+
+Catalog: `knowledge-base/aesthetic-presets/README.md`
+
 ## 4. Storyboard (UX-007 — marketing / workflow)
 
 | Step | Visual | Copy | CTA |

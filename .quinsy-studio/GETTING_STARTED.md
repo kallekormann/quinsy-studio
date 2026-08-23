@@ -195,6 +195,15 @@ Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in
 
 Requires Node.js 20+. `node_modules/` is not committed.
 
+## Team 10 aesthetic presets
+
+17 visual direction presets for UI design specs (e.g. `stripe-like-ui`, `apple-like-ui`, `soft-ui`):
+
+- Catalog: [knowledge-base/aesthetic-presets/README.md](knowledge-base/aesthetic-presets/README.md)
+- Team skill: [teams/10-product-design-experience/skills/aesthetic-presets.md](teams/10-product-design-experience/skills/aesthetic-presets.md)
+
+Every UI design spec must declare one primary preset (or `project-brand-only`). UX-005 loads the preset `SKILL.md` alongside project tokens.
+
 ## Three human gates (before coding)
 
 | Gate | You approve | CLI |

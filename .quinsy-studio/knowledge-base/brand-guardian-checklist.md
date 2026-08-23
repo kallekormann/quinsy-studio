@@ -21,7 +21,9 @@ Run at design spec review and before `./studio move … done` on UI tickets.
 ## Visual consistency
 
 - [ ] Atomic inventory uses library components where possible
-- [ ] Aesthetic preset from gate 2 respected (soft / minimal / brutalist / custom)
+- [ ] **Aesthetic preset** declared in design spec (`knowledge-base/aesthetic-presets/<slug>/`)
+- [ ] Preset motion/focus/active states applied via Tailwind + Headless UI (not one-off CSS)
+- [ ] Preset does not override project brand tokens without documented mapping
 
 ## Platform
 

@@ -95,7 +95,9 @@ compare with internal rules → execute.
 | Brand, voice, tone, consistency | Brand Guardian | UX-006 |
 | Homepage, landing, storytelling, workflow diagram | Visual Storyteller | UX-007 |
 
-**External (reference, not duplicated):** `.quinsy-studio/external-skills/design-agent/` → `ux-*`, `taste-skill`, aesthetic presets.
+**External (reference, not duplicated):** `.quinsy-studio/external-skills/design-agent/` → `ux-*`, `taste-skill`, `brandkit`
+
+**Aesthetic presets (studio-owned):** `.quinsy-studio/knowledge-base/aesthetic-presets/` — 17 presets; Team 10 loads via [aesthetic-presets.md](../teams/10-product-design-experience/skills/aesthetic-presets.md)
 
 #### Backend (Team 02)
 
@@ -312,6 +314,7 @@ compare with internal rules → execute.
 │       ├── information-architecture.md
 │       ├── ux-research.md
 │       ├── visual-ui-design.md
+│       ├── aesthetic-presets.md
 │       ├── brand-guardian.md
 │       └── visual-storyteller.md
 └── skill-registry.md  ← THIS FILE

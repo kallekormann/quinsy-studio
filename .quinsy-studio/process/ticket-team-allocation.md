@@ -35,7 +35,7 @@ Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-p
 
 | Phase | Command | Load |
 |-------|---------|------|
-| Design | `./studio move … design` (or groom assigns Team 10) | UX skills per `ticket_type`; `brand-guardian-checklist.md` |
+| Design | `./studio move … design` (or groom assigns Team 10) | UX skills per `ticket_type`; `aesthetic-presets.md` + one preset SKILL; `brand-guardian-checklist.md` |
 | Approve | `./studio approve-design` | Human only |
 | Implement | `./studio move … implement` | FE-001, FE-002; FE-004 if color/a11y; `./studio library pull` |
 

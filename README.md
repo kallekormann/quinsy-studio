@@ -89,6 +89,8 @@ After a ticket is done, promote generic changes:
 
 Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/studio-library/library_registry.md)
 
+**Team 10 aesthetic presets:** [`.quinsy-studio/knowledge-base/aesthetic-presets/README.md`](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) — required in UI design specs (stripe-like, apple-like, soft-ui, …).
+
 ## Context & scope (agent)
 
 ```bash
@@ -135,6 +137,7 @@ quinsy-studio/
 | Human gates 0–2 | [process/gates.md](.quinsy-studio/process/gates.md) |
 | Ticket workflow (9 steps) | [process/ticket-workflow.md](.quinsy-studio/process/ticket-workflow.md) |
 | Studio library | [studio-library/library_registry.md](.quinsy-studio/studio-library/library_registry.md) |
+| Aesthetic presets (Team 10) | [knowledge-base/aesthetic-presets/README.md](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) |
 | Agent context | [process/agent-context.md](.quinsy-studio/process/agent-context.md) |
 | Git separation | [process/worlds.md](.quinsy-studio/process/worlds.md) |
 
