@@ -63,8 +63,8 @@ def assess_ticket_maturity(ticket_path: Path) -> Tuple[bool, List[str], Dict]:
     if from_feedback and not re.search(r"\*\*Scope:\*\*", body):
         questions.append("Clarify scope from source feedback (run ./studio clarify … --scope).")
 
-    if "phase:" not in body.lower():
-        questions.append("Set ticket phase in frontmatter.")
+    if not meta.get("phase"):
+        questions.append("Set ticket phase in frontmatter (phase: N).")
 
     return len(questions) == 0, questions, meta
 

@@ -1917,10 +1917,12 @@ class StudioOrchestrator:
 - See: projects/{project}/sprints/{sprint}/retro.md
 
 ## Incoming learning items
-- LO-0000: ...
+- (Agent: run `./studio learn "..." --signal ... --source {project}` for each improvement)
 
 ## Action Items
-- [ ] ... (Owner: ...)
+- [ ] Agent filled project retro (went well / badly / improve) — not template-only
+- [ ] Meta-retro updated with cross-project learnings
+- [ ] LO tickets created or closed for actionable items
 """
             )
             print(f"  Studio meta-retro (if needed): {meta_file}")

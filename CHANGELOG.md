@@ -2,6 +2,15 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.9.3] — 2026-08-24
+
+### Sprint planning & learning loop (moody SPRINT-25 retro)
+
+- ✅ **`assess_ticket_maturity`** — reads `phase` from ticket frontmatter (not body); feedback tickets still require `**Scope:**` in body
+- ✅ **HITL** — retro step: agent must fill project `retro.md` + meta-retro (not template-only); maturity rules documented
+- ✅ **Meta-retro** — populated `meta-retro-2026-08-24.md`; backfill note on 2026-08-23 shell
+- ✅ **Learning items** — LO-0002 … LO-0005 from SPRINT-25 (ticket maturity, Supabase migrations, local-first sync, retro fill-in)
+
 ## [1.9.2] — 2026-08-21
 
 ### Studio library: Supabase auth boilerplate (LO-0001)

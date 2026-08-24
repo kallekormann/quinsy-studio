@@ -99,7 +99,7 @@ Sprint review feedback (once per theme)
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
 | **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
 | **Grooming** | **Human** + agent | `./studio groom <p>` — reprioritize backlog for next sprint |
-| **Retro** | **Human** + agent | `./studio retro <p>` → `sprints/SPRINT-NN/retro.md` |
+| **Retro** | **Agent** fills content, **human** reviews | `./studio retro <p>` → complete `sprints/SPRINT-NN/retro.md` (not template-only) + `.quinsy-studio/retros/meta-retro-*.md` |
 | **Next sprint** | **Human** + agent | `./studio sprint <p>` → `./studio groom <p> --approve` |
 
 **Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
@@ -108,7 +108,7 @@ Sprint review feedback (once per theme)
 
 **Rule:** One feedback item per theme per sprint — `./studio feedback` dedupes similar notes (use `--force` to split).
 
-**Rule:** Feedback tickets land in **backlog without a sprint tag** until `./studio sprint` assigns mature tickets; immature tickets get `planning-questions.md` for the agent to ask the human.
+**Rule:** Feedback tickets land in **backlog without a sprint tag** until `./studio sprint` assigns mature tickets. Mature tickets need: `phase` in frontmatter, ≥2 specific BDD acceptance criteria, and `**Scope:**` in the body when created from feedback (`--from-feedback`).
 
 **Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, **reuse review is approved**, retro is complete, and (for the first sprint) the **milestone roadmap** is approved.
 
