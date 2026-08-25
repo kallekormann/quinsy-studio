@@ -169,6 +169,22 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 ./studio retro my-project
 ```
 
+### Amendment intake (strategic direction, post gate 2)
+
+When product direction shifts before the next milestone — not for sprint-review nits.
+
+```bash
+cp intake/amendments/my-project/amendment_01.example.md intake/amendments/my-project/amendment_01.md
+# Fill vision; check teams/skills — do not write milestones
+./studio amend my-project intake/amendments/my-project/amendment_01.md
+./studio amendments my-project
+# Agent fills docs/amendments/AM-001-*/ (UX, FE/BE arch, milestone roadmap, ticket drafts)
+./studio approve my-project --amendment AM-001
+./studio approve my-project --milestones   # if roadmap changed
+```
+
+See [process/amendment-intake.md](process/amendment-intake.md).
+
 ---
 
 ## 4. Using Quinsy Studio in Cursor
@@ -206,6 +222,7 @@ See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-a
 | **Send back for revision** | *"Revise gate 1: no Supabase yet, IndexedDB only"* |
 | **Design** | *"Design nudge with scope core-views"* |
 | **Milestones** | *"Draft milestone roadmap"* → *"Approve milestones"* |
+| **Amendment** | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | **Sprint + build** | *"Plan sprint, approve scope, implement first ticket"* |
 | **Sprint review** | *"Sprint review for nudge"* → try app → *"Approve review"* or `./studio feedback` |
 | **New idea (sprint)** | *"Feedback: I want offline mode"* — **not** "create a ticket for offline" |
@@ -257,6 +274,9 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **PRD Template** | `.quinsy-studio/studio-templates/prd_template.md` |
 | **PRD (edited)** | `projects/<name>/docs/intake/prd.md` |
 | **Raw Idea/Input** | `intake/<name>.md` |
+| **Amendment brief (local)** | `intake/amendments/<p>/amendment_NN.md` |
+| **Amendment example template** | `intake/amendments/<p>/amendment_*.example.md` |
+| **Amendment analysis** | `projects/<name>/docs/amendments/AM-NNN-*/` |
 | **Milestone roadmap** | `projects/<name>/docs/phases/` |
 | **Tickets** | `projects/<name>/backlog/*.md` (+ `implement/`, `done/`, `blocked/`) |
 | **ADRs** | `projects/<name>/docs/adr/` |
@@ -287,6 +307,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **2. Architecture** | Blueprint, ADRs | `docs/architecture/`, `docs/adr/` | **HUMAN 1** |
 | **3. Design** | Mocks, tokens, sticker sheet | `design/prototype/`, `ui/` | **HUMAN 2** |
 | **3b. Milestones** | Version roadmap, M0/M1 outlines | `docs/phases/` | **HUMAN** (`--milestones`) |
+| **3c. Amendments** | Strategic direction → revised roadmap + tickets | `docs/amendments/AM-NNN/` | **HUMAN** (`--amendment`) |
 | **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Scope approval |
 | **5. Implementation** | Library-first, tickets | Code in project | Reuse on `done` |
 | **6. QA** | Anti-slop, tests | QA report | Gate 5 (QA level) |
@@ -325,6 +346,12 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 ./studio approve <project> --gate 0|1|2
 ./studio approve <project> --milestones
 ./studio revise <project> --gate <n> --feedback "..."
+
+# Amendment intake (post gate 2)
+./studio amend <project> intake/amendments/<p>/amendment_NN.md
+./studio amendments <project>
+./studio approve <project> --amendment AM-001
+./studio approve <project> --prd-amendment AM-001   # class C PRD tier change
 
 # Studio library (library-first)
 ./studio library list
@@ -474,6 +501,8 @@ Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`,
 - `process/lifecycle.md` — Phases
 - `process/gates.md` — Gate definitions
 - `process/ticket-workflow.md` — 9 steps
+- `process/milestone-planning.md` — Milestone roadmap
+- `process/amendment-intake.md` — Strategic direction → phases + tickets
 - `process/human-in-the-loop.md` — HITL decisions
 - `knowledge-base/` — Playbooks
 

@@ -14,6 +14,8 @@ intake/*
 !intake/amendments/
 !intake/amendments/**/
 !intake/amendments/**/amendment_*.example.md
+intake/amendments/**/*.md
+!intake/amendments/**/amendment_*.example.md
 
 # Externe Skills: geklonte Repos (65MB+, regenerierbar via `./studio update-skills`)
 # Nur die skill-dependencies.json ist die Source of Truth.

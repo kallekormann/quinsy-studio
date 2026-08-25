@@ -11,6 +11,7 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 | **Studio HQ** | `.quinsy-studio/`, `studio`, `AGENTS.md` | Yes |
 | **Projects** | `projects/<name>/` | No — separate repo per project |
 | **Intake** | `intake/*.md` | No — local only |
+| **Amendment examples** | `intake/amendments/**/amendment_*.example.md` | Yes — templates only |
 
 ## Quick start (AI-driven)
 
@@ -63,6 +64,7 @@ Open this repo in Cursor. You approve; the agent runs `./studio`.
 | 5. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | 6. Build | *"Start sprint and implement the first ticket"* |
 | 7. Sprint done | *"Sprint review"* → *"Approve review"* · feedback via *"I want …"* (not blind tickets) |
+| 8. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | Drift | *"Resume my-project — back on track"* |
 
 More examples: [GETTING_STARTED — from PRD to sprint](.quinsy-studio/GETTING_STARTED.md#start-here-prd-in-intake--tell-the-agent) · [prompt cheat sheet](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet)
@@ -116,7 +118,8 @@ quinsy-studio/
 │   ├── studio-templates/
 │   ├── knowledge-base/
 │   └── backlog/              # LO-* studio improvements only
-├── intake/                   # Raw PRDs (gitignored)
+├── intake/                   # Raw PRDs (gitignored); amendment *.example.md committed
+│   └── amendments/<p>/       # Human briefs local; amendment_*.example.md in git
 ├── projects/                 # Client projects (gitignored, own .git each)
 └── studio                    # CLI entrypoint
 ```
@@ -133,6 +136,7 @@ quinsy-studio/
 | External skills | [.quinsy-studio/README.md §8](.quinsy-studio/README.md#8-managing-skills) |
 | Lifecycle | [process/lifecycle.md](.quinsy-studio/process/lifecycle.md) |
 | Milestone planning | [process/milestone-planning.md](.quinsy-studio/process/milestone-planning.md) |
+| Amendment intake | [process/amendment-intake.md](.quinsy-studio/process/amendment-intake.md) |
 | Product backlog | [process/backlog-model.md](.quinsy-studio/process/backlog-model.md) |
 | Human gates 0–2 | [process/gates.md](.quinsy-studio/process/gates.md) |
 | Ticket workflow (9 steps) | [process/ticket-workflow.md](.quinsy-studio/process/ticket-workflow.md) |
@@ -148,8 +152,9 @@ quinsy-studio/
 3. **Three human gates** — no implementation before gate 2
 4. **Sprint HITL** — scope approval → review → feedback → clarify → ticket (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
 5. **Milestones** — roadmap after gate 2; milestone review before next version backlog
-6. **Two git worlds** — never commit `projects/` to this repo
-7. **Anti-slop + ADRs + HITL** — see process docs
+6. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
+7. **Two git worlds** — never commit `projects/` to this repo
+8. **Anti-slop + ADRs + HITL** — see process docs
 
 ## CLI overview
 
@@ -160,6 +165,8 @@ quinsy-studio/
 ./studio bootstrap <project>
 ./studio review <project>
 ./studio feedback <project> "..."
+./studio amend <project> intake/amendments/<p>/amendment_01.md
+./studio amendments <project>
 ./studio board <project>
 ./studio learn "..." --signal tooling-gap
 ```
@@ -170,5 +177,5 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-**Version:** 1.9.0  
-**Date:** 2026-08-20
+**Version:** 1.10.0  
+**Date:** 2026-08-25

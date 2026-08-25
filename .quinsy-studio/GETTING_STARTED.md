@@ -54,6 +54,8 @@ Then it does **only** what `resume` lists — usually filling artifacts until **
 | **Sprint review** | *"Give me a sprint review"* | `./studio review nudge` | *"Shipped looks good"* → `--approve`; ideas → `./studio feedback` |
 | **New idea** | *"I want offline mode"* | `./studio feedback nudge "…"` → clarify with you → ticket | Confirm clarified ticket before implement |
 
+**Sprint feedback** = small, concrete ideas. **Amendments** = strategic direction (vision brief → milestone + ticket breakdown). See [Amendment intake](#amendment-intake-strategic-direction) below.
+
 **No product implementation before gate 2.** After gate 2, approve the **milestone roadmap** before sprints; tickets populate per active milestone (M0, M1, …).
 
 ---
@@ -120,6 +122,30 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 | Prioritize backlog | *"Run grooming"* |
 | Retro | *"Run retro for this sprint"* |
 
+### Amendment intake (strategic direction)
+
+Use when product direction shifts mid-flight — **not** for sprint-review nits (use feedback for those).
+
+| You want | Example message |
+|----------|-----------------|
+| Start amendment | *"I added `intake/amendments/moody/amendment_01.md` — run amendment intake"* |
+| List status | *"Show amendments for moody"* → `./studio amendments moody` |
+| After agent analysis | Review `projects/<p>/docs/amendments/AM-001-*/` (vision, UX concept, FE/BE arch, milestone roadmap, ticket drafts) |
+| Approve | *"Approve amendment AM-001"* → `./studio approve <p> --amendment AM-001` |
+| Roadmap changed | *"Approve milestones"* → `./studio approve <p> --milestones` |
+
+```bash
+cp intake/amendments/moody/amendment_01.example.md intake/amendments/moody/amendment_01.md
+# Fill vision (§1–7); check teams + skills (§8–9) — do not write milestones
+./studio amend moody intake/amendments/moody/amendment_01.md
+./studio amendments moody
+# Agent fills docs/amendments/AM-001-*/ artifacts
+./studio approve moody --amendment AM-001
+./studio approve moody --milestones   # if 03-milestone-roadmap.md changed M*
+```
+
+Full process: [amendment-intake.md](process/amendment-intake.md) · Template: [intake/amendments/moody/amendment_01.example.md](../intake/amendments/moody/amendment_01.example.md)
+
 ### Studio / process (not project code)
 
 | You want | Example message |
@@ -154,6 +180,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Library-first | `./studio library suggest <p> "auth billing"` · `./studio library pull <p> …` |
 | Sprint review | `./studio review <p>` · `./studio review <p> --approve` |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
+| Amendment intake | `./studio amend <p> intake/amendments/<p>/amendment_NN.md` · `./studio amendments <p>` · `./studio approve <p> --amendment AM-001` |
 | Groom / retro | `./studio groom <p>` · `./studio retro <p>` |
 | Scope check | `./studio guard <p> "your request text"` |
 
@@ -223,7 +250,29 @@ Gate 2 promotes design artifacts to [studio-library](studio-library/library_regi
 
 When all M0 tickets are done → **milestone review** → plan M1 tickets → sprints resume.
 
-See [milestone-planning.md](process/milestone-planning.md).
+If strategic direction changes before the next milestone, use **amendment intake** (not sprint feedback alone). Amendments produce a revised `docs/phases/` patch and groomed ticket drafts before backlog materialization.
+
+See [milestone-planning.md](process/milestone-planning.md) · [amendment-intake.md](process/amendment-intake.md).
+
+## Amendment intake (strategic direction)
+
+**When:** After gate 2, when conceptual product direction changes (e.g. agency positioning, new platform surface) — especially before kicking off the next planned milestone.
+
+**Not for:** Sprint-review nits → use `./studio feedback` instead.
+
+1. Copy [intake/amendments/moody/amendment_01.example.md](../intake/amendments/moody/amendment_01.example.md) → `intake/amendments/<p>/amendment_01.md` (local, gitignored)
+2. Fill vision sections; **check teams and skills** — do not write milestones or tickets
+3. `./studio amend <p> intake/amendments/<p>/amendment_01.md` → scaffolds `docs/amendments/AM-NNN-*/`
+4. Agent fills analysis artifacts (UX concept, FE/BE architecture, requirements addendum, **milestone roadmap**, ticket drafts)
+5. You approve: `./studio approve <p> --amendment AM-001` (+ `--milestones` if roadmap changed)
+6. Agent materializes tickets → normal sprint flow
+
+```bash
+./studio amend moody intake/amendments/moody/amendment_01.md
+./studio amendments moody
+./studio approve moody --amendment AM-001
+./studio approve moody --milestones
+```
 
 ## AI-driven bootstrap
 
@@ -282,6 +331,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 | Sticker sheet | `design/prototype/app/sticker-sheet/` |
 | Packages | `packages/auth/`, `packages/billing/`, … |
 | Milestone roadmap | `docs/phases/README.md`, `docs/phases/M0-*.md`, … |
+| Amendments | `docs/amendments/AM-NNN-*/`, `docs/amendments/registry.json` |
 | Revisions log | `docs/phases/revisions.md` |
 | Tickets | `backlog/*.md` (product backlog; `implement/`, `done/`, `blocked/`) |
 | Library pull log | `docs/library-usage.json` |
