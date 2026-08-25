@@ -2,11 +2,42 @@
 
 Path: `projects/<project>/docs/design-specs/<TICKET-ID>.md`
 
+Load before writing: [contextual-ia-playbook.md](contextual-ia-playbook.md), [workflow-definition-playbook.md](workflow-definition-playbook.md), [design-system-compliance-checklist.md](design-system-compliance-checklist.md).
+
 ## 1. Summary
 
 One paragraph: user problem, solution, success metric.
 
-## 2. Atomic inventory
+## 2. Context & placement (required)
+
+> **Gate:** `./studio approve-design` warns if this section is missing.  
+> Playbook: `knowledge-base/contextual-ia-playbook.md`
+
+### User intent & surface
+
+| Field | Value |
+|-------|-------|
+| **Primary intent** | What is the user trying to do? |
+| **Home surface** | Where this capability lives (route/dialog/panel) |
+| **Why not elsewhere** | Reject alternate surfaces (e.g. "not Share — presentation context") |
+
+### Cross-surface map (if 2+ surfaces touched)
+
+| Capability | Home surface | Not on |
+|------------|--------------|--------|
+| | | |
+
+### Workflow reference
+
+Link to `docs/design-specs/<TICKET-ID>-workflow.md` or embed §2b below for short flows.
+
+## 2b. Workflow map (required if multi-surface)
+
+| Step | User action | Surface |
+|------|-------------|---------|
+| 1 | | |
+
+## 3. Atomic inventory
 
 | Level | Name | Library source | New? |
 |-------|------|----------------|------|
@@ -14,7 +45,7 @@ One paragraph: user problem, solution, success metric.
 | atom | Button | pull: button | no |
 | molecule | … | compose: … | yes → studio-library first |
 
-## 3. Design rationale
+## 4. Design rationale
 
 ### Gestalt grouping
 
@@ -34,7 +65,7 @@ What reads as one unit (proximity, similarity, closure).
 
 60-30-10 allocation: dominant __ / secondary __ / accent __
 
-### IA (if navigation changes)
+### Navigation IA (only if nav chrome changes)
 
 - Top-level items: __ (target ≤7)
 - Max depth: __ (target ≤3)
@@ -43,7 +74,7 @@ What reads as one unit (proximity, similarity, closure).
 
 - [ ] Desktop  - [ ] Mobile web  - [ ] Webapp  - [ ] Extension
 
-## 3b. Aesthetic preset (Team 10 — required)
+## 4b. Aesthetic preset (Team 10 — required)
 
 | Field | Value |
 |-------|-------|
@@ -55,7 +86,7 @@ What reads as one unit (proximity, similarity, closure).
 
 Catalog: `knowledge-base/aesthetic-presets/README.md`
 
-## 4. Storyboard (UX-007 — marketing / workflow)
+## 5. Storyboard (UX-007 — marketing / workflow)
 
 | Step | Visual | Copy | CTA |
 |------|--------|------|-----|
@@ -63,7 +94,11 @@ Catalog: `knowledge-base/aesthetic-presets/README.md`
 
 Narrative arc: setup → tension → resolution.
 
-## 5. Handoff to Team 01
+## 6. Design system compliance
+
+Self-check against `design-system-compliance-checklist.md` — library pulls, tokens, no hallucinated primitives.
+
+## 7. Handoff to Team 01
 
 - Library pulls: `./studio library pull <project> …`
 - Page type: `ui/page-types/…` or compose organisms

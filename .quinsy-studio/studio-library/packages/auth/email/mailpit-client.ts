@@ -28,7 +28,7 @@ export async function sendMailpitEmail(input: {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Mailpit unreachable';
     throw new Error(
-      `${message}. Start Mailpit with ./studio env moody up (inbox: ${baseUrl}).`,
+      `${message}. Start Mailpit with ./studio env <project> up (inbox: ${baseUrl}).`,
     );
   }
 

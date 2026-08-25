@@ -47,6 +47,16 @@ Every decision is documented.
 | **Interface** | communication | API controllers, CLI, message handlers |
 | **Infrastructure** | technical implementation | DB, external APIs, file system |
 
+### Local development & migrations
+
+| Stack | Migrate command | Notes |
+|-------|-----------------|-------|
+| Studio docker template | `./studio env <project> up` | Generic Postgres on 5432 |
+| Supabase CLI (local) | `npm run db:migrate:supabase` in **project** repo | API ~54321, DB ~54322 — not legacy port 54320 |
+| Local-first canvas | See [local-first-sync-playbook.md](local-first-sync-playbook.md) | Continuous sync, not one-time migration |
+
+Agents: read project `package.json` scripts and `.env.local` before suggesting `psql` or migrate commands.
+
 ---
 
 ## SOLID principles

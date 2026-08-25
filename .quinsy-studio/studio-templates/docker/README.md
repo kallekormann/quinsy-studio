@@ -26,6 +26,18 @@ the project folder as the foundation and extended there per project.
 
 Compose file sets `name: <project>` and `container_name: <project>-postgres` so containers are **not** prefixed `docker-`.
 
+## Supabase local (projects using Supabase CLI)
+
+This template is **generic Postgres** (port 5432). Supabase-local projects use the **Supabase stack** (API ~54321, DB ~54322, Studio ~54323) — not legacy `db:migrate` against port 54320.
+
+| Task | Command (in project repo) |
+|------|---------------------------|
+| Start Supabase | `npx supabase start` or project `npm run supabase:start` |
+| Apply migrations | `npm run db:migrate:supabase` (not `db:migrate` on 54320) |
+| Env | Copy from `supabase status` → `.env.local` |
+
+Document the project's migrate script in `docs/architecture/` at gate 1. Agents: load `.env.local` before `psql` / connection tests.
+
 ## Placeholders
 
 | Placeholder        | Replaced by        |

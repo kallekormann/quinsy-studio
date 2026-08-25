@@ -108,7 +108,7 @@ class TestRecordDecision(unittest.TestCase):
             with patch("sprint_reuse_review.project_dir", return_value=root / "projects" / project), patch(
                 "sprint_hitl.project_dir", return_value=root / "projects" / project
             ), patch("sprint_reuse_review.sprint_directory", return_value=sprint_dir):
-                record_reuse_decision(project, sprint, "packages/auth", "promote", ref="MOOD-0001")
+                record_reuse_decision(project, sprint, "packages/auth", "promote", ref="TICKET-0001")
                 data = json.loads((sprint_dir / "reuse-review.json").read_text(encoding="utf-8"))
 
             self.assertEqual(len(data["decisions"]), 1)

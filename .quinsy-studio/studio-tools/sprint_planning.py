@@ -60,7 +60,9 @@ def assess_ticket_maturity(ticket_path: Path) -> Tuple[bool, List[str], Dict]:
             "Need at least 2 specific acceptance criteria (not generic 'is implemented' / 'has tests')."
         )
 
-    if from_feedback and not re.search(r"\*\*Scope:\*\*", body):
+    if from_feedback and not (
+        re.search(r"\*\*Scope:\*\*", body) or re.search(r"^##\s*Scope\b", body, re.MULTILINE | re.I)
+    ):
         questions.append("Clarify scope from source feedback (run ./studio clarify … --scope).")
 
     if not meta.get("phase"):

@@ -12,6 +12,7 @@ Every backlog ticket must declare **who owns the work** before implementation. A
 | **Marketing page** | UX-007, UX-006, UX-005, GM-003 | FE-001, FE-002 after HITL |
 | **Workflow explainer** | UX-007, UX-002, UX-001 | FE-001 after HITL |
 | **IA / navigation** | UX-003 only | — (spec for gate 2 / milestone) |
+| **IA / feature placement** | UX-003, UX-002 | FE-001 after `approve-design` (if UI moves) |
 | **Canvas / interaction** | UX-002 as needed | FE-001, FE-002 |
 | **API / data / auth** | — | `02-backend-systems` BE-001–BE-003 |
 | **Email / integrations** | — | BE-005 |
@@ -22,12 +23,13 @@ Every backlog ticket must declare **who owns the work** before implementation. A
 
 ## Design HITL gate (mandatory)
 
-Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, `ia-navigation`:
+Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, `ia-navigation`, `ia-feature-placement`:
 
 1. Team 10 writes `docs/design-specs/<TICKET>.md` (template: `knowledge-base/design-spec-template.md`)
-2. Spec includes **Atomic Inventory** + **Design Rationale** (contrast table, Gestalt grouping)
-3. Human: `./studio approve-design <project> <ticket-id>`
-4. `./studio move … implement` is **blocked** until `design_status: approved`
+2. Spec includes **§2 Context & placement** + **Atomic Inventory** + **Design Rationale**
+3. Multi-surface: workflow map per `workflow-definition-playbook.md`
+4. Human: `./studio approve-design <project> <ticket-id>` (warns if §2 missing)
+5. `./studio move … implement` is **blocked** until `design_status: approved`
 
 `ui-styling` tickets skip design HITL but still require FE-001 + FE-002 + UX-006 + AI-002 on implement.
 
@@ -35,7 +37,7 @@ Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-p
 
 | Phase | Command | Load |
 |-------|---------|------|
-| Design | `./studio move … design` (or groom assigns Team 10) | UX skills per `ticket_type`; `aesthetic-presets.md` + one preset SKILL; `brand-guardian-checklist.md` |
+| Design | `./studio move … design` (or groom assigns Team 10) | UX skills per `ticket_type`; `contextual-ia-playbook.md`; `workflow-definition-playbook.md` when multi-surface; aesthetic preset + `brand-guardian-checklist.md` |
 | Approve | `./studio approve-design` | Human only |
 | Implement | `./studio move … implement` | FE-001, FE-002; FE-004 if color/a11y; `./studio library pull` |
 
@@ -60,7 +62,7 @@ New atoms/molecules → `component-creation-playbook.md` → studio-library firs
 team: 10-product-design-experience
 ticket_type: ui-new-component
 design_status: pending
-design_spec: docs/design-specs/MOOD-0100.md
+design_spec: docs/design-specs/TICKET-0100.md
 skills: [UX-002, UX-005, UX-006, AI-002]
 ```
 
@@ -79,9 +81,15 @@ skills: [FE-001, FE-002, FE-004, UX-006, AI-002]
 - [ ] Design-track tickets have `design_spec` path
 - [ ] Team 10 skills for design; Team 01 for implement (after approval)
 - [ ] Atomic inventory lists library pulls vs new studio-library work
+- [ ] §2 Context & placement filled for UI tickets (not layout-only placeholders)
 - [ ] `./studio groom --approve` only after skills are explicit
 
 ## Related
+
+- [contextual-ia-playbook.md](../knowledge-base/contextual-ia-playbook.md)
+- [workflow-definition-playbook.md](../knowledge-base/workflow-definition-playbook.md)
+- [design-system-compliance-checklist.md](../knowledge-base/design-system-compliance-checklist.md)
+- [studio-abstraction.md](studio-abstraction.md)
 
 - [skill-registry.md](../teams/skill-registry.md) — Team 10 UX-001–UX-007
 - [human-in-the-loop.md](human-in-the-loop.md) — `approve-design`

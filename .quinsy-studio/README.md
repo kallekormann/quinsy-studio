@@ -94,6 +94,7 @@ See also: [GETTING_STARTED.md](GETTING_STARTED.md) (canonical) · [`AGENTS.md`](
 ```bash
 ./studio install                   # once after git clone
 ./studio verify-worlds
+./studio verify-abstraction        # studio HQ docs/tools — no hard-coded project names
 ./studio bootstrap my-project          # intake → stop at next human gate
 ./studio focus my-project
 ./studio resume my-project
@@ -174,16 +175,16 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 When product direction shifts before the next milestone — not for sprint-review nits.
 
 ```bash
-cp intake/amendments/my-project/amendment_01.example.md intake/amendments/my-project/amendment_01.md
+cp .quinsy-studio/studio-templates/amendment_01.example.md intake/amendments/<project>/amendment_01.md
 # Fill vision; check teams/skills — do not write milestones
-./studio amend my-project intake/amendments/my-project/amendment_01.md
-./studio amendments my-project
-# Agent fills docs/amendments/AM-001-*/ (UX, FE/BE arch, milestone roadmap, ticket drafts)
-./studio approve my-project --amendment AM-001
-./studio approve my-project --milestones   # if roadmap changed
+./studio amend <project> intake/amendments/<project>/amendment_01.md
+./studio amendments <project>
+# Agent fills docs/amendments/AM-001-*/ (UX surface map, FE/BE arch, milestone roadmap, ticket drafts)
+./studio approve <project> --amendment AM-001
+./studio approve <project> --milestones   # if roadmap changed
 ```
 
-See [process/amendment-intake.md](process/amendment-intake.md).
+See [process/amendment-intake.md](process/amendment-intake.md) · Example: [studio-templates/amendment_01.example.md](studio-templates/amendment_01.example.md)
 
 ---
 
@@ -204,6 +205,7 @@ No separate plugin — the repo *is* the integration.
 ```bash
 ./studio install                 # once after git clone
 ./studio verify-worlds
+./studio verify-abstraction
 ./studio focus <project>
 ./studio resume <project>
 ```
@@ -225,6 +227,7 @@ See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-a
 | **Amendment** | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | **Sprint + build** | *"Plan sprint, approve scope, implement first ticket"* |
 | **Sprint review** | *"Sprint review for nudge"* → try app → *"Approve review"* or `./studio feedback` |
+| **Sprint close** | reuse → retro `--complete` → `./studio infusion` (green) → next `./studio sprint` |
 | **New idea (sprint)** | *"Feedback: I want offline mode"* — **not** "create a ticket for offline" |
 | **Drift recovery** | *"Back on track"* / *"Resume nudge"* |
 | **Status** | *"What's the status of nudge?"* |
@@ -275,8 +278,9 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **PRD (edited)** | `projects/<name>/docs/intake/prd.md` |
 | **Raw Idea/Input** | `intake/<name>.md` |
 | **Amendment brief (local)** | `intake/amendments/<p>/amendment_NN.md` |
-| **Amendment example template** | `intake/amendments/<p>/amendment_*.example.md` |
+| **Amendment example (studio)** | `.quinsy-studio/studio-templates/amendment_01.example.md` |
 | **Amendment analysis** | `projects/<name>/docs/amendments/AM-NNN-*/` |
+| **IA surface map (project)** | `projects/<name>/docs/ia/surface-map.md` |
 | **Milestone roadmap** | `projects/<name>/docs/phases/` |
 | **Tickets** | `projects/<name>/backlog/*.md` (+ `implement/`, `done/`, `blocked/`) |
 | **ADRs** | `projects/<name>/docs/adr/` |
@@ -309,7 +313,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **3b. Milestones** | Version roadmap, M0/M1 outlines | `docs/phases/` | **HUMAN** (`--milestones`) |
 | **3c. Amendments** | Strategic direction → revised roadmap + tickets | `docs/amendments/AM-NNN/` | **HUMAN** (`--amendment`) |
 | **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Scope approval |
-| **5. Implementation** | Library-first, tickets | Code in project | Reuse on `done` |
+| **5. Implementation** | Library-first, tickets | Code in project | Design HITL + reuse on `done` |
 | **6. QA** | Anti-slop, tests | QA report | Gate 5 (QA level) |
 | **7. Learning** | Retro, promote | Library, LO-* | — |
 
@@ -321,6 +325,18 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **2. Quick Align** | Short solution path → **HUMAN-GATE 1** (Go/No-Go) |
 | **3. Execute & QA** | Immediate implementation + tests |
 | **4. Fast Sync** | Commit + global asset alignment |
+
+### UI design discipline (Team 10, post gate 2)
+
+As products grow, **where** a capability lives matters more than dialog width. Studio order:
+
+1. **Context & placement** — `knowledge-base/contextual-ia-playbook.md` (UX-003)
+2. **Workflow map** — `workflow-definition-playbook.md` (multi-surface features)
+3. **Design spec** — `design-spec-template.md` with mandatory **§2 Context & placement**
+4. **Human** — `./studio approve-design <project> <TICKET>` (warns if §2 missing)
+5. **Implement** — library-first + `design-system-compliance-checklist.md`
+
+Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (layout on the **right** surface). Amendment analysis must include a surface map in `04-ui-ux-concept.md`.
 
 ---
 
@@ -338,12 +354,14 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 ./studio guard <project> "request"
 ./studio install [--with-skills]     # after git clone: npm UI deps (+ optional skills)
 ./studio verify-worlds
+./studio verify-abstraction
 
 # Intake & pre-implementation (gates 0–2)
 ./studio intake <project> <input-file>
 ./studio blueprint <project>
 ./studio design <project> --scope journey|core-views
 ./studio approve <project> --gate 0|1|2
+./studio approve-design <project> <TICKET-ID>   # Team 10 spec before UI implement
 ./studio approve <project> --milestones
 ./studio revise <project> --gate <n> --feedback "..."
 
@@ -385,7 +403,8 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 # Learning & legacy sync
 ./studio learn "title" --signal <s>
 ./studio learn-list
-./studio retro <project>
+./studio infusion                              # LO gate — clear before project sprint
+./studio retro <project> [--complete]
 ./studio sync <project>              # heuristic scan project → library
 ./studio promote <project> <asset>   # single-path promote (legacy)
 ./studio update-skills
@@ -492,10 +511,11 @@ Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`,
 **Workflow (Meta-Loop):**
 1. **Detect signal** — Gate failure, rework, tooling gap, design gap
 2. **Create learning item** (`./studio learn ...`)
-3. **Retrospective** (`./studio retro <project>`) — discuss LO items
-4. **Decision** — improve process doc, skill file, or Python tool
-5. **CHANGELOG entry** — document change
-6. **Test** — `test_skill_matching.py` + `./studio gate <project>`
+3. **Retrospective** — `./studio retro <p>` → fill → `./studio retro <p> --complete`
+4. **Infuse** — implement LO-* in `.quinsy-studio/` (process, skills, tools, library)
+5. **Gate** — `./studio infusion` must pass before next `./studio sprint <p>`
+6. **CHANGELOG entry** — document change
+7. **Test** — `test_skill_matching.py` + `./studio gate <project>`
 
 **Edit process documents directly:**
 - `process/lifecycle.md` — Phases
@@ -503,7 +523,13 @@ Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`,
 - `process/ticket-workflow.md` — 9 steps
 - `process/milestone-planning.md` — Milestone roadmap
 - `process/amendment-intake.md` — Strategic direction → phases + tickets
+- `process/learning-loop.md` — Dual loop + Studio Infusion Gate
+- `process/studio-abstraction.md` — Studio HQ must not name client projects
 - `process/human-in-the-loop.md` — HITL decisions
+- `knowledge-base/contextual-ia-playbook.md` — Feature placement (UX-003)
+- `knowledge-base/workflow-definition-playbook.md` — End-to-end flows before UI specs
+- `knowledge-base/design-system-compliance-checklist.md` — Library-only UI
+- `knowledge-base/design-spec-template.md` — Team 10 spec (§2 Context & placement required)
 - `knowledge-base/` — Playbooks
 
 ---
@@ -521,12 +547,15 @@ These do **not** influence how the studio operates in other projects.
 
 ### Loop 2: Global Studio Evolution (Studio World)
 
-Universally applicable insights are **promoted to the studio**:
+Universally applicable insights are **promoted to the studio** and **infused before the next project sprint**:
 
-1. **Design (gate 2)** → `./studio approve --gate 2` auto-runs `promote-library`
-2. **Code** → `./studio library promote <project> <path> --ticket <id>`
-3. **Heuristic** → `./studio sync <project>` (legacy scan)
-4. **Process** → playbooks, LO-* backlog
+1. **Capture** — `./studio learn` → LO-* ticket in `backlog/open/`
+2. **Retro** — `./studio retro <p> --complete` (filled project retro + meta-retro)
+3. **Infuse** — implement LO in process / skills / `studio-tools/` / `studio-library/`
+4. **Gate** — `./studio infusion` (blocks `./studio sprint` while LO-* open)
+5. **Design (gate 2)** → `./studio approve --gate 2` auto-runs `promote-library`
+6. **Code** → `./studio library promote <project> <path> --ticket <id>`
+7. **CHANGELOG** — every studio change documented
 
 Registry: [studio-library/library_registry.md](studio-library/library_registry.md)
 
@@ -576,6 +605,7 @@ See [library_registry.md](studio-library/library_registry.md).
 | **Anti-Slop Audit** | Every commit | `python3 .quinsy-studio/studio-tools/validate_anti_slop.py .` |
 | **QA Gate** | Before every release | `./studio gate <project> --level 5` |
 | **Skill Matching Test** | Every QA gate + registry change | `python3 .quinsy-studio/studio-tools/test_skill_matching.py` |
+| **Studio abstraction** | After studio doc/tool edits | `./studio verify-abstraction` |
 | **Conflict Matrix** | After `update-skills` | `knowledge-base/external_skills_conflict_matrix.md` |
 | **Gate Exit Criteria** | Per gate | `process/gates.md` |
 
@@ -599,6 +629,7 @@ See [library_registry.md](studio-library/library_registry.md).
 | Skill matching test red | Check registry triggers → `teams/skill-registry.md` |
 | Docker template missing | Located at `studio-templates/docker/` — do not delete |
 | Studio files lost | **Git backup!** Check `.gitignore` (external skills are regenerable) |
+| Project name in studio docs | Run `./studio verify-abstraction`; use `<project>` in examples — see `process/studio-abstraction.md` |
 
 ---
 
@@ -608,6 +639,8 @@ See [library_registry.md](studio-library/library_registry.md).
 - `process/gates.md` — Gate definitions
 - `process/adr-policy.md` — ADR rules
 - `process/human-in-the-loop.md` — HITL
+- `process/studio-abstraction.md` — Project-agnostic studio HQ
+- `process/ticket-team-allocation.md` — Team 10 / `ia-feature-placement`
 - `teams/skill-registry.md` — Skill index
 - `knowledge-base/aesthetic-presets/` — Team 10 visual direction presets
 - `knowledge-base/skill-extensions/` — Deep playbooks extending CL/GM/UX/PE skills

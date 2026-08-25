@@ -35,6 +35,7 @@ The agent should run:
 ```bash
 ./studio install                    # once after clone (Tailwind + Headless UI)
 ./studio verify-worlds
+./studio verify-abstraction         # studio HQ must not hard-code client project names
 ./studio bootstrap my-project    # or intake if already bootstrapped
 ./studio focus my-project
 ./studio resume my-project
@@ -51,7 +52,7 @@ Then it does **only** what `resume` lists — usually filling artifacts until **
 | **Design** | *"Design core views only"* | `./studio design nudge --scope core-views` → prototype + sticker sheet | *"Approve gate 2"* → library promotion |
 | **Milestones** | *"Draft the milestone roadmap"* | Fills `docs/phases/` (M0, M1, …) | *"Approve milestones"* → agent writes M0 tickets |
 | **Sprint** | *"Start the sprint and implement the first ticket"* | `./studio sprint nudge` → `--approve-scope`, library pull, `./studio move … implement` | Review scope proposal; groom |
-| **Sprint review** | *"Give me a sprint review"* | `./studio review nudge` | *"Shipped looks good"* → `--approve`; ideas → `./studio feedback` |
+| **Sprint review** | *"Give me a sprint review"* | `./studio review nudge` | *"Shipped looks good"* → `--approve` → reuse → retro → infusion → next sprint |
 | **New idea** | *"I want offline mode"* | `./studio feedback nudge "…"` → clarify with you → ticket | Confirm clarified ticket before implement |
 
 **Sprint feedback** = small, concrete ideas. **Amendments** = strategic direction (vision brief → milestone + ticket breakdown). See [Amendment intake](#amendment-intake-strategic-direction) below.
@@ -108,7 +109,7 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 | Propose sprint scope | *"Plan the next sprint"* → `./studio sprint &lt;p&gt;` → review `scope-proposal.md` |
 | Approve sprint scope | *"Approve sprint scope"* → `./studio sprint &lt;p&gt; --approve-scope` |
 | Start sprint | *"Groom and implement the first ticket"* |
-| Work a ticket | *"Implement NUDG-0003"* (agent: library suggest/pull → move implement) |
+| Work a ticket | *"Implement NUDG-0003"* (agent: design spec if UI → `approve-design` → library pull → move implement) |
 | Finish ticket | *"Mark NUDG-0003 done if DoD is met"* |
 | Off-sprint idea | *"Can we add X?"* → agent should **not** code silently; uses guard → feedback or ticket |
 
@@ -120,7 +121,7 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 | Approve sprint | *"Sprint looks good — approve review"* |
 | Raw product feedback | *"Feedback: users need offline habits"* (→ `./studio feedback`, **not** a direct ticket) |
 | Prioritize backlog | *"Run grooming"* |
-| Retro | *"Run retro for this sprint"* |
+| Retro | *"Run retro for this sprint"* → fill retro → `./studio retro <p> --complete` → `./studio infusion` |
 
 ### Amendment intake (strategic direction)
 
@@ -128,29 +129,42 @@ Use when product direction shifts mid-flight — **not** for sprint-review nits 
 
 | You want | Example message |
 |----------|-----------------|
-| Start amendment | *"I added `intake/amendments/moody/amendment_01.md` — run amendment intake"* |
-| List status | *"Show amendments for moody"* → `./studio amendments moody` |
+| Start amendment | *"I added `intake/amendments/<project>/amendment_01.md` — run amendment intake"* |
+| List status | *"Show amendments for &lt;project&gt;"* → `./studio amendments <project>` |
 | After agent analysis | Review `projects/<p>/docs/amendments/AM-001-*/` (vision, UX concept, FE/BE arch, milestone roadmap, ticket drafts) |
 | Approve | *"Approve amendment AM-001"* → `./studio approve <p> --amendment AM-001` |
 | Roadmap changed | *"Approve milestones"* → `./studio approve <p> --milestones` |
 
 ```bash
-cp intake/amendments/moody/amendment_01.example.md intake/amendments/moody/amendment_01.md
+cp .quinsy-studio/studio-templates/amendment_01.example.md intake/amendments/<project>/amendment_01.md
 # Fill vision (§1–7); check teams + skills (§8–9) — do not write milestones
-./studio amend moody intake/amendments/moody/amendment_01.md
-./studio amendments moody
+./studio amend <project> intake/amendments/<project>/amendment_01.md
+./studio amendments <project>
 # Agent fills docs/amendments/AM-001-*/ artifacts
-./studio approve moody --amendment AM-001
-./studio approve moody --milestones   # if 03-milestone-roadmap.md changed M*
+./studio approve <project> --amendment AM-001
+./studio approve <project> --milestones   # if 03-milestone-roadmap.md changed M*
 ```
 
-Full process: [amendment-intake.md](process/amendment-intake.md) · Template: [intake/amendments/moody/amendment_01.example.md](../intake/amendments/moody/amendment_01.example.md)
+Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [studio-templates/amendment_01.example.md](studio-templates/amendment_01.example.md)
+
+### UI design (Team 10, after gate 2)
+
+| You want | Example message |
+|----------|-----------------|
+| Design spec for UI ticket | *"Write design spec for &lt;TICKET&gt; — include context and placement"* |
+| Approve design (HITL) | *"Approve design for &lt;TICKET&gt;"* → `./studio approve-design <p> <TICKET>` |
+| Cross-surface move | *"Create ia-feature-placement ticket: move X to Y surface"* |
+| Layout-only concern | Agent should ask: *"Is placement correct before we widen the dialog?"* |
+
+**Order:** placement → workflow map → atomic inventory → visual polish. Spec template: [design-spec-template.md](knowledge-base/design-spec-template.md). Playbooks: [contextual-ia](knowledge-base/contextual-ia-playbook.md) · [workflow-definition](knowledge-base/workflow-definition-playbook.md) · [design-system compliance](knowledge-base/design-system-compliance-checklist.md).
 
 ### Studio / process (not project code)
 
 | You want | Example message |
 |----------|-----------------|
 | Log studio gap | *"Log a tooling gap: …"* → `./studio learn` |
+| Infusion gate (LO backlog) | `./studio infusion` — blocks next project sprint while LO-* open |
+| Check studio docs are generic | `./studio verify-abstraction` |
 | Check if request is in scope | *"Is this in scope for nudge: …?"* → `./studio guard` |
 
 ### What the agent should **not** do without you
@@ -169,9 +183,10 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | When | Command |
 |------|---------|
 | **After git clone** | `./studio install` · optional `./studio install --with-skills` |
-| Session start | `./studio verify-worlds && ./studio focus <p> && ./studio resume <p>` |
+| Session start | `./studio verify-worlds` · `./studio verify-abstraction` · `./studio focus <p>` · `./studio resume <p>` |
 | New project from PRD | `./studio bootstrap <p>` |
 | Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` · `./studio revise <p> --gate N --feedback "..."` |
+| UI design HITL | `./studio approve-design <p> <TICKET-ID>` (after Team 10 spec with §2 placement) |
 | Milestones | `./studio approve <p> --milestones` (after `docs/phases/` drafted) |
 | Architecture | `./studio blueprint <p>` |
 | Design | `./studio design <p> --scope journey\|core-views` |
@@ -181,7 +196,8 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Sprint review | `./studio review <p>` · `./studio review <p> --approve` |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
 | Amendment intake | `./studio amend <p> intake/amendments/<p>/amendment_NN.md` · `./studio amendments <p>` · `./studio approve <p> --amendment AM-001` |
-| Groom / retro | `./studio groom <p>` · `./studio retro <p>` |
+| Groom / retro / infusion | `./studio groom <p>` · `./studio retro <p>` · `./studio retro <p> --complete` · `./studio infusion` |
+| Studio learnings | `./studio learn "..." --signal <s>` · `./studio learn-list` |
 | Scope check | `./studio guard <p> "your request text"` |
 
 ---
@@ -194,13 +210,14 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 ```bash
 ./studio verify-worlds
+./studio verify-abstraction
 ./studio focus <project>
 ./studio resume <project>
 ```
 
 4. Talk to the agent in plain language — e.g. *"Bootstrap nudge"*, *"Resume nudge"*, *"Approve gate 0"*. The agent runs `./studio` commands; you approve gates and product decisions.
 
-5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root.
+5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md).
 
 Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in-cursor) · [agent-context](process/agent-context.md)
 
@@ -209,6 +226,7 @@ Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in
 ```bash
 ./studio install                 # once after git clone
 ./studio verify-worlds
+./studio verify-abstraction
 ./studio focus <project>
 ./studio resume <project>
 ```
@@ -230,6 +248,21 @@ Requires Node.js 20+. `node_modules/` is not committed.
 - Team skill: [teams/10-product-design-experience/skills/aesthetic-presets.md](teams/10-product-design-experience/skills/aesthetic-presets.md)
 
 Every UI design spec must declare one primary preset (or `project-brand-only`). UX-005 loads the preset `SKILL.md` alongside project tokens.
+
+## UI design discipline (placement before layout)
+
+When complexity grows, avoid "layout-first" tickets that polish the wrong surface.
+
+| Step | Doc / command |
+|------|----------------|
+| 1. Where does this live? | [contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) — surface map, `ia-feature-placement` |
+| 2. End-to-end flow | [workflow-definition-playbook.md](knowledge-base/workflow-definition-playbook.md) |
+| 3. Design spec | [design-spec-template.md](knowledge-base/design-spec-template.md) — **§2 Context & placement** required |
+| 4. Library + tokens | [design-system-compliance-checklist.md](knowledge-base/design-system-compliance-checklist.md) |
+| 5. Human gate | `./studio approve-design <p> <TICKET>` |
+| 6. Implement | `./studio library pull` → `./studio move … implement` |
+
+Project IA artifact (3+ surfaces): `projects/<p>/docs/ia/surface-map.md`
 
 ## Studio skill extensions
 
@@ -274,18 +307,18 @@ See [milestone-planning.md](process/milestone-planning.md) · [amendment-intake.
 
 **Not for:** Sprint-review nits → use `./studio feedback` instead.
 
-1. Copy [intake/amendments/moody/amendment_01.example.md](../intake/amendments/moody/amendment_01.example.md) → `intake/amendments/<p>/amendment_01.md` (local, gitignored)
+1. Copy [.quinsy-studio/studio-templates/amendment_01.example.md](studio-templates/amendment_01.example.md) → `intake/amendments/<p>/amendment_01.md` (local, gitignored)
 2. Fill vision sections; **check teams and skills** — do not write milestones or tickets
 3. `./studio amend <p> intake/amendments/<p>/amendment_01.md` → scaffolds `docs/amendments/AM-NNN-*/`
-4. Agent fills analysis artifacts (UX concept, FE/BE architecture, requirements addendum, **milestone roadmap**, ticket drafts)
+4. Agent fills analysis artifacts (UX concept **with surface map**, FE/BE architecture, requirements addendum, **milestone roadmap**, ticket drafts)
 5. You approve: `./studio approve <p> --amendment AM-001` (+ `--milestones` if roadmap changed)
 6. Agent materializes tickets → normal sprint flow
 
 ```bash
-./studio amend moody intake/amendments/moody/amendment_01.md
-./studio amendments moody
-./studio approve moody --amendment AM-001
-./studio approve moody --milestones
+./studio amend <project> intake/amendments/<project>/amendment_01.md
+./studio amendments <project>
+./studio approve <project> --amendment AM-001
+./studio approve <project> --milestones
 ```
 
 ## AI-driven bootstrap
@@ -337,7 +370,9 @@ On `./studio move … done` → warns if registry paths changed without promotio
 | Definitions | `docs/definitions/` |
 | Architecture | `docs/architecture/` |
 | ADRs | `docs/adr/` |
-| Design spec | `design/DESIGN.md` |
+| Design spec (per ticket) | `docs/design-specs/<TICKET>.md` |
+| IA surface map | `docs/ia/surface-map.md` |
+| Design blueprint | `design/DESIGN.md` |
 | Mock scope | `design/DESIGN-SCOPE.md` |
 | Design prototype (Next.js) | `design/prototype/` |
 | Tokens | `ui/tokens/design-tokens.json` |
@@ -359,8 +394,12 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 |---------|----------------|
 | Scope & drift | [process/agent-context.md](process/agent-context.md) |
 | Two git worlds | [process/worlds.md](process/worlds.md) · `./studio verify-worlds` |
+| Studio HQ generic docs | [process/studio-abstraction.md](process/studio-abstraction.md) · `./studio verify-abstraction` |
+| Learning loop + infusion gate | [process/learning-loop.md](process/learning-loop.md) · `./studio infusion` |
+| Feature placement (IA) | [knowledge-base/contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) |
 | Off-sprint work | `./studio guard <p> "request"` |
 | Ticket workflow | [process/ticket-workflow.md](process/ticket-workflow.md) |
+| Team 10 allocation | [process/ticket-team-allocation.md](process/ticket-team-allocation.md) |
 
 ## External skills (optional)
 
@@ -386,25 +425,55 @@ After the **milestone roadmap** is approved, the **agent runs each sprint autono
 | Mid-sprint | Agent | Implements all groomed sprint tickets — no "should I continue?" between tickets |
 | Sprint review | **You** | Try shipped work; approve or reject |
 | Milestone done | **You** | Approve milestone complete before next milestone backlog |
-| After review | **You** + agent | Feedback → clarify → ticket; groom; retro; plan next sprint |
+| After review | **You** + agent | Feedback → clarify → ticket; retro → **infuse LO-***; plan next sprint |
 
 | Step | Command |
 |------|---------|
-| Propose scope | `./studio sprint <p>` |
+| Propose scope | `./studio sprint <p>` (blocked while open LO-* — run `./studio infusion` first) |
 | Approve scope | `./studio sprint <p> --approve-scope` |
 | Status brief | `./studio review <p>` |
 | Your feedback | `./studio feedback <p> "..."` |
 | Clarify → ticket | `./studio clarify <p> FB-001 ... --approve` → `./studio ticket <p> "..." --from-feedback FB-001` |
 | Approve sprint | `./studio review <p> --approve` |
-| Groom + retro + next sprint | `./studio groom <p>` · `./studio retro <p>` · `./studio sprint <p>` · `./studio groom <p> --approve` |
+| Reuse review | `./studio reuse <p> --approve` |
+| Retro | `./studio retro <p>` → fill `retro.md` → `./studio retro <p> --complete` |
+| Capture studio gaps | `./studio learn "..." --signal process-gap --source <p>` |
+| Infusion gate | `./studio infusion` (must pass before next `./studio sprint`) |
+| Groom + next sprint | `./studio groom <p>` · `./studio sprint <p>` · `./studio groom <p> --approve` |
 
 When all sprint tickets are `done`, `./studio resume` shows **sprint review pending** and blocks further implementation until you approve.
 
+## Studio infusion gate (dual loop)
+
+Sprint review learnings must **infuse into studio HQ** before the next project sprint — not linger as open LO-* tickets.
+
+```
+review --approve → reuse --approve
+→ retro (fill) → retro --complete
+→ ./studio learn (if new signals)
+→ implement LO-* in .quinsy-studio/
+→ ./studio infusion   ← must be green
+→ ./studio sprint <p>
+```
+
+| Signal | Infuse into |
+|--------|-------------|
+| `design-gap` | `knowledge-base/`, UX skills, design-spec template |
+| `process-gap` | `process/`, HITL docs |
+| `tooling-gap` | `studio-tools/`, CLI |
+| `library-gap` | `studio-library/` (+ promote from project) |
+
+Full loop: [learning-loop.md](process/learning-loop.md) · [studio-abstraction.md](process/studio-abstraction.md)
+
 ## Studio-only improvements
 
-Use **LO-*** tickets in `.quinsy-studio/backlog/` — not project code.
+Use **LO-*** tickets in `.quinsy-studio/backlog/` — not project code. Studio docs must stay **project-agnostic** (`<project>`, not a client codename).
 
 ```bash
-./studio learn "..." --signal tooling-gap
+./studio learn "..." --signal design-gap --source <project>
 ./studio learn-list
+./studio verify-abstraction
+./studio infusion   # must be green before next project sprint
 ```
+
+Recent studio sprint: [sprints/STUDIO-SPRINT-01/README.md](sprints/STUDIO-SPRINT-01/README.md) · Changelog: [CHANGELOG.md](CHANGELOG.md)

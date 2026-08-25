@@ -45,9 +45,15 @@ quinsy-studio/
 └── intake/
     └── amendments/
         └── <project>/
-            ├── amendment_01.example.md   # full template with teams + skills
-            ├── amendment_01.md             # human copy (not committed)
-            └── amendment_02.md
+            └── amendment_01.md             # human copy (not committed)
+```
+
+### Studio templates (committed, project-agnostic)
+
+```
+.quinsy-studio/studio-templates/
+├── amendment_template.md
+└── amendment_01.example.md                 # full fictional example (acme-app)
 ```
 
 ### Processed artifacts (project repo)
@@ -71,14 +77,14 @@ projects/<p>/
             └── 10-approval-checklist.md
 ```
 
-After human approval, ticket stubs become real `backlog/MOOD-xxxx.md` files; `docs/phases/` is updated per `03-milestone-roadmap.md`.
+After human approval, ticket stubs become real `backlog/<PREFIX>-xxxx.md` files (project prefix); `docs/phases/` is updated per `03-milestone-roadmap.md`.
 
 ---
 
 ## Amendment brief (human input)
 
 **Template:** [studio-templates/amendment_template.md](../studio-templates/amendment_template.md)  
-**Full example:** [intake/amendments/moody/amendment_01.example.md](../../intake/amendments/moody/amendment_01.example.md)
+**Full example:** [studio-templates/amendment_01.example.md](../studio-templates/amendment_01.example.md)
 
 ### Human fills
 
@@ -126,16 +132,16 @@ flowchart TD
 ### Step 1 — Capture
 
 ```bash
-cp intake/amendments/moody/amendment_01.example.md intake/amendments/moody/amendment_01.md
+cp .quinsy-studio/studio-templates/amendment_01.example.md intake/amendments/<project>/amendment_01.md
 # Edit vision sections; check teams + skills only
 ```
 
-Tell the agent: *"Run amendment intake for moody amendment_01"*
+Tell the agent: *"Run amendment intake for `<project>` amendment_01"*
 
 ### Step 2 — Analyze (agent)
 
 ```bash
-./studio amend moody intake/amendments/moody/amendment_01.md   # proposed CLI
+./studio amend <project> intake/amendments/<project>/amendment_01.md
 ```
 
 Agent **must read**:
@@ -145,6 +151,7 @@ Agent **must read**:
 - `docs/phases/README.md` + all M* docs (including planned M6+)
 - Current codebase surface area touched by the vision
 - [ticket-team-allocation.md](ticket-team-allocation.md) + [skill-registry.md](../teams/skill-registry.md)
+- [contextual-ia-playbook.md](../knowledge-base/contextual-ia-playbook.md) for surface placement
 - Open feedback queue (related themes)
 
 Agent **produces** `docs/amendments/AM-001-<slug>/`:
@@ -153,8 +160,8 @@ Agent **produces** `docs/amendments/AM-001-<slug>/`:
 |----------|-----------|---------|
 | `01-vision-synthesis.md` | 04 / 06 | Consolidated narrative, PRD fit, conflicts |
 | `02-requirements-addendum.md` | 06 | New FR/NFR, personas, journeys, acceptance themes |
-| `03-milestone-roadmap.md` | 04 / 06 | **Proposed M* insert/reorder/defer** (e.g. defer M6 billing until agency track lands) |
-| `04-ui-ux-concept.md` | 10 | Flows, IA, concept direction, design-track ticket list |
+| `03-milestone-roadmap.md` | 04 / 06 | **Proposed M* insert/reorder/defer** |
+| `04-ui-ux-concept.md` | 10 | Flows, **contextual IA / surface map**, design-track ticket list |
 | `05-frontend-architecture.md` | 01 | Routes, components, state, studio-library impact |
 | `06-backend-architecture.md` | 02 | APIs, schema, integrations, email/billing touchpoints |
 | `07-tooling-and-process.md` | 08 / 09 | CI, env, Docker, new `./studio` commands if needed |
@@ -175,9 +182,9 @@ Set `docs/amendments/README.md` status → `analyzed`.
 ### Step 4 — Human approve
 
 ```bash
-./studio approve moody --amendment AM-001
-./studio approve moody --milestones          # if 03-milestone-roadmap.md changed M*
-./studio approve moody --prd-amendment AM-001   # class C only
+./studio approve <project> --amendment AM-001
+./studio approve <project> --milestones          # if 03-milestone-roadmap.md changed M*
+./studio approve <project> --prd-amendment AM-001   # class C only
 ```
 
 Until approved: **no implementation**, no `sprint:` tags.
@@ -186,13 +193,13 @@ Until approved: **no implementation**, no `sprint:` tags.
 
 On approve, agent:
 
-1. Merge `09-tickets-draft.md` → `backlog/MOOD-xxxx.md` (groomed BDD)
+1. Merge `09-tickets-draft.md` → `backlog/<PREFIX>-xxxx.md` (groomed BDD)
 2. Apply `03-milestone-roadmap.md` → `docs/phases/` (new M* docs, README, dependency chain)
 3. Append `docs/phases/revisions.md`
 4. Update `docs/amendments/README.md` → `approved`
-5. Design-track tickets: Team 10 spec → `./studio approve-design` before implement
+5. Design-track tickets: Team 10 spec with §2 Context & placement → `./studio approve-design` before implement
 
-Then: `./studio sprint moody` → scope from revised backlog.
+Then: `./studio sprint <project>` → scope from revised backlog.
 
 ---
 
@@ -214,10 +221,11 @@ Full catalogs: [ticket-team-allocation.md](ticket-team-allocation.md), [skill-re
 | Cross-cutting (collab, export) | 02 + 01; 10 if UX changes |
 | Go-to-market / positioning | 05 + 10 (UX-007) |
 | Compliance-heavy feature | 03 + 02 |
+| **Surface / IA shift** | 10 (UX-003) first → then 01 |
 
 ---
 
-## CLI surface (proposed)
+## CLI surface
 
 | Command | Action |
 |---------|--------|
@@ -244,6 +252,7 @@ Implemented in `.quinsy-studio/studio-tools/amendment_intake.py` (wired in `stud
 - Amendments never skip design HITL for UI.
 - Amendments never auto-tag `sprint:` — groom + sprint scope approval still required.
 - **Do not kick off pre-planned next milestone** until amendment cycle completes and roadmap re-approved.
+- Amendment `04-ui-ux-concept.md` must include **surface map** when new UI surfaces or moved capabilities are involved.
 
 ---
 
@@ -253,12 +262,13 @@ Implemented in `.quinsy-studio/studio-tools/amendment_intake.py` (wired in `stud
 2. **Derive milestones in analysis** — `03-milestone-roadmap.md`, not from human brief
 3. **Map every ticket stub** — `milestone: M*`, `team`, `skills`, `ticket_type`
 4. **Flag PRD conflict** — class **C**, stop implementation path
-5. **Log** — `revisions.md` on approve
-6. **Do not implement** until amendment approved, milestones re-approved if changed, tickets groomed
+5. **Contextual IA** — UX-003 placement before layout specs in `04-ui-ux-concept.md`
+6. **Log** — `revisions.md` on approve
+7. **Do not implement** until amendment approved, milestones re-approved if changed, tickets groomed
 
 ---
 
-## Example: moody (amendment pending)
+## Example (fictional project `acme-app`)
 
 **State:** M5 complete. M6 (limits & billing) documented but **not active** — amendment intake runs first.
 
@@ -267,9 +277,9 @@ Implemented in `.quinsy-studio/studio-tools/amendment_intake.py` (wired in `stud
 **Analysis output (sketch):**
 
 - **Class B** — inserts **M5.1 Agency surfaces** before M6; defers billing until agency share/export stable
-- **04-ui-ux-concept.md** — client view-only board, branded export kit
+- **04-ui-ux-concept.md** — surface map: Share = canvas + invite; presentation builder = client link + guest access
 - **05/06** — team seat model API, export watermark brand tokens
-- **09-tickets-draft.md** — 6 stubs across M5.1 and revised M6
+- **09-tickets-draft.md** — stubs across M5.1 and revised M6
 
 Human approves amendment + `--milestones` → backlog populated → sprint planning.
 
@@ -280,5 +290,7 @@ Human approves amendment + `--milestones` → backlog populated → sprint plann
 - [milestone-planning.md](milestone-planning.md)
 - [human-in-the-loop.md](human-in-the-loop.md)
 - [ticket-team-allocation.md](ticket-team-allocation.md)
+- [contextual-ia-playbook.md](../knowledge-base/contextual-ia-playbook.md)
+- [studio-abstraction.md](studio-abstraction.md)
 - [studio-templates/amendment_template.md](../studio-templates/amendment_template.md)
-- [intake/amendments/moody/amendment_01.example.md](../../intake/amendments/moody/amendment_01.example.md)
+- [studio-templates/amendment_01.example.md](../studio-templates/amendment_01.example.md)

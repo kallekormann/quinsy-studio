@@ -17,6 +17,7 @@ Commands:
   ./studio focus <project>                       Set active project + scope banner
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
+  ./studio verify-abstraction                    Scan studio HQ for project-name leaks
   ./studio install [--with-skills]               npm deps after git clone (+ optional skills)
   ./studio library list                           List studio-library assets
   ./studio library pull <project> auth billing    Copy library → project
@@ -67,7 +68,8 @@ Commands:
   # Phase 6: Learning
   ./studio learn "Title" --signal <s>            Create learning item
   ./studio learn-list                            Show learning items
-  ./studio retro <project>                       Start retrospective
+  ./studio infusion                              Studio LO gate — open learnings before project sprint
+  ./studio retro <project> [--complete]          Sprint retrospective
   ./studio sync <project>                        Sync global assets
 
   # Tools
@@ -94,6 +96,7 @@ from skill_matcher import match_skills, team_for_skills
 from design_ticket_helpers import (
     default_design_spec_path,
     design_implement_blocked_message,
+    design_spec_placement_warning,
     enrich_design_skills,
     infer_ticket_type,
     requires_design_approval,
@@ -115,6 +118,7 @@ from studio_context import (
     build_focus_report,
     guard_request,
     set_active_project,
+    verify_studio_abstraction,
     verify_worlds,
 )
 from library_manager import (
@@ -175,6 +179,7 @@ from sprint_hitl import (
     load_feedback_queue,
     maybe_flag_sprint_review,
     needs_sprint_review,
+    complete_retro,
     prepare_retro,
     prepare_review,
     reject_review,
@@ -662,6 +667,21 @@ class StudioOrchestrator:
             print("\n  See: .quinsy-studio/process/worlds.md")
         if not (STUDIO_ROOT / "node_modules").is_dir():
             print("\n  ⚠️  Studio UI dependencies not installed — run: ./studio install")
+        return ok
+
+    def cmd_verify_abstraction(self):
+        """Scan studio HQ for project-specific names in docs/tools/templates."""
+        ok, issues = verify_studio_abstraction()
+        print_header("VERIFY STUDIO ABSTRACTION")
+        if ok:
+            print("\n  ✅ Studio HQ docs/tools are project-agnostic.")
+        else:
+            print("\n  ❌ Project-specific references found:")
+            for issue in issues[:40]:
+                print(f"    • {issue}")
+            if len(issues) > 40:
+                print(f"    … and {len(issues) - 40} more")
+            print("\n  See: .quinsy-studio/process/studio-abstraction.md")
         return ok
 
     def cmd_install(self, with_skills: bool = False):
@@ -1229,8 +1249,11 @@ class StudioOrchestrator:
             print(f"\n  Next: ./studio groom {project} --approve")
             return True
         
-        if status["phase"] not in [PHASE_SPRINT, PHASE_IMPLEMENT, "4", "5"]:
-            print(f"  ⚠️  Sprint requires design approval (gate 2). Current phase: {status['phase']}")
+        phase = str(status.get("phase", ""))
+        sprint_phases = {PHASE_SPRINT, PHASE_IMPLEMENT, "4", "5"}
+        milestone_phase = phase.isdigit() and int(phase) >= 4
+        if phase not in sprint_phases and not milestone_phase:
+            print(f"  ⚠️  Sprint requires design approval (gate 2). Current phase: {phase}")
             return False
         
         if status.get("human_gates", {}).get("2", {}).get("status") != "approved":
@@ -1433,9 +1456,9 @@ class StudioOrchestrator:
                 print(f"\n  ⚠️  Cannot approve reuse review yet.")
                 print(f"  {reason}")
                 print(f"\n  Record decisions:")
-                print(f"    ./studio reuse {project} --record <path> promote --ref MOOD-0026")
+                print(f"    ./studio reuse {project} --record <path> promote --ref TICKET-0026")
                 print(f"    ./studio reuse {project} --record ui/components/foo local --note \"project-specific\"")
-                print(f"    ./studio library promote {project} packages/auth --ticket MOOD-0026 --force")
+                print(f"    ./studio library promote {project} packages/auth --ticket TICKET-0026 --force")
                 return False
             save_status(project, status)
             print(f"\n  ✅ Reuse review approved for {sprint}")
@@ -1647,6 +1670,24 @@ class StudioOrchestrator:
             ticket["design_spec"] = design_spec
         
         content = render_ticket_markdown(ticket)
+        if fb_item:
+            scope_lines = ["\n## Scope\n"]
+            draft_scope = (fb_item.get("draft_scope") or "").strip()
+            if draft_scope:
+                scope_lines.append(f"**Scope:** {draft_scope}\n")
+            draft_oos = (fb_item.get("draft_out_of_scope") or "").strip()
+            if draft_oos:
+                scope_lines.append(f"\n**Out of scope:** {draft_oos}\n")
+            if len(scope_lines) > 1:
+                # Insert Scope section before ## Acceptance Criteria
+                if "## Acceptance Criteria" in content:
+                    content = content.replace(
+                        "## Acceptance Criteria",
+                        "".join(scope_lines) + "\n## Acceptance Criteria",
+                        1,
+                    )
+                else:
+                    content += "".join(scope_lines)
         if rationale_extra:
             content += rationale_extra
         ticket_file.write_text(content)
@@ -1805,6 +1846,9 @@ class StudioOrchestrator:
             print(f"\n  ⚠️  Design spec not found: {spec_path}")
             print(f"    Team 10 must write spec using knowledge-base/design-spec-template.md")
             return False
+        placement_warn = design_spec_placement_warning(spec_path)
+        if placement_warn:
+            print(f"\n  ⚠️  {placement_warn}")
         updated = set_design_approved(content)
         if notes:
             updated += f"\n\n## Design approval\n- **Approved:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n- **Notes:** {notes}\n"
@@ -1979,8 +2023,8 @@ class StudioOrchestrator:
             signal = signal_match.group(1) if signal_match else "unknown"
             print(f"  - {lo.stem} [Signal: {signal}]")
     
-    def cmd_retro(self, project: str):
-        """Start a project sprint retrospective."""
+    def cmd_retro(self, project: str, complete: bool = False):
+        """Start or complete a project sprint retrospective."""
         status = load_status(project)
         sprint = status.get("current_sprint", "SPRINT-01")
 
@@ -1992,17 +2036,33 @@ class StudioOrchestrator:
             print(f"  {reuse_msg}")
             return False
 
-        retro_file = prepare_retro(project, sprint)
         hitl = get_sprint_hitl(status)
-        hitl["retro_status"] = RETRO_DONE
-        hitl["retro_completed_at"] = datetime.now().isoformat()
+
+        if complete:
+            ok, message = complete_retro(project, sprint)
+            if not ok:
+                print(f"\n  ⚠️  {message}")
+                print(f"  Fill: projects/{project}/sprints/{sprint}/retro.md")
+                return False
+            hitl["retro_status"] = RETRO_DONE
+            hitl["retro_completed_at"] = datetime.now().isoformat()
+            save_status(project, status)
+            print(f"\n  ✅ Retro complete: {message}")
+            print(f"  Capture studio learnings:")
+            print(f"    ./studio learn \"...\" --signal process-gap --source {project}")
+            print(f"    ./studio learn-list")
+            print(f"  Infuse studio improvements (LO-*) before next project sprint:")
+            print(f"    ./studio infusion")
+            return True
+
+        retro_file = prepare_retro(project, sprint)
+        hitl["retro_status"] = RETRO_PENDING
+        hitl["retro_completed_at"] = None
         save_status(project, status)
 
-        print(f"\n  Project retro: {retro_file}")
-        print(f"  Fill in went well / badly / improve, then:")
-        print(f"    ./studio learn \"...\" --signal process-gap --source {project}")
-        print(f"    ./studio groom {project}  (reprioritize backlog for next sprint)")
-        print(f"    ./studio sprint {project}  (plan next sprint)")
+        print(f"\n  Project retro scaffold: {retro_file}")
+        print(f"  Agent must fill went well / badly / improve (not template-only), then:")
+        print(f"    ./studio retro {project} --complete")
 
         # Studio meta-retro for cross-project learnings (optional)
         meta_dir = QUINSY_STUDIO / "retros"
@@ -2028,6 +2088,23 @@ class StudioOrchestrator:
             print(f"  Studio meta-retro (if needed): {meta_file}")
 
         return retro_file
+
+    def cmd_infusion(self):
+        """Show studio learning infusion gate status (open LO-* tickets)."""
+        from studio_learning_gate import can_infuse_project_sprint, open_lo_tickets
+
+        print_header("STUDIO INFUSION GATE")
+        items = open_lo_tickets()
+        if not items:
+            print("\n  ✅ No open LO tickets — safe to plan the next project sprint.")
+            print("  Generalize learnings into: process/, teams/skills/, knowledge-base/, studio-library/")
+            return True
+        print(f"\n  ⏸  {len(items)} open studio learning item(s) block the next project sprint.")
+        ok, msg = can_infuse_project_sprint()
+        print(f"\n{msg}")
+        print("\n  Infusion targets:")
+        print("    process/ · teams/*/skills/ · knowledge-base/ · studio-tools/ · studio-library/")
+        return False
     
     def cmd_update_skills(self, extra_args=None):
         """Subscribe/update the external skill dependencies (agent-as-a-dependency)."""
@@ -2595,6 +2672,7 @@ Commands:
   ./studio focus <project>                       Set active project + scope banner
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
+  ./studio verify-abstraction                    Scan studio HQ for project-name leaks
   ./studio install [--with-skills]               npm deps after git clone (+ optional skills)
   ./studio library list                           List studio-library assets
   ./studio library pull <project> auth billing    Copy library → project
@@ -2645,7 +2723,8 @@ Commands:
   # Phase 6: Learning
   ./studio learn "Title" --signal <s>            Create learning item
   ./studio learn-list                            Show learning items
-  ./studio retro <project>                       Start retrospective
+  ./studio infusion                              Studio LO gate — open learnings before project sprint
+  ./studio retro <project> [--complete]          Sprint retrospective
   ./studio sync <project>                        Sync global assets
   ./studio update-skills                         Subscribe/update external skill packages
 
@@ -2717,6 +2796,8 @@ def main():
 
     elif command == "verify-worlds":
         orchestrator.cmd_verify_worlds()
+    elif command == "verify-abstraction":
+        orchestrator.cmd_verify_abstraction()
 
     elif command == "install":
         with_skills = "--with-skills" in args
@@ -2970,9 +3051,14 @@ def main():
     
     elif command == "learn-list":
         orchestrator.cmd_learn_list()
+
+    elif command == "infusion":
+        orchestrator.cmd_infusion()
     
     elif command == "retro" and len(args) >= 1:
-        orchestrator.cmd_retro(args[0])
+        retro_complete = "--complete" in args
+        project = args[0]
+        orchestrator.cmd_retro(project, complete=retro_complete)
     
     elif command == "update-skills":
         orchestrator.cmd_update_skills(args)

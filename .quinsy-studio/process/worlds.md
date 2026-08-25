@@ -25,6 +25,7 @@ Each project under `projects/<name>/` has:
 
 ```bash
 ./studio verify-worlds
+./studio verify-abstraction
 ```
 
 Fails if:
@@ -37,7 +38,7 @@ Fails if:
 | Location | `origin` should be |
 |----------|-------------------|
 | Quinsy Studio root (`quinsy-studio/`) | `https://github.com/kallekormann/quinsy-studio.git` |
-| Project (`projects/<name>/`) | That project's repo (e.g. `moody.git`) |
+| Project (`projects/<name>/`) | That project's own remote (e.g. `acme-app.git`) |
 
 Studio HQ commits: `.quinsy-studio/`, `studio`, `AGENTS.md` only.  
 Project commits: everything under `projects/<name>/` from **inside** that folder.
@@ -47,7 +48,7 @@ Project commits: everything under `projects/<name>/` from **inside** that folder
 git remote -v   # → quinsy-studio
 
 # Project
-cd projects/moody && git remote -v   # → moody
+cd projects/<name> && git remote -v   # → project repo
 ```
 
 ## Agent rules
@@ -56,6 +57,7 @@ cd projects/moody && git remote -v   # → moody
 2. **Never** commit project code into quinsy-studio
 3. Project git operations run **inside** `projects/<name>/`
 4. Studio tooling changes live in `.quinsy-studio/` only
+5. Studio docs/tools use `<project>` placeholders — see [studio-abstraction.md](studio-abstraction.md)
 
 ## .gitignore (studio root)
 

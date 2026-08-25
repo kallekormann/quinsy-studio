@@ -217,8 +217,8 @@ def write_reuse_report(project: str, sprint: str, analysis: Dict, decisions: Lis
 | `local` | Project-specific; intentionally not shared |
 
 ```bash
-./studio library promote {project} packages/auth --ticket MOOD-0026 --force
-./studio reuse {project} --record ui/components/user-menu local --note "Moody-specific chrome"
+./studio library promote {project} packages/auth --ticket TICKET-0026 --force
+./studio reuse {project} --record ui/components/user-menu local --note "Project-specific chrome"
 ./studio reuse {project} --approve
 ```
 """

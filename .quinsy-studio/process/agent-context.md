@@ -15,6 +15,8 @@ Active project is stored in `.quinsy-studio/.active-project.json`.
 | Layer | Scope | Examples |
 |-------|-------|----------|
 | **Studio meta** | `.quinsy-studio/` | LO-* tickets, process, tools, library |
+
+Studio HQ must stay **project-agnostic** in docs/tools — see [studio-abstraction.md](studio-abstraction.md). Run `./studio verify-abstraction` after studio edits.
 | **Project** | `projects/<name>/` | PRD, gates, tickets, code |
 | **Off-topic** | Neither | Unrelated questions |
 
@@ -58,7 +60,7 @@ Before implementing, verify **team + skills** match ticket type — auto-match f
 
 See [ticket-team-allocation.md](ticket-team-allocation.md) for the mapping table.
 
-- **UI design-track tickets:** Team `10-product-design-experience` + UX skills + [aesthetic preset](.quinsy-studio/knowledge-base/aesthetic-presets/README.md); human `./studio approve-design` before implement
+- **UI design-track tickets:** Team `10-product-design-experience` + UX skills + [aesthetic preset](.quinsy-studio/knowledge-base/aesthetic-presets/README.md); **§2 Context & placement** required ([contextual-ia-playbook.md](.quinsy-studio/knowledge-base/contextual-ia-playbook.md)); human `./studio approve-design` before implement
 - **UI implement:** `01-frontend-experience` + `FE-001`, `FE-002` (and `FE-004` for contrast/a11y)
 - **API / email / integrations:** `02-backend-systems` + relevant `BE-*` skills
 - At groom: human or agent corrects wrong auto-assignment (e.g. email → backend, not AI)

@@ -8,7 +8,7 @@
 >
 > **Drop path:** `intake/amendments/{{project}}/amendment_NN.md`  
 > **Then:** `./studio amend {{project}} intake/amendments/{{project}}/amendment_NN.md`  
-> **Full example:** [intake/amendments/moody/amendment_01.example.md](../../intake/amendments/moody/amendment_01.example.md)
+> **Full example:** [studio-templates/amendment_01.example.md](../studio-templates/amendment_01.example.md)
 >
 > **Do not fill milestones here** — the studio derives new/updated phases after analysis.
 

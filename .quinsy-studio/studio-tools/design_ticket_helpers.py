@@ -14,6 +14,7 @@ DESIGN_TRACK_TYPES = frozenset({
     "marketing-page",
     "workflow-explainer",
     "ia-navigation",
+    "ia-feature-placement",
 })
 
 UI_IMPLEMENT_TYPES = frozenset({
@@ -31,6 +32,18 @@ WORKFLOW_TRIGGERS = (
     "workflow", "explainer", "onboarding", "diagram", "storyboard", "how it works"
 )
 IA_TRIGGERS = ("information architecture", "navigation", "nav structure", "wayfinding", "ia ")
+PLACEMENT_TRIGGERS = (
+    "wrong place",
+    "wrong surface",
+    "move to",
+    "dumping ground",
+    "feature placement",
+    "context of use",
+    "presentation builder",
+    "share dialog",
+    "menu merge",
+    "information architecture",
+)
 NEW_COMPONENT_TRIGGERS = (
     "new component", "new modal", "new dialog", "new dropdown", "settings panel"
 )
@@ -43,6 +56,8 @@ def infer_ticket_type(text: str) -> str:
         return "marketing-page"
     if any(x in t for x in WORKFLOW_TRIGGERS):
         return "workflow-explainer"
+    if any(x in t for x in PLACEMENT_TRIGGERS):
+        return "ia-feature-placement"
     if "information architecture" in t or re.search(r"\bia\b", t):
         if any(x in t for x in ("navigation", "nav structure", "wayfinding")):
             return "ia-navigation"
@@ -71,6 +86,10 @@ def enrich_design_skills(skills: List[str], ticket_type: str) -> List[str]:
                 out.append(skill)
     if ticket_type == "ia-navigation" and "UX-003" not in out:
         out.insert(0, "UX-003")
+    if ticket_type == "ia-feature-placement":
+        for skill in ("UX-003", "UX-002"):
+            if skill not in out:
+                out.insert(0, skill)
     seen: set[str] = set()
     unique: List[str] = []
     for skill in out:
@@ -164,3 +183,41 @@ def set_design_approved(content: str) -> str:
 
 def default_design_spec_path(ticket_id: str) -> str:
     return f"docs/design-specs/{ticket_id}.md"
+
+
+def design_spec_has_placement_section(spec_text: str) -> bool:
+    """True if spec includes Context & placement with substantive content."""
+    patterns = (
+        r"##\s*2\.\s*Context\s*&\s*placement",
+        r"##\s*2\.\s*Context and placement",
+        r"###\s*User intent\s*&\s*surface",
+        r"\*\*Home surface\*\*",
+    )
+    if not any(re.search(p, spec_text, re.IGNORECASE) for p in patterns):
+        return False
+    # Reject placeholder-only sections
+    placeholders = ("| | |", "What is the user", "__", "TBD", "…")
+    section_match = re.search(
+        r"(##\s*2\.\s*Context[^\n]*\n)([\s\S]*?)(?=\n##\s|\Z)",
+        spec_text,
+        re.IGNORECASE,
+    )
+    if not section_match:
+        return any(re.search(p, spec_text, re.IGNORECASE) for p in patterns)
+    body = section_match.group(2)
+    lines = [ln.strip() for ln in body.splitlines() if ln.strip() and not ln.strip().startswith(">")]
+    substantive = [ln for ln in lines if not any(p in ln for p in placeholders)]
+    return len(substantive) >= 4
+
+
+def design_spec_placement_warning(spec_path: Path) -> Optional[str]:
+    if not spec_path.exists():
+        return None
+    text = spec_path.read_text(encoding="utf-8", errors="ignore")
+    if design_spec_has_placement_section(text):
+        return None
+    return (
+        "Design spec missing §2 Context & placement "
+        "(see knowledge-base/contextual-ia-playbook.md). "
+        "Approve only if this ticket is nav-only or single-surface styling."
+    )

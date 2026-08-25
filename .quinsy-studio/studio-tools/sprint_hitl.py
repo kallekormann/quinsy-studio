@@ -314,8 +314,15 @@ def can_plan_next_sprint(project: str, status: Dict) -> Tuple[bool, str]:
     if hitl.get("retro_status") != RETRO_DONE:
         return (
             False,
-            f"Retrospective required for {sprint} before the next sprint: ./studio retro {project}",
+            f"Retrospective required for {sprint} before the next sprint: "
+            f"./studio retro {project} (fill retro) → ./studio retro {project} --complete",
         )
+
+    from studio_learning_gate import can_infuse_project_sprint
+
+    infusion_ok, infusion_msg = can_infuse_project_sprint()
+    if not infusion_ok:
+        return False, infusion_msg
 
     return True, ""
 
@@ -757,6 +764,46 @@ def prepare_retro(project: str, sprint: str) -> Path:
 """
     retro_file.write_text(template, encoding="utf-8")
     return retro_file
+
+
+RETRO_PLACEHOLDER_MARKERS = (
+    "- ...",
+    "## What went well?\n- ...",
+    "## What went badly?\n- ...",
+    "## What can we improve?\n- ...",
+)
+
+
+def retro_is_filled(retro_path: Path) -> Tuple[bool, List[str]]:
+    """True when project retro has substantive went well / badly / improve content."""
+    if not retro_path.exists():
+        return False, ["Project retro file missing"]
+    text = retro_path.read_text(encoding="utf-8", errors="ignore")
+    issues: List[str] = []
+    for section, label in (
+        (r"## What went well\?\s*\n(.*?)(?=\n## |\Z)", "What went well"),
+        (r"## What went badly\?\s*\n(.*?)(?=\n## |\Z)", "What went badly"),
+        (r"## What can we improve\?\s*\n(.*?)(?=\n## |\Z)", "What can we improve"),
+    ):
+        match = re.search(section, text, re.DOTALL | re.I)
+        if not match:
+            issues.append(f"Missing section: {label}")
+            continue
+        body = match.group(1).strip()
+        lines = [ln.strip() for ln in body.splitlines() if ln.strip()]
+        substantive = [ln for ln in lines if ln not in ("- ...", "...") and not ln.endswith(": ...")]
+        if not substantive:
+            issues.append(f"Section empty or placeholder: {label}")
+    return len(issues) == 0, issues
+
+
+def complete_retro(project: str, sprint: str) -> Tuple[bool, str]:
+    """Validate retro content; return (ok, message)."""
+    retro_path = sprint_directory(project, sprint) / "retro.md"
+    ok, issues = retro_is_filled(retro_path)
+    if not ok:
+        return False, "Retro incomplete:\n  - " + "\n  - ".join(issues)
+    return True, str(retro_path)
 
 
 def format_feedback_list(project: str, sprint: str) -> str:

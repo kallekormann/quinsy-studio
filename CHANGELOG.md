@@ -2,6 +2,19 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.12.0] — 2026-08-25
+
+### STUDIO-SPRINT-01 — Design discipline & studio abstraction
+
+- ✅ **Contextual IA** — `contextual-ia-playbook.md`, `workflow-definition-playbook.md`, design spec §2 Context & placement
+- ✅ **`ia-feature-placement`** ticket type; UX-003 expanded; `approve-design` placement warning
+- ✅ **`./studio verify-abstraction`** — scan studio HQ for hard-coded client project names
+- ✅ **Amendment intake** — generic `studio-templates/amendment_01.example.md` (`acme-app`); docs use `<project>` placeholders
+- ✅ **Docs** — `README.md`, `.quinsy-studio/README.md`, `GETTING_STARTED.md` updated for session ritual, design HITL, abstraction policy
+- ✅ Learning items **LO-0006**, **LO-0007** (design-gap + studio abstraction)
+
+Detail: [.quinsy-studio/CHANGELOG.md](.quinsy-studio/CHANGELOG.md) · [STUDIO-SPRINT-01](.quinsy-studio/sprints/STUDIO-SPRINT-01/README.md)
+
 ## [1.9.3] — 2026-08-24
 
 ### Sprint planning & learning loop (moody SPRINT-25 retro)

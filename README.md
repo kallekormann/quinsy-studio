@@ -11,7 +11,8 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 | **Studio HQ** | `.quinsy-studio/`, `studio`, `AGENTS.md` | Yes |
 | **Projects** | `projects/<name>/` | No — separate repo per project |
 | **Intake** | `intake/*.md` | No — local only |
-| **Amendment examples** | `intake/amendments/**/amendment_*.example.md` | Yes — templates only |
+| **Amendment briefs** | `intake/amendments/<project>/` | No — local only |
+| **Amendment templates** | `.quinsy-studio/studio-templates/amendment_*.md` | Yes — project-agnostic examples |
 
 ## Quick start (AI-driven)
 
@@ -20,6 +21,7 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 ```bash
 ./studio install                    # tailwindcss + @headlessui/react (once)
 ./studio verify-worlds              # studio git ≠ project git
+./studio verify-abstraction         # studio docs/tools use <project>, not a client name
 ```
 
 **Fastest path:** add `intake/<project>.md` → in Cursor say *"Bootstrap &lt;project&gt; and walk me through gate 0"*.
@@ -63,7 +65,7 @@ Open this repo in Cursor. You approve; the agent runs `./studio`.
 | 4. Design ready | *"Approve gate 2"* (or *"Design core-views first"*) |
 | 5. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | 6. Build | *"Start sprint and implement the first ticket"* |
-| 7. Sprint done | *"Sprint review"* → *"Approve review"* · feedback via *"I want …"* (not blind tickets) |
+| 7. Sprint done | *"Sprint review"* → *"Approve review"* → reuse → retro → `./studio infusion` → next sprint |
 | 8. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | Drift | *"Resume my-project — back on track"* |
 
@@ -71,7 +73,7 @@ More examples: [GETTING_STARTED — from PRD to sprint](.quinsy-studio/GETTING_S
 
 ## Using in Cursor
 
-Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `focus` → `resume`. You approve gates; the agent runs `./studio` and fills artifacts. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
+Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `./studio verify-abstraction` → `focus` → `resume`. You approve gates; the agent runs `./studio` and fills artifacts. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
 
 ## Library-first (UI + code)
 
@@ -92,6 +94,8 @@ After a ticket is done, promote generic changes:
 Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/studio-library/library_registry.md)
 
 **Team 10 aesthetic presets:** [`.quinsy-studio/knowledge-base/aesthetic-presets/README.md`](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) — required in UI design specs (stripe-like, apple-like, soft-ui, …).
+
+**Design discipline (placement before layout):** UI specs require **§2 Context & placement** before polish. See [contextual-ia-playbook](.quinsy-studio/knowledge-base/contextual-ia-playbook.md) · [design-spec-template](.quinsy-studio/knowledge-base/design-spec-template.md) · `./studio approve-design` (warns if missing).
 
 **Studio skill extensions:** [`.quinsy-studio/knowledge-base/skill-extensions/README.md`](.quinsy-studio/knowledge-base/skill-extensions/README.md) — deep playbooks for compliance, PLG, delight UX, security audits (extend CL/GM/UX/PE skills, no new ticket IDs).
 
@@ -120,8 +124,7 @@ quinsy-studio/
 │   ├── studio-templates/
 │   ├── knowledge-base/
 │   └── backlog/              # LO-* studio improvements only
-├── intake/                   # Raw PRDs (gitignored); amendment *.example.md committed
-│   └── amendments/<p>/       # Human briefs local; amendment_*.example.md in git
+├── intake/                   # Raw PRDs + amendment briefs (gitignored)
 ├── projects/                 # Client projects (gitignored, own .git each)
 └── studio                    # CLI entrypoint
 ```
@@ -139,6 +142,9 @@ quinsy-studio/
 | Lifecycle | [process/lifecycle.md](.quinsy-studio/process/lifecycle.md) |
 | Milestone planning | [process/milestone-planning.md](.quinsy-studio/process/milestone-planning.md) |
 | Amendment intake | [process/amendment-intake.md](.quinsy-studio/process/amendment-intake.md) |
+| Studio abstraction (no client names in HQ) | [process/studio-abstraction.md](.quinsy-studio/process/studio-abstraction.md) |
+| Learning loop + infusion gate | [process/learning-loop.md](.quinsy-studio/process/learning-loop.md) |
+| Contextual IA (feature placement) | [knowledge-base/contextual-ia-playbook.md](.quinsy-studio/knowledge-base/contextual-ia-playbook.md) |
 | Product backlog | [process/backlog-model.md](.quinsy-studio/process/backlog-model.md) |
 | Human gates 0–2 | [process/gates.md](.quinsy-studio/process/gates.md) |
 | Ticket workflow (9 steps) | [process/ticket-workflow.md](.quinsy-studio/process/ticket-workflow.md) |
@@ -156,14 +162,18 @@ quinsy-studio/
 4. **Sprint HITL** — scope approval → review → feedback → clarify → ticket (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
 5. **Milestones** — roadmap after gate 2; milestone review before next version backlog
 6. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
-7. **Two git worlds** — never commit `projects/` to this repo
-8. **Anti-slop + ADRs + HITL** — see process docs
+7. **Placement before layout** — Team 10 §2 Context & placement in design specs; `ia-feature-placement` for cross-surface moves
+8. **Studio infusion** — close LO-* tickets before next project sprint (`./studio infusion`)
+9. **Two git worlds** — never commit `projects/` to this repo; studio HQ stays project-agnostic (`./studio verify-abstraction`)
+10. **Anti-slop + ADRs + HITL** — see process docs
 
 ## CLI overview
 
 ```bash
 ./studio --help
 ./studio install                  # after git clone
+./studio verify-abstraction
+./studio infusion                 # LO gate — must pass before project sprint
 ./studio library list
 ./studio bootstrap <project>
 ./studio review <project>
@@ -180,5 +190,5 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-**Version:** 1.11.0  
+**Version:** 1.12.0  
 **Date:** 2026-08-25

@@ -250,6 +250,17 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
         return "in_scope", f"Matches ticket {best[0]}: {best[1]}"
 
     if hg.get("2", {}).get("status") == "approved":
+        placement_signals = {
+            "share", "dialog", "menu", "presentation", "builder", "surface",
+            "placement", "workflow", "move", "wrong", "dumping", "layout", "redesign",
+        }
+        if len(req_tokens & placement_signals) >= 2 and req_tokens & impl_signals:
+            return "needs_ticket", (
+                "Multi-surface UI work detected. Create a ticket with "
+                "ticket_type ia-feature-placement or ui-composition and require "
+                "§2 Context & placement in the design spec "
+                "(knowledge-base/contextual-ia-playbook.md) before implement."
+            )
         return "needs_ticket", (
             "No matching sprint/backlog ticket. For sprint-review ideas use: "
             f'./studio feedback {project} "<idea>" → ./studio clarify → ticket --from-feedback. '
@@ -294,5 +305,79 @@ def verify_worlds() -> Tuple[bool, List[str]]:
                 )
                 if nested.stdout.strip():
                     issues.append(f"Studio index still tracks projects/{child.name}/")
+
+    return len(issues) == 0, issues
+
+
+# Paths where project names are allowed (learning provenance, retros, manifest)
+_ABSTRACTION_ALLOWLIST_PREFIXES = (
+    "backlog/",
+    "retros/",
+    "studio-library/manifest.json",
+    "process/studio-abstraction.md",
+    "studio-tools/studio_context.py",
+)
+
+_ABSTRACTION_SCAN_ROOTS = (
+    "process",
+    "knowledge-base",
+    "studio-tools",
+    "studio-templates",
+    "teams",
+    "GETTING_STARTED.md",
+    "README.md",
+)
+
+_ABSTRACTION_PATTERNS = (
+    (re.compile(r"\bmoody\b", re.IGNORECASE), "project name 'moody'"),
+    (re.compile(r"\bMOOD-\d+\b"), "project ticket id MOOD-*"),
+    (re.compile(r"intake/amendments/moody"), "moody-specific intake path"),
+)
+
+
+def verify_studio_abstraction() -> Tuple[bool, List[str]]:
+    """Flag project-specific references in studio HQ docs/tools/templates."""
+    issues: List[str] = []
+    studio_dir = QUINSY_STUDIO
+
+    def _scan_file(path: Path) -> None:
+        rel = path.relative_to(studio_dir).as_posix()
+        if any(rel.startswith(prefix) for prefix in _ABSTRACTION_ALLOWLIST_PREFIXES):
+            return
+        if rel.endswith(".pyc") or "/__pycache__/" in rel:
+            return
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            return
+        for line_no, line in enumerate(text.splitlines(), 1):
+            for pattern, label in _ABSTRACTION_PATTERNS:
+                if pattern.search(line):
+                    issues.append(f"{rel}:{line_no}: {label}")
+                    break
+
+    for root_name in _ABSTRACTION_SCAN_ROOTS:
+        target = studio_dir / root_name
+        if target.is_file():
+            _scan_file(target)
+        elif target.is_dir():
+            for path in target.rglob("*"):
+                if path.is_file() and path.suffix in {
+                    ".md",
+                    ".py",
+                    ".json",
+                    ".mdc",
+                    ".ts",
+                    ".tsx",
+                }:
+                    _scan_file(path)
+
+    tmp_dir = studio_dir / "tmp"
+    if tmp_dir.is_dir():
+        for path in tmp_dir.iterdir():
+            if path.is_file():
+                issues.append(
+                    f"tmp/{path.name}: project-specific script in studio HQ — remove or move to project"
+                )
 
     return len(issues) == 0, issues

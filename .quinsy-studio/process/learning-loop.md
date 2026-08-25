@@ -74,8 +74,35 @@ Shows all open learning items.
 ## Meta-retrospective
 
 ```bash
-./studio retro <project>
+./studio retro <project>              # scaffold project retro (status: pending)
+./studio retro <project> --complete   # validate filled retro → status: done
+./studio infusion                     # verify open LO-* tickets before next project sprint
 ```
+
+### Studio Infusion Gate (mandatory)
+
+Project sprint planning (`./studio sprint <project>`) is **blocked** while open **LO-*** tickets exist in `.quinsy-studio/backlog/open/`.
+
+```
+Project sprint review
+    → ./studio learn (capture signals)
+    → ./studio retro --complete (filled retro)
+    → Implement LO-* in studio HQ (process / skills / tools / library)
+    → ./studio infusion (gate clear)
+    → ./studio sprint <project> (next project sprint)
+```
+
+**Infusion targets** (generalize — never copy client project names into studio docs):
+
+| Signal | Infuse into |
+|--------|-------------|
+| `design-gap` | knowledge-base/, teams/10/skills/, design-spec-template |
+| `process-gap` | process/, human-in-the-loop.md |
+| `tooling-gap` | studio-tools/, CLI |
+| `knowledge-gap` | playbooks, skill-registry |
+| `library-gap` | studio-library/ + promote from project |
+
+See [studio-abstraction.md](studio-abstraction.md) — learnings cite `--source <project>`; fixes use `<project>` placeholders.
 
 ### Flow
 
@@ -83,6 +110,7 @@ Shows all open learning items.
    - Open LOs from `./studio learn-list`
    - Feedback from sprint retros
    - Gate error analysis
+   - **Route signals:** `design-gap` / `process-gap` / `tooling-gap` from project retros → open or update LO ticket before next project sprint
 
 2. **Skill review**
    - Every team skill is reviewed

@@ -112,6 +112,7 @@ Human drafts: `intake/skills/` (gitignored) → promote to `knowledge-base/skill
 | User flow, jobs-to-be-done, platform UX | Product Design | UX-001 |
 | Interaction, microcopy, form UX, modal states | UX Design | UX-002 |
 | Navigation, IA, wayfinding, nav structure | Information Architecture | UX-003 |
+| Feature placement, wrong surface, capability home | Information Architecture | UX-003 (+ UX-002 workflow) |
 | Persona, usability, mental model, research | UX Research | UX-004 |
 | Typography, color, layout, visual hierarchy | Visual UI Design | UX-005 |
 | Brand, voice, tone, consistency | Brand Guardian | UX-006 |

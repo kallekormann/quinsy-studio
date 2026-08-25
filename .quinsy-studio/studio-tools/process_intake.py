@@ -167,6 +167,11 @@ def map_heading_to_section(heading: str) -> Optional[str]:
         "functional": "requirements_functional",
         "features": "requirements_functional",
         "non-functional": "requirements_non_functional",
+        "non functional": "requirements_non_functional",
+        "non functional requirements": "requirements_non_functional",
+        "non-functional requirements": "requirements_non_functional",
+        "nfr": "requirements_non_functional",
+        "nfrs": "requirements_non_functional",
         "performance": "requirements_non_functional",
         "monetization": "monetization",
         "pricing": "monetization",
@@ -195,8 +200,16 @@ def map_heading_to_section(heading: str) -> Optional[str]:
     }
 
     for key in sorted(mappings.keys(), key=len, reverse=True):
+        if key == "functional":
+            # Avoid matching "functional" inside "non-functional" / "non functional"
+            if re.search(r"\bnon[\s-]?functional\b", h):
+                continue
         if key in h:
             return mappings[key]
+
+    # Explicit NFR phrases
+    if re.search(r"\b(nfr|non[\s-]?functional)\b", h):
+        return "requirements_non_functional"
 
     return None
 
