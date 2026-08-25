@@ -206,6 +206,7 @@ After gate 2:
 4. During sprints, only pull tickets for the **current milestone**.
 5. When milestone tickets are all `done`, surface **milestone review pending** — do not start next milestone tickets without human approval.
 6. Log scope changes in `docs/phases/revisions.md` or the active milestone doc.
+7. **Post-launch direction** that is conceptual (not sprint-sized): use [amendment intake](amendment-intake.md) — not `./studio feedback` alone.
 
 ---
 
@@ -215,3 +216,4 @@ After gate 2:
 - [backlog-model.md](backlog-model.md) — product backlog + sprint flow
 - [human-in-the-loop.md](human-in-the-loop.md) — sprint + milestone HITL
 - [iterative-delivery.md](iterative-delivery.md) — sprint cycle within a milestone
+- [amendment-intake.md](amendment-intake.md) — conceptual direction → milestones + tickets

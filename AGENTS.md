@@ -91,6 +91,20 @@ After `--milestones`, agent writes tickets for the active milestone only, then s
 
 See [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md#sprint-cadence-hitl-after-gate-2).
 
+## Amendment intake (strategic direction, post gate 2)
+
+**Sprint feedback** = small, concrete ideas. **Amendments** = conceptual direction → milestone + ticket breakdown.
+
+```bash
+# Human drops brief: intake/amendments/<project>/amendment_01.md
+./studio amend <project> intake/amendments/<project>/amendment_01.md
+./studio amendments <project>
+./studio approve <project> --amendment AM-001
+./studio approve <project> --milestones   # if roadmap changed
+```
+
+Agent produces `projects/<p>/docs/amendments/AM-NNN-*/` (vision, requirements, UX/FE/BE arch, milestone roadmap, ticket drafts). No implementation until approved. See [amendment-intake.md](.quinsy-studio/process/amendment-intake.md).
+
 ## Reference
 
 - [GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md)

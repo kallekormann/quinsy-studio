@@ -9,7 +9,11 @@
 # Projekte (projects/) und rohe Intake-Ideen (intake/) sind lokale Arbeit und
 # gehören NICHT in den Studio-Repository. Projekt-Code hat sein eigenes Repo.
 projects/
-intake/
+# Raw intake PRDs stay local; amendment *.example.md files are committed
+intake/*
+!intake/amendments/
+!intake/amendments/**/
+!intake/amendments/**/amendment_*.example.md
 
 # Externe Skills: geklonte Repos (65MB+, regenerierbar via `./studio update-skills`)
 # Nur die skill-dependencies.json ist die Source of Truth.

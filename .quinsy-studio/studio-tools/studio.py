@@ -54,6 +54,13 @@ Commands:
   ./studio move <project> <id> <status>          Move ticket
   ./studio groom <project> [--approve]              Validate sprint backlog + grooming
 
+  # Amendment intake (post gate 2)
+  ./studio amend <project> <brief-file>          Scaffold AM-NNN analysis folder
+  ./studio amendments <project>                  List amendments + status
+  ./studio approve <project> --amendment AM-001  Human sign-off on amendment
+  ./studio approve <project> --milestones        Approve revised milestone roadmap
+  ./studio approve <project> --prd-amendment AM-001  PRD tier change (class C)
+
   # Phase 4: Implementation
   ./studio gate <project> [--level N]            Run QA gate
 
@@ -174,6 +181,17 @@ from sprint_hitl import (
     RETRO_DONE,
     REVIEW_APPROVED,
     sprint_ticket_summary,
+)
+from amendment_intake import (
+    amendment_path_for_cli,
+    approve_amendment,
+    approve_milestones,
+    format_amendments_list,
+    gate2_approved,
+    pending_amendments,
+    resolve_amendment_file,
+    resume_amendment_actions,
+    scaffold_amendment,
 )
 
 # =============================================================================
@@ -500,6 +518,7 @@ class StudioOrchestrator:
         print(f"  Ticket:        {status.get('active_ticket') or '-'}")
 
         actions: List[str] = []
+        actions.extend(resume_amendment_actions(project))
         reuse_msg = reuse_gate_message(project, status)
         if reuse_msg:
             actions.append("⏸ Mandatory reuse review before retro / next sprint scope")
@@ -1086,6 +1105,87 @@ class StudioOrchestrator:
 
         print(f"  ⚠️  Unknown gate: {gate} (use 0, 1, or 2)")
         return False
+
+    def cmd_approve_amendment(self, project: str, am_id: str, prd_tier: bool = False) -> bool:
+        """Human sign-off on a analyzed amendment."""
+        print_header(f"AMENDMENT APPROVAL — {project} ({am_id})")
+        ok, msg = approve_amendment(project, am_id.upper(), prd_tier=prd_tier)
+        print(f"\n  {msg}")
+        if ok:
+            status = load_status(project)
+            if "amendments" not in status:
+                status["amendments"] = {}
+            status["amendments"]["last_approved"] = am_id.upper()
+            status["amendments"]["last_approved_at"] = datetime.now().isoformat()
+            save_status(project, status)
+        return ok
+
+    def cmd_approve_milestones(self, project: str) -> bool:
+        """Approve milestone roadmap (initial or post-amendment revision)."""
+        print_header(f"MILESTONE ROADMAP APPROVAL — {project}")
+        ok, msg = approve_milestones(project)
+        print(f"\n  {msg}")
+        if ok:
+            status = load_status(project)
+            status.setdefault("human_gates", {})
+            status["human_gates"]["milestones"] = {
+                "status": "approved",
+                "date": datetime.now().isoformat(),
+            }
+            save_status(project, status)
+        return ok
+
+    def cmd_amend(self, project: str, input_file: str, force: bool = False) -> bool:
+        """Scaffold amendment analysis artifacts from intake brief."""
+        project_dir = PROJECTS_DIR / project
+        if not project_dir.exists():
+            print(f"\n  ❌ Project '{project}' not found.")
+            return False
+
+        status = load_status(project)
+        if not gate2_approved(status):
+            print(f"\n  ⚠️  Gate 2 (design) must be approved before amendment intake.")
+            print(f"     Current phase: {status.get('phase')} gate: {status.get('gate')}")
+            return False
+
+        source = resolve_amendment_file(project, input_file)
+        if not source:
+            print(f"\n  ❌ Amendment brief not found: {input_file}")
+            print(f"     Drop at intake/amendments/{project}/amendment_NN.md")
+            return False
+
+        print_header(f"AMENDMENT INTAKE — {project}")
+        print(f"  Source: {amendment_path_for_cli(source)}")
+
+        ok, result, meta = scaffold_amendment(project, source, force=force)
+        if not ok:
+            print(f"\n  ❌ {result}")
+            return False
+
+        rel = (PROJECTS_DIR / project / "docs" / "amendments" / result).relative_to(
+            PROJECTS_DIR / project
+        )
+        print(f"\n  ✅ {meta['id']} scaffolded → {rel}")
+        if meta.get("warnings"):
+            print("\n  Warnings:")
+            for w in meta["warnings"]:
+                print(f"    • {w}")
+        print(f"\n  Teams checked: {len(meta.get('teams_checked', []))}")
+        print(f"  Skills checked: {len(meta.get('skills_checked', []))}")
+        print(f"\n  AI: fill artifacts in docs/amendments/{result}/ (see AGENT.md)")
+        print(f"  Human: review → ./studio approve {project} --amendment {meta['id']}")
+        if meta.get("id"):
+            print(f"  If roadmap changes: ./studio approve {project} --milestones")
+        return True
+
+    def cmd_amendments(self, project: str) -> bool:
+        """List amendment registry for a project."""
+        print_header(f"AMENDMENTS — {project}")
+        print(f"\n{format_amendments_list(project)}")
+        pending = pending_amendments(project)
+        if pending:
+            print(f"\n  ⏸ {len(pending)} pending — complete analysis + human approve before next milestone")
+        return True
     
     # -------------------------------------------------------------------------
     # PHASE 3: SPRINT MANAGEMENT
@@ -2532,6 +2632,13 @@ Commands:
   ./studio move <project> <id> <status>          Move ticket
   ./studio groom <project> [--approve]              Validate sprint backlog + grooming
 
+  # Amendment intake (post gate 2)
+  ./studio amend <project> <brief-file>          Scaffold AM-NNN analysis folder
+  ./studio amendments <project>                  List amendments + status
+  ./studio approve <project> --amendment AM-001  Human sign-off on amendment
+  ./studio approve <project> --milestones        Approve revised milestone roadmap
+  ./studio approve <project> --prd-amendment AM-001  PRD tier change (class C)
+
   # Phase 4-5: QA
   ./studio gate <project> [--level N]            Run QA gate
 
@@ -2676,11 +2783,35 @@ def main():
     
     elif command == "approve" and len(args) >= 1:
         project = args[0]
-        gate = 1
+        amendment_id = ""
+        prd_amendment = False
+        milestones = False
+        gate = None
         for i, arg in enumerate(args):
             if arg == "--gate" and i + 1 < len(args):
                 gate = int(args[i + 1])
-        orchestrator.cmd_approve(project, gate)
+            elif arg == "--amendment" and i + 1 < len(args):
+                amendment_id = args[i + 1]
+            elif arg == "--prd-amendment" and i + 1 < len(args):
+                amendment_id = args[i + 1]
+                prd_amendment = True
+            elif arg == "--milestones":
+                milestones = True
+        if amendment_id:
+            orchestrator.cmd_approve_amendment(project, amendment_id, prd_tier=prd_amendment)
+        elif milestones:
+            orchestrator.cmd_approve_milestones(project)
+        elif gate is not None:
+            orchestrator.cmd_approve(project, gate)
+        else:
+            print("  ⚠️  Use --gate 0|1|2, --amendment AM-NNN, --prd-amendment AM-NNN, or --milestones")
+    
+    elif command == "amend" and len(args) >= 2:
+        force = "--force" in args
+        orchestrator.cmd_amend(args[0], args[1], force=force)
+
+    elif command == "amendments" and len(args) >= 1:
+        orchestrator.cmd_amendments(args[0])
     
     elif command == "sprint" and len(args) >= 1:
         approve_scope = "--approve-scope" in args
