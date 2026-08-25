@@ -120,3 +120,20 @@ Tools:
 
 - `.quinsy-studio/knowledge-base/frontend_playbook.md` — Content guidelines
 - `.quinsy-studio/process/lifecycle.md` — Phases
+
+---
+
+## Studio skill extensions
+
+**Product-led growth (share loops, activation, usage paywalls):**  
+[knowledge-base/skill-extensions/product-led-growth.md](../../../knowledge-base/skill-extensions/product-led-growth.md)
+
+**Email templates (transactional + newsletter, Outlook-safe HTML):**  
+[knowledge-base/skill-extensions/email-design.md](../../../knowledge-base/skill-extensions/email-design.md)
+
+**Adds to GM-003:**
+- Watermark / brand CTA on shared exports and public links
+- Defer profiling until after aha-moment; background onboarding tasks
+- Contextual upgrade banners at 80%/90% usage thresholds
+- PQL event instrumentation (activation milestones → analytics payload)
+- Inverted-pyramid email layout, bulletproof CTAs, preheader pairing

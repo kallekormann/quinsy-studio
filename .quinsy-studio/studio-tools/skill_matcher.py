@@ -44,13 +44,15 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
         "integration", "webhook", "stripe", "sendgrid", "payment"
     ]},
     "CL-001": {"name": "GDPR Compliance", "triggers": [
-        "gdpr", "dsgvo", "data protection", "privacy", "datenschutz"
+        "gdpr", "dsgvo", "data protection", "privacy", "datenschutz",
+        "ccpa", "click-wrap", "consent log", "right to be forgotten"
     ]},
     "CL-002": {"name": "Cookie Banner", "triggers": [
         "cookie", "consent", "banner", "tracking"
     ]},
     "CL-003": {"name": "Imprint & ToS", "triggers": [
-        "imprint", "terms of service", "tos", "withdrawal", "impressum", "agb", "widerruf"
+        "imprint", "terms of service", "tos", "withdrawal", "impressum", "agb", "widerruf",
+        "eula", "subscription agreement"
     ]},
     "CL-004": {"name": "Zero-Data Architecture", "triggers": [
         "zero-data", "data minimization", "deletion concept", "dpa", "datenminimierung"
@@ -68,13 +70,15 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
         "feasibility", "risk", "scope"
     ]},
     "GM-001": {"name": "SEO Optimization", "triggers": [
-        "seo", "visibility", "ranking", "google", "schema.org", "sichtbarkeit"
+        "seo", "visibility", "ranking", "google", "schema.org", "sichtbarkeit",
+        "affiliate", "sponsored", "nofollow"
     ]},
     "GM-002": {"name": "AEO", "triggers": [
         "aeo", "ai search", "chatgpt", "perplexity", "comparison", "vergleich"
     ]},
     "GM-003": {"name": "Content Strategy", "triggers": [
-        "content", "blog", "social", "newsletter", "tone of voice", "copy"
+        "content", "blog", "social", "newsletter", "tone of voice", "copy",
+        "plg", "product-led", "viral loop", "referral", "watermark", "activation", "onboarding funnel"
     ]},
     "GM-004": {"name": "Game Development", "triggers": [
         "game", "godot", "unity", "unreal", "platformer", "phaser", "three.js", "pygame", "spiel"
@@ -104,7 +108,7 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
         "ci/cd", "pipeline", "github actions", "build"
     ]},
     "PE-003": {"name": "Security Audit", "triggers": [
-        "security", "owasp", "penetration", "vulnerability"
+        "security", "owasp", "penetration", "vulnerability", "xss", "csrf", "bola", "idor", "ssrf"
     ]},
     "PE-004": {"name": "Monitoring & Observability", "triggers": [
         "monitoring", "alerting", "uptime", "sentry"
@@ -127,7 +131,8 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
     ]},
     "UX-002": {"name": "UX Design", "triggers": [
         "interaction", "microcopy", "error state", "ux design", "form flow", "wireframe",
-        "modal", "dialog", "dropdown", "settings panel", "new component", "menu"
+        "modal", "dialog", "dropdown", "settings panel", "new component", "menu",
+        "micro-interaction", "delight", "empty state", "loading state", "milestone", "confetti"
     ]},
     "UX-003": {"name": "Information Architecture", "triggers": [
         "information architecture", "navigation", "nav structure", "wayfinding", "ia ", "labeling"
@@ -173,7 +178,7 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
         "design_awesome/skills/<style>",
     ],
     "UX-001": ["design-agent/ux-design-process", "design-agent/ux-desktop-app", "design-agent/ux-web-app", "design-agent/ux-knowledge-work"],
-    "UX-002": ["design-agent/ux-interaction-patterns", "design-agent/ux-form-design"],
+    "UX-002": ["design-agent/ux-interaction-patterns", "design-agent/ux-form-design", "knowledge-base/skill-extensions/delight-micro-interactions.md"],
     "UX-003": ["design-agent/ux-information-architecture"],
     "UX-004": ["design-agent/ux-mental-models", "design-agent/ux-design-process"],
     "UX-005": [
@@ -183,7 +188,7 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
         "design-agent/taste-skill",
     ],
     "UX-006": ["design-agent/brandkit", "design-agent/design-brand-guardian"],
-    "UX-007": ["design-agent/design-visual-storyteller", "marketing_aeo/skills/copywriting"],
+    "UX-007": ["design-agent/design-visual-storyteller", "marketing_aeo/skills/copywriting", "knowledge-base/skill-extensions/email-design.md"],
     "BE-001": [
         "all_domains/api-and-integration/api-design",
         "all_domains/api-and-integration/oauth-2-0-setup",
@@ -196,14 +201,20 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
     "CL-001": [
         "all_domains/legal-and-compliance/compliance-checklist-generation",
         "all_domains/legal-and-compliance/privacy-policy-drafting",
+        "knowledge-base/skill-extensions/privacy-legal-compliance.md",
     ],
-    "CL-002": ["compliance_cookies/skills/cookiecomply"],
+    "CL-002": [
+        "compliance_cookies/skills/cookiecomply",
+        "knowledge-base/skill-extensions/cookie-compliance.md",
+    ],
+    "CL-003": ["knowledge-base/skill-extensions/tos-architect.md"],
     "GM-001": [
         "marketing_aeo/skills/seo-audit",
         "marketing_aeo/skills/schema",
         "marketing_aeo/skills/programmatic-seo",
         "marketing_aeo/skills/site-architecture",
         "marketing_aeo/skills/customer-research",
+        "knowledge-base/skill-extensions/affiliate-compliance.md",
     ],
     "GM-002": [
         "marketing_aeo/skills/ai-seo",
@@ -217,6 +228,8 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
         "marketing_aeo/skills/product-marketing",
         "marketing_aeo/skills/customer-research",
         "marketing_aeo/skills/emails",
+        "knowledge-base/skill-extensions/product-led-growth.md",
+        "knowledge-base/skill-extensions/email-design.md",
     ],
     "GM-004": ["gamedev/router/SKILL.md (gamedev Router: Engine + Task)"],
     "PE-001": [
@@ -227,7 +240,10 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
         "all_domains/security/security-audit",
         "all_domains/security/threat-modeling",
         "all_domains/security/dependency-scanning",
+        "knowledge-base/skill-extensions/frontend-security-auditor.md",
+        "knowledge-base/skill-extensions/backend-security-auditor.md",
     ],
+    "PS-001": ["knowledge-base/skill-extensions/product-led-growth.md"],
     "PM-002": ["all_domains/productivity-and-workflow/project-management"],
 }
 

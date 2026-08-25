@@ -21,6 +21,8 @@
 | CL-003 | Imprint & ToS | Legal & Privacy Officer | `skills/impressum-agb.md` |
 | CL-004 | Zero-Data Architecture | Legal & Privacy Officer | `skills/zero-data-architecture.md` |
 
+**Studio skill extensions (deep audits):** [knowledge-base/skill-extensions/README.md](../../knowledge-base/skill-extensions/README.md) — privacy, cookies, ToS, full compliance orchestrator.
+
 ---
 
 ## Phase participation

@@ -131,3 +131,16 @@ Later (6-12 months):
 
 - `.quinsy-studio/process/project-archetypes.md` — archetypes
 - `.quinsy-studio/teams/05-growth-marketing-content/` — growth team
+
+---
+
+## Studio skill extension (PLG)
+
+**Load when strategy touches self-serve distribution, activation, or usage monetization:**  
+[knowledge-base/skill-extensions/product-led-growth.md](../../../knowledge-base/skill-extensions/product-led-growth.md)
+
+**Adds to PS-001:**
+- Inherent loop (watermarked exports / shared surfaces)
+- Collaborative loop (invite-before-pay seat expansion)
+- Monetization loop (contextual usage thresholds, not hard errors)
+- Time-to-value: defer profiling until after aha-moment

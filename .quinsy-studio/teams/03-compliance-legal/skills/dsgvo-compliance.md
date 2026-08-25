@@ -150,3 +150,19 @@ Priority: EU servers! Third country only for compelling reasons.
 - `.quinsy-studio/knowledge-base/compliance_playbook.md` — compliance rules
 - `.quinsy-studio/process/gates.md` — GDPR in gate 5
 - `./studio gate <project> --gdpr` — GDPR check
+
+---
+
+## Studio skill extension
+
+**Load for codebase audits and global privacy (GDPR, CCPA/CPRA, FTC, EU AI Act):**  
+[knowledge-base/skill-extensions/privacy-legal-compliance.md](../../../knowledge-base/skill-extensions/privacy-legal-compliance.md)
+
+**Adds to CL-001:**
+- Click-wrap / explicit assent on signup and checkout (no browse-wrap)
+- Consent audit fields on user schema (`tos_accepted_at`, version strings, hashed IP)
+- Right-to-erasure cascade checks on delete endpoints
+- Third-party exfiltration scan (`fetch`/`axios` to analytics without consent)
+- Footer disclosure requirements (Privacy, ToS, Do Not Sell)
+
+**Full multi-topic audit:** use [compliance-orchestrator.md](../../../knowledge-base/skill-extensions/compliance-orchestrator.md) (routes to CL-001/002/003 — not a separate skill ID).

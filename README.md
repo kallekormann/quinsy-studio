@@ -93,6 +93,8 @@ Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/s
 
 **Team 10 aesthetic presets:** [`.quinsy-studio/knowledge-base/aesthetic-presets/README.md`](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) — required in UI design specs (stripe-like, apple-like, soft-ui, …).
 
+**Studio skill extensions:** [`.quinsy-studio/knowledge-base/skill-extensions/README.md`](.quinsy-studio/knowledge-base/skill-extensions/README.md) — deep playbooks for compliance, PLG, delight UX, security audits (extend CL/GM/UX/PE skills, no new ticket IDs).
+
 ## Context & scope (agent)
 
 ```bash
@@ -142,6 +144,7 @@ quinsy-studio/
 | Ticket workflow (9 steps) | [process/ticket-workflow.md](.quinsy-studio/process/ticket-workflow.md) |
 | Studio library | [studio-library/library_registry.md](.quinsy-studio/studio-library/library_registry.md) |
 | Aesthetic presets (Team 10) | [knowledge-base/aesthetic-presets/README.md](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) |
+| Skill extensions (deep playbooks) | [knowledge-base/skill-extensions/README.md](.quinsy-studio/knowledge-base/skill-extensions/README.md) |
 | Agent context | [process/agent-context.md](.quinsy-studio/process/agent-context.md) |
 | Git separation | [process/worlds.md](.quinsy-studio/process/worlds.md) |
 
@@ -177,5 +180,5 @@ See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-**Version:** 1.10.0  
+**Version:** 1.11.0  
 **Date:** 2026-08-25

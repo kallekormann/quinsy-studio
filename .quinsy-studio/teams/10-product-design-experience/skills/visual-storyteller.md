@@ -8,6 +8,8 @@ lead_role: Visual Storyteller
 
 Marketing pages, workflow explainers, narrative + storyboard. Pairs with GM-003 for copy.
 
+**Studio extension (email):** [email-design.md](../../../knowledge-base/skill-extensions/email-design.md) — transactional/newsletter HTML, preheader, CTA copy.
+
 **Agent:** `agents/design-visual-storyteller.md`
 **Playbook:** `knowledge-base/visual-storytelling-playbook.md`
 

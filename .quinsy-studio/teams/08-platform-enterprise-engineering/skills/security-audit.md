@@ -150,6 +150,22 @@ Findings:
 
 Workflow: Threat modeling (Phase 2) → SAST/DAST in CI (Phase 4) → Security audit (Phase 5).
 
+---
+
+## Studio skill extensions
+
+**Frontend (XSS, CSP, client tokens, CSRF):**  
+[knowledge-base/skill-extensions/frontend-security-auditor.md](../../../knowledge-base/skill-extensions/frontend-security-auditor.md)
+
+**Backend (BOLA, injection, SSRF, mass assignment, rate limits):**  
+[knowledge-base/skill-extensions/backend-security-auditor.md](../../../knowledge-base/skill-extensions/backend-security-auditor.md)
+
+**Adds to PE-003:**
+- Codebase search patterns per layer (FE vs BE)
+- Structured vulnerability report tables with remediation snippets
+- Client-side logic bypass checks (UI-only permission gates)
+- Consent/schema cross-checks when audit spans privacy + security
+
 ## References
 
 - `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend rules

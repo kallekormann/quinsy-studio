@@ -123,3 +123,17 @@ For SaaS:
 
 - `.quinsy-studio/knowledge-base/compliance_playbook.md` — compliance rules
 - `.quinsy-studio/process/gates.md` — legal check in gate 5
+
+---
+
+## Studio skill extension
+
+**Load when drafting or auditing ToS/EULA/subscription terms from the codebase:**  
+[knowledge-base/skill-extensions/tos-architect.md](../../../knowledge-base/skill-extensions/tos-architect.md)
+
+**Adds to CL-003:**
+- Map billing webhooks and tier config → payment/renewal clauses
+- Map `package.json` / sub-processors → SLA and force majeure
+- Map LLM integrations → AI acceptable-use and output IP clauses
+- Map file-upload flows → user content license grant
+- EU consumer law + US disclaimer/limitation templates

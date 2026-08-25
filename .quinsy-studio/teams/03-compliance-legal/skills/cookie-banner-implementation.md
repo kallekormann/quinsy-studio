@@ -137,3 +137,17 @@ Flow: read `cookiecomply` → adopt the categories/consent flows → align with 
 
 - `.quinsy-studio/knowledge-base/compliance_playbook.md` — compliance rules
 - `.quinsy-studio/studio-library/packages/feature-gating/` — feature gating
+
+---
+
+## Studio skill extension
+
+**Load for banner UX, script hydration, and dark-pattern audits:**  
+[knowledge-base/skill-extensions/cookie-compliance.md](../../../knowledge-base/skill-extensions/cookie-compliance.md)
+
+**Adds to CL-002:**
+- Zero-load rule: block GA4/PostHog/Meta until `analytics_allowed`
+- Visual equity: Decline All same prominence as Accept All
+- Async in-memory script injection (no page reload)
+- Consent state read synchronously on layout (no banner flash)
+- Granular toggles with third-party tool labels per category

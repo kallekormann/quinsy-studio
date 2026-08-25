@@ -68,6 +68,28 @@ compare with internal rules → execute.
 
 ---
 
+## Studio skill extensions (committed playbooks)
+
+Deep, codebase-aware extensions live in [knowledge-base/skill-extensions/](../knowledge-base/skill-extensions/README.md).  
+They **do not add new internal IDs** — they extend existing skills:
+
+| Extension | Internal skill(s) | Team |
+|-----------|-------------------|------|
+| delight-micro-interactions | UX-002, FE-001 | 10, 01 |
+| email-design | GM-003, UX-007 | 05, 10 |
+| product-led-growth | GM-003, PS-001 | 05, 04 |
+| affiliate-compliance | GM-001 | 05 |
+| privacy-legal-compliance | CL-001 | 03 |
+| cookie-compliance | CL-002 | 03 |
+| tos-architect | CL-003 | 03 |
+| compliance-orchestrator | CL-001/002/003 (audit index) | 03 |
+| frontend-security-auditor | PE-003 | 08, 01 |
+| backend-security-auditor | PE-003 | 08, 02 |
+
+Human drafts: `intake/skills/` (gitignored) → promote to `knowledge-base/skill-extensions/` after review.
+
+---
+
 ## Skill Assignment by Ticket Content
 
 ### When ticket contains → activate skill

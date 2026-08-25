@@ -609,6 +609,8 @@ See [library_registry.md](studio-library/library_registry.md).
 - `process/adr-policy.md` — ADR rules
 - `process/human-in-the-loop.md` — HITL
 - `teams/skill-registry.md` — Skill index
+- `knowledge-base/aesthetic-presets/` — Team 10 visual direction presets
+- `knowledge-base/skill-extensions/` — Deep playbooks extending CL/GM/UX/PE skills
 - `knowledge-base/anti_ai_slop_protocol.md` — Anti-slop
 - `knowledge-base/external_skills_conflict_matrix.md` — Skill conflicts
 - `CHANGELOG.md` — Version history

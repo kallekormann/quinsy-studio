@@ -26,6 +26,10 @@ Team 10 selects from **17 studio aesthetic presets** when writing design specs:
 
 Every UI design spec must declare **one primary preset** (or `project-brand-only`).
 
+## Studio skill extensions
+
+See [knowledge-base/skill-extensions/README.md](../../knowledge-base/skill-extensions/README.md) — compliance, PLG, delight UX, security (extend existing CL/GM/UX/PE skills).
+
 ## Workflow
 
 1. `./studio ticket` → design-track tickets get `design_status: pending`

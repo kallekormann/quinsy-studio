@@ -151,3 +151,16 @@ Flow: read `seo-audit` → check the pSEO architecture → add schema → apply 
 
 - `.quinsy-studio/knowledge-base/frontend_playbook.md` — core web vitals
 - `.quinsy-studio/knowledge-base/design_playbook.md` — UX for SEO
+
+---
+
+## Studio skill extension (affiliate / commercial links)
+
+**Load for affiliate sites and commercial outbound links:**  
+[knowledge-base/skill-extensions/affiliate-compliance.md](../../../knowledge-base/skill-extensions/affiliate-compliance.md)
+
+**Adds to GM-001:**
+- `rel="noopener noreferrer sponsored"` on commercial outbound links
+- Visible affiliate disclosure above the fold
+- Internal redirect routes use HTTP 302 (not 301)
+- Optional cookieless analytics when avoiding CMP friction

@@ -231,6 +231,20 @@ Requires Node.js 20+. `node_modules/` is not committed.
 
 Every UI design spec must declare one primary preset (or `project-brand-only`). UX-005 loads the preset `SKILL.md` alongside project tokens.
 
+## Studio skill extensions
+
+Deep, codebase-aware playbooks extend internal skills (no new ticket IDs). Catalog: [knowledge-base/skill-extensions/README.md](knowledge-base/skill-extensions/README.md)
+
+| Area | Extends | Examples |
+|------|---------|----------|
+| UX delight | UX-002 | Empty states, micro-interactions, milestone celebration |
+| Growth / PLG | GM-003, PS-001 | Share watermarks, activation funnels, usage paywalls |
+| Email | GM-003, UX-007 | Transactional HTML, Outlook-safe tables, CTA copy |
+| Compliance | CL-001–003 | Privacy audit, cookie CMP, ToS from codebase |
+| Security | PE-003 | Frontend XSS/CSP + backend BOLA/SSRF checklists |
+
+Draft new extensions in `intake/skills/` (local) → promote to `knowledge-base/skill-extensions/` after review.
+
 ## Three human gates (before coding)
 
 | Gate | You approve | CLI |
