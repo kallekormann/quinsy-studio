@@ -139,6 +139,30 @@
       "title": "InlineForm (input + button row)"
     },
     {
+      "name": "dialog-shell",
+      "kind": "ui-molecule",
+      "path": "ui/components/dialog-shell/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-26",
+      "title": "DialogShell (header / body / footer)",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "dropdown",
+      "kind": "ui-molecule",
+      "path": "ui/components/dropdown/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-26",
+      "title": "Dropdown (Listbox select — not native OS)",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
       "name": "checklist-item",
       "kind": "ui-molecule",
       "path": "ui/components/checklist-item/",
@@ -178,12 +202,12 @@
       "name": "auth",
       "kind": "package-auth",
       "path": "packages/auth/",
-      "version": "2.0.1",
+      "version": "2.0.2",
       "source_project": "moody",
-      "promoted": "2026-08-22",
-      "promoted_at": "2026-08-22T16:05:45.500224",
+      "promoted": "2026-08-28",
+      "promoted_at": "2026-08-28T07:56:50.404993",
       "title": "auth (promoted from moody)",
-      "ticket_id": "MOOD-0045"
+      "ticket_id": "MOOD-0321"
     },
     {
       "name": "billing",
@@ -252,10 +276,12 @@
       "name": "canvas-export",
       "kind": "package-canvas-export",
       "path": "packages/canvas-export/",
-      "version": "1.0.0",
+      "version": "1.0.3",
       "source_project": "moody",
-      "promoted": "2026-08-20",
-      "title": "Konva stage PNG/PDF export"
+      "promoted": "2026-08-28",
+      "promoted_at": "2026-08-28T20:16:02.670163",
+      "title": "canvas-export (promoted from moody)",
+      "ticket_id": "MOOD-0357"
     },
     {
       "name": "search-command",
@@ -418,11 +444,101 @@
       "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Dropdown menu (Headless Menu)"
+    },
+    {
+      "name": "segmented-toggle",
+      "kind": "ui-molecule",
+      "path": "ui/components/segmented-toggle/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-26",
+      "title": "SegmentedToggle — labeled A|B exclusive choices",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "tooltip",
+      "kind": "ui-molecule",
+      "path": "ui/components/tooltip/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-31",
+      "title": "Tooltip — position-aware label / compact popover"
+    },
+    {
+      "name": "celebration",
+      "kind": "package",
+      "path": "packages/celebration/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-28",
+      "promoted_at": "2026-08-28T15:35:17.869423",
+      "title": "celebration (promoted from moody)",
+      "ticket_id": "MOOD-0351"
+    },
+    {
+      "name": "emotion-strip",
+      "kind": "ui-molecule",
+      "path": "ui/components/emotion-strip/",
+      "version": "0.1.0"
+    },
+    {
+      "name": "soft-card",
+      "kind": "ui-molecule",
+      "path": "ui/components/soft-card/",
+      "version": "0.1.0"
+    },
+    {
+      "name": "avatar-stack",
+      "kind": "ui-molecule",
+      "path": "ui/components/avatar-stack/",
+      "version": "0.1.0"
+    },
+    {
+      "name": "separator",
+      "kind": "ui-atom",
+      "path": "ui/components/separator/",
+      "version": "0.1.0"
+    },
+    {
+      "name": "progress",
+      "kind": "ui-atom",
+      "path": "ui/components/progress/",
+      "version": "0.1.0"
+    },
+    {
+      "name": "capture-types",
+      "kind": "package",
+      "path": "packages/capture-types/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-08-31",
+      "promoted_at": "2026-08-31T12:18:33.846982",
+      "title": "capture-types (promoted from moody)",
+      "ticket_id": "MOOD-0424"
+    },
+    {
+      "name": "studio-rail",
+      "kind": "ui-molecule",
+      "path": "ui/components/studio-rail/",
+      "version": "0.1.0"
+    },
+    {
+      "name": "design-md-repo",
+      "kind": "package",
+      "path": "packages/design-md-repo/",
+      "version": "1.0.0",
+      "source_project": "moody",
+      "promoted": "2026-09-01",
+      "promoted_at": "2026-09-01T16:04:21.031094",
+      "title": "design-md-repo (promoted from moody)",
+      "ticket_id": "MOOD-0256"
     }
   ],
   "last_promotion": {
     "project": "moody",
-    "at": "2026-08-22T16:05:45.500360"
+    "at": "2026-09-01T16:04:21.031213"
   },
   "schema_version": 2
 }

@@ -1,8 +1,6 @@
 # Search command dialog
 
-CMD-K / palette-style modal. Composes Headless UI **Dialog** + **Combobox** primitives.
-
-Requires `@headlessui/react` in the project.
+CMD-K / palette-style modal. Token-based styling; pair with `packages/item-search`.
 
 ```tsx
 import { SearchCommandDialog } from '@/ui/components/search-command/SearchCommandDialog';

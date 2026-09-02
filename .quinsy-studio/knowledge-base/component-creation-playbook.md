@@ -2,6 +2,16 @@
 
 > New UI in projects starts in **studio-library**, not as one-offs in `projects/<name>/`.
 
+## Reuse ladder (LO-0040)
+
+Before designing or implementing a new control or chrome pattern:
+
+1. **Reuse** — `./studio library suggest` / existing project `ui/` components. Prefer mounting the real composition over copying classes.
+2. **Project component** — if the same interaction appears (or will appear) on multiple surfaces in one product, extract a reusable component in the project first — do not ship parallel one-offs.
+3. **Studio library** — if the pattern is product-agnostic (tokens + props, no brand copy), add or promote under `.quinsy-studio/studio-library/` and register in `manifest.json`.
+
+**Example organism:** right-rail **icon navigation + peer detail panel** (`studio-rail`: `StudioRail` + `StudioPanel` / `StudioDock`). Dense SaaS / canvas tools often need this; treat it as a shared chrome pattern, not page-local markup.
+
 ## When this applies
 
 - Design spec marks an atomic inventory row as **New? yes**
@@ -23,8 +33,8 @@
 |-------|------|-------|
 | Primitive | `ui/primitives/headless/<slug>/` | Thin `@headlessui/react` re-export; unstyled |
 | Atom | `ui/components/<slug>/` kind `ui-atom` | Single-purpose, token-styled |
-| Molecule | `ui/components/<slug>/` kind `ui-molecule` | Composes atoms |
-| Organism | `ui/components/<slug>/` kind `ui-organism` | App chrome sections |
+| Molecule | `ui/components/<slug>/` kind `ui-molecule` | Composes atoms — **Dropdown/Select** belongs here (Listbox/Menu), never native `<select>` on product surfaces. **SegmentedToggle** for labeled A\|B exclusive choices; **Switch** only for boolean on/off. |
+| Organism | `ui/components/<slug>/` kind `ui-organism` | App chrome sections — e.g. **studio-rail** (icon rail + detail panel) |
 
 ## Checklist before promote
 
@@ -39,3 +49,4 @@
 - `atomic-design-playbook.md`
 - `headless-ui-playbook.md`
 - `brand-guardian-checklist.md`
+- `frontend_playbook.md` (docked chrome + reuse ladder)

@@ -40,7 +40,10 @@ export async function sendResendEmail(input: {
 
   if (error) {
     if (isResendSandboxRestriction(error.message)) {
-      console.warn('[email] Resend sandbox restriction — share invite link manually:', error.message);
+      console.warn(
+        '[email] Resend sandbox restriction — share invite link manually:',
+        error.message,
+      );
       return { delivered: false, skipped: true, reason: 'sandbox_restriction' };
     }
     throw new Error(error.message);

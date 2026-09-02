@@ -1,12 +1,12 @@
 /**
- * Studio Library — styled radio group (Headless UI + tokens).
+ * Moody Bloom — styled radio group (Headless UI + tokens).
  */
 'use client';
 
 import type { ReactNode } from 'react';
 import { Radio, RadioGroup } from '../../primitives/headless/radio-group';
 
-export type RadioOption = { value: string; label: ReactNode };
+export type RadioOption = { value: string; label: ReactNode; disabled?: boolean };
 
 export type RadioGroupProps = {
   name: string;
@@ -28,18 +28,20 @@ export function StyledRadioGroup({
   return (
     <fieldset className={className}>
       {label ? (
-        <legend className="mb-2 text-sm font-medium text-neutral-700 dark:text-neutral-200">{label}</legend>
+        <legend className="mb-2 text-sm font-medium text-ink dark:text-ink">{label}</legend>
       ) : null}
       <RadioGroup value={value} onChange={onChange} name={name} className="space-y-2">
         {options.map((option) => (
           <Radio
             key={option.value}
             value={option.value}
-            className="group flex cursor-pointer items-center gap-2 text-sm text-neutral-800 data-[focus]:outline data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-primary-500 dark:text-neutral-100"
+            disabled={option.disabled}
+            className="group flex cursor-pointer items-center gap-2 text-sm text-body data-[disabled]:cursor-not-allowed data-[disabled]:opacity-45 data-[focus]:outline-none"
           >
-            <span className="flex size-4 items-center justify-center rounded-full border border-neutral-400 group-data-[checked]:border-primary-600 dark:border-neutral-500">
-              <span className="size-2 rounded-full bg-primary-600 opacity-0 group-data-[checked]:opacity-100" />
-            </span>
+            <span
+              aria-hidden
+              className="size-4 shrink-0 rounded-full border-[1.5px] border-[color:var(--line-strong)] bg-surface group-focus-visible:border-accent-500 group-data-[checked]:border-accent-500 group-data-[checked]:bg-accent-500 group-data-[checked]:shadow-[inset_0_0_0_3px_var(--surface)]"
+            />
             <span>{option.label}</span>
           </Radio>
         ))}

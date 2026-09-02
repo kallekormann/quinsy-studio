@@ -38,6 +38,14 @@ When building features or refactoring workflows, the agent MUST optimize for the
 *   **Rule:** Never wait for a user to hit an error code to show a pricing table. Surface expansion prompts contextually when usage thresholds near capacity.
 *   **Code Search Pattern:** Scan application states handling limits (e.g., `user.project_count`, `workspace.storage_used`).
 *   **Requirement:** Ensure frontend components render predictive warnings and inline, one-click upgrade actions when the user hits 80% and 90% of their plan limits.
+
+### D. Explicit UX DoD for PLG + paywall tickets (LO-0021)
+When implementing Try/PLG entry or UpgradeModal / export paywalls, acceptance **must** name:
+1. **Landing surface** (exact route or dialog) — latency goals must not skip a required naming/consent screen.
+2. **Blocking vs soft** — “paywall at export” means the UpgradeModal (or equivalent) **opens** at that moment for free tier; a footer link alone fails review.
+3. **What still works free** — e.g. password share stays free while raster branding is monetized.
+
+---
 *   **Code Structure Example:**
     ```typescript
     if (usageRatio >= 0.8 && usageRatio < 1.0) {

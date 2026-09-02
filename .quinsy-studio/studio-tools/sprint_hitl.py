@@ -134,6 +134,110 @@ def sprint_ticket_summary(project: str, sprint: str) -> Dict:
     }
 
 
+_SMOKE_KEYWORDS = re.compile(
+    r"\b(fidelity|qa|motion|delight|palette|responsive|plugin|figma|oauth|cors|"
+    r"watermark|paywall|upgrade|export|presentation|smoke)\b",
+    re.IGNORECASE,
+)
+
+
+def _ticket_review_smoke_steps(project: str, ticket: Dict) -> List[str]:
+    """LO-0023 / LO-0034: numbered smoke steps matching the ticket's real surface."""
+    root = project_dir(project)
+    path = root / ticket["file"]
+    body = path.read_text(encoding="utf-8") if path.exists() else ""
+    explicit = re.search(
+        r"##\s*Review smoke\s*\n(.*?)(?=\n##\s|\Z)",
+        body,
+        re.IGNORECASE | re.DOTALL,
+    )
+    if explicit:
+        steps = [
+            line.strip()[2:].strip() if line.strip().startswith("- ") else line.strip()
+            for line in explicit.group(1).splitlines()
+            if line.strip() and not line.strip().startswith("#")
+        ]
+        return [s for s in steps if s]
+
+    blob = f"{ticket.get('title', '')}\n{body}"
+    if not _SMOKE_KEYWORDS.search(blob):
+        return []
+
+    steps: List[str] = []
+    title_l = (ticket.get("title") or "").lower()
+    # LO-0034: do not treat "Figma Companion later / out of scope" as a plugin ticket.
+    is_figma_plugin = bool(
+        re.search(r"figma-plugin|packages/figma", body, re.I)
+        or re.search(r"\bfigma plugin\b|\bplugin oauth\b|^figma\b", title_l)
+        or (
+            re.search(r"\b(oauth|cors)\b", title_l)
+            and re.search(r"\b(figma|plugin)\b", title_l)
+        )
+    )
+    if is_figma_plugin:
+        steps.extend(
+            [
+                "Load plugin in Figma desktop from packages/figma-plugin (or ticket path).",
+                "Click Login / primary CTA — OAuth opens; no CORS error on plugin-auth.",
+                "Confirm boards (or equivalent) load after login.",
+            ]
+        )
+    if re.search(r"export|paywall|upgrade|watermark|brand kit", title_l) or re.search(
+        r"UpgradeModal|watermark|raster|ExportBoardDialog|Brand kit", body, re.I
+    ):
+        steps.extend(
+            [
+                "Open a board on the live app → Brand kit / Export.",
+                "Confirm the primary kit surface opens (dialog or guide) without a peer Presentation header CTA if demoted.",
+                "Exercise one kit action (Open guide, PDF, or file download).",
+            ]
+        )
+    if re.search(r"\bpresentation\b", title_l) and not re.search(
+        r"brand.?kit|hub|demote|peer", title_l
+    ):
+        steps.extend(
+            [
+                "Open presentation builder or share presentation on the live app.",
+                "Confirm deck chrome / slides render; smoke order or transition if shipped.",
+            ]
+        )
+    if not steps:
+        steps.append(
+            f"Exercise the shipped surface for {ticket['id']} end-to-end on the live app "
+            f"(prefer board / webapp routes over Figma unless this is a plugin ticket)."
+        )
+    # de-dupe preserving order
+    seen = set()
+    out: List[str] = []
+    for s in steps:
+        if s not in seen:
+            seen.add(s)
+            out.append(s)
+    return out
+
+
+def build_per_ticket_smoke_section(project: str, tickets: List[Dict]) -> str:
+    """Markdown section for review.md (LO-0023)."""
+    blocks: List[str] = []
+    for t in tickets:
+        if t.get("status") != "done":
+            continue
+        steps = _ticket_review_smoke_steps(project, t)
+        if not steps:
+            continue
+        lines = "\n".join(f"  {i}. {step}" for i, step in enumerate(steps, 1))
+        blocks.append(f"- **{t['id']}** — {t['title']}\n{lines}")
+    if not blocks:
+        return ""
+    return (
+        "## Per-ticket smoke (human)\n\n"
+        "Numbered steps for QA / motion / plugin / paywall tickets "
+        "(LO-0023). Skip only if the ticket has no user-visible surface.\n\n"
+        + "\n\n".join(blocks)
+        + "\n"
+    )
+
+
 def get_sprint_hitl(status: Dict) -> Dict:
     return status.setdefault("sprint_hitl", {
         "review_status": None,
@@ -374,6 +478,7 @@ def prepare_review(project: str, sprint: str, status: Dict) -> Path:
 """
 
     rate = int(100 * summary["done"] / summary["total"]) if summary["total"] else 0
+    smoke_section = build_per_ticket_smoke_section(project, summary["tickets"])
     content = f"""# Sprint Review — {sprint}
 
 **Project:** {project}
@@ -399,13 +504,16 @@ See [plan.md](plan.md)
 | Completion rate | {rate}% |
 
 ## What to try (human)
-- Run app: `cd projects/{project} && npm run dev` (use the port shown in the terminal)
-- Open **/mocks/today** or **/** on that port — shipped sprint work lives in the project root app
-- Gate-2 design mocks only: `cd projects/{project}/design/prototype && npm run dev` (not for sprint review after implementation)
+- **Live app only (post-implement):** `cd projects/{project} && npm run dev` — use the port printed in the terminal (often 3000/3002). Hard-refresh after a clean `.next` if assets 404.
+- **LO-0026:** Board/page **500** with webpack `reading 'call'` (or all routes 404 while Next says Ready) → kill listeners on that port, `rm -rf .next`, restart `npm run dev`, hard-refresh `127.0.0.1:<port>` before treating as a product bug.
+- Open shipped routes on that port (home / board / feature under review). Do **not** use `design/prototype` for sprint review after implementation — that folder is gate-2 mocks only.
+- If the sprint ships a browser extension: build under `packages/extension` (or project path in the ticket), Load unpacked from **`dist/`**, then reload the tab before Toggle / hotkey. Do not run `npm run build` from `design/prototype`.
+- If the sprint ships a **Figma plugin**: load from `packages/figma-plugin` (or ticket path) in Figma desktop and run Login / boards smoke (LO-0022).
 - Board: `./studio board {project}`
 
-## Human review checklist
+{smoke_section}## Human review checklist
 - [ ] I reviewed all **done** tickets above
+- [ ] I ran **Per-ticket smoke** steps where listed
 - [ ] The project state matches my expectations
 - [ ] I captured new ideas via `./studio feedback {project} "..."` (not direct tickets)
 - [ ] When satisfied: `./studio review {project} --approve`

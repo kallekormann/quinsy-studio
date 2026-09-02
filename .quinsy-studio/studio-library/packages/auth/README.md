@@ -1,6 +1,6 @@
 # Auth package — Supabase + Next.js App Router
 
-> Boilerplate promoted from a client project (see `manifest.json` provenance). Pull into projects and adapt branding + protected routes.
+> Boilerplate from **Moody M2** (MOOD-0004). Pull into projects and adapt branding + protected routes.
 
 ## Pull
 

@@ -12,5 +12,5 @@ import { parseItemTags, normalizeTags } from '@/packages/item-tags';
   tags={parseItemTags(item)}
   onTagsChange={(tags) => updateItemTags(item.id, normalizeTags(tags))}
   footer="More asset fields can slot in here."
-/>
+/>;
 ```

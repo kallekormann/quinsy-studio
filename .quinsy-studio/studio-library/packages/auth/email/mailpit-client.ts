@@ -1,8 +1,4 @@
-import {
-  defaultFromAddress,
-  type EmailDeliveryResult,
-  mailpitInboxUrl,
-} from './email-provider';
+import { defaultFromAddress, type EmailDeliveryResult, mailpitInboxUrl } from './email-provider';
 
 export async function sendMailpitEmail(input: {
   to: string;
@@ -19,7 +15,7 @@ export async function sendMailpitEmail(input: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        From: { Email: fromEmail, Name: 'MoodBoardly' },
+        From: { Email: fromEmail, Name: 'Moody' },
         To: [{ Email: input.to }],
         Subject: input.subject,
         HTML: input.html,
@@ -27,9 +23,7 @@ export async function sendMailpitEmail(input: {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Mailpit unreachable';
-    throw new Error(
-      `${message}. Start Mailpit with ./studio env <project> up (inbox: ${baseUrl}).`,
-    );
+    throw new Error(`${message}. Start Mailpit with ./studio env moody up (inbox: ${baseUrl}).`);
   }
 
   if (!response.ok) {

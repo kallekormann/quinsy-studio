@@ -104,6 +104,8 @@ Project sprint review
 
 See [studio-abstraction.md](studio-abstraction.md) — learnings cite `--source <project>`; fixes use `<project>` placeholders.
 
+**LO titles & proposals (LO-0040):** Write the **general rule** (reuse ladder, pattern name, archetype option). Use the originating sprint only as `--source` / Observation context — not as the ticket title or the primary DoD (“fix surface A to match surface B”).
+
 ### Flow
 
 1. **Collect learning items**

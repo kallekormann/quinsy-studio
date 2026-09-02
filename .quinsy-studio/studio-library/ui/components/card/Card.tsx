@@ -1,7 +1,9 @@
 /**
  * Studio Library — Card atom (surface container).
+ * Bloom soft-card family (MOOD-0413) — neutral elevate, no coral glow.
  */
 import type { ComponentProps, ReactNode } from 'react';
+import { softCardClass, softCardInteractiveClass } from '@ui/components/soft-card';
 
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 
@@ -25,13 +27,10 @@ export function Card({
   className = '',
   ...props
 }: CardProps) {
+  const surface = interactive ? softCardInteractiveClass : softCardClass;
+
   return (
-    <div
-      className={`rounded-xl border border-neutral-200 bg-surface shadow-sm dark:border-neutral-700 dark:bg-surface-dark ${
-        interactive ? 'transition-shadow hover:shadow-md' : ''
-      } ${paddingClass[padding]} ${className}`}
-      {...props}
-    >
+    <div className={`${surface} ${paddingClass[padding]} ${className}`} {...props}>
       {children}
     </div>
   );

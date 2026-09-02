@@ -128,6 +128,9 @@ def analyze_sprint_reuse(project: str, sprint: str, status: Dict) -> Dict:
             continue
         ticket_id = ticket["id"]
         snap = snapshots.get(ticket_id, {})
+        # LO-0036: empty snap = design-only / never implement — skip (else entire packages/)
+        if not snap:
+            continue
         _ok, warnings = check_reuse_before_done(project, ticket_id, snap)
         for path in warnings:
             if path in seen_paths:

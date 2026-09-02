@@ -60,4 +60,4 @@ Design approval promotes base UI to `studio-library/` (tokens, components, stick
 
 ## UI design HITL (post gate 2)
 
-Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`): Team 10 spec → `./studio approve-design <p> <ID>` → Team 01 implement. New components in studio-library first (`component-creation-playbook.md`).
+Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`): Team 10 spec with **in-context mocks** (§2c) → `./studio approve-design <p> <ID>` → Team 01 implement. New components in studio-library first (`component-creation-playbook.md`).

@@ -9,6 +9,18 @@ AI is a tool, not a substitute for judgment.
 Tokens are expensive — use them wisely.
 ```
 
+### Sprint DoD for AI features (LO-0017)
+
+Adapter + API + queue is **not** enough. Same-sprint delivery must include a **user-visible surface** (tags in inspector, status chip, presentation block, etc.) that a human can open at sprint review. Persist results where the product already stores related metadata — do not leave tags only in logs or an in-memory cache.
+
+### Model IDs go stale (LO-0018)
+
+Cloud providers retire model ids (e.g. `gemini-2.0-flash-lite` → `gemini-3.5-flash-lite`). For cost-sensitive vision/tagging:
+
+1. Prefer the **current Flash-Lite / cheapest GA** class documented by the provider — pin it in the project ADR and `.env.example`.
+2. Allow override via env (`GEMINI_VISION_MODEL`, etc.) without hard-coding only in one call site.
+3. Before sprint review on AI tickets: either smoke a **live** generate/tag call with the configured key, or verify the **not-configured** empty state. Do not ship a default that 404s.
+
 ---
 
 ## Token optimization

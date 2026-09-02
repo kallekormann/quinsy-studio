@@ -13,6 +13,11 @@ Owns **what** and **why** for UI/UX. Team 01 (Frontend) implements after design 
 | UX-005 | UI / Visual Designer |
 | UX-006 | Brand Guardian |
 | UX-007 | Visual Storyteller |
+| UX-008 | Anti-Slop Design & UX |
+
+## Anti-slop (mandatory)
+
+All design specs, mocks, and microcopy follow [anti-slop-design-ux.md](../../knowledge-base/anti-slop-design-ux.md). Skill: [skills/anti-slop-design-ux.md](skills/anti-slop-design-ux.md).
 
 ## Aesthetic presets (visual repertoire)
 
@@ -43,6 +48,7 @@ See `agents/` — Brand Guardian, Visual Storyteller, UX Researcher.
 
 ## Playbooks
 
+- `knowledge-base/anti-slop-design-ux.md`
 - `knowledge-base/atomic-design-playbook.md`
 - `knowledge-base/design-science-playbook.md`
 - `knowledge-base/visual-storytelling-playbook.md`

@@ -1,15 +1,12 @@
 /**
- * Studio Library — dropdown menu molecule (Headless UI Menu + tokens).
+ * Moody Bloom — dropdown menu molecule (Headless UI Menu + tokens).
+ * Panel uses shared popover styles (high z-index + opaque surface).
  */
 'use client';
 
 import type { ReactNode } from 'react';
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from '../../primitives/headless/menu';
+import { Menu, MenuButton, MenuItem, MenuItems } from '../../primitives/headless/menu';
+import { popoverPanelClass } from '@ui/styles/popover-styles';
 
 export type DropdownMenuItem = {
   id: string;
@@ -26,15 +23,21 @@ export type DropdownMenuProps = {
   className?: string;
 };
 
-export function DropdownMenu({ trigger, items, align = 'left', className = '' }: DropdownMenuProps) {
+export function DropdownMenu({
+  trigger,
+  items,
+  align = 'left',
+  className = '',
+}: DropdownMenuProps) {
   return (
     <Menu as="div" className={`relative inline-block text-left ${className}`}>
-      <MenuButton className="inline-flex items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+      <MenuButton className="inline-flex items-center rounded-md focus-visible:border-accent-500 focus-visible:outline-none">
         {trigger}
       </MenuButton>
       <MenuItems
+        portal
         anchor={align === 'right' ? 'bottom end' : 'bottom start'}
-        className="z-50 mt-1 min-w-[10rem] rounded-lg border border-neutral-200 bg-surface py-1 shadow-lg focus:outline-none dark:border-neutral-700 dark:bg-surface-dark"
+        className={`${popoverPanelClass} mt-1 min-w-[10rem]`}
       >
         {items.map((item) => (
           <MenuItem key={item.id} disabled={item.disabled}>
@@ -42,8 +45,8 @@ export function DropdownMenu({ trigger, items, align = 'left', className = '' }:
               <button
                 type="button"
                 className={`block w-full px-4 py-2 text-left text-sm ${
-                  item.destructive ? 'text-error-600' : 'text-neutral-800 dark:text-neutral-100'
-                } ${focus ? 'bg-neutral-100 dark:bg-neutral-800' : ''} ${item.disabled ? 'opacity-50' : ''}`}
+                  item.destructive ? 'text-danger' : 'text-ink'
+                } ${focus ? 'bg-[color:var(--accent-wash)] text-[color:var(--accent-strong)]' : ''} ${item.disabled ? 'opacity-40' : ''}`}
                 onClick={item.onSelect}
               >
                 {item.label}

@@ -13,5 +13,7 @@ export * from './email/team-invite-template';
 export * from './email/resend-team-invite';
 export * from './email/board-invite-template';
 export * from './email/resend-board-invite';
+export * from './email/share-opened-template';
+export * from './email/resend-share-opened';
 export * from './email/email-provider';
 export * from './email/send-transactional-email';

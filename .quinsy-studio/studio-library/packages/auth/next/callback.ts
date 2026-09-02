@@ -10,7 +10,7 @@ export interface AuthCallbackOptions {
 /** Use in `app/auth/callback/route.ts` — exchanges magic-link/OAuth code for session. */
 export async function handleAuthCallback(request: Request, options: AuthCallbackOptions = {}) {
   const loginPath = options.loginPath ?? '/login';
-  const defaultNext = options.defaultNext ?? '/settings';
+  const defaultNext = options.defaultNext ?? '/';
 
   if (!readSupabasePublicEnv()) {
     return NextResponse.redirect(new URL(loginPath, request.url));

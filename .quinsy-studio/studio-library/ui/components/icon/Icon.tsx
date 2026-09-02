@@ -1,81 +1,146 @@
 /**
- * Studio Library — generic SVG icons (no emoji).
+ * Moody icons — Lucide wrappers (do not invent custom SVG paths).
+ * Same export names as before so call sites stay stable.
  */
-import type { SVGProps } from 'react';
+'use client';
 
-export type IconProps = SVGProps<SVGSVGElement> & {
+import type { LucideIcon, LucideProps } from 'lucide-react';
+import {
+  Briefcase,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Eye,
+  EyeOff,
+  Frame,
+  GripVertical,
+  Hand,
+  Image,
+  Inbox,
+  Info,
+  Library,
+  Map,
+  Maximize2,
+  MoreHorizontal,
+  MousePointer2,
+  Plus,
+  Presentation,
+  ScanSearch,
+  Search,
+  Settings,
+  Share,
+  Shield,
+  StickyNote,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react';
+
+export type IconProps = {
   size?: number;
+  className?: string;
+  strokeWidth?: number;
+  absoluteStrokeWidth?: boolean;
 };
 
-function iconProps({ size = 16, className = '', ...props }: IconProps) {
-  return {
-    width: size,
-    height: size,
-    viewBox: '0 0 24 24',
-    fill: 'none',
-    xmlns: 'http://www.w3.org/2000/svg',
-    className,
-    'aria-hidden': true as const,
-    ...props,
-  };
-}
-
-export function CheckIcon(props: IconProps) {
-  return (
-    <svg {...iconProps(props)}>
-      <path
-        d="M5 13l4 4L19 7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+function LucideWrap(
+  Icon: LucideIcon,
+  { size = 20, className = '', strokeWidth = 2, ...rest }: IconProps & Omit<LucideProps, 'ref'>,
+) {
+  return <Icon size={size} className={className} strokeWidth={strokeWidth} aria-hidden {...rest} />;
 }
 
 export function PlusIcon(props: IconProps) {
-  return (
-    <svg {...iconProps(props)}>
-      <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
+  return LucideWrap(Plus, props);
 }
-
-export function SparkIcon(props: IconProps) {
-  return (
-    <svg {...iconProps(props)}>
-      <path
-        d="M12 3v3M12 18v3M3 12h3M18 12h3M6.3 6.3l2.1 2.1M15.6 15.6l2.1 2.1M6.3 17.7l2.1-2.1M15.6 8.4l2.1-2.1"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="12" r="2.25" fill="currentColor" />
-    </svg>
-  );
+export function ShareIcon(props: IconProps) {
+  return LucideWrap(Share, props);
 }
-
-export function SearchIcon(props: IconProps) {
-  return (
-    <svg {...iconProps(props)}>
-      <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-      <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
+export function LibraryIcon(props: IconProps) {
+  return LucideWrap(Library, props);
 }
-
+export function FrameIcon(props: IconProps) {
+  return LucideWrap(Frame, props);
+}
+export function GripVerticalIcon(props: IconProps) {
+  return LucideWrap(GripVertical, props);
+}
+export function ImageIcon(props: IconProps) {
+  return LucideWrap(Image, props);
+}
+export function NoteIcon(props: IconProps) {
+  return LucideWrap(StickyNote, props);
+}
+export function SettingsIcon(props: IconProps) {
+  return LucideWrap(Settings, props);
+}
+/** Generic zoom affordance — prefer ZoomIn/Out/Fit for specific actions */
+export function ZoomIcon(props: IconProps) {
+  return LucideWrap(ScanSearch, props);
+}
 export function ExportIcon(props: IconProps) {
-  return (
-    <svg {...iconProps(props)}>
-      <path
-        d="M12 3v12M7 10l5 5 5-5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M5 21h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
+  return LucideWrap(Download, props);
+}
+export function SearchIcon(props: IconProps) {
+  return LucideWrap(Search, props);
+}
+export function ZoomOutIcon(props: IconProps) {
+  return LucideWrap(ZoomOut, props);
+}
+export function ZoomInIcon(props: IconProps) {
+  return LucideWrap(ZoomIn, props);
+}
+export function ZoomFitIcon(props: IconProps) {
+  return LucideWrap(Maximize2, props);
+}
+export function HandPanIcon(props: IconProps) {
+  return LucideWrap(Hand, props);
+}
+export function CursorSelectIcon(props: IconProps) {
+  return LucideWrap(MousePointer2, props);
+}
+export function SelectCursorIcon(props: IconProps) {
+  return LucideWrap(MousePointer2, props);
+}
+export function ScrollZoomIcon(props: IconProps) {
+  return LucideWrap(ScanSearch, props);
+}
+export function InfoCircleIcon(props: IconProps) {
+  return LucideWrap(Info, props);
+}
+export function ChevronDownIcon(props: IconProps) {
+  return LucideWrap(ChevronDown, props);
+}
+export function ChevronUpIcon(props: IconProps) {
+  return LucideWrap(ChevronUp, props);
+}
+export function PresentationDeckIcon(props: IconProps) {
+  return LucideWrap(Presentation, props);
+}
+export function EyeIcon(props: IconProps) {
+  return LucideWrap(Eye, props);
+}
+export function EyeOffIcon(props: IconProps) {
+  return LucideWrap(EyeOff, props);
+}
+export function MapIcon(props: IconProps) {
+  return LucideWrap(Map, props);
+}
+export function CloseIcon(props: IconProps) {
+  return LucideWrap(X, props);
+}
+export function InboxIcon(props: IconProps) {
+  return LucideWrap(Inbox, props);
+}
+/** Studio rail — selection metadata (MOOD-0430). */
+export function InspectorIcon(props: IconProps) {
+  return LucideWrap(Shield, props);
+}
+/** Studio rail — brand kit peer (MOOD-0430). */
+export function BrandKitIcon(props: IconProps) {
+  return LucideWrap(Briefcase, props);
+}
+/** Overflow / manage menus — use instead of “⋯” text glyphs */
+export function MoreHorizontalIcon(props: IconProps) {
+  return LucideWrap(MoreHorizontal, props);
 }

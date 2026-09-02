@@ -4,6 +4,9 @@ Path: `projects/<project>/docs/design-specs/<TICKET-ID>.md`
 
 Load before writing: [contextual-ia-playbook.md](contextual-ia-playbook.md), [workflow-definition-playbook.md](workflow-definition-playbook.md), [design-system-compliance-checklist.md](design-system-compliance-checklist.md).
 
+> **LO-0038:** A large mock HTML pack does **not** satisfy `approve-design` by itself. Fill **§2 Context & placement** and **§2c Experienceable in-context mocks** (with real shell / asset paths / states / anti-orphan) as soon as the first composed mock exists — preferably before the catalog is "done."
+
+
 ## 1. Summary
 
 One paragraph: user problem, solution, success metric.
@@ -36,6 +39,21 @@ Link to `docs/design-specs/<TICKET-ID>-workflow.md` or embed §2b below for shor
 | Step | User action | Surface |
 |------|-------------|---------|
 | 1 | | |
+
+## 2c. Experienceable in-context mocks (required — AM-007)
+
+> **Gate:** `./studio approve-design` **blocks** if this section is missing or placeholder-only.  
+> Mocks must show the component/workflow **embedded in the real UI shell** where it will ship — not an orphan artboard on a blank canvas.
+
+| Field | Value |
+|-------|-------|
+| **Shell / surface** | e.g. board chrome, extension popup, presentation builder |
+| **Mock assets** | Paths under `docs/design-specs/mocks/<TICKET>/` or linked frames |
+| **States shown** | empty / loading / success / error (list which) |
+| **Anti-orphan check** | Confirm chrome, nav, or neighboring UI is visible in the mock |
+
+**Wrong:** Modal alone on grey background.  
+**Right:** Modal drawn inside board / popup / builder chrome with real surrounding UI.
 
 ## 3. Atomic inventory
 
@@ -96,7 +114,9 @@ Narrative arc: setup → tension → resolution.
 
 ## 6. Design system compliance
 
-Self-check against `design-system-compliance-checklist.md` — library pulls, tokens, no hallucinated primitives.
+Self-check against `design-system-compliance-checklist.md` and **`anti-slop-design-ux.md`** (utilitarian layout, literal microcopy, no fluff vocabulary) — library pulls, tokens, no hallucinated primitives.
+
+Agent contract (design-track): paste the block from `anti-slop-design-ux.md` § Agent contract into the ticket or spec header.
 
 ## 7. Handoff to Team 01
 

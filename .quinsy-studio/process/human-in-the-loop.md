@@ -27,7 +27,7 @@ Agent: "Implemented."
 | **Milestone roadmap** | approve version plan after gate 2 | **Yes** |
 | **Milestone review** | approve completed product version (M0, M1, …) | **Yes** |
 | **Sprint feedback** | new ideas from review → backlog | **Yes** (clarify before ticket) |
-| **UI design spec** | new component / marketing / workflow UI | **Yes** (`./studio approve-design`) |
+| **UI design spec** | new component / marketing / workflow UI | **Yes** (`./studio approve-design`) — requires §2 placement **and** §2c **in-context mocks** (AM-007) |
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |
@@ -81,8 +81,8 @@ Sprint review feedback (once per theme)
 |------|----------------|
 | **Feedback** | One FB item per theme; similar text merges to existing FB-NNN |
 | **Ticket** | `--from-feedback` creates ticket in **product backlog** (`backlog/`) **without** `sprint:` |
-| **Sprint plan** | `./studio sprint` proposes mature tickets in `scope-proposal.md`; immature stay in backlog |
-| **Scope approval** | Human runs `./studio sprint --approve-scope` after reviewing proposal |
+| **Sprint plan** | `./studio sprint` proposes mature tickets in `scope-proposal.md` + `scope-proposal.json`; immature stay in backlog |
+| **Scope approval** | Human runs `./studio sprint --approve-scope` after reviewing proposal (**JSON is authoritative** — rewrite both if editing scope by hand) |
 | **Immature** | `planning-questions.md` — owner (design/arch/eng) fills gaps before next planning |
 
 | Step | Who | Command |
@@ -92,8 +92,22 @@ Sprint review feedback (once per theme)
 | **Sprint groom** | **Human** + agent | `./studio groom <p> --approve` before first `implement` |
 | **Sprint work** | **Agent only** | `./studio move <p> <ID> implement` … `done` (all sprint tickets) |
 | **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |
-| **Sprint review** | **Human** tries shipped work | Read review.md, RUNBOOK, run the app |
-| **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` |
+
+**Rule (sprint capacity):** Each sprint proposes **3–6** mature tickets (planner `max_tickets=6`; warn if fewer than 3). Agents must **not** manually narrow `scope-proposal.json` to 1–2 tickets unless the human explicitly asks for a hotfix / surgical sprint. Prefer filling with related P0/P1 backlog.
+| **Sprint review** | **Human** tries shipped work | Read review.md — **live app** (`npm run dev` at project root) and extension `dist/` if shipped; **not** `design/prototype` after implement |
+
+**Rule (LO-0026):** If review hits **board/page 500** with webpack `Cannot read properties of undefined (reading 'call')` (or every route 404 while `next dev` is “Ready”), treat it as **dev cache / port collision**, not a product bug: stop listeners on the review port, `rm -rf .next`, restart `npm run dev`, hard-refresh `127.0.0.1:<port>` (prefer IP over `localhost` when duplicates confuse the browser). Only then re-smoke the ticket surface.
+
+**Rule (LO-0028):** Tickets that ship **PDF export** (board Export PDF, brand-guide Download PDF / Playwright) are not done until smoke **downloads a file** on the free path. Watch for: (1) brand-guide API 503 + “Install Chromium / `npx playwright install chromium`”, (2) Export error `Failed to load export image for watermark` with no download. Unit tests alone do not catch these.
+
+**Rule (LO-0039):** Tickets that **reuse docked chrome** (`StudioPanel` / `StudioRail` / `StudioDock` / floating right rails) are not done if they only reuse **CSS class names** inside a padded content shell. Before `./studio move … done`, assert **live layout DoD**: (1) flush to the intended edge (no content-inset gutter), (2) full height of the stage (top→bottom of the chrome content area, not a mid-page card). Prefer naming the **component** (`StudioPanel`) in acceptance criteria — not `studioPanelClass` alone. Screenshot or Playwright smoke of the edge is preferred.
+
+**Rule (LO-0040):** Before inventing parallel UI chrome, apply the **component reuse ladder**: (1) reuse an existing component, (2) else extract a **project-scoped** reusable component shared across surfaces, (3) else promote/author in **studio-library** when cross-project generic. Right-rail **icon nav + detail panel** (`StudioDock` / `studio-rail`) must be mounted as that organism — not a one-off lookalike. LO titles and infusions stay **general** (no single-surface copy as the primary rule); cite `--source <project>` only as provenance.
+
+**Rule (LO-0032):** Tickets that ship an **on-screen brand guide / print preview** and a **PDF (or printable HTML) of the same surface** must include DoD that **screen and PDF share the same type stack** (hero/title + body). Serif on screen + sans in PDF (or reverse) is a WYSIWYG bug — not done. Prefer one shared CSS/token source for both renderers.
+| **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` — **LO-0025:** `--approve` is refused unless every current-sprint ticket is `done` |
+
+**Rule (LO-0025):** `./studio review <p> --approve` must **refuse** while any current-sprint ticket is still `open` / `implement` / not `done`. Mid-sprint approve freezes implementation incorrectly. Finish tickets → `./studio review` → human `--approve`.
 | **Reuse review** | **Agent** + **Human** | `./studio reuse <p>` → promote / LO ticket / `--record local` → `./studio reuse <p> --approve` |
 | **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket** |
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
@@ -105,6 +119,36 @@ Sprint review feedback (once per theme)
 **Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
 
 **Rule:** During sprint review, the agent **never implements** feedback in project code — only `./studio feedback` → clarify → ticket for the **next** sprint.
+
+**Rule (LO-0033):** Large / strategic review feedback must be **clarified and sliced** into multiple phase-aligned tickets (and optionally a short sprint roadmap under `docs/phases/`) **before** the next `./studio sprint`. Do not leave one mega-ticket that mixes IA, research, Figma, and experience work. Prefer 3–6 ticket sprints mapped to active milestones; keep deep companion / billing tracks deferred until product DNA is ready.
+
+**Rule (LO-0017):** AI / vision / hint-pipeline tickets are **not done** if only an adapter, API, or queue ships. The same sprint must include a **user-visible surface** (inspector, tags list, presentation block, etc.) that sprint review can open. Gate 5 green alone is insufficient when the human cannot see the capability.
+
+**Rule (LO-0018):** When a project uses cloud LLM model IDs (e.g. Gemini Flash-Lite), pin the **current GA** id in the project ADR / `.env.example` defaults. Before calling sprint review ready on AI tickets, the agent must **smoke a live call** (or document that `API_KEY` is unset and the empty-state was verified). Retired model 404s discovered only at human review are a process failure.
+
+**Rule (LO-0021):** PLG entry and paywall tickets must state **UX DoD explicitly** in acceptance criteria:
+1. **Which screen** the user lands on (route / dialog / form) — not only a latency target.
+2. **Blocking vs soft CTA** — if the ticket promises a paywall / upgrade moment, the modal or gate must open at that moment (e.g. free-tier raster export), not only a buried text link.
+3. **Speed heuristics must not skip named HITL surfaces** — e.g. “&lt;5s to canvas” must not remove a required naming / consent step the human expects to see in review.
+Clarify drafts and design specs for `marketing-page` / monetization UI must spell out these three fields before `implement`.
+
+**Rule (LO-0022):** Figma / plugin / host-network tickets are **not done** on unit tests + `npm run build` alone. Before `./studio move … done`, the agent must **smoke in the real plugin host** (e.g. Figma desktop → Load plugin → Login / fetch boards) and confirm **CORS / `origin: null` paths** work via the **plugin main thread** (or documented CORS headers). UI-iframe-only `fetch` to localhost that fails preflight is a process failure if marked done.
+
+**Rule (LO-0043):** Figma **stickersheet / kit placement** tickets are **not done** when only section headlines (Atoms / Molecules / Organisms) appear. Before `./studio move … done`, assert **inventory children exist on the canvas** (buttons, inputs, cards, etc. — count or screenshot). Empty scaffold frames with blurbs only = process failure. Prefer an automated node-count / name-prefix check in plugin tests or a human smoke step that fails if sections have title+blurb only. See `knowledge-base/figma-plugin-host-networking.md`.
+
+**Rule (LO-0044):** Design-system / Figma kit tickets that claim **shadcn-class / professional** quality need a **written fidelity north-star** (what “good” looks like: Figma Components vs frames, type ramp from DNA, elevation/border chrome, moodboard refs) **and screenshot DoD** against that bar. **Component count alone is not done** — themed wireframe chrome (thin strokes, empty white cards, Inter-only when DNA has faces) fails review. Lock the north-star before more inventory breadth. See `knowledge-base/figma-plugin-host-networking.md`.
+
+**Rule (LO-0041):** Figma local allowlists use **`http://localhost:<port>` only** — never `127.0.0.1` (manifest rejects it; CSP treats them as different hosts). Plugin API base defaults and `clientStorage` prefs must normalize to `localhost`. A CSP error naming `127.0.0.1` while allowlisting `localhost` is a **stale prefs / wrong host** bug, not a broken allowlist. Rebuild does not clear `figma.clientStorage`. See `knowledge-base/figma-plugin-host-networking.md`.
+
+**Rule (LO-0042):** Extension cloud-inbox sync that probes multiple local ports must **continue** past plain-text wrong-app 404s (e.g. `Server action not found.` from another Next app) until the product API returns JSON shaped like `{ error }` / `{ ok, item }`, or a real auth/validation rejection. Do not treat sibling-app HTML/text as a fatal product error. Keep baked `VITE_*` / `NEXT_PUBLIC_APP_URL` aligned with the live app port. See `knowledge-base/chrome-mv3-vite-content-scripts.md`.
+
+**Rule (LO-0023):** QA / fidelity / motion / delight tickets must ship **numbered human smoke steps** in `sprints/SPRINT-NN/review.md` (auto-generated under “Per-ticket smoke”). Agent may also add a `## Review smoke` section on the ticket. Vague “see motion” / “check responsive” without click-paths fails review readiness.
+
+**Rule (LO-0034):** Auto-generated review smoke steps must **match the ticket surface**. Do not emit Figma plugin / OAuth steps for webapp Brand kit / board tickets that only mention Figma as future/out-of-scope. Prefer live board / Brand kit routes unless the ticket is clearly a `figma-plugin` / plugin-OAuth ticket (or has an explicit `## Review smoke` section).
+
+**Rule (LO-0035):** If a product uses a **canvas shell** (`h-dvh` + `overflow-hidden`) for infinite-canvas routes, **nested document routes** under the same layout (brand guide, presentation builder, settings-in-board) must provide their **own** `h-dvh overflow-y-auto` scroll container (route `layout.tsx`). Do not assume `body` scroll works under a locked board shell. Tall DialogShell content needs `max-h` + scrollable body.
+
+**Rule (LO-0024):** Guest→auth / local→cloud migration must use **idempotent writes** (`put` / upsert), never blind `add` that throws `ConstraintError: Key already exists`. Auth, share, and **plugin OAuth handoff** screens must not show raw IndexedDB / Dexie errors as “Sync issue” banners. Before marking migration or plugin-login tickets done, smoke the handoff path and confirm no ConstraintError UI.
 
 **Rule:** One feedback item per theme per sprint — `./studio feedback` dedupes similar notes (use `--force` to split).
 

@@ -1,6 +1,10 @@
 export type EmailDeliveryResult =
   | { delivered: true; id?: string; provider: 'mailpit' | 'resend' }
-  | { delivered: false; skipped: true; reason: 'missing_api_key' | 'sandbox_restriction' | 'not_configured' };
+  | {
+      delivered: false;
+      skipped: true;
+      reason: 'missing_api_key' | 'sandbox_restriction' | 'not_configured';
+    };
 
 export type EmailProvider = 'mailpit' | 'resend' | 'none';
 

@@ -532,7 +532,13 @@ def snapshot_registry_files(project: str) -> Dict[str, str]:
 def check_reuse_before_done(project: str, ticket_id: str, snapshot: Dict[str, str]) -> Tuple[bool, List[str]]:
     """
     Return (ok, warnings). ok=False means unpromoted changes detected.
+
+    Empty snapshot = no implement baseline (design-only done, or never moved to
+    implement). Do not treat the entire registry as "changed" (LO-0036).
     """
+    if not snapshot:
+        return True, []
+
     project_dir = PROJECTS_DIR / project
     current = snapshot_registry_files(project)
     changed = [p for p in current if snapshot.get(p) != current[p]]

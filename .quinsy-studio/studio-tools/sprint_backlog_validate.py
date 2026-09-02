@@ -169,7 +169,18 @@ def validate_sprint_backlog(project: str, sprint: Optional[str] = None) -> Dict:
                 None,
                 "CAPACITY",
                 f"Sprint has {len(tickets)} tickets — likely over capacity for one iteration.",
-                "Move deferrable tickets out via grooming; target 4–6 tickets per sprint.",
+                "Move deferrable tickets out via grooming; target 3–6 tickets per sprint.",
+            )
+        )
+
+    if 0 < len(tickets) < 3:
+        findings.append(
+            Finding(
+                "warning",
+                None,
+                "UNDER_CAPACITY",
+                f"Sprint has only {len(tickets)} ticket(s) — below the 3–6 target.",
+                "Add related mature backlog tickets or split work; do not ship 1–2 ticket sprints unless human asked for a hotfix.",
             )
         )
 
@@ -342,7 +353,7 @@ def write_validation_report(project: str, result: Dict) -> Path:
             "- [ ] Sprint goal in `plan.md` matches P0 blueprint",
             "- [ ] Out-of-scope tickets moved to backlog (or later sprint)",
             "- [ ] Dependencies ordered",
-            "- [ ] Capacity realistic (≤6 tickets)",
+            "- [ ] Capacity realistic (3–6 tickets)",
             "- [ ] `./studio groom <project> --approve` after edits",
             "",
         ]

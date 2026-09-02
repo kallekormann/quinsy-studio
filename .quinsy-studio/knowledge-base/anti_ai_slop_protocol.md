@@ -67,6 +67,29 @@ Anti-slop = code that works AND is good.
 | U9 | missing ARIA labels | specific labels |
 | U10 | colors without contrast check | WCAG AA minimum |
 
+### Design slop (Team 10 — see [anti-slop-design-ux.md](anti-slop-design-ux.md))
+
+| # | Forbidden | Instead |
+|---|-----------|---------|
+| U11 | Decorative blobs, purposeless glassmorphism | purpose-driven surfaces |
+| U12 | Generic Memphis / floating 3D illustrations | domain data viz or kit imagery |
+| U13 | Broken grid / arbitrary padding | 4px/8px spacing scale |
+| U14 | Shadows for “modern styling” only | hierarchy, modals, focus |
+| U15 | Emoji as toolbar/button/rail icons (LO-0037) | SVG / `@ui` Icon |
+| U16 | Monotonous default SaaS-blue ignoring brand DNA | semantic palette from tokens |
+| U17 | Marketing hero scale on operational screens | density-matched headings |
+| U18 | `Lorem ipsum`, `Feature 1`, `Primary action` in mocks | domain-realistic copy |
+
+### Microcopy slop
+
+| # | Forbidden | Instead |
+|---|-----------|---------|
+| M1 | Banned fluff: supercharge, seamless, robust, unlock, delight, ecosystem, streamline, turbo, next-level, transform (marketing), … | literal, expert-peer copy |
+| M2 | Vague CTAs: Proceed, Let's go, Make magic happen | Save changes, Export CSV, … |
+| M3 | Agent filler: “Here is your…”, “Certainly…” | structured spec output only |
+
+Full vocabulary: [anti-slop-design-ux.md §2.1](anti-slop-design-ux.md).
+
 ---
 
 ## FORBIDDEN BACKEND PATTERNS
@@ -111,7 +134,8 @@ python3 .quinsy-studio/studio-tools/validate_anti_slop.py .
 
 - [ ] No text clichés (T1-T10)
 - [ ] No code patterns (C1-C10)
-- [ ] No UI patterns (U1-U10)
+- [ ] No UI patterns (U1-U18)
+- [ ] No microcopy slop (M1-M3)
 - [ ] No backend patterns (B1-B8)
 ```
 
@@ -129,6 +153,7 @@ Sometimes AI slop is unavoidable:
 
 ## References
 
+- [anti-slop-design-ux.md](anti-slop-design-ux.md) — design, UX, microcopy
 - `.quinsy-studio/process/anti-slop.md` — audit tool
 - `.quinsy-studio/process/anti-slop-policy.md` — binding rules
 - `.quinsy-studio/teams/07-ai-autonomous-systems/` — anti-slop team

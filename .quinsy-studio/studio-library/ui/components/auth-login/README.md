@@ -11,5 +11,5 @@ import { createBrowserSupabaseClient, isSupabaseConfigured } from '@packages/aut
   isConfigured={isSupabaseConfigured}
   homeHref="/"
   homeLabel="Back to app"
-/>
+/>;
 ```

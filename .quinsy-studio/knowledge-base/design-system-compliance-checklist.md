@@ -25,9 +25,16 @@
 - [ ] Typography/spacing on 8pt grid (`design_playbook.md`)
 - [ ] Dark mode surfaces listed if applicable
 
-### Anti-slop UI
+### Anti-slop UI & copy
+
+Canonical: [anti-slop-design-ux.md](anti-slop-design-ux.md) · Team 10 skill UX-008
 
 - [ ] No generic violet/gradient blocks outside token system
+- [ ] **No emoji as icons** in mocks or product chrome — SVG / `@ui` Icon components only; icons optically centered in hit targets (LO-0037)
+- [ ] No decorative blobs, glassmorphism, or template-dashboard filler without purpose (U-D1)
+- [ ] 8pt grid; semantic color; ≤2 type families; operational screens ≠ marketing hero scale
+- [ ] Mock copy uses **literal CTAs** — no banned fluff vocabulary (§2.1) or placeholders (`Lorem`, `Feature 1`, `Primary action`)
+- [ ] **§2 + §2c filled** in the design spec markdown — mock HTML alone does not pass `approve-design` (LO-0038)
 - [ ] No duplicate controls for the same action on one surface
 - [ ] Progressive disclosure for advanced options — not one scrolling wall
 
@@ -60,6 +67,7 @@ Agent should **warn** (not block human) if spec references non-library patterns.
 
 ## Related
 
+- [anti-slop-design-ux.md](anti-slop-design-ux.md)
 - [component-creation-playbook.md](component-creation-playbook.md)
 - [brand-guardian-checklist.md](brand-guardian-checklist.md)
 - [ui/docs/README.md](../studio-library/ui/docs/README.md)

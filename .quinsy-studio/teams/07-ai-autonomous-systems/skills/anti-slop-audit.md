@@ -52,7 +52,12 @@ Blacklist:
   - "Tapestry" / "Multifaceted"
   - "Game-changer"
   - "Unlock the potential"
+  - Principal Designer fluff list: supercharge, streamline, turbo, next-level,
+    hyper-, delight, robust, unlock, transform (marketing) — see anti-slop-design-ux.md
+  - UI placeholders: Lorem ipsum, Feature 1, Primary action, Proceed, Let's go
 ```
+
+Design & copy slop (Team 10): [anti-slop-design-ux.md](../../../knowledge-base/anti-slop-design-ux.md) — layout bloat, emoji icons, literal CTAs.
 
 ### 3. Quality check
 
@@ -130,6 +135,7 @@ Rule: 0 anti-slop errors for a gate pass
 
 ## References
 
+- [anti-slop-design-ux.md](../../../knowledge-base/anti-slop-design-ux.md) — design & microcopy
 - `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — anti-slop rules
 - `.quinsy-studio/process/gates.md` — anti-slop in gate 5
 - `studio-tools/validate_anti_slop.py` — automated check

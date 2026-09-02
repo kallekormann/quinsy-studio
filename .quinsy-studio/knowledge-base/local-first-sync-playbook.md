@@ -23,6 +23,16 @@
 - [ ] Offline queue + replay on reconnect
 - [ ] `docs/architecture/sync.md` or ADR references this playbook
 
+## Idempotent local writes (LO-0024)
+
+Guest→auth and plugin OAuth handoffs often re-write the same board/item keys.
+
+| Wrong | Right |
+|-------|-------|
+| `table.add(row)` on migrate | `table.put(row)` / upsert |
+| Surface `ConstraintError: Key already exists` as “Sync issue” | Swallow duplicate as success or merge; never scare PLG/plugin login |
+| Mark plugin login done when boards list loads | Also smoke: no IndexedDB error banner on `/login` → connected |
+
 ## Ticket guidance
 
 Backlog tickets for sync must state **continuous** vs **one-time** explicitly in scope.

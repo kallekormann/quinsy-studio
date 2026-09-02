@@ -1,12 +1,13 @@
 /**
  * Studio Library — contextual metadata panel for a selected canvas item.
- * Tags today; extend with notes, EXIF, etc. via `children` or extra fields.
+ * Tags + exclusive accordion sections via children (MOOD-0237).
  */
 'use client';
 
 import type { ReactNode } from 'react';
 import { Badge } from '../badge/Badge';
 import { Input } from '../input/Input';
+import { InspectorAccordionSection, InspectorPanelShell } from '../molecules/InspectorPanelShell';
 
 export type ItemInspectorPanelProps = {
   title: string;
@@ -15,7 +16,9 @@ export type ItemInspectorPanelProps = {
   tags: string[];
   onTagsChange: (tags: string[]) => void;
   footer?: ReactNode;
+  children?: ReactNode;
   className?: string;
+  onClose?: () => void;
 };
 
 export function ItemInspectorPanel({
@@ -25,7 +28,9 @@ export function ItemInspectorPanel({
   tags,
   onTagsChange,
   footer,
+  children,
   className = '',
+  onClose,
 }: ItemInspectorPanelProps) {
   const handleTagInput = (raw: string) => {
     const nextTags = raw
@@ -36,25 +41,17 @@ export function ItemInspectorPanel({
   };
 
   return (
-    <aside
-      className={`absolute right-4 top-20 z-10 w-72 rounded-[16px] border border-neutral-200/80 bg-white/95 p-3 shadow-lg backdrop-blur dark:border-neutral-700 dark:bg-surface-dark/95 ${className}`}
+    <InspectorPanelShell
+      eyebrow="Item"
+      title={title}
+      subtitle={subtitle ?? itemType}
+      className={className}
+      defaultOpenSection="tags"
+      onClose={onClose}
     >
-      <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Item</p>
-      <p className="mt-1 truncate text-sm font-medium text-neutral-800 dark:text-neutral-100">
-        {title}
-      </p>
-      {subtitle ? (
-        <p className="mt-0.5 truncate text-xs text-neutral-500">{subtitle}</p>
-      ) : (
-        <p className="mt-0.5 text-xs capitalize text-neutral-500">{itemType}</p>
-      )}
-
-      <div className="mt-3 border-t border-neutral-200 pt-3 dark:border-neutral-700">
-        <label className="mb-1 block text-xs font-medium text-neutral-600 dark:text-neutral-300">
-          Tags
-        </label>
+      <InspectorAccordionSection id="tags" title="Tags">
         <Input
-          placeholder="comma-separated tags"
+          placeholder="Tags, comma-separated"
           defaultValue={tags.join(', ')}
           key={`${title}-${tags.join('|')}`}
           onBlur={(e) => handleTagInput(e.target.value)}
@@ -71,10 +68,9 @@ export function ItemInspectorPanel({
             ))}
           </div>
         )}
-        {footer ? (
-          <div className="mt-2 text-[11px] text-neutral-500">{footer}</div>
-        ) : null}
-      </div>
-    </aside>
+        {footer ? <div className="mt-2 text-[11px] text-neutral-500">{footer}</div> : null}
+      </InspectorAccordionSection>
+      {children}
+    </InspectorPanelShell>
   );
 }

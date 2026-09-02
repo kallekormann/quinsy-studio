@@ -11,6 +11,41 @@ No compromise on performance.
 
 ---
 
+## Canvas shell vs document routes (LO-0035)
+
+Infinite-canvas apps often lock the board shell with `h-dvh overflow-hidden`. That is correct for Konva/canvas, but **document UIs** under the same segment (`/board/[id]/brand-guide`, `/presentation`, etc.) will not scroll on `body`.
+
+**Do:** Add a nested `layout.tsx` with `h-dvh overflow-y-auto` (or make the document `main` the scrollport).  
+**Do:** Dialog shells with tall content use `max-h-[min(90dvh,…)]` + `overflow-y-auto` on the body region; keep header/footer `shrink-0`.  
+**Don't:** Assume page scroll works under the canvas shell without a dedicated scroll container.
+
+---
+
+## Docked chrome reuse (LO-0039)
+
+When reusing **Studio rail / panel** chrome (`StudioPanel`, `StudioRail`, `StudioDock`, floating right rails) across surfaces (canvas, Library, hubs):
+
+**Do:** Mount the **component** (`StudioPanel` / `StudioDock`), not only copy `studioPanelClass` onto an aside.  
+**Do:** Assert **flush to the intended edge** (no content-inset / `chromePageBody` gutter beside the panel).  
+**Do:** Assert **full height** of the stage under app chrome (top→bottom) — not a mid-page sticky card.  
+**Don't:** Mark done because class names match canvas while live layout still looks like a floating card.
+
+See also: `process/human-in-the-loop.md` (LO-0039 sprint DoD rule).
+
+### Component reuse ladder (LO-0040)
+
+Before shipping new chrome or a lookalike panel:
+
+1. **Reuse** — mount the existing component (`StudioDock` / `StudioPanel` / shared inspector shell, etc.).
+2. **Project component** — if the pattern exists in markup only, extract a reusable component under the project `ui/` (or `src/components/`) used by every surface that needs it.
+3. **Studio library** — if the pattern is generic across products, author or promote under `.quinsy-studio/studio-library/` (see `component-creation-playbook.md`).
+
+**Right-rail dock:** icon rail + peer detail panel (`studio-rail` / `StudioDock`) is the canonical organism for “tools beside the stage.” Do not fake it with padded cards or duplicate headers that diverge from the docked composition.
+
+See also: `process/human-in-the-loop.md` (LO-0040); SaaS archetype UX option in `process/project-archetypes.md`.
+
+---
+
 ## Architecture
 
 ### Monorepo structure
@@ -38,6 +73,20 @@ Badge, Icon       Modal, Dropdown  Sidebar, Nav
 ```
 
 **Rule:** components are generic, configurable, reusable.
+
+### Selects / dropdowns (anti-OS-chrome)
+
+**Do not use native `<select>`** on product surfaces (board, dialogs, settings, presentation). OS chrome mixes with brand UI.
+
+Use a **Headless UI Listbox/Menu** molecule (studio-library `dropdown` / project Dropdown) styled like other popovers (e.g. user menu). Keyboard Esc + outside click must dismiss.
+
+**Binary labeled choices** (Selected | Whole board, View | Edit): use studio-library **`SegmentedToggle`** — not a pair of ad-hoc buttons, and not `Switch` (Switch is boolean on/off only). Pull: `./studio library pull <project> segmented-toggle`.
+
+**Dialog / panel dark surfaces:** light = white; dark = one shared elevated token (`dark:bg-surface-dark`) for DialogShell, share modals, and item details — never mix `neutral-900` with `surface-dark`. See [dark-mode.md](../studio-library/ui/docs/patterns/dark-mode.md).
+
+**Radio / checkbox selected chrome:** use a brand token the project actually defines (`primary-*` or `accent-*`). Empty radio dots + accent borders usually mean undefined `primary-*`.
+
+**Browser extensions (MV3 + Vite):** see [chrome-mv3-vite-content-scripts.md](./chrome-mv3-vite-content-scripts.md) — content entries must be IIFE or `content_scripts.type: "module"`; classic scripts with `import` fail silently.
 
 ---
 
@@ -262,6 +311,53 @@ test('homepage loads', async ({ page }) => {
   await expect(page).toHaveTitle(/My App/);
 });
 ```
+
+---
+
+## Tailwind content scan (shared class constants)
+
+**Signal (LO-0027 / moody):** Shared layout class strings living only in `src/lib/**` (or any path **outside** `tailwind.config` `content`) and applied as `className={SOME_CONST}` are **purged**. The DOM still has the class names, but CSS never emits utilities like `right-3` → absolute panels fall to the **left**. Hard refresh cannot fix missing CSS.
+
+### Rules
+
+1. **Every path that defines Tailwind class strings must be in `content`** — including `src/lib/**` if motion/layout helpers export class constants.
+2. **Prefer literal `className="…"` in scanned TSX** (components under `src/components`, `src/app`, `ui/components`) for layout-critical utilities (`absolute`, `right-*`, `left-*`, `top-*`, `bottom-*`, width).
+3. **Do not treat variable `className={CONST}` as Tailwind-visible** unless the constant’s file is scanned **or** the full string also appears as a literal somewhere in `content`.
+4. **DoD for dock/position tickets:** DevTools Computed shows non-auto `right`/`left`, **or** confirm the utility exists in built CSS — not only that the TSX constant looks correct.
+5. **Belt:** optional `style={{ right: N, width: N }}` for critical floating rails so purge mistakes cannot silent-regress.
+
+### Anti-pattern
+
+```ts
+// src/lib/motion/app-motion.ts  ← NOT in content
+export const FLOATING_RIGHT_RAIL_CLASS = 'absolute right-3 ...';
+
+// drawer (scanned) — Tailwind never sees the string
+className={FLOATING_RIGHT_RAIL_CLASS}
+```
+
+### Pattern
+
+```tsx
+// Literal in a content-scanned component (same idea as InspectorPanelShell)
+className="absolute bottom-20 right-3 top-14 z-30 flex w-[280px] ..."
+```
+
+---
+
+## PDF export DoD (Playwright + watermark)
+
+**Signal (LO-0028 / moody):** Brand-guide PDF via Playwright can 503 when Chromium is missing; free Export PDF can die in `applyWatermark` (`Failed to load export image for watermark`) with no file. Both look “done” in unit tests.
+
+### Rules
+
+1. **Smoke downloads a PDF** for brand-guide Download PDF and Export → PDF (free path) before marking done.
+2. **File size > 0** — record downloaded PNG/PDF byte length in the smoke note; empty files and silent “success” without a download are not done (LO-0028 follow-up / moody S65).
+3. **Playwright Chromium** must be installed for local/dev when the brand-guide PDF API uses `chromium.launch` — document in project setup / RUNBOOK, or provide a non-headless fallback.
+4. **Watermark must not hard-block download** — on decode failure, skip watermark and still save PDF (or fix decode); never leave the user with only an error toast.
+5. **Anti-slop on export paths (LO-0029)** — no bare `100`/`1000`/`86400`; no consecutive `await`/`await` lines. Use named constants and await chaining / helpers before gate 5.
+6. Review briefs for PDF tickets: numbered steps that click Download PDF / Export PDF and confirm a **non-empty** file appears.
+7. **WYSIWYG type stack (LO-0032)** — if the ticket touches an on-screen brand guide / print preview **and** a PDF (or printable HTML) of the same surface, DoD must assert **the same font-family stack** for hero/title and body on screen and in PDF. Shared CSS/tokens preferred over divergent React vs PDF HTML. Serif on screen + sans in PDF (or the reverse) is not done.
 
 ---
 

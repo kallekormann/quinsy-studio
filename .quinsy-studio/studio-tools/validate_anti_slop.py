@@ -59,7 +59,44 @@ TEXT_SLOP_PATTERNS = [
     (r'\b(?:paradigm)\b', "AI cliché: 'paradigm'"),
     (r'\b(?:ecosystem)\b', "AI cliché: 'ecosystem'"),
     (r'\b(?:landscap(?:e|ing))\b', "AI cliché: 'landscape'"),
+    # Principal Product Designer anti-fluff vocabulary (anti-slop-design-ux.md §2.1)
+    (r'\b(?:supercharge(?:s|d)?)\b', "Fluff copy: 'supercharge'"),
+    (r'\b(?:streamlin(?:e|es|ed|ing))\b', "Fluff copy: 'streamline'"),
+    (r'\b(?:turbo(?:charge)?)\b', "Fluff copy: 'turbo'"),
+    (r'\b(?:next[- ]level)\b', "Fluff copy: 'next-level'"),
+    (r'\b(?:hyper[-\s]?\w+)\b', "Fluff copy: 'hyper-' prefix"),
+    (r'\b(?:empowerment)\b', "Fluff copy: 'empowerment'"),
+    (r'\b(?:delight(?:ful|s|ed)?)\b', "Fluff copy: 'delight'"),
+    (r'\b(?:robust)\b', "Fluff copy: 'robust' (use specific quality claim)"),
+    (r'\b(?:unlock)\b', "Fluff copy: 'unlock'"),
+    (r'\btransform(?:s|ed|ing)?\s+(?:your|the|our|their)\s+\w+', "Fluff copy: 'transform' (marketing)"),
 ]
+
+# Generic mock / UI placeholder copy (design slop)
+UI_PLACEHOLDER_PATTERNS = [
+    (r'\bLorem ipsum\b', "Placeholder copy: Lorem ipsum — use domain-realistic text"),
+    (r'\bFeature [1-9]\b', "Placeholder copy: generic 'Feature N' label"),
+    (r'\bPrimary action\b', "Placeholder CTA: use literal action label"),
+    (r'\bSecondary action\b', "Placeholder CTA: use literal action label"),
+    (r'\bMake magic happen\b', "Vague CTA: state what happens on click"),
+    (r"\bLet'?s do it\b", "Vague CTA: state what happens on click"),
+    (r">(?:Proceed|Let's go|Let us go)<", "Vague CTA: state what happens on click"),
+    (r'"(?:Proceed|Let\'s go|Let us go)"', "Vague CTA: state what happens on click"),
+    (r"'(?:Proceed|Let's go|Let us go)'", "Vague CTA: state what happens on click"),
+]
+
+# Files scanned for placeholder / fluff copy in UI strings
+COPY_SCAN_EXTENSIONS = {'.md', '.mdx', '.tsx', '.jsx', '.html'}
+
+
+def is_copy_scan_path(rel_path: str) -> bool:
+    """Limit fluff/placeholder detection to UI and design-spec surfaces."""
+    normalized = rel_path.replace('\\', '/')
+    if any(marker in normalized for marker in ('/src/', '/docs/design-specs/', 'brand-guide')):
+        return True
+    if '/packages/' in normalized and normalized.endswith(('.html', '.tsx', '.jsx')):
+        return True
+    return False
 
 # Code anti-patterns (AI-typical code)
 CODE_SLOP_PATTERNS = [
@@ -79,21 +116,21 @@ CODE_SLOP_PATTERNS = [
     (r'try\s*\{[^}]{0,50}\}\s*catch\s*\(\s*\w*\s*\)\s*\{\s*(?:console\.log|// ignore)',
      "AI slop: silent catch with console.log"),
     
-    # Dead code
-    (r'return\s+[^;]+;\s*\n\s*(?:const|let|var|function|return)',
+    # Dead code after a completed return (same indent). Nested JSX returns are deeper indent.
+    (r'(?m)^(\s*)return\s+[^;\n]+;\s*\n\1(?:const|let|var|function|return)\b',
      "AI slop: possible dead code after return"),
     
     # Excessive type assertions
     (r'(?:as\s+\w+){2,}',
      "AI slop: excessive type assertions"),
     
-    # Magic numbers
+    # Magic numbers (LO-0029: fix with named consts — not test-file exemptions)
     (r'(?<!=|!|<|>|=)\s(?:100|1000|86400)\b(?!\s*(?:ms|px|%|rem))',
-     "AI slop: magic number without unit"),
+     "AI slop: magic number without unit — use a named constant (e.g. JPEG_QUALITY_PERCENT = 100)"),
     
-    # Excessive async/await
+    # Excessive async/await (LO-0029: chain, helper, or Promise.all — not disable rule)
     (r'await\s+\w+\([^)]*\);\s*\n\s*await\s+\w+\([^)]*\);',
-     "AI slop: possibly sequential async calls"),
+     "AI slop: sequential await/await — chain, extract helper, or Promise.all"),
 ]
 
 # Dateien die ignoriert werden
@@ -112,6 +149,7 @@ IGNORE_PATTERNS = [
 CHECK_EXTENSIONS = [
     '.ts', '.tsx', '.js', '.jsx',
     '.md', '.mdx',
+    '.html',
     '.json',
     '.py',
     '.css', '.scss',
@@ -165,8 +203,8 @@ def scan_file(filepath: Path, project_dir: Path) -> List[SlopViolation]:
     lines = content.split('\n')
     rel_path = str(filepath.relative_to(project_dir))
     
-    # Text slop (for MD, TSX, JSX)
-    if filepath.suffix in ['.md', '.mdx', '.tsx', '.jsx']:
+    # Copy slop — scoped to UI / design-spec paths only
+    if filepath.suffix in COPY_SCAN_EXTENSIONS and is_copy_scan_path(rel_path):
         for line_num, line in enumerate(lines, 1):
             for pattern, message in TEXT_SLOP_PATTERNS:
                 matches = re.finditer(pattern, line, re.IGNORECASE)
@@ -175,7 +213,19 @@ def scan_file(filepath: Path, project_dir: Path) -> List[SlopViolation]:
                         file=rel_path,
                         line=line_num,
                         column=match.start(),
-                        pattern_name="text-slop",
+                        pattern_name="copy-slop",
+                        message=message,
+                        severity="warning",
+                        context=line.strip()[:100]
+                    ))
+            for pattern, message in UI_PLACEHOLDER_PATTERNS:
+                matches = re.finditer(pattern, line, re.IGNORECASE)
+                for match in matches:
+                    violations.append(SlopViolation(
+                        file=rel_path,
+                        line=line_num,
+                        column=match.start(),
+                        pattern_name="ui-placeholder",
                         message=message,
                         severity="warning",
                         context=line.strip()[:100]
@@ -268,6 +318,11 @@ def fix_violations(project: str, report: SlopReport):
         "paradigm": "approach",
         "ecosystem": "system",
         "landscape": "environment",
+        "supercharge": "improve",
+        "streamline": "simplify",
+        "next-level": "improved",
+        "delight": "satisfy",
+        "unlock": "enable",
     }
 
     # Group violations by file

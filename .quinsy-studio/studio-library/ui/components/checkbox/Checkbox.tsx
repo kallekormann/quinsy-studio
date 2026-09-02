@@ -1,26 +1,29 @@
 /**
- * Studio Library — styled checkbox (Headless UI + tokens).
+ * Moody Bloom — styled checkbox (Headless UI + tokens).
  */
 'use client';
 
 import type { ComponentProps, ReactNode } from 'react';
-import { Checkbox as HeadlessCheckbox } from '../../primitives/headless/checkbox';
+import { Checkbox as HeadlessCheckbox } from '@ui/primitives/headless/checkbox';
 
 export interface CheckboxProps extends Omit<ComponentProps<typeof HeadlessCheckbox>, 'children'> {
   label?: ReactNode;
 }
 
-export function Checkbox({ label, className = '', ...props }: CheckboxProps) {
+const boxClass =
+  'group flex size-4 shrink-0 items-center justify-center rounded-[5px] border-[1.5px] border-[color:var(--line-strong)] bg-surface transition-[border-color,background-color,box-shadow] focus-visible:border-accent-500 focus-visible:outline-none data-[checked]:border-accent-500 data-[checked]:bg-accent-500 data-[checked]:shadow-[inset_0_0_0_3px_var(--surface)] data-[disabled]:opacity-45';
+
+export function Checkbox({ label, className = '', disabled, ...props }: CheckboxProps) {
   return (
-    <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-neutral-800 dark:text-neutral-100">
-      <HeadlessCheckbox
-        className={`group flex size-4 items-center justify-center rounded border border-neutral-400 bg-surface data-[checked]:border-primary-600 data-[checked]:bg-primary-600 data-[focus]:outline data-[focus]:outline-2 data-[focus]:outline-offset-2 data-[focus]:outline-primary-500 dark:border-neutral-500 ${className}`}
-        {...props}
-      >
+    <label
+      className={`inline-flex cursor-pointer items-center gap-2 text-sm text-body ${disabled ? 'cursor-not-allowed opacity-45' : ''}`}
+    >
+      <HeadlessCheckbox className={`${boxClass} ${className}`} disabled={disabled} {...props}>
         <svg
-          className="size-3 stroke-white opacity-0 group-data-[checked]:opacity-100"
+          className="size-3 stroke-[color:var(--accent-ink)] opacity-0 group-data-[checked]:opacity-100"
           viewBox="0 0 14 14"
           fill="none"
+          aria-hidden
         >
           <path d="M3 7l3 3 5-6" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
         </svg>

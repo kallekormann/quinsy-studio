@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moody.app/schemas/design-md-1.0.json",
+  "title": "Moody Design.md frontmatter",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "token_hooks",
+    "spacing_px",
+    "radius_px",
+    "typography",
+    "layout",
+    "modes"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0" },
+    "id": { "type": "string", "minLength": 1, "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string" },
+    "style_dna_affinity": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "token_hooks": {
+      "type": "object",
+      "required": ["color_primitives", "color_semantic", "spacing", "radius"],
+      "additionalProperties": false,
+      "properties": {
+        "color_primitives": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "color_semantic": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "spacing": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "radius": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "spacing_px": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": "number" }
+    },
+    "radius_px": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": "number" }
+    },
+    "typography": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["size", "lineHeight", "weight"],
+        "properties": {
+          "size": { "type": "number" },
+          "lineHeight": { "type": "number" },
+          "weight": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "layout": {
+      "type": "object",
+      "required": ["color_distribution", "borders", "shadows", "corners"],
+      "additionalProperties": true,
+      "properties": {
+        "whitespace_bias": {
+          "type": "string",
+          "enum": ["generous", "compact", "dense"]
+        },
+        "asymmetry": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "recipes": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": true
+        },
+        "color_distribution": {
+          "type": "object",
+          "required": ["tone", "structure", "accent"],
+          "properties": {
+            "tone": { "type": "number" },
+            "structure": { "type": "number" },
+            "accent": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "borders": {
+          "type": "object",
+          "required": ["default"],
+          "properties": {
+            "default": { "type": "string", "enum": ["none", "hairline", "thick"] },
+            "width_token": {
+              "type": ["string", "null"]
+            }
+          },
+          "additionalProperties": true
+        },
+        "shadows": {
+          "type": "object",
+          "required": ["default"],
+          "properties": {
+            "default": { "type": "string", "enum": ["none", "soft", "hard-ink"] }
+          },
+          "additionalProperties": true
+        },
+        "corners": {
+          "type": "object",
+          "required": ["bias"],
+          "properties": {
+            "bias": { "type": "string", "enum": ["rounded", "sharp"] }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "components": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "modes": {
+      "type": "object",
+      "required": ["light_dark"],
+      "properties": {
+        "light_dark": { "type": "string", "const": "variable_modes" }
+      },
+      "additionalProperties": true
+    }
+  }
+}

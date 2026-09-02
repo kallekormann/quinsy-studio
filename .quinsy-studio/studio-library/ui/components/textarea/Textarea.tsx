@@ -1,28 +1,50 @@
 /**
- * Studio Library — styled textarea (Headless UI + tokens).
+ * Moody Bloom — styled textarea (Headless UI + tokens).
  */
 'use client';
 
 import type { ComponentProps } from 'react';
-import { Textarea as HeadlessTextarea } from '../../primitives/headless/textarea';
+import { Textarea as HeadlessTextarea } from '@ui/primitives/headless/textarea';
+import {
+  fieldClassName,
+  fieldErrorClassName,
+  fieldHintClassName,
+  fieldLabelClassName,
+} from '../atoms/field-styles';
 
 export interface TextareaProps extends ComponentProps<typeof HeadlessTextarea> {
   label?: string;
+  hint?: string;
+  error?: string;
 }
 
-const fieldClass =
-  'w-full rounded-lg border border-neutral-300 bg-surface px-4 py-2 text-neutral-900 shadow-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200 dark:border-neutral-600 dark:bg-surface-dark dark:text-neutral-100';
-
-export function Textarea({ label, className = '', id, ...props }: TextareaProps) {
+export function Textarea({
+  label,
+  hint,
+  error,
+  className = '',
+  id,
+  'aria-invalid': ariaInvalid,
+  ...props
+}: TextareaProps) {
   const inputId = id || 'textarea';
+  const invalid = ariaInvalid ?? (error ? true : undefined);
+
   return (
     <div className="w-full">
-      {label && (
-        <label htmlFor={inputId} className="mb-1 block text-sm font-medium text-neutral-600 dark:text-neutral-300">
+      {label ? (
+        <label htmlFor={inputId} className={fieldLabelClassName}>
           {label}
         </label>
-      )}
-      <HeadlessTextarea id={inputId} className={`${fieldClass} min-h-[96px] ${className}`} {...props} />
+      ) : null}
+      <HeadlessTextarea
+        id={inputId}
+        aria-invalid={invalid}
+        className={`${fieldClassName} min-h-[72px] resize-y leading-snug ${className}`}
+        {...props}
+      />
+      {error ? <span className={fieldErrorClassName}>{error}</span> : null}
+      {!error && hint ? <span className={fieldHintClassName}>{hint}</span> : null}
     </div>
   );
 }

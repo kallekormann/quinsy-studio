@@ -103,6 +103,24 @@ def propose_sprint_scope(
         mature, questions, _ = assess_ticket_maturity(path)
         tid = meta.get("id", path.stem)
 
+        # Explicit deferral flags (e.g. AM-007 roadmap) — never auto-propose
+        content_head = ""
+        try:
+            content_head = path.read_text(encoding="utf-8")[:800]
+        except OSError:
+            pass
+        if re.search(r"^am007_deferred:\s*true\b", content_head, re.M | re.I) or re.search(
+            r"^sprint_deferred:\s*true\b", content_head, re.M | re.I
+        ):
+            deferred_capacity.append(
+                {
+                    "id": tid,
+                    "title": meta.get("title", path.stem),
+                    "reason": "deferred flag (amendment/roadmap)",
+                },
+            )
+            continue
+
         if not mature:
             deferred_immature.append(
                 {
@@ -140,34 +158,34 @@ def propose_sprint_scope(
     }
 
 
-def apply_sprint_scope(project: str, sprint_name: str, proposal: Dict) -> int:
-    """Tag proposed tickets with sprint: after human --approve-scope. Returns count."""
+def apply_sprint_scope(project: str, sprint_name: str, proposal: Dict) -> Tuple[int, List[str]]:
+    """Tag proposed tickets with sprint: after human --approve-scope.
+
+    Returns (tagged_count, missing_ids). tagged_count includes tickets already
+    correctly tagged for this sprint. missing_ids are proposed IDs not found in
+    the product backlog queue.
+    """
+    from backlog_paths import queue_ticket_paths
+
     count = 0
+    missing: List[str] = []
     for item in proposal.get("proposed", []):
         tid = item["id"]
-        for path in list_unscheduled_backlog(project):
-            if path.get("id") != tid:
+        found = False
+        for file_path in queue_ticket_paths(project):
+            meta = read_ticket_meta(file_path)
+            if meta.get("id") != tid and not file_path.name.startswith(f"{tid}-"):
                 continue
-            file_path = path["path"]
             content = file_path.read_text(encoding="utf-8")
             updated = set_ticket_sprint(content, sprint_name)
             if updated != content:
                 file_path.write_text(updated, encoding="utf-8")
-                count += 1
+            count += 1
+            found = True
             break
-        else:
-            # find by id in queue
-            from backlog_paths import queue_ticket_paths
-
-            for file_path in queue_ticket_paths(project):
-                if file_path.name.startswith(f"{tid}-"):
-                    content = file_path.read_text(encoding="utf-8")
-                    updated = set_ticket_sprint(content, sprint_name)
-                    if updated != content:
-                        file_path.write_text(updated, encoding="utf-8")
-                        count += 1
-                    break
-    return count
+        if not found:
+            missing.append(tid)
+    return count, missing
 
 
 def write_scope_proposal(project: str, sprint: str, proposal: Dict) -> Path:
@@ -289,6 +307,10 @@ def format_planning_brief(proposal: Dict) -> str:
         f"  Stay in backlog (immature): {len(immature)}",
         f"  Deferred (capacity): {len(overflow)}",
     ]
+    if 0 < len(proposed) < 3:
+        lines.append(
+            "  ⚠️  Under capacity (<3) — add related mature backlog tickets before --approve-scope"
+        )
     if proposed:
         lines.append("  Proposed for sprint:")
         for t in proposed[:8]:
@@ -307,9 +329,11 @@ def format_planning_brief(proposal: Dict) -> str:
 # Backward-compatible alias used during transition
 def assign_backlog_to_sprint(project: str, sprint_name: str, max_tickets: int = 6) -> Dict:
     proposal = propose_sprint_scope(project, sprint_name, max_tickets=max_tickets)
-    apply_sprint_scope(project, sprint_name, proposal)
+    tagged, missing = apply_sprint_scope(project, sprint_name, proposal)
     return {
         "assigned": proposal["proposed"],
+        "tagged": tagged,
+        "missing": missing,
         "deferred_immature": proposal["deferred_immature"],
         "deferred_capacity": proposal["deferred_capacity"],
         "planning_questions": proposal["planning_questions"],

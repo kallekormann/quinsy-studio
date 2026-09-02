@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { Button } from '../button/Button';
-import { Input } from '../input/Input';
+import { Button } from '@ui/components/atoms/Button';
+import { Input } from '@ui/components/atoms/Input';
 
 type AuthMode = 'signin' | 'signup' | 'magic';
 
@@ -22,20 +22,51 @@ export function AuthLoginForm({
   createClient,
   isConfigured,
   welcomeApiPath = '/api/auth/welcome',
-  defaultNext = '/settings',
+  defaultNext = '/',
   homeHref = '/',
   homeLabel = 'Back',
 }: AuthLoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get('next') ?? defaultNext;
+  const invitedEmail = searchParams.get('email');
 
   const [mode, setMode] = useState<AuthMode>('signin');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(invitedEmail ?? '');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (invitedEmail) {
+      setEmail(invitedEmail);
+    }
+  }, [invitedEmail]);
+
+  useEffect(() => {
+    if (!isConfigured()) {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getSession();
+        if (cancelled || !data.session) {
+          return;
+        }
+        // Already signed in — honor ?next= (Figma plugin connected handoff).
+        router.replace(next);
+        router.refresh();
+      } catch {
+        // stay on form
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [createClient, isConfigured, next, router]);
 
   if (!isConfigured()) {
     return (
@@ -119,7 +150,7 @@ export function AuthLoginForm({
             key={tab}
             type="button"
             variant={mode === tab ? 'primary' : 'secondary'}
-            size="sm"
+            buttonSize="sm"
             onClick={() => {
               setMode(tab);
               setError(null);
@@ -172,6 +203,11 @@ export function AuthLoginForm({
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
       {message ? <p className="text-sm text-emerald-600">{message}</p> : null}
+      {invitedEmail ? (
+        <p className="text-xs text-neutral-500">
+          Use <strong>{invitedEmail}</strong> to accept this invitation.
+        </p>
+      ) : null}
 
       <p className="text-center text-sm text-neutral-500">
         <Link href={homeHref} className="underline">

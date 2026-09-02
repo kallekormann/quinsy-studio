@@ -1,26 +1,42 @@
 /**
- * Studio Library — generic text input.
+ * Moody Bloom — generic text input with optional label, hint, and error.
  */
 import type { ComponentProps } from 'react';
+import { Input as BaseInput } from '../atoms/Input';
+import {
+  fieldErrorClassName,
+  fieldHintClassName,
+  fieldLabelClassName,
+} from '../atoms/field-styles';
 
 export interface InputProps extends ComponentProps<'input'> {
   label?: string;
+  hint?: string;
+  error?: string;
 }
 
-export function Input({ label, className = '', id, ...props }: InputProps) {
+export function Input({
+  label,
+  hint,
+  error,
+  className = '',
+  id,
+  'aria-invalid': ariaInvalid,
+  ...props
+}: InputProps) {
   const inputId = id || 'input';
+  const invalid = ariaInvalid ?? (error ? true : undefined);
+
   return (
     <div className="w-full">
-      {label && (
-        <label htmlFor={inputId} className="mb-1 block text-sm font-medium text-neutral-600">
+      {label ? (
+        <label htmlFor={inputId} className={fieldLabelClassName}>
           {label}
         </label>
-      )}
-      <input
-        id={inputId}
-        className={`w-full rounded-lg border border-neutral-300 bg-surface px-4 py-2 text-neutral-900 shadow-sm placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200 ${className}`}
-        {...props}
-      />
+      ) : null}
+      <BaseInput id={inputId} aria-invalid={invalid} className={className} {...props} />
+      {error ? <span className={fieldErrorClassName}>{error}</span> : null}
+      {!error && hint ? <span className={fieldHintClassName}>{hint}</span> : null}
     </div>
   );
 }

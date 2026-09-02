@@ -54,6 +54,19 @@ The anti-slop audit must be green before a gate counts as passed.
 | A4 | Missing typing | `any`/`unknown` without need |
 | A5 | Inconsistent naming | camelCase and snake_case mixed |
 
+### Category 5: Design & copy slop (severity: warning)
+
+Canonical: [anti-slop-design-ux.md](../knowledge-base/anti-slop-design-ux.md)
+
+| Rule | Pattern | Detection |
+|------|---------|-----------|
+| U-P1 | Placeholder copy | `Lorem ipsum`, `Feature 1`, `Primary action` in mocks/UI |
+| M1 | Fluff vocabulary | supercharge, seamless, unlock, delight, ecosystem, … |
+| M2 | Vague CTAs | Proceed, Let's go, Make magic happen |
+| U-D5 | Emoji-as-icon | emoji in product chrome (LO-0037) |
+
+Automated via `validate_anti_slop.py` (text + placeholder patterns).
+
 ---
 
 ## Audit mode
@@ -134,6 +147,7 @@ Anti-slop rules can be changed:
 
 ## References
 
+- [anti-slop-design-ux.md](../knowledge-base/anti-slop-design-ux.md) — design & microcopy
 - `.quinsy-studio/process/gates.md` — gate definitions
 - `.quinsy-studio/process/learning-loop.md` — learning loop
 - `.quinsy-studio/teams/07-ai-autonomous-systems/` — anti-slop team

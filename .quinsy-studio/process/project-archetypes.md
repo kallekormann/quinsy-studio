@@ -50,6 +50,14 @@ CI/CD:       GitHub Actions
 - **Phase 6:** staging → production
 - **Phase 7:** metrics (retention, MRR, churn)
 
+### UX layout options (LO-0040)
+
+When the product has **inspectable objects**, tool peers, or queues beside a primary stage (board, document, table):
+
+- Consider a **right-rail navigation + detail-rail** pattern: narrow icon rail; clicking a peer opens a docked detail panel (`studio-library` → `studio-rail` / `StudioDock`).
+- Weigh against left nav / top chrome only — dense SaaS often benefits from stage-left content + stage-right tools without burying inspector/inbox/library in modal stacks.
+- Gate 2 / design review: name the pattern explicitly if chosen; reuse the library organism rather than inventing a parallel rail per page.
+
 ### Gate adjustments
 
 | Gate | Specific checks |

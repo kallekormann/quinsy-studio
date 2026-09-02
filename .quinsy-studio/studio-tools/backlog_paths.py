@@ -171,22 +171,31 @@ def read_ticket_meta(path: Path) -> Dict:
 
 
 def set_ticket_sprint(content: str, sprint_name: str) -> str:
-    """Set or replace frontmatter sprint: on a ticket body."""
+    """Set or replace frontmatter sprint: on a ticket body.
+
+    Always assigns ``sprint_name`` (overwrites a prior sprint tag). Approve-scope
+    must retag tickets; a no-op on existing ``sprint:`` caused empty sprints (LO-0016).
+    """
     if re.search(rf"^sprint:[ \t]*{re.escape(sprint_name)}[ \t]*$", content, re.MULTILINE):
         return content
-    if re.search(r"^sprint:[ \t]*\S", content, re.MULTILINE):
-        return content
-    if re.search(r"^sprint:[ \t]*$", content, re.MULTILINE):
+    if re.search(r"^sprint:[ \t]*.*$", content, re.MULTILINE):
         return re.sub(
-            r"^sprint:[ \t]*$",
+            r"^sprint:[ \t]*.*$",
             f"sprint: {sprint_name}",
             content,
             count=1,
             flags=re.MULTILINE,
         )
-    if "sprint:" not in content:
-        return content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
-    return content
+    if content.startswith("---"):
+        parts = content.split("---", 2)
+        if len(parts) >= 3:
+            fm = parts[1]
+            if "created:" in fm:
+                fm = fm.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
+            else:
+                fm = fm.rstrip("\n") + f"\nsprint: {sprint_name}\n"
+            return f"---{fm}---{parts[2]}"
+    return content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
 
 
 def list_unscheduled_backlog(project: str) -> List[Dict]:
@@ -199,7 +208,11 @@ def list_unscheduled_backlog(project: str) -> List[Dict]:
         status = (meta.get("status") or "backlog").lower()
         if status in ("cancelled", "done", "superseded"):
             continue
-        meta["from_feedback"] = "## Source feedback" in meta.get("body", "")
+        meta["from_feedback"] = (
+            "## Source feedback" in meta.get("body", "")
+            or bool(re.search(r"^from_feedback:\s*\S", meta.get("body", ""), re.M))
+            or bool(re.search(r"^feedback:\s*FB-", meta.get("body", ""), re.M | re.I))
+        )
         tickets.append(meta)
     return tickets
 

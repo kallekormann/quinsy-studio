@@ -1,0 +1,125 @@
+{
+  "schema_version": "1.0",
+  "default_system_id": "moody-bloom",
+  "systems": [
+    {
+      "id": "moody-bloom",
+      "name": "Moody Bloom",
+      "description": "Warm soft Bloom grammar from Moody product design — default generate system.",
+      "source": "projects/moody/design/DESIGN.md + ui/tokens/",
+      "default": true
+    },
+    {
+      "id": "soft-ui",
+      "name": "Soft UI",
+      "description": "Warm consumer premium, glass, bounce.",
+      "source": "aesthetic-presets/soft-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "minimalist-ui",
+      "name": "Minimalist UI",
+      "description": "Restrained whitespace, monochrome productivity.",
+      "source": "aesthetic-presets/minimalist-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "brutalist-ui",
+      "name": "Brutalist UI",
+      "description": "Raw high-contrast editorial — contrast demo core, not Moody product skin.",
+      "source": "aesthetic-presets/brutalist-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "apple-like-ui",
+      "name": "Apple-like UI",
+      "description": "Cupertino glass, system hierarchy.",
+      "source": "aesthetic-presets/apple-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "stripe-like-ui",
+      "name": "Stripe-like UI",
+      "description": "FinTech precision, soft structural elevation.",
+      "source": "aesthetic-presets/stripe-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "linear-like-ui",
+      "name": "Linear-like UI",
+      "description": "Dark productivity, keyboard-first density.",
+      "source": "aesthetic-presets/linear-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "notion-like-ui",
+      "name": "Notion-like UI",
+      "description": "Calm workspace, blocky surfaces.",
+      "source": "aesthetic-presets/notion-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "adobe-like-ui",
+      "name": "Adobe-like UI",
+      "description": "Pro creative chrome, dense panels.",
+      "source": "aesthetic-presets/adobe-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "paypal-like-ui",
+      "name": "PayPal-like UI",
+      "description": "Trust and commerce clarity.",
+      "source": "aesthetic-presets/paypal-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "amazon-like-ui",
+      "name": "Amazon-like UI",
+      "description": "Commerce density and scanability.",
+      "source": "aesthetic-presets/amazon-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "nike-like-ui",
+      "name": "Nike-like UI",
+      "description": "Bold athletic, hero imagery bias.",
+      "source": "aesthetic-presets/nike-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "space-x-like-ui",
+      "name": "SpaceX-like UI",
+      "description": "Industrial sci-fi mission control.",
+      "source": "aesthetic-presets/space-x-like-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "nordic-design-ui",
+      "name": "Nordic Design UI",
+      "description": "Light calm Scandinavian productivity.",
+      "source": "aesthetic-presets/nordic-design-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "cosmic-void-ui",
+      "name": "Cosmic Void UI",
+      "description": "Deep space, luminous accents.",
+      "source": "aesthetic-presets/cosmic-void-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "technical-blueprint-ui",
+      "name": "Technical Blueprint UI",
+      "description": "CAD / terminal blueprint grammar.",
+      "source": "aesthetic-presets/technical-blueprint-ui/SKILL.md",
+      "default": false
+    },
+    {
+      "id": "academic-editorial-ui",
+      "name": "Academic Editorial UI",
+      "description": "Scholarly structure for long-form.",
+      "source": "aesthetic-presets/academic-editorial-ui/SKILL.md",
+      "default": false
+    }
+  ]
+}

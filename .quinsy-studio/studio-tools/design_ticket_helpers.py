@@ -48,10 +48,22 @@ NEW_COMPONENT_TRIGGERS = (
     "new component", "new modal", "new dialog", "new dropdown", "settings panel"
 )
 STYLING_TRIGGERS = ("dark mode", "styling", "polish", "contrast", "theme tweak")
+# Titles/scopes from clarify that are design-track but miss "component/modal/ui"
+DESIGN_BRIEF_TRIGGERS = (
+    "team 10 design",
+    "design spec +",
+    "design spec and",
+    "in-context mock",
+    "in-context mocks",
+)
 
 
 def infer_ticket_type(text: str) -> str:
-    t = text.lower()
+    t = text.lower().strip()
+    if t.startswith("design:") or t.startswith("design —") or t.startswith("design -"):
+        return "ui-composition"
+    if any(x in t for x in DESIGN_BRIEF_TRIGGERS):
+        return "ui-composition"
     if any(x in t for x in MARKETING_TRIGGERS):
         return "marketing-page"
     if any(x in t for x in WORKFLOW_TRIGGERS):
@@ -220,4 +232,107 @@ def design_spec_placement_warning(spec_path: Path) -> Optional[str]:
         "Design spec missing §2 Context & placement "
         "(see knowledge-base/contextual-ia-playbook.md). "
         "Approve only if this ticket is nav-only or single-surface styling."
+    )
+
+
+def design_spec_has_in_context_mocks_section(spec_text: str) -> bool:
+    """True if spec includes experienceable / in-context mocks section with substance."""
+    patterns = (
+        r"##\s*2c\.\s*Experienceable",
+        r"##\s*2c\.\s*In-context",
+        r"in-context\s+mocks",
+        r"Experienceable in-context mocks",
+        r"\*\*Shell\s*/\s*surface\*\*",
+        r"\*\*Anti-orphan check\*\*",
+    )
+    if not any(re.search(p, spec_text, re.IGNORECASE) for p in patterns):
+        return False
+    placeholders = (
+        "| | |",
+        "e.g. board chrome",
+        "Paths under",
+        "__",
+        "TBD",
+        "…",
+        "list which",
+    )
+    section_match = re.search(
+        r"(##\s*2c\.[^\n]*\n)([\s\S]*?)(?=\n##\s|\Z)",
+        spec_text,
+        re.IGNORECASE,
+    )
+    body = section_match.group(2) if section_match else spec_text
+    lines = [ln.strip() for ln in body.splitlines() if ln.strip() and not ln.strip().startswith(">")]
+    substantive = [ln for ln in lines if not any(p.lower() in ln.lower() for p in placeholders)]
+    has_shell = bool(
+        re.search(
+            r"\*\*Shell\s*/\s*surface\*\*\s*\|\s*[^|]+",
+            spec_text,
+            re.IGNORECASE,
+        )
+    )
+    has_asset = bool(
+        re.search(
+            r"(docs/design-specs/mocks/|\.png|\.jpg|\.webp|figma\.com|Mock assets)",
+            spec_text,
+            re.IGNORECASE,
+        )
+    )
+    return has_shell and has_asset and len(substantive) >= 3
+
+
+def design_spec_in_context_mocks_error(spec_path: Path) -> Optional[str]:
+    """Hard gate when in-context mocks section is missing (AM-007 / MOOD-0202)."""
+    if not spec_path.exists():
+        return None
+    text = spec_path.read_text(encoding="utf-8", errors="ignore")
+    if design_spec_has_in_context_mocks_section(text):
+        return None
+    return (
+        "Design spec missing §2c Experienceable in-context mocks "
+        "(AM-007). Embed mocks in the real UI shell — orphan artboards are not enough. "
+        "See knowledge-base/design-spec-template.md §2c."
+    )
+
+
+# Common emoji / pictograph ranges used as faux icons in mocks (LO-0037)
+_EMOJI_ICON_RE = re.compile(
+    "["
+    "\U0001F300-\U0001FAFF"  # Misc symbols & pictographs, supplemental
+    "\U00002700-\U000027BF"  # Dingbats
+    "\U0001F1E0-\U0001F1FF"  # Flags
+    "\U00002600-\U000026FF"  # Misc symbols
+    "]+"
+)
+
+
+def design_mocks_emoji_icon_warning(project_root: Path, ticket_id: str) -> Optional[str]:
+    """Warn if design-spec mock HTML appears to use emoji as UI icons (LO-0037)."""
+    mock_dir = project_root / "docs" / "design-specs" / "mocks" / ticket_id
+    if not mock_dir.is_dir():
+        return None
+    hits: List[str] = []
+    for path in sorted(mock_dir.rglob("*.html")):
+        try:
+            raw = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        # Ignore long prose; flag emoji inside tags that look like controls
+        for m in _EMOJI_ICON_RE.finditer(raw):
+            start = max(0, m.start() - 40)
+            ctx = raw[start : m.end() + 40]
+            if any(
+                k in ctx.lower()
+                for k in ("btn", "button", "icon", "toolbar", "rail", "tool", "aria-label")
+            ):
+                hits.append(f"{path.relative_to(project_root)}: {m.group(0)!r}")
+                break
+        if len(hits) >= 5:
+            break
+    if not hits:
+        return None
+    sample = "; ".join(hits[:3])
+    return (
+        "Emoji-as-icon in design mocks (LO-0037) — use SVG / Icon only. "
+        f"Examples: {sample}"
     )

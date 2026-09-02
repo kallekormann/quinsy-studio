@@ -96,6 +96,8 @@ from skill_matcher import match_skills, team_for_skills
 from design_ticket_helpers import (
     default_design_spec_path,
     design_implement_blocked_message,
+    design_spec_in_context_mocks_error,
+    design_mocks_emoji_icon_warning,
     design_spec_placement_warning,
     enrich_design_skills,
     infer_ticket_type,
@@ -184,6 +186,7 @@ from sprint_hitl import (
     prepare_review,
     reject_review,
     RETRO_DONE,
+    RETRO_PENDING,
     REVIEW_APPROVED,
     sprint_ticket_summary,
 )
@@ -1235,7 +1238,19 @@ class StudioOrchestrator:
                 print(f"  ⚠️  No scope proposal for {sprint} — run ./studio sprint {project}")
                 return False
             print_header(f"APPROVE SPRINT SCOPE — {project} ({sprint})")
-            tagged = apply_sprint_scope(project, sprint, proposal)
+            proposed = proposal.get("proposed") or []
+            tagged, missing = apply_sprint_scope(project, sprint, proposal)
+            if proposed and missing:
+                print(f"\n  ❌ Scope approve blocked — {len(missing)} proposed ticket(s) not in backlog/:")
+                for tid in missing:
+                    print(f"    • {tid}")
+                print("  Fix: ensure tickets exist under backlog/, or re-run ./studio sprint to refresh scope-proposal.json")
+                print("  (Editing scope-proposal.md alone does not update the JSON used by --approve-scope.)")
+                return False
+            if proposed and tagged == 0:
+                print(f"\n  ❌ Scope approve blocked — 0/{len(proposed)} ticket(s) tagged (empty sprint).")
+                print("  Fix: check scope-proposal.json matches intended tickets, then retry --approve-scope.")
+                return False
             hitl = get_sprint_hitl(status)
             hitl["scope_status"] = "approved"
             hitl["scope_approved_at"] = datetime.now().isoformat()
@@ -1367,6 +1382,15 @@ class StudioOrchestrator:
         print_header(f"SPRINT REVIEW — {project} ({sprint})")
 
         if approve:
+            summary = sprint_ticket_summary(project, sprint)
+            if summary["total"] == 0 or not summary["all_done"]:
+                print(f"\n  ❌ Cannot approve review — sprint tickets are not all done (LO-0025).")
+                print(f"     Progress: {summary['done']}/{summary['total']} done")
+                for ticket in summary["tickets"]:
+                    if ticket.get("status") != "done":
+                        print(f"     • {ticket['id']}: {ticket.get('status')} — {ticket.get('title', '')}")
+                print(f"  Finish remaining tickets, then ./studio review {project} → human --approve")
+                return False
             if not notes:
                 notes = "Human approved sprint deliverables."
             approve_review(project, sprint, status, notes)
@@ -1599,11 +1623,22 @@ class StudioOrchestrator:
         ticket_file = ticket_dir / f"{ticket_id}-{slug}.md"
         
         skills = match_skills(title)
-        ticket_type = infer_ticket_type(title)
+        infer_blob = title
+        if fb_item:
+            infer_blob = "\n".join(
+                [
+                    title,
+                    str(fb_item.get("draft_scope") or ""),
+                    str(fb_item.get("raw") or ""),
+                    str(fb_item.get("draft_title") or ""),
+                ]
+            )
+        ticket_type = infer_ticket_type(infer_blob)
         if ticket_type.startswith("ui-") or ticket_type in (
             "marketing-page",
             "workflow-explainer",
             "ia-navigation",
+            "ia-feature-placement",
         ):
             skills = enrich_design_skills(skills, ticket_type)
             team = team_for_skills(skills)
@@ -1611,7 +1646,7 @@ class StudioOrchestrator:
             team = team_for_skills(skills)
         role = role_for_skills(skills)
         design_status = "pending" if requires_design_approval(
-            f"ticket_type: {ticket_type}\n{title}"
+            f"ticket_type: {ticket_type}\n{infer_blob}"
         ) else "n/a"
         design_spec = default_design_spec_path(ticket_id) if design_status == "pending" else ""
 
@@ -1633,7 +1668,7 @@ class StudioOrchestrator:
         ticket = {
             "id": ticket_id,
             "title": title,
-            "type": "feature",
+            "type": ticket_type if ticket_type != "feature" else "feature",
             "status": "backlog",
             "phase": phase,
             "priority": priority,
@@ -1849,6 +1884,14 @@ class StudioOrchestrator:
         placement_warn = design_spec_placement_warning(spec_path)
         if placement_warn:
             print(f"\n  ⚠️  {placement_warn}")
+        mocks_err = design_spec_in_context_mocks_error(spec_path)
+        if mocks_err:
+            print(f"\n  ❌ {mocks_err}")
+            print(f"    Fill §2c in {spec_rel} then re-run approve-design.")
+            return False
+        emoji_warn = design_mocks_emoji_icon_warning(PROJECTS_DIR / project, ticket_id)
+        if emoji_warn:
+            print(f"\n  ⚠️  {emoji_warn}")
         updated = set_design_approved(content)
         if notes:
             updated += f"\n\n## Design approval\n- **Approved:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n- **Notes:** {notes}\n"

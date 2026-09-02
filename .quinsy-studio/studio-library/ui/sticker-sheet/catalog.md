@@ -28,6 +28,9 @@ Peer dependency: `@headlessui/react`
 
 ## Molecules
 
+- **SegmentedToggle** — `ui/components/segmented-toggle/` (labeled A|B exclusive; not Switch)
+- **Tooltip** — `ui/components/tooltip/` (position-aware label / compact popover for icon buttons)
+
 - `checklist-item`
 - `dropdown-menu`
 - `inline-form`
