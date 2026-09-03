@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Button } from '@ui/components/atoms/Button';
+import { CloseIcon } from '@ui/components/atoms/Icon';
 import { Tooltip } from '@ui/components/tooltip';
 import {
   studioRailButtonActiveClass,
@@ -33,6 +34,7 @@ export type StudioPanelProps = {
   title: string;
   children: ReactNode;
   headerTrailing?: ReactNode;
+  onClose?: () => void;
   className?: string;
   /** Full-bleed scroll body for docked drawer content (inbox, library). */
   flushBody?: boolean;
@@ -45,6 +47,8 @@ export type StudioDockProps = {
   onPeerChange: (peer: StudioPeerId | null) => void;
   panelTitle?: string;
   panelTrailing?: ReactNode;
+  /** Close the active panel (MOOD-0499 — on title chrome, not item row). */
+  onPanelClose?: () => void;
   children?: ReactNode;
   className?: string;
   panelFlush?: boolean;
@@ -87,6 +91,7 @@ export function StudioPanel({
   title,
   children,
   headerTrailing,
+  onClose,
   className = '',
   flushBody = false,
   'data-testid': dataTestId,
@@ -99,12 +104,28 @@ export function StudioPanel({
     >
       <div className={studioPanelHeaderClass}>
         <h3 className={studioPanelTitleClass}>{title}</h3>
-        {headerTrailing ? <div className="shrink-0">{headerTrailing}</div> : null}
+        <div className="flex shrink-0 items-center gap-1">
+          {headerTrailing ? <div>{headerTrailing}</div> : null}
+          {onClose ? (
+            <Tooltip label="Close panel" placement="left">
+              <Button
+                type="button"
+                variant="ghost"
+                buttonSize="sm"
+                className="h-8 w-8 px-0"
+                aria-label={`Close ${title}`}
+                onClick={onClose}
+              >
+                <CloseIcon size={20} />
+              </Button>
+            </Tooltip>
+          ) : null}
+        </div>
       </div>
       <div
         className={
           flushBody
-            ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-3.5 pb-3.5'
+            ? 'flex min-h-0 flex-1 flex-col overflow-hidden px-3.5 pt-3.5 pb-3.5'
             : studioPanelBodyClass
         }
       >
@@ -121,6 +142,7 @@ export function StudioDock({
   onPeerChange,
   panelTitle,
   panelTrailing,
+  onPanelClose,
   children,
   className = '',
   panelFlush = false,
@@ -130,7 +152,12 @@ export function StudioDock({
   return (
     <div className={`flex h-full min-h-0 shrink-0 ${className}`}>
       {showPanel && panelTitle ? (
-        <StudioPanel title={panelTitle} headerTrailing={panelTrailing} flushBody={panelFlush}>
+        <StudioPanel
+          title={panelTitle}
+          headerTrailing={panelTrailing}
+          onClose={onPanelClose}
+          flushBody={panelFlush}
+        >
           {children}
         </StudioPanel>
       ) : null}
