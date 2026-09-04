@@ -138,6 +138,18 @@ cp .quinsy-studio/studio-templates/amendment_01.example.md intake/amendments/<pr
 
 Tell the agent: *"Run amendment intake for `<project>` amendment_01"*
 
+### Step 1.5 — Overlap check (mandatory, before analyze)
+
+**Before drafting new analysis, check whether an existing amendment already covers this scope**
+(LO-0050). Run `./studio amendments <project>` and grep `docs/amendments/*/01-vision-synthesis.md`
++ `intake/amendments/<project>/*.md` for related themes/keywords from the new brief. If an
+approved-but-dormant amendment overlaps (tickets exist but were never scheduled, or milestones
+were never inserted into `docs/phases/`), **reconcile with it instead of drafting a parallel one**:
+write a short reconciliation doc under the existing amendment's folder (e.g. `docs/amendments/
+AM-00N-.../NN-reconciliation-<other-AM>.md`) mapping overlapping fields/decisions, and route any
+new work as tickets/milestone-inserts against the existing amendment. Only draft a genuinely new
+amendment when no existing one covers the scope.
+
 ### Step 2 — Analyze (agent)
 
 ```bash
@@ -153,13 +165,14 @@ Agent **must read**:
 - [ticket-team-allocation.md](ticket-team-allocation.md) + [skill-registry.md](../teams/skill-registry.md)
 - [contextual-ia-playbook.md](../knowledge-base/contextual-ia-playbook.md) for surface placement
 - Open feedback queue (related themes)
+- **Existing/approved amendments found in Step 1.5** — do not silently duplicate their scope
 
 Agent **produces** `docs/amendments/AM-001-<slug>/`:
 
 | Artifact | Lead team | Content |
 |----------|-----------|---------|
 | `01-vision-synthesis.md` | 04 / 06 | Consolidated narrative, PRD fit, conflicts |
-| `02-requirements-addendum.md` | 06 | New FR/NFR, personas, journeys, acceptance themes |
+| `02-requirements-addendum.md` | 06 | New FR/NFR, personas, journeys, acceptance themes, **and a "Scope exclusions" table** (see below) |
 | `03-milestone-roadmap.md` | 04 / 06 | **Proposed M* insert/reorder/defer** |
 | `04-ui-ux-concept.md` | 10 | Flows, **contextual IA / surface map**, design-track ticket list |
 | `05-frontend-architecture.md` | 01 | Routes, components, state, studio-library impact |
@@ -169,6 +182,17 @@ Agent **produces** `docs/amendments/AM-001-<slug>/`:
 | `09-tickets-draft.md` | all selected teams | Stubs: team, skills, type, milestone tag, estimate |
 | `10-approval-checklist.md` | — | Human sign-off items before materialize |
 
+**Scope exclusions table (mandatory in `02-requirements-addendum.md`, LO-0049):** any requirement
+that freezes, excludes, or explicitly does **not** touch a system a reasonable reader would expect
+to be in scope (e.g. an amendment titled “agency client surfaces” that excludes the companion plugin)
+must be listed explicitly:
+
+| Excluded/frozen system | Requirement enforcing it | Why | Reversible later? |
+|---|---|---|---|
+| e.g. Companion plugin contract | FR-NNN (byte-compatible) | Non-regression during web-first delivery | Yes — revisit in a follow-up amendment |
+
+This table is surfaced verbatim in `10-approval-checklist.md` so the human sees it **at
+approval time**, not during a later sprint review.
 Set `docs/amendments/README.md` status → `analyzed`.
 
 ### Step 3 — Classify
@@ -265,7 +289,8 @@ Implemented in `.quinsy-studio/studio-tools/amendment_intake.py` (wired in `stud
 5. **Contextual IA** — UX-003 placement before layout specs in `04-ui-ux-concept.md`
 6. **Log** — `revisions.md` on approve
 7. **Do not implement** until amendment approved, milestones re-approved if changed, tickets groomed
-
+8. **Cross-surface acceptance check** (LO-0048) — before marking the last ticket of an amendment's capability `done`, re-read `02-requirements-addendum.md` / `04-ui-ux-concept.md` for every **surface** the capability was promised on (e.g. marketing + application + atoms). A ticket proving distinctness on *one* surface does not close the capability for surfaces it didn't touch — list the untouched surfaces explicitly in the ticket or file a follow-up.
+9. **Unread-field check** (LO-0048) — before milestone review, search every field added to a frozen type in `docs/amendments/AM-NNN-*/` for at least one **runtime reader** under the project’s application code (`src/`, `app/`, `packages/`, etc. — not only the type’s own definition module). A field with zero readers ships silently inert — flag it in the review brief rather than letting gate-green imply coverage.
 ---
 
 ## Example (fictional project `acme-app`)

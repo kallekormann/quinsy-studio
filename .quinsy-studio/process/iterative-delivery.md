@@ -125,6 +125,11 @@ Creates `sprints/SPRINT-NN/plan.md` with template:
 - [ ] All tickets in status "done"
 - [ ] QA test green
 - [ ] Anti-slop audit: 0 errors
+- [ ] For any ticket whose acceptance criteria is a visible design/UX outcome (not just a
+      function returning the right value): the agent walked a real end-to-end user scenario
+      through the actual default app flow — not a code path or state only reachable via a
+      test harness — and attached a before/after screenshot to the ticket (LO-0051). A feature
+      gated behind an unconfirmed or undiscoverable app state counts as **not shipped**.
 - [ ] Retrospective done
 - [ ] Summary written
 ```

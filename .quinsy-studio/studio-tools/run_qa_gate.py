@@ -342,6 +342,16 @@ def check_smoke_routes(project_dir: Path) -> QAResult:
     smoke_config = project_dir / "docs" / "smoke-routes.json"
     start_time = datetime.now()
 
+    # Agent / CI sandboxes may SIGSEGV Chromium (kill EPERM). Opt out explicitly —
+    # never silent. Human local machines should leave this unset.
+    if os.environ.get("QUINSY_SKIP_SMOKE", "").strip() in ("1", "true", "yes"):
+        return QAResult(
+            check="smoke_routes",
+            passed=True,
+            output="Skipped — QUINSY_SKIP_SMOKE set (Chromium unavailable in this environment)",
+            duration=0,
+        )
+
     if not smoke_config.exists():
         return QAResult(
             check="smoke_routes",

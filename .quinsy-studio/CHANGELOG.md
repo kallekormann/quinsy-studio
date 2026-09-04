@@ -1,5 +1,51 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-04 — Visible-outcome DoD: real end-to-end walkthrough required, not just green tests (LO-0051)
+
+### Changed
+
+- `process/iterative-delivery.md` — sprint plan Definition of Done requires that any ticket whose acceptance criteria is a **visible design/UX outcome** be verified by walking a real end-to-end scenario through the **default product flow**, with a before/after screenshot — not only green unit/QA tests.
+- `process/human-in-the-loop.md` — Rule (LO-0051): a feature gated behind an unconfirmed or undiscoverable app state, or produced only by a code path the default flow never calls, counts as **not shipped** even with green gates. Sprint review means trying work through the same flow a real user reaches — not only reading `review.md`.
+- Provenance: learning from a project sprint where gate-green tickets produced no visible change on the default path (`--source` on LO-0051).
+
+## 2026-09-03 — Overlap check + mandatory scope-exclusions table in amendment intake (LO-0049, LO-0050)
+
+### Changed
+
+- `process/amendment-intake.md` — **Step 1.5 (overlap check)**: before drafting a new amendment, check `./studio amendments <project>` and existing `docs/amendments/*/01-vision-synthesis.md` for scope overlap; reconcile with a dormant approved amendment instead of drafting a parallel one.
+- Mandatory **"Scope exclusions" table** in `02-requirements-addendum.md` (and surfaced in `10-approval-checklist.md`) for any requirement that freezes/excludes a system a reader would reasonably expect in scope.
+- Provenance: LO-0049 / LO-0050 (`--source` on tickets).
+
+## 2026-09-03 — Cross-surface acceptance + unread-field checks in amendment intake (LO-0048)
+
+### Changed
+
+- `process/amendment-intake.md` — agent obligations #8 and #9: before closing an amendment capability, re-check every promised **surface** (not only the last-tested one), and confirm newly authored frozen-type fields have at least one runtime reader before milestone review.
+- Provenance: LO-0048.
+
+## 2026-09-03 — Same-status ticket move must not unlink (LO-0047)
+
+### Fixed
+
+- `studio-tools/studio.py` `cmd_move` — when source and destination resolve to the same path (e.g. already `implement` → `implement`), update the ticket in place and **do not** `unlink()` after write (previously deleted the ticket)
+
+## 2026-09-03 — Optional smoke skip for agent sandboxes (LO-0046)
+
+### Changed
+
+- `studio-tools/run_qa_gate.py` — `QUINSY_SKIP_SMOKE=1` skips Chromium smoke when the browser cannot launch (SIGSEGV / sandbox). Explicit opt-in only; local human runs leave unset.
+
+## 2026-09-03 — Ticket ID allocation scans root backlog (LO-0045)
+
+### Fixed
+
+- `studio-tools/ticket_ids.py` — `scan_max_ticket_number` now includes root-level `backlog/{PREFIX}-*.md` (amendment-materialized / unscheduled tickets), not only `backlog/<status>/`
+- Prevents `./studio ticket --from-feedback` from colliding with amendment-materialized IDs for any project prefix
+
+### Added
+
+- `studio-tools/test_ticket_ids.py` — root-level scan + allocate non-collision tests
+
 ## 2026-09-01 — Figma kit fidelity north-star DoD (LO-0044)
 
 ### Changed

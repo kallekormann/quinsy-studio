@@ -1808,16 +1808,22 @@ class StudioOrchestrator:
         
         # Update ticket content
         content = ticket_file.read_text()
-        content = content.replace(f"status: {current_status}", f"status: {new_status}")
+        content = content.replace(f"status: {current_status}", f"status: {new_status}", 1)
         content += f"\n\n## Status Change\n- **From:** {current_status}\n- **To:** {new_status}\n- **Date:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n- **Reason:** {reason}\n"
         
+        # LO-0047: same-path move (e.g. already implement → implement) must not unlink
+        # after write — Path.unlink() would delete the ticket we just wrote.
+        same_path = ticket_file.resolve() == new_file.resolve()
         new_file.write_text(content)
-        ticket_file.unlink()
+        if not same_path:
+            ticket_file.unlink()
         
         print(f"\n  Ticket {ticket_id}: {current_status} → {new_status}")
         print(f"  Project: {project}")
         if reason:
             print(f"  Reason: {reason}")
+        if same_path and current_status == new_status:
+            print(f"  (same status — ticket updated in place, not moved)")
 
         status = load_status(project)
         title_match = re.search(r"^title:\s*(.+)$", content, re.MULTILINE)

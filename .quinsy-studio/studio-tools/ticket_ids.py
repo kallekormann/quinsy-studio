@@ -15,11 +15,23 @@ def _project_prefix(project: str) -> str:
 
 
 def scan_max_ticket_number(project: str) -> int:
-    """Return the highest ticket number in use for a project."""
+    """Return the highest ticket number in use for a project.
+
+    Scans:
+    - backlog/<status>/{PREFIX}-*.md  (open, done, implement, …)
+    - backlog/{PREFIX}-*.md           (root-level / unscheduled / amendment materialize)
+    - .ticket_counter                 (monotonic floor)
+    """
     prefix = _project_prefix(project)
     max_num = 0
     backlog = PROJECTS_DIR / project / "backlog"
     if backlog.exists():
+        # Root-level tickets (amendment materialize, unscheduled feedback tickets)
+        for ticket_file in backlog.glob(f"{prefix}-*.md"):
+            match = re.match(rf"{re.escape(prefix)}-(\d+)", ticket_file.name)
+            if match:
+                max_num = max(max_num, int(match.group(1)))
+        # Status-folder tickets
         for status_dir in backlog.iterdir():
             if not status_dir.is_dir():
                 continue
