@@ -7,17 +7,22 @@ You operate **Quinsy Studio** in the IDE. Stay in context. Separate worlds. **Li
 ```bash
 ./studio install                  # once after git clone (skip if node_modules exists)
 ./studio verify-worlds
+./studio settings                 # estimated token policy (raise named keys on INFORM cost-cap)
 ./studio focus <project>          # or: ./studio adopt <p> --from <url-or-path> when the tree already has source
 ./studio execute <project>        # do NEXT; loop until ACTION is HITL — do not ask to continue
 ```
 
-`./studio resume <project>` still prints a checklist. Prefer **execute**: one machine-readable step (`IMPLEMENT` / `GATE` / `VERIFY` / `MOVE_DONE` / `STUDIO_LO` / `HITL`). Read the compact CARD, and the full ticket `.md` only when the action is `IMPLEMENT`. Never dump the backlog into context.
+`./studio resume <project>` still prints a checklist. Prefer **execute**: one machine-readable step (`IMPLEMENT` / `GATE` / `VERIFY` / `MOVE_DONE` / `INFORM` / `STUDIO_LO` / `HITL`). Read the compact CARD (including **skills + playbooks**), and the full ticket `.md` only when the action is `IMPLEMENT`. Never dump the backlog into context.
 
-On `HITL`: stop and wait (gates 0–2 including **as-built** on adopted repos, design-approve, sprint scope, sprint review, next-sprint). Do not implement sprint-review feedback.
+On `HITL`: stop and wait — **gate 0** (PRD / as-built), **gate 1 architecture**, **gate 2 design track** (direction, design system, stills/mocks or clickable prototype), **design-track `approve-design`**, **UI sprint review**, **tech-veto**, explicit abort, or 3× QA fail. Do not implement sprint-review **design** feedback. Reuse and sprint scope are **inform** (agent proceeds unless you override).
 
 **Existing codebase:** `./studio adopt <p> --from <url-or-path>` overlays studio docs without wiping source. Execute fills `docs/as-built/` (cite paths), then HITL gate 0. Do not `init`/`bootstrap` an empty scaffold over a live tree. See [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md).
 
-On `STUDIO_LO`: implement in `.quinsy-studio/` only, CHANGELOG, move LO to `backlog/done/`, then `./studio execute` again. Learnings are harvested **when identified** (learn / retro `--complete` / reuse / 3rd gate fail) — execute returns `STUDIO_LO` **before the next project ticket**, including mid-sprint. Do not leave LOs piled for a later human trigger.
+On `INFORM`: do NEXT (inbox drain, reuse brief), then execute again — do not wait for a signature. **Exception:** `INFORM cost-cap` — stop stuffing files; the human raises the **named** key in `.quinsy-studio/studio.settings.local.yaml`. Architecture and design gates are **not** inform.
+
+On `STUDIO_LO`: only when the product loop is **idle**. Mid-sprint, harvest immediately and spawn `./studio train` **in parallel**; keep `IMPLEMENT`. Infuse in `.quinsy-studio/` only (CHANGELOG, move LO to `backlog/done/`). Do not leave LOs piled for a later human trigger.
+
+**Human chat mid-execute:** `./studio note <p> "…"` (or treat the message as a note). **ACK and continue the current ACTION.** Drain after `MOVE_DONE`. Only “stop this ticket” / abort may preempt.
 
 Read: [agent-context.md](.quinsy-studio/process/agent-context.md) | [ticket-team-allocation.md](.quinsy-studio/process/ticket-team-allocation.md) | [library_registry.md](.quinsy-studio/studio-library/library_registry.md)
 
@@ -27,12 +32,12 @@ Read: [agent-context.md](.quinsy-studio/process/agent-context.md) | [ticket-team
 
 ```bash
 ./studio library list
-./studio library suggest <project> "auth billing button"
-./studio library pull <project> auth billing tokens button
+./studio library suggest <project> "auth button"
+./studio library pull <project> auth tokens button
 ```
 
-Use library artifacts as **boilerplate** — adapt tokens, config, business rules in the project.  
-After the ticket is done, if changes are generic:
+Use library artifacts as **boilerplate** — adapt tokens, config, business rules in the project. **Stubs** (`billing`, `feature-gating`) are **not pullable** — build in-project, then promote a working generic.
+After the ticket is done, promote **only if the generic asset improved** (no client UI/tokens):
 
 ```bash
 ./studio library promote <project> packages/billing --ticket <ID> [--force]
@@ -44,7 +49,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 **Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally. **New components** go in studio-library first ([component-creation-playbook.md](.quinsy-studio/knowledge-base/component-creation-playbook.md)); Headless UI primitives live under `ui/primitives/headless/`.
 
-**Sprint HITL:** Never ticket sprint-review ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **Autonomous mid-sprint:** agent implements all groomed sprint tickets without human checkpoints. **Human joins at sprint review** when all sprint tickets are `done`. **During review:** capture feedback only — never implement in project code until the next sprint. **Milestones:** after gate 2, agent drafts `docs/phases/` roadmap → human approves → tickets for active milestone only → sprints. **Milestone review** when all milestone tickets are done, before next milestone backlog. **Product backlog** lives in `projects/<p>/backlog/*.md` (not `open/`). **Sprint planning:** `./studio sprint` proposes scope → human `./studio sprint --approve-scope` → `./studio groom --approve`.
+**Sprint HITL:** Never ticket sprint-review **design** ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **Autonomous mid-sprint:** agent implements sprint tickets without human checkpoints (scope/groom are agent-owned). **Human joins at UI sprint review** when shipped work is user-visible. Backend-only sprints inform and continue to retro. **During review:** capture feedback only — never implement design feedback in project code until the next sprint. **Milestones:** agent drafts `docs/phases/` → human may approve; backend tickets need not wait on whole-product gate 2. **Product backlog** lives in `projects/<p>/backlog/*.md` (not `open/`). **Sprint planning:** `./studio sprint` proposes scope → agent `--approve-scope` (human may override) → groom → execute.
 
 ## Two worlds — never mix
 
@@ -59,10 +64,10 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 | Gate | Approves | Tickets? |
 |------|----------|----------|
-| 0 | PRD + definitions | No |
-| 1 | Architecture | No |
-| 2 | Design + mocks | No — **milestone roadmap** next |
-| Milestones | Version plan (`docs/phases/`) | Yes — before sprints |
+| 0 | PRD + definitions (HITL) | No |
+| 1 | Architecture after PRD (HITL) | No — design track starts after this |
+| 2 | Design direction + system + mocks/prototype (HITL) | After approve: tickets / sprints |
+| Milestones | Version plan (`docs/phases/`) | Inform; don’t hard-block backend **after** gates 0–2 |
 | Milestone review | Version complete (M0, M1, …) | Yes — before next milestone backlog |
 
 ```bash

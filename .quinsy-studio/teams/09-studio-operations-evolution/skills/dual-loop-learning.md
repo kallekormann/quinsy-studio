@@ -70,7 +70,7 @@ When a learning is identified (gate, retro bullet, reuse path, explicit learn):
   1. Classify (package / ui-component / design / ux / ia / layout / …)
   2. Append knowledge-base/learnings/inbox.md (generic — no client names)
   3. Open LO-* with infusion_kind + infusion_path
-  4. ./studio execute → STUDIO_LO before the next project IMPLEMENT
+  4. ./studio train (parallel) — product execute keeps IMPLEMENT
   5. Generalize into the infusion path + CHANGELOG; move LO to done
 Project-specific only → projects/[name]/docs/local_learnings.md
 Do not copy project UI/tokens into studio-library.
@@ -110,7 +110,7 @@ How to promote:
 ### ✅ Instead
 
 ```markdown
-- Immediate harvest when identified (inbox + LO) then execute STUDIO_LO
+- Immediate harvest when identified (inbox + LO) then train in parallel
   - Strict separation Local/Global
   - Promotion with complete documentation
   - Only universally applicable solutions in Studio HQ

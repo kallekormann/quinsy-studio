@@ -133,6 +133,15 @@ def list_library_assets() -> List[Dict]:
     return assets
 
 
+def asset_is_stub(name: str) -> Optional[Dict]:
+    """Return the stub asset dict if this name is marked not-pullable."""
+    needle = (name or "").lower().strip()
+    for asset in _load_manifest().get("assets", []):
+        if str(asset.get("name", "")).lower() == needle and asset.get("stub"):
+            return asset
+    return None
+
+
 _HEADLESS_HINTS = {
     "modal": ["dialog"],
     "dialog": ["dialog"],
@@ -166,6 +175,8 @@ def suggest_assets(query: str) -> List[Dict]:
             boost_names.update(names)
     results = []
     for asset in list_library_assets():
+        if asset.get("stub"):
+            continue
         hay = " ".join(
             str(asset.get(k, "")) for k in ("name", "kind", "title", "path")
         ).lower()
@@ -234,6 +245,14 @@ def pull_assets(project: str, names: List[str], force: bool = False) -> Dict[str
         usage = json.loads(usage_file.read_text())
 
     for name in names:
+        stub = asset_is_stub(name)
+        if stub:
+            pulled.append({
+                "name": name,
+                "status": "refused_stub",
+                "reason": stub.get("title") or "documented stub — build in-project, then promote",
+            })
+            continue
         resolved = _resolve_alias(name)
         if not resolved:
             pulled.append({"name": name, "status": "not_found"})

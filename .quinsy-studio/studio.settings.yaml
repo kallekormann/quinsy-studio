@@ -1,0 +1,51 @@
+# Quinsy Studio — committed defaults (medium project).
+# Override locally: copy studio-templates/studio.settings.local.example.yaml
+# → .quinsy-studio/studio.settings.local.yaml  (gitignored; never put API keys here).
+#
+# Tokens are estimates (chars/4 of CARD + listed files), not Cursor/Anthropic/Google billing.
+# model_hint is a hint for the host IDE. Keys stay in Cursor / Claude Code / Gemini CLI.
+
+runtime: cursor
+
+cost:
+  profile: standard
+  model_hint: ""
+  estimate: chars_div_4
+  warn_at_pct: 80
+  session_token_budget: 1500000
+  max_files_open_on_implement: 12
+  never_dump_backlog: true
+  load_full_ticket_only_on: IMPLEMENT
+  max_qa_retries: 3
+  train_parallel: true
+  steps:
+    intake:
+      context: 24000
+      budget: 200000
+    architecture:
+      context: 32000
+      budget: 250000
+    design:
+      context: 40000
+      budget: 400000
+    planning:
+      context: 16000
+      budget: 80000
+    scoping:
+      context: 12000
+      budget: 60000
+    implement:
+      context: 16000
+      budget: 400000
+    review:
+      context: 16000
+      budget: 80000
+    reuse:
+      context: 12000
+      budget: 40000
+    learning:
+      context: 12000
+      budget: 60000
+    retro:
+      context: 12000
+      budget: 40000

@@ -20,4 +20,4 @@ def test_infusion_message_when_open(monkeypatch, tmp_path):
     assert msg is not None
     assert "LO-0099" in msg
     ok, _ = can_infuse_project_sprint()
-    assert ok is False
+    assert ok is True

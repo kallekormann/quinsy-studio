@@ -365,10 +365,10 @@ def reuse_gate_message(project: str, status: Dict) -> Optional[str]:
     unresolved = reuse.get("unresolved_count")
     extra = f" ({unresolved} path(s) pending)" if unresolved else ""
     return (
-        f"Reuse review required for {sprint}{extra}.\n"
+        f"Reuse inform brief for {sprint}{extra}.\n"
         f"    ./studio reuse {project}\n"
-        f"    ./studio reuse {project} --record <path> <action> [--ref LO-NNNN]\n"
-        f"    ./studio reuse {project} --approve"
+        f"    Pull → adapt in the project. Promote only if the generic asset improved.\n"
+        f"    No --approve — this is not a HITL gate."
     )
 
 

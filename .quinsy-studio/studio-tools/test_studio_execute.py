@@ -56,7 +56,7 @@ class ExtractAndCardTests(unittest.TestCase):
         self.assertIn("Watermark appears on free plan", ac)
         self.assertFalse(any("Current project state" in x for x in ac))
 
-    def test_compact_card_does_not_dump_skills_section(self):
+    def test_compact_card_lists_skills_and_playbooks_not_a_skills_section(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "DEMO-0001-export.md"
             path.write_text(
@@ -65,6 +65,7 @@ class ExtractAndCardTests(unittest.TestCase):
                 "title: Export PDF\n"
                 "files: [src/export.ts]\n"
                 "dependencies: [DEMO-0000]\n"
+                "skills: [FE-001, SO-001]\n"
                 "---\n\n"
                 "## Target\nPDF download on free path\n\n"
                 "## AC\n- downloads a file\n- shares type stack with screen\n",
@@ -75,7 +76,8 @@ class ExtractAndCardTests(unittest.TestCase):
             self.assertIn("downloads a file", card["ac"])
             self.assertIn("src/export.ts", card["files"])
             self.assertEqual(card["deps"], ["DEMO-0000"])
-            self.assertNotIn("skills", card)
+            self.assertEqual(card["skills"], ["FE-001", "SO-001"])
+            self.assertTrue(any("frontend_playbook" in p for p in card["playbooks"]))
 
     def test_render_ticket_omits_boilerplate_dod_and_filler_bdd(self):
         md = render_ticket_markdown(
@@ -115,6 +117,23 @@ class PickAndReceiptTests(unittest.TestCase):
         self.assertEqual(nxt["id"], "A-0001")
         tickets[1]["status"] = "done"
         nxt = pick_next_ticket(tickets, done_ids={"A-0001", "A-0003"})
+        self.assertEqual(nxt["id"], "A-0002")
+
+    def test_pick_next_accepts_cross_sprint_done_ids(self):
+        """Deps completed in prior sprints are not in the current sprint ticket list."""
+        tickets = [
+            {"id": "A-0010", "status": "backlog", "deps": ["A-0009", "A-0008"]},
+        ]
+        self.assertIsNone(pick_next_ticket(tickets, done_ids=set()))
+        nxt = pick_next_ticket(tickets, done_ids={"A-0009", "A-0008"})
+        self.assertEqual(nxt["id"], "A-0010")
+
+    def test_pick_next_follows_scope_order(self):
+        tickets = [
+            {"id": "A-0001", "status": "backlog", "deps": [], "priority": "P0"},
+            {"id": "A-0002", "status": "backlog", "deps": [], "priority": "P0"},
+        ]
+        nxt = pick_next_ticket(tickets, done_ids=set(), scope_order=["A-0002", "A-0001"])
         self.assertEqual(nxt["id"], "A-0002")
 
     def test_pick_next_prefers_in_progress(self):
@@ -256,7 +275,7 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "STUDIO_LO")
         self.assertEqual(step.ticket_id, "LO-0053")
 
-    def test_decide_studio_lo_mid_sprint_before_next_implement(self):
+    def test_decide_implement_with_open_lo_trains_in_parallel(self):
         step = decide_from_state(
             "demo",
             _approved_status(),
@@ -274,9 +293,10 @@ class DecideTests(unittest.TestCase):
             amendment_actions=[],
             prd_exists=True,
         )
-        self.assertEqual(step.kind, "STUDIO_LO")
-        self.assertEqual(step.ticket_id, "LO-0055")
-        self.assertIn("layout", step.reason)
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertEqual(step.ticket_id, "DEMO-0001")
+        self.assertTrue(step.parallel_train)
+        self.assertIn("LO-0055", step.parallel_train[0]["lo"])
 
     def test_decide_in_progress_beats_open_lo(self):
         step = decide_from_state(
@@ -322,7 +342,161 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "STUDIO_LO")
 
 
-class HarvestTests(unittest.TestCase):
+    def test_decide_gate1_is_hitl_after_prd(self):
+        step = decide_from_state(
+            "demo",
+            {
+                "human_gates": {"0": {"status": "approved"}, "1": {"status": "pending"}},
+                "current_sprint": "SPRINT-01",
+                "sprint_hitl": {"scope_status": "approved", "groom_status": "approved"},
+            },
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "ticket_type": "feature"}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "HITL")
+        self.assertIn("gate-1", step.reason)
+        self.assertFalse(step.loop)
+
+    def test_decide_gate1_produce_blueprint_when_not_ready(self):
+        step = decide_from_state(
+            "demo",
+            {
+                "human_gates": {"0": {"status": "approved"}, "1": {"status": "pending"}},
+            },
+            [],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+            gate1_ready=False,
+        )
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertIn("blueprint", step.command)
+
+    def test_decide_gate2_is_hitl_after_architecture(self):
+        step = decide_from_state(
+            "demo",
+            {
+                "human_gates": {
+                    "0": {"status": "approved"},
+                    "1": {"status": "approved"},
+                    "2": {"status": "pending"},
+                },
+                "current_sprint": "SPRINT-01",
+                "sprint_hitl": {"scope_status": "approved", "groom_status": "approved"},
+                "gate": "5",
+                "gate_status": "passed",
+            },
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "ticket_type": "feature", "title": "API rate limit"}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "HITL")
+        self.assertIn("gate-2", step.reason)
+        self.assertFalse(step.loop)
+
+    def test_decide_gate2_produce_design_when_not_ready(self):
+        step = decide_from_state(
+            "demo",
+            {
+                "human_gates": {
+                    "0": {"status": "approved"},
+                    "1": {"status": "approved"},
+                    "2": {"status": "pending"},
+                },
+            },
+            [],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+            gate2_ready=False,
+        )
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertIn("design", step.command)
+
+    def test_decide_design_track_still_hitl(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "ticket_type": "ui-composition"}],
+            design_block="Design approval required before implement",
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "HITL")
+        self.assertIn("design-approve", step.reason)
+
+    def test_decide_backend_sprint_skips_review_hitl(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(
+                sprint_hitl={
+                    "review_status": "pending",
+                    "scope_status": "approved",
+                    "groom_status": "approved",
+                }
+            ),
+            [{"id": "DEMO-0001", "status": "done", "deps": [], "ticket_type": "feature", "title": "API webhook"}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertNotEqual(step.kind, "HITL")
+        self.assertIn(step.kind, ("VERIFY", "STUDIO_LO"))
+
+    def test_decide_inbox_does_not_preempt_in_progress(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0002", "status": "implement", "deps": [], "card": {"id": "DEMO-0002"}}],
+            log={"entries": [{"ticket": "DEMO-0002", "event": "implement", "ts": "2026-09-07T10:00:00"}]},
+            receipts_ok={"DEMO-0002": False},
+            inbox_open=[{"id": "N-001", "text": "also consider a darker hero", "abort": False, "status": "open"}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertEqual(step.ticket_id, "DEMO-0002")
+
+    def test_decide_abort_preempts(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0002", "status": "implement", "deps": [], "card": {"id": "DEMO-0002"}}],
+            log={"entries": [{"ticket": "DEMO-0002", "event": "implement", "ts": "2026-09-07T10:00:00"}]},
+            receipts_ok={"DEMO-0002": False},
+            inbox_open=[{"id": "N-001", "text": "stop this ticket", "abort": True, "status": "open"}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "HITL")
+        self.assertIn("abort", step.reason.lower())
+
+    def test_decide_reuse_is_not_hitl_after_closed_sprint(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(
+                sprint_hitl={
+                    "scope_status": "approved",
+                    "groom_status": "approved",
+                    "review_status": "approved",
+                    "retro_status": None,
+                    "reuse_status": "pending",
+                }
+            ),
+            [{"id": "DEMO-0001", "status": "done", "deps": []}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertIn("retro", step.reason)
+        self.assertNotIn("HITL", step.kind)
     def test_harvest_retro_prompts(self):
         retro = """# Retro
 ## What went well?

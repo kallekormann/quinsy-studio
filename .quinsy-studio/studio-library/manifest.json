@@ -216,7 +216,8 @@
       "version": "1.0.1",
       "source_project": "studio",
       "promoted": "2026-08-20",
-      "title": "Billing provider stubs"
+      "title": "Billing provider stubs (not pullable — build in-project, then promote)",
+      "stub": true
     },
     {
       "name": "feature-gating",
@@ -225,7 +226,8 @@
       "version": "1.0.0",
       "source_project": "studio",
       "promoted": "2026-08-19",
-      "title": "Feature gating stub"
+      "title": "Feature gating stub (not pullable — build in-project, then promote)",
+      "stub": true
     },
     {
       "name": "color-extraction",

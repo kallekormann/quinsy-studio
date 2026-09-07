@@ -1,4 +1,47 @@
-# Quinsy Studio CHANGELOG
+## 2026-09-07 — Studio settings: per-step token policy + host adapters
+
+### Added
+
+- [studio.settings.yaml](studio.settings.yaml) — medium-project defaults; per-step `context` / `budget` (intake, architecture, design, implement, …).
+- `./studio settings` — merged policy + estimated usage. Local override: `studio.settings.local.yaml` (gitignored; **no API keys**).
+- Execute CARD shows `COST`; at 100% of a knob → `INFORM cost-cap` naming the yaml key. `economy` / `standard` / `premium` profiles.
+- [CLAUDE.md](../CLAUDE.md) and [GEMINI.md](../GEMINI.md) — same `./studio` loop; keys stay in the host.
+
+### Changed
+
+- Estimates are `chars/4` of CARD + listed files, not host billing. `./studio focus` resets session usage.
+
+
+### Changed
+
+- **Gate 1 (architecture)** is mandatory HITL after gate 0. Execute writes the blueprint, then stops for `./studio approve --gate 1`. Iterate with `./studio revise --gate 1`.
+- **Gate 2 (design track)** is mandatory HITL after architecture: design direction, design system, stills/mocks or clickable prototype. Execute runs `./studio design`, then stops for `./studio approve --gate 2`. Per-ticket `approve-design` still applies in sprints.
+- `./studio inform --gate 1` no longer marks architecture informed — it points at `./studio approve`.
+- Root `README.md`, [GETTING_STARTED.md](GETTING_STARTED.md), and this ops [README.md](README.md) match that loop (train in parallel, stubs not pullable, scope/reuse inform).
+
+
+## 2026-09-07 — Factory loop: HITL contraction, parallel train, human inbox (LO-0061)
+
+### Changed
+
+- **Mandatory HITL** was contracted (reuse/scope inform, parallel train). **Same-day correction:** architecture (gate 1) and design track (gate 2) remain standing HITL after PRD — see entry above.
+- Sprint scope/groom are **agent-owned** (human may override). Reuse is an **inform brief** — `--approve` no longer blocks retro or the next sprint.
+- Harvest stays immediate. Open LOs spawn `./studio train` **beside** product work. Execute returns `STUDIO_LO` only when idle (no ready IMPLEMENT).
+- CARD lists `skills` + playbook paths. `./studio note` queues mid-execute input (ACK; drain after MOVE_DONE). Only “stop this ticket” preempts.
+- `billing` and `feature-gating` are marked `stub: true` and **not pullable**. Pull → adapt in the project; promote only when the generic asset improved.
+
+### Added
+
+- `./studio note` / `inform --gate 1` / `veto` / `train`
+- `studio_human_inbox.py`, `studio_train.py`
+
+
+## 2026-09-07 — Execute respects cross-sprint done deps
+
+### Fixed
+
+- `studio_execute.py` — `project_done_ids()` reads `backlog/done/` so sprint tickets whose dependencies finished in prior sprints are no longer falsely blocked.
+- Execute picks the next ticket in **scope-proposal.json order** (then priority, then id), so approved sprint goals lead.
 
 ## 2026-09-07 — Live home surface + mid-sprint rewrite + marketing canvas fidelity (LO-0054, LO-0057–0060)
 

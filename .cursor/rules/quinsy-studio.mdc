@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Quinsy Studio — Agent Rules
 
-Read [AGENTS.md](../../AGENTS.md) and [.quinsy-studio/process/agent-context.md](../../.quinsy-studio/process/agent-context.md).
+Read [AGENTS.md](../../AGENTS.md) and [.quinsy-studio/process/agent-context.md](../../.quinsy-studio/process/agent-context.md). Honor `./studio settings` (estimated token caps). On `INFORM cost-cap`, wait for the human to raise the named key.
 
 ## Session start
 
@@ -38,19 +38,15 @@ Active project: `.quinsy-studio/.active-project.json`
 
 ```bash
 ./studio library list
-./studio library suggest <project> "auth billing"
-./studio library pull <project> auth billing button
+./studio library suggest <project> "auth button"
+./studio library pull <project> auth button
 ```
 
-Adapt pulled code in the project. After ticket done, promote if generic:
+Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gating`). After ticket done, promote only if the generic asset improved.
 
-```bash
-./studio library promote <project> packages/billing --ticket <ID> [--force]
-```
+## Sprint HITL
 
-## Sprint HITL (after milestone roadmap)
-
-Autonomous mid-sprint execution; human at **sprint scope approval** and **sprint review**. Milestone review when all M* tickets done. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. **Never implement feedback during review.** When sprint tickets are done: `./studio review` → human `--approve` → **reuse review** (auto-harvest) → retro `--complete` (auto-harvest) → `./studio execute` `STUDIO_LO` immediately.
+Autonomous mid-sprint. Human at **gate 0**, **gate 1 architecture**, **gate 2 design track**, **design-track approve-design**, **UI sprint review**, rare **tech-veto**. Scope/groom/reuse are inform (agent-owned; human may override). Chat mid-execute: `./studio note` — ACK, do not preempt. Open LOs → `./studio train` in parallel; do not block IMPLEMENT. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. **Never implement design feedback during review.**
 
 ## Drift recovery
 

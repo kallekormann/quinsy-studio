@@ -6,9 +6,13 @@
 
 1. Read [`AGENTS.md`](../../AGENTS.md)
 2. Run `./studio bootstrap` (new PRD), `./studio adopt <p> --from …` (existing codebase), or `./studio focus <project>`
-3. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`
-    4. If `ACTION` is `STUDIO_LO`, infuse that learning in `.quinsy-studio/` **now** (do not start the next project ticket)
-    5. `./studio resume <project>` is a human-readable checklist; do not stop after printing it
+3. Run `./studio settings` (merged policy + estimated usage). Defaults cover a **medium project**.
+4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`
+5. If `ACTION` is `INFORM` (inbox drain / reuse brief), do NEXT and loop — do not wait for a signature. Architecture and design are HITL, not inform.
+6. If `ACTION` is `INFORM` and the reason is `cost-cap`, **stop**. Do not keep stuffing files. The human raises the **named** yaml key in `studio.settings.local.yaml`, then execute continues.
+7. If `ACTION` is `STUDIO_LO`, the product loop is idle — infuse in `.quinsy-studio/` now. Mid-sprint gaps: spawn `./studio train` and keep `IMPLEMENT`
+8. Mid-execute human messages: `./studio note` (ACK, resume the same NEXT). Drain after MOVE_DONE
+9. `./studio resume <project>` is a human-readable checklist; do not stop after printing it
 
 Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog.
 

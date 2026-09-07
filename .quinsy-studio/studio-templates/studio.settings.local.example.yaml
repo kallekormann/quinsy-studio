@@ -1,0 +1,14 @@
+# Copy to .quinsy-studio/studio.settings.local.yaml (gitignored).
+# Do not put API keys here. Cursor / Claude Code / Gemini CLI hold keys.
+#
+# standard defaults already cover a medium project (PRD → architecture → design → one sprint).
+# Raise only the named key when execute says INFORM cost-cap.
+
+runtime: cursor                 # cursor | claude-code | gemini-cli
+cost:
+  profile: standard             # economy (~0.5×) | standard | premium (~2×)
+  model_hint: ""                # e.g. claude-sonnet / gemini-2.5-flash / "" = host default
+  # session_token_budget: 1500000
+  # steps:
+  #   design:
+  #     context: 60000          # only if INFORM named cost.steps.design.context

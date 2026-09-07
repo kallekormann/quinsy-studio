@@ -39,8 +39,8 @@ It consists of:
 - **External Skills** (`external-skills/`) — Imported best-in-class skill packages
 
 The studio operates in **Dual-Speed mode**:
-- **CORE** — new platforms from a PRD (6 phases with human gates)
-- **ADOPT** — existing codebase (`./studio adopt`); as-built reconstruction, then the same gates
+- **CORE** — new platforms from a PRD. HITL: **gate 0 PRD → gate 1 architecture → gate 2 design track**, then milestones and sprints
+- **ADOPT** — existing codebase (`./studio adopt`); as-built reconstruction, then the same three human gates
 - **LEAN** — iterations & features on a studio-managed project (4 phases)
 
 ---
@@ -115,7 +115,7 @@ Pick one path. [GETTING_STARTED.md](GETTING_STARTED.md) is canonical.
 
 Optional intent: copy [adopt_intent.md](studio-templates/adopt_intent.md) → `intake/<slug>.md` and pass `--intent`. Process: [brownfield-adopt.md](process/brownfield-adopt.md).
 
-`./studio resume my-project` prints a checklist. **`execute` is the driver** — see [The execute loop](#the-execute-loop). Open LOs return `STUDIO_LO` before the next project ticket.
+`./studio resume my-project` prints a checklist. **`execute` is the driver** — see [The execute loop](#the-execute-loop). Start-of-project HITL: **gate 0 PRD → gate 1 architecture → gate 2 design track**. Open LOs spawn `./studio train` beside product work; `STUDIO_LO` only when idle.
 
 ### Step 1: Place a PRD **or** point at an existing repo
 
@@ -179,13 +179,13 @@ Adopted repo: agent fills `docs/as-built/`, synthesizes `docs/intake/prd.md`, th
 ### Step 7: Library-first implementation
 
 ```bash
-./studio library suggest my-project "auth billing"
-./studio library pull my-project auth billing button
+./studio library suggest my-project "auth button"
+./studio library pull my-project auth tokens button   # not stubs (billing, feature-gating)
 ./studio sprint my-project
-./studio sprint my-project --approve-scope
+./studio sprint my-project --approve-scope            # agent-owned; you may override
 ./studio groom my-project --approve
-./studio execute my-project                 # until HITL; STUDIO_LO before next project ticket
-# on done: ./studio library promote my-project packages/... --ticket MY-0001
+./studio execute my-project                 # until HITL; train LOs in parallel
+# on done: promote only if the generic asset improved
 ```
 
 ### Step 8: QA & learning
@@ -193,8 +193,8 @@ Adopted repo: agent fills `docs/as-built/`, synthesizes `docs/intake/prd.md`, th
 ```bash
 ./studio gate my-project --level 5
 ./studio retro my-project --complete    # auto-harvests LOs from badly / improve
-./studio execute my-project             # ACTION STUDIO_LO — infuse now
-./studio infusion
+./studio train SO-001 --from mistake --topic "…"   # parallel with product execute
+./studio infusion                       # lists open LOs; does not block IMPLEMENT
 ```
 
 ### Amendment intake (strategic direction, post gate 2)
@@ -233,15 +233,16 @@ No separate plugin — the repo *is* the integration.
 ./studio install                 # once after git clone
 ./studio verify-worlds
 ./studio verify-abstraction
+./studio settings                # estimated token policy
 ./studio focus <project>
 ./studio execute <project>          # loop: do NEXT until ACTION is HITL
 ```
 
-`resume` prints a **checklist**. **`execute` is the driver** — one action at a time. Do not ask “should I continue?” mid-sprint. Stop only on `HITL`. On `STUDIO_LO`, infuse in studio HQ, then execute again.
+`resume` prints a **checklist**. **`execute` is the driver** — one action at a time. Do not ask “should I continue?” mid-sprint. Stop only on `HITL`. Harvest LOs immediately and `./studio train` in parallel; `STUDIO_LO` only when the product loop is idle.
 
 ### The execute loop
 
-After sprint scope + groom are approved:
+Execute drives **gate 0 → architecture HITL → design-track HITL**, then sprints. After sprint scope + groom (agent-owned):
 
 ```
 focus → execute → do NEXT → execute again → … until HITL
@@ -249,15 +250,16 @@ focus → execute → do NEXT → execute again → … until HITL
 
 | ACTION | Meaning |
 |--------|---------|
-| `IMPLEMENT` | Next unblocked ticket. Load the **CARD** (`./studio ticket-card`); open that one `.md` only |
+| `IMPLEMENT` | Adopt as-built, blueprint, design track, or next unblocked sprint ticket. Load the **CARD** (`./studio ticket-card`); open that one `.md` only |
 | `VERIFY` | Fill `./studio receipt` (plan, AC coverage, default user flow) |
 | `GATE` | `./studio gate --level 5` (fresh after this ticket’s implement) |
 | `DEBUG` | Gate red → `sprints/SPRINT-NN/debug/<id>.md`, retry up to 3 times |
 | `MOVE_DONE` | Receipt + gate 5 → `move … done`, then execute again |
-| `STUDIO_LO` | Infuse an open LO-* in `.quinsy-studio/` **now** (mid-sprint too) — classified path on the CARD |
-| `HITL` | **You:** gates 0–2, design-approve, sprint scope, sprint review, next sprint |
+| `INFORM` | Reuse brief / inbox drain — loop; **not** architecture or design. **`cost-cap`:** stop and raise the named yaml key |
+| `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT — classified path on the CARD |
+| `HITL` | **You:** gates 0–2, `approve-design`, UI sprint review, tech-veto, abort |
 
-**Priority:** HITL → finish in-progress ticket → **`STUDIO_LO` if any LO is open** → next `IMPLEMENT`. Learnings are harvested when identified (see [§9](#9-optimizing-the-process) and [GETTING_STARTED — learnings](GETTING_STARTED.md#learnings-harvest-when-identified)).
+**Priority:** HITL gates 0–2 → finish in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). `STUDIO_LO` only when idle. Learnings are harvested when identified (see [§9](#9-optimizing-the-process) and [GETTING_STARTED — learnings](GETTING_STARTED.md#learnings-harvest-when-identified)).
 
 ```bash
 ./studio execute <project> [--json]
@@ -282,14 +284,15 @@ See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-a
 | **Design** | *"Design &lt;project&gt; with scope core-views"* |
 | **Milestones** | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | **Amendment** | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
-| **Sprint + build** | *"Approve sprint scope, then execute until HITL"* |
-| **Sprint review** | *"Sprint review"* → try app → *"Approve review"* or `./studio feedback` |
-| **Sprint close** | reuse (auto-harvest) → retro `--complete` (auto-harvest) → execute `STUDIO_LO` immediately → next `./studio sprint` |
+| **Sprint + build** | *"Let the sprint run — execute until HITL"* (agent owns scope; you may override) |
+| **Sprint review** | *"Sprint review"* → try UI → *"Approve review"* (backend-only: inform → retro) |
+| **Sprint close** | reuse inform (auto-harvest) → retro `--complete` (auto-harvest) → `./studio train` beside execute → next `./studio sprint` |
+| **Mid-sprint thought** | *"Note: also consider denser type"* → `./studio note` (ACK; continue current ticket) |
 | **New idea (sprint)** | *"Feedback: I want offline mode"* — **not** "create a ticket for offline" |
 | **Drift recovery** | *"Back on track"* / *"Execute &lt;project&gt;"* |
 | **Status** | *"What's the status of &lt;project&gt;?"* / *"Studio health"* |
 | **Off-sprint scope** | *"Is adding payments in scope?"* → agent runs `./studio guard` |
-| **Studio improvement** | *"Log a tooling gap: …"* → `./studio learn` then execute `STUDIO_LO` (also auto on retro / reuse / 3rd gate fail) |
+| **Studio improvement** | *"Log a tooling gap: …"* → `./studio learn` then `./studio train` (also auto on retro / reuse / 3rd gate fail) |
 
 ### First session walkthrough
 
@@ -305,7 +308,7 @@ Agent: blueprint + ADRs (as-is on adopt) → waits for gate 1
 You:  Approve gate 1. Design core views only.   — or —  Map the existing UI.
 Agent: design --scope core-views  (adopt: surface map, no fake prototype)
 You:  Approve gate 2.
-Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → sprint scope → execute loop until HITL sprint-review
+Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → agent-owned sprint scope → execute loop until HITL (UI sprint-review, approve-design)
 ```
 
 ### Two git worlds in Cursor
@@ -321,9 +324,10 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 | You (human) | Agent |
 |-------------|-------|
-| Approve gates 0–2, design, sprint scope, sprint review | Fill artifacts; **execute loop** mid-sprint |
-| Review PRs / mocks / shipped app | Run CLI, match tickets to skills |
-| Final product decisions | Library pull before coding; compact cards; receipts + gate 5 before `done` |
+| Approve gates **0–2**, `approve-design`, UI sprint review, tech-veto | Fill artifacts; **execute loop** mid-sprint (owns scope/groom; you may override) |
+| Mid-sprint notes (`./studio note`) | ACK and continue; drain after `MOVE_DONE` |
+| Review PRs / mocks / shipped UI | Library pull before coding (not stubs); compact cards; receipts + gate 5 before `done` |
+| Final product decisions | `./studio train` beside product work when LOs are open |
 
 See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflow.
 
@@ -365,19 +369,19 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 
 ### CORE / ADOPT (human gates 0–2, then milestones)
 
-Same gate sequence. **CORE** starts from a PRD. **ADOPT** (`./studio adopt`) reconstructs as-built first, then synthesizes a PRD. Do not empty-init a live tree.
+Same gate sequence. **CORE** starts from a PRD. **ADOPT** (`./studio adopt`) reconstructs as-built first, then synthesizes a PRD. Do not empty-init a live tree. **No product IMPLEMENT until gates 0–2 are approved.**
 
 | Phase | Action | Artifact | Gate |
 |-------|--------|----------|------|
 | **1. Intake** | PRD + definitions, **or** as-built reconstruction (adopt) | `docs/intake/`, `docs/definitions/`, `docs/as-built/` | **HUMAN 0** |
 | **2. Architecture** | Blueprint, ADRs (as-is on adopt) | `docs/architecture/`, `docs/adr/` | **HUMAN 1** |
-| **3. Design** | Mocks + sticker sheet, **or** design of what exists (adopt) | `design/` (no fake prototype on adopt) | **HUMAN 2** |
+| **3. Design** | Direction, design system, stills/mocks or clickable prototype (adopt: design of what exists) | `design/` (no fake prototype on adopt) | **HUMAN 2** |
 | **3b. Milestones** | Version roadmap, M0/M1 outlines | `docs/phases/` | **HUMAN** (`--milestones`) |
 | **3c. Amendments** | Strategic direction → revised roadmap + tickets | `docs/amendments/AM-NNN/` | **HUMAN** (`--amendment`) |
-| **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Scope approval |
-| **5. Implementation** | Execute loop until HITL | Code + receipts + gate 5; `STUDIO_LO` before next ticket | Design HITL + reuse on `done` |
+| **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Agent-owned (you may override) |
+| **5. Implementation** | Execute loop until HITL | Code + receipts + gate 5; train LOs in parallel | UI review + `approve-design` |
 | **6. QA** | Anti-slop, tests | QA report | Gate 5 (QA level) |
-| **7. Learning** | Harvest when identified (not a later batch) | Inbox + LO-* → infuse | Execute `STUDIO_LO` |
+| **7. Learning** | Harvest when identified (not a later batch) | Inbox + LO-* → train sidecar | `./studio train` / idle `STUDIO_LO` |
 
 ### LEAN Mode (Features, Iterations)
 
@@ -442,14 +446,15 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 # Studio library (library-first)
 ./studio library list
 ./studio library suggest <project> <query>
-./studio library pull <project> auth billing [tokens] [button...]
+./studio library pull <project> auth tokens button   # not stubs (billing, feature-gating)
 ./studio library promote <project> <path> [--force] [--ticket ID]
 ./studio library promote-design <project> [--force]
 ./studio promote-library <project> [--force]    # alias: design promotion
 
-# Sprints & tickets (human in the loop)
+# Sprints & tickets
 ./studio sprint <project>
-./studio sprint <project> --approve-scope
+./studio sprint <project> --approve-scope       # agent-owned; you may override
+./studio note <project> "…"                     # mid-execute inbox (ACK; drain after MOVE_DONE)
 ./studio review <project> [--approve|--reject --reason "..."]
 ./studio feedback <project> "raw idea"
 ./studio clarify <project> FB-001 [--title ...] [--acceptance ...] [--approve]
@@ -457,7 +462,8 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio ticket <project> "title" [--from-feedback FB-001]
 ./studio move <project> <id> <status> [--reason "..."]
 ./studio groom <project>
-./studio execute <project>           # loop until HITL; STUDIO_LO before next project ticket
+./studio execute <project>           # loop until HITL; train LOs in parallel
+./studio settings [--reset-usage]    # token policy + estimated usage (no API keys)
 
 # Quality & decisions
 ./studio gate <project> [--level N]
@@ -472,7 +478,8 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 # Learning & legacy sync
 ./studio learn "title" --signal <s>            # harvest now (inbox + classified LO)
 ./studio learn-list
-./studio infusion                              # LO gate — clear before next project ticket
+./studio train SO-001 --from mistake --topic "…"  # infuse in parallel with product execute
+./studio infusion                              # lists open LOs; does not block IMPLEMENT
 ./studio retro <project> [--complete]          # --complete auto-harvests LOs from badly/improve
 ./studio sync <project>              # heuristic scan project → library
 ./studio promote <project> <asset>   # single-path promote (legacy)
@@ -580,10 +587,10 @@ Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`,
 **Workflow (Meta-Loop):**
 1. **Detect signal** — Gate failure, rework, tooling/design gap, reuse path
 2. **Harvest immediately** — `./studio learn`, retro `--complete`, reuse, or 3rd gate fail (inbox + classified LO)
-3. **Execute studio HQ now** — `./studio execute` → `STUDIO_LO` before the next project ticket
+3. **Train in parallel** — `./studio train` beside product `IMPLEMENT`. `STUDIO_LO` only when the product loop is idle
 4. **Infuse** — playbook / package / process / tooling (generalize — no client names, no project UI copy)
 5. **CHANGELOG** + move LO to `backlog/done/`
-6. **Gate** — `./studio infusion` must be clear before the next project IMPLEMENT
+6. **Check** — `./studio infusion` lists remaining LOs (does **not** block the next project IMPLEMENT)
 7. **Test** — `python3 -m unittest test_studio_execute.py test_studio_harvest.py` (from `studio-tools/`)
 
 **Edit process documents directly:**
@@ -616,13 +623,13 @@ These do **not** influence how the studio operates in other projects.
 
 ### Loop 2: Global Studio Evolution (Studio World)
 
-Universally applicable insights are **harvested the moment they are identified** and **infused before the next project ticket**:
+Universally applicable insights are **harvested the moment they are identified** and **trained in parallel** (`./studio train`). They do **not** replace the next product `IMPLEMENT`:
 
 1. **Harvest** — learn / retro `--complete` / reuse / 3rd gate fail → inbox + classified LO
-2. **Execute studio HQ now** — `./studio execute` → `STUDIO_LO` (mid-sprint too)
-3. **Gate** — `./studio infusion` (blocks next project IMPLEMENT and `./studio sprint` while LO-* open)
-4. **Design (gate 2)** → `./studio approve --gate 2` auto-runs `promote-library`
-5. **Code** → `./studio library promote <project> <path> --ticket <id>` (never raw project UI copy)
+2. **Train in parallel** — `./studio train` beside product execute. `STUDIO_LO` only when idle
+3. **Check** — `./studio infusion` lists open LOs (does **not** block IMPLEMENT or `./studio sprint`)
+4. **Design (gate 2)** → `./studio approve --gate 2` auto-runs `promote-library` (greenfield)
+5. **Code** → `./studio library promote <project> <path> --ticket <id>` only if the **generic** asset improved (never raw project UI copy)
 6. **CHANGELOG** — every studio change documented
 
 Registry: [studio-library/library_registry.md](studio-library/library_registry.md)
@@ -634,8 +641,8 @@ Registry: [studio-library/library_registry.md](studio-library/library_registry.m
 
 **Example:**
 ```bash
-./studio library pull new-app auth billing
-./studio library promote my-project packages/billing --ticket MY-0003 --force
+./studio library pull new-app auth tokens button   # not stubs
+./studio library promote my-project packages/auth --ticket MY-0003 --force
 ```
 
 The next project starts with `./studio library pull` from an improved library.
@@ -659,9 +666,9 @@ studio-library/
 ```
 
 **Rules:**
-- **Pull** (library → project): `./studio library pull <project> auth billing`
-- **Promote design** (gate 2): `./studio approve --gate 2` or `promote-library`
-- **Promote code**: `./studio library promote <project> <path> --ticket <id>`
+- **Pull** (library → project): `./studio library pull <project> auth tokens button` — **not** stubs (`billing`, `feature-gating`)
+- **Promote design** (gate 2): `./studio approve --gate 2` or `promote-library` (greenfield)
+- **Promote code**: only if the generic asset improved — `./studio library promote <project> <path> --ticket <id>`
 - No secrets or client branding in library assets
 
 See [library_registry.md](studio-library/library_registry.md).
@@ -701,10 +708,10 @@ See [library_registry.md](studio-library/library_registry.md).
 | Studio files lost | **Git backup!** Check `.gitignore` (external skills are regenerable) |
 | Agent asks “should I continue?” mid-sprint | Tell it to `./studio execute` until `HITL` — do not approve ticket-by-ticket |
 | `move … done` refused | Need gate **level 5** passed **and** a filled `sprints/SPRINT-NN/receipts/<ID>.md` |
-| Execute says `HITL` | That is correct — you must approve (gate, design, scope, or sprint review) |
-| Execute says `STUDIO_LO` | Implement the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |
-| Open LOs piling up | Harvest is automatic — execute `STUDIO_LO` **now**, do not wait for next sprint |
-| Next sprint / next ticket blocked | `./studio infusion` — close open LO-* first |
+| Execute says `HITL` | That is correct — you must approve (gate 0–2, `approve-design`, UI sprint review, or tech-veto) |
+| Execute says `STUDIO_LO` | Product loop is idle — infuse the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |
+| Open LOs mid-sprint | Harvest immediately; `./studio train` beside product `IMPLEMENT` — do not wait for next sprint |
+| Mid-execute chat | `./studio note` — ACK and continue; drain after `MOVE_DONE`. Only abort preempts |
 
 ---
 

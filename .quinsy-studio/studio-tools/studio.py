@@ -16,6 +16,11 @@ Commands:
   ./studio bootstrap [project] [intake-file]     AI entry: init→intake→concept→sprint
   ./studio resume <project>                      Next actions from status.json
   ./studio execute <project> [--json]            One next action; loop until HITL
+  ./studio settings [--reset-usage]              Policy + estimated token usage (no API keys)
+  ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
+  ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
+  ./studio veto <project> --decision ADR-…
+  ./studio train <skill-id> --from mistake --topic "…"
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
   ./studio health <project>                      Sprint state-graph check
@@ -52,7 +57,7 @@ Commands:
   # Phase 3: Sprint Management
   ./studio sprint <project>                      Create sprint
   ./studio review <project> [--approve|--reject] Sprint review (human)
-  ./studio reuse <project> [--approve|--record path action] Mandatory reuse review after sprint approval
+  ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
   ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
   ./studio feedback-list <project>               Show feedback queue
@@ -618,9 +623,8 @@ class StudioOrchestrator:
         actions.extend(resume_amendment_actions(project))
         reuse_msg = reuse_gate_message(project, status)
         if reuse_msg:
-            actions.append("⏸ Mandatory reuse review before retro / next sprint scope")
+            actions.append("Reuse inform brief (not a gate)")
             actions.append(f"./studio reuse {project}")
-            actions.append(f"./studio reuse {project} --approve")
 
         prd_file = project_dir / "docs" / "intake" / "prd.md"
         adopt = status.get("mode") == "adopt"
@@ -677,9 +681,7 @@ class StudioOrchestrator:
             hitl = get_sprint_hitl(status)
             reuse_msg = reuse_gate_message(project, status)
             if reuse_msg:
-                actions.append(f"⏸ Mandatory reuse review before retro / next sprint")
-                actions.append(f"./studio reuse {project}")
-                actions.append(f"./studio reuse {project} --approve")
+                actions.append(f"Reuse inform brief (not a gate): ./studio reuse {project}")
             elif hitl.get("retro_status") != RETRO_DONE:
                 actions.append(f"./studio retro {project}")
             else:
@@ -769,6 +771,10 @@ class StudioOrchestrator:
             print(f"  files: {', '.join(card['files'])}")
         if card.get("deps"):
             print(f"  deps:  {', '.join(card['deps'])}")
+        if card.get("skills"):
+            print(f"  skills: {', '.join(card['skills'])}")
+        if card.get("playbooks"):
+            print(f"  playbooks: {', '.join(card['playbooks'])}")
         print(f"  path:  {card.get('path')}  (read this file only when implementing)")
         return True
 
@@ -792,6 +798,120 @@ class StudioOrchestrator:
         print(format_health(project, health_report(project)))
         return True
 
+    def cmd_settings(self, reset_usage_flag: bool = False):
+        """Show merged studio policy + estimated token usage."""
+        from studio_settings import format_settings_report, load_settings, load_usage, reset_usage
+
+        print_header("STUDIO SETTINGS")
+        if reset_usage_flag:
+            reset_usage()
+            print("  Usage reset.\n")
+        print(format_settings_report(load_settings(), load_usage()))
+        return True
+
+    def cmd_note(self, project: str, text: str = "", drain: bool = False):
+        """Queue a mid-execute human note (ACK only) or drain after MOVE_DONE."""
+        from studio_human_inbox import append_note, classify_note, drain_open_notes, open_notes
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if not sprint:
+            print("  No current sprint — notes live on sprints/SPRINT-NN/human-inbox.md")
+            return False
+        print_header(f"NOTE — {project} ({sprint})")
+        if drain:
+            drained = drain_open_notes(project, sprint)
+            if not drained:
+                print("  Inbox empty.")
+                return True
+            print(f"  Drained {len(drained)} note(s):")
+            for note in drained:
+                kind = classify_note(note.get("text") or "")
+                print(f"    {note.get('id')} [{kind}] {note.get('text')}")
+                if kind == "feedback":
+                    print(f"      → ./studio feedback {project} \"...\" if this is a product idea")
+                if kind == "tech-veto":
+                    print(f"      → ./studio veto {project} --decision \"...\" --reason \"...\"")
+            print(f"  Resume: ./studio execute {project}")
+            return True
+        if not text.strip():
+            pending = open_notes(project, sprint)
+            print(f"  Open notes: {len(pending)}")
+            for note in pending:
+                print(f"    {note.get('id')} {note.get('text')}")
+            print(f"  Usage: ./studio note {project} \"...\"  or  ./studio note {project} --drain")
+            return True
+        note = append_note(project, sprint, text)
+        print(f"  ACK queued {note['id']} — current ACTION continues. Do not preempt.")
+        print(f"  Drain after MOVE_DONE: ./studio note {project} --drain")
+        return True
+
+    def cmd_inform(self, project: str, gate: Optional[int] = None):
+        """Inform-only steps (not architecture/design — those are HITL)."""
+        if gate == 1:
+            print_header(f"GATE 1 IS HITL — {project}")
+            print("  Architecture after PRD is a human decision.")
+            print(f"  Agent: ./studio blueprint {project}")
+            print(f"  Human: ./studio approve {project} --gate 1")
+            print(f"  Iterate: ./studio revise {project} --gate 1 --feedback \"...\"")
+            return False
+        if gate == 2:
+            print_header(f"GATE 2 IS HITL — {project}")
+            print("  Design track after architecture is a human decision")
+            print("  (direction, design system, stills/mocks or clickable prototype).")
+            print(f"  Agent: ./studio design {project}")
+            print(f"  Human: ./studio approve {project} --gate 2")
+            print(f"  Iterate: ./studio revise {project} --gate 2 --feedback \"...\"")
+            return False
+        print("  Architecture (gate 1) and design (gate 2) require ./studio approve, not inform.")
+        return False
+
+    def cmd_veto(self, project: str, decision: str = "", reason: str = "", ack: bool = False):
+        """Record or acknowledge a tech-veto at the ticket boundary."""
+        status = load_status(project)
+        print_header(f"TECH-VETO — {project}")
+        if ack:
+            veto = status.get("tech_veto") or {}
+            veto["status"] = "acked"
+            veto["acked_at"] = datetime.now().isoformat()
+            status["tech_veto"] = veto
+            save_status(project, status)
+            print("  Veto acknowledged — revise the ADR; do not ship the addition.")
+            return True
+        if not decision.strip():
+            print("  Usage: ./studio veto <project> --decision ADR-… --reason \"…\"")
+            print("         ./studio veto <project> --ack")
+            return False
+        status["tech_veto"] = {
+            "status": "open",
+            "decision": decision.strip(),
+            "reason": reason.strip(),
+            "at": datetime.now().isoformat(),
+        }
+        save_status(project, status)
+        print(f"  Queued: {decision} — takes effect at the next IMPLEMENT boundary (not mid-file).")
+        print(f"  Loop: ./studio execute {project}  → HITL tech-veto before the next ticket")
+        return True
+
+    def cmd_train(self, skill_id: str, topic: str, source: str = "mistake"):
+        """Queue a parallel skill-training job. Does not block product IMPLEMENT."""
+        from studio_train import enqueue_train, skill_file_hint
+
+        print_header("TRAIN")
+        try:
+            job = enqueue_train(skill_id, topic, source=source)
+        except ValueError as exc:
+            print(f"  ⚠️  {exc}")
+            print("  Usage: ./studio train <skill-id> --from book|url|mistake --topic \"…\"")
+            return False
+        hint = skill_file_hint(skill_id)
+        print(f"  Queued {job['id']}  skill={job['skill_id']}  topic={job['topic']}")
+        print("  Second agent: research (cited), derive principles (no copyrighted verbatim),")
+        print("  append to the skill toolbox and a playbook. Product execute continues IMPLEMENT.")
+        if hint:
+            print(f"  Skill file: {hint}")
+        return True
+
     def cmd_focus(self, project: str):
         """Set active project context for IDE agent (scope banner)."""
         project_dir = PROJECTS_DIR / project
@@ -800,6 +920,9 @@ class StudioOrchestrator:
             return False
         status = load_status(project)
         set_active_project(project, status)
+        from studio_settings import reset_usage
+
+        reset_usage(project)
         print_header(f"FOCUS: {project}")
         print("\n" + build_focus_report(project, status))
         print(f"\n  Active context saved: .quinsy-studio/.active-project.json")
@@ -919,7 +1042,8 @@ class StudioOrchestrator:
             print_header("STUDIO LIBRARY")
             for asset in list_library_assets():
                 ver = asset.get("version", "?")
-                print(f"  [{asset.get('kind', '?')}] {asset.get('name')} v{ver} — {asset.get('path', '')}")
+                stub = " [STUB — not pullable]" if asset.get("stub") else ""
+                print(f"  [{asset.get('kind', '?')}] {asset.get('name')} v{ver}{stub} — {asset.get('path', '')}")
             print(f"\n  Registry: .quinsy-studio/studio-library/library_registry.md")
             return True
 
@@ -944,7 +1068,8 @@ class StudioOrchestrator:
             result = pull_assets(project, names, force=force)
             for item in result.get("pulled", []):
                 st = item.get("status", "?")
-                print(f"  {st}: {item.get('name')} ({item.get('kind', '')})")
+                extra = f" — {item.get('reason')}" if item.get("reason") else f" ({item.get('kind', '')})"
+                print(f"  {st}: {item.get('name')}{extra}")
             print(f"\n  Log: projects/{project}/docs/library-usage.json")
             return True
 
@@ -1609,9 +1734,9 @@ class StudioOrchestrator:
             save_status(project, status)
             print(f"\n  ✅ Sprint review approved")
             print(f"  Implementation frozen until the next sprint is planned.")
-            print(f"  Next (mandatory):")
-            print(f"    ./studio reuse {project}  (library / reuse review)")
-            print(f"    ./studio reuse {project} --approve")
+            print(f"  Next:")
+            print(f"    ./studio reuse {project}  (inform brief — not a gate)")
+            print(f"    ./studio retro {project}")
             print(f"  Then:")
             print(f"    ./studio feedback {project} \"...\"  (capture new ideas)")
             print(f"    ./studio clarify {project} FB-001 ... --approve")
@@ -1739,8 +1864,8 @@ class StudioOrchestrator:
         ])
         print(format_reuse_brief(project, {**data, "ticket_count": analysis_ticket_count}))
         print(f"\n  Report: {md_path.relative_to(STUDIO_ROOT)}")
-        print(f"\n  Agent: promote generic code or record project-local decisions.")
-        print(f"  Human: ./studio reuse {project} --approve when satisfied")
+        print(f"\n  Agent: promote only if the generic asset improved; otherwise leave the project copy.")
+        print(f"  Inform only — no ./studio reuse --approve required.")
         return True
 
     def cmd_feedback(self, project: str, text: str, source: str = "sprint-review", force: bool = False):
@@ -2036,16 +2161,7 @@ class StudioOrchestrator:
             sprint_match = re.search(r"^sprint:\s*(\S+)", content_pre, re.MULTILINE)
             ticket_sprint = sprint_match.group(1) if sprint_match else None
             if sprint and ticket_sprint == sprint:
-                hitl = get_sprint_hitl(status_pre)
-                if hitl.get("scope_status") != "approved":
-                    print(f"\n  ⚠️  Sprint scope not approved for {sprint}.")
-                    print(f"    ./studio sprint {project} --approve-scope")
-                    return False
-                if hitl.get("groom_status") != "approved":
-                    print(f"\n  ⚠️  Sprint backlog not groomed/approved for {sprint}.")
-                    print(f"    ./studio groom {project}")
-                    print(f"    ./studio groom {project} --approve")
-                    return False
+                pass  # scope/groom are agent-owned; design-track still gated below
             design_block = design_implement_blocked_message(ticket_id, content_pre)
             if design_block:
                 print(design_block)
@@ -2104,8 +2220,12 @@ class StudioOrchestrator:
             status["active_ticket"] = None
             if maybe_flag_sprint_review(project, status):
                 sprint = status.get("current_sprint", "")
-                print(f"\n  ⏸ All sprint tickets done — human review required")
+                print(f"\n  ⏸ All sprint tickets done — UI sprint review required")
                 print(f"    ./studio review {project}")
+            else:
+                hitl_now = get_sprint_hitl(status)
+                if hitl_now.get("review_status") == "informed":
+                    print(f"\n  Backend-only sprint complete — review is inform-only. Next: ./studio retro {project}")
             save_status(project, status)
             sprint_done = status.get("current_sprint") or ""
             if sprint_done:
@@ -2235,7 +2355,7 @@ class StudioOrchestrator:
                             "gate-fail",
                             project,
                         )
-                        print(f"  Auto-harvested {lo_id} — ./studio execute {project} → STUDIO_LO")
+                        print(f"  Auto-harvested {lo_id} — spawn ./studio train beside product execute")
 
         return result.returncode == 0
     
@@ -2259,8 +2379,9 @@ class StudioOrchestrator:
         print(f"  Signal: {result.get('signal')}")
         if result.get("inbox"):
             print(f"  Inbox: .quinsy-studio/{result['inbox']}")
-        print("  Infuse now (do not wait for retro / next sprint):")
-        print("    ./studio execute <project>  → ACTION STUDIO_LO")
+        print("  Harvested. Product execute continues IMPLEMENT; train agent infuses in parallel:")
+        print("    ./studio train SO-001 --from mistake --topic \"<gap>\"")
+        print("    ./studio execute <project>  → ACTION IMPLEMENT (open LOs do not block)")
         return lo_id
 
     def cmd_learn_list(self):
@@ -2290,7 +2411,7 @@ class StudioOrchestrator:
             extra = f" kind={kind}" if kind else ""
             extra += f" → {path}" if path else ""
             print(f"  - {lo.stem} [Signal: {signal}{extra}]")
-        print("\n  Next: ./studio execute <project>  → ACTION STUDIO_LO (infuse while context is hot)")
+        print("\n  Next: ./studio execute <project> continues IMPLEMENT; TRAIN sidecar infuses LOs")
     
     def cmd_retro(self, project: str, complete: bool = False):
         """Start or complete a project sprint retrospective."""
@@ -2301,9 +2422,8 @@ class StudioOrchestrator:
 
         reuse_msg = reuse_gate_message(project, status)
         if reuse_msg:
-            print(f"\n  ⚠️  Retrospective blocked until reuse review is complete.")
-            print(f"  {reuse_msg}")
-            return False
+            print(f"\n  Reuse brief (inform-only, not a gate):")
+            print(f"  {reuse_msg.split(chr(10))[0]}")
 
         hitl = get_sprint_hitl(status)
 
@@ -2334,8 +2454,9 @@ class StudioOrchestrator:
                         )
                     for h in skipped:
                         print(f"    {h.get('lo_id')} already open (deduped)")
-            print("  Infuse now (context is still this session):")
-            print(f"    ./studio execute {project}  → ACTION STUDIO_LO")
+            print("  Harvested. Product loop continues; spawn train beside it:")
+            print(f"    ./studio execute {project}  → IMPLEMENT (not STUDIO_LO)")
+            print(f"    ./studio train SO-001 --from mistake --topic \"retro gap\"")
             return True
 
         retro_file = prepare_retro(project, sprint)
@@ -2382,13 +2503,14 @@ class StudioOrchestrator:
             print("\n  ✅ No open LO tickets — safe to plan the next project sprint.")
             print("  Generalize learnings into: process/, teams/skills/, knowledge-base/, studio-library/")
             return True
-        print(f"\n  ⏸  {len(items)} open studio learning item(s) — infuse now, before the next project ticket.")
+        print(f"\n  {len(items)} open studio learning item(s) — train in parallel; product IMPLEMENT is not blocked.")
         ok, msg = can_infuse_project_sprint()
         print(f"\n{msg}")
         print("\n  Infusion targets:")
         print("    process/ · teams/*/skills/ · knowledge-base/ · studio-tools/ · studio-library/")
-        print(f"\n  Loop: ./studio execute <project>  → ACTION STUDIO_LO {items[0].get('id')}")
-        return False
+        print(f"\n  Product: ./studio execute <project>  → IMPLEMENT")
+        print(f"  Train:   ./studio train SO-001 --from mistake --topic \"{items[0].get('title', '')}\"")
+        return True
     
     def cmd_update_skills(self, extra_args=None):
         """Subscribe/update the external skill dependencies (agent-as-a-dependency)."""
@@ -2955,6 +3077,11 @@ Commands:
   ./studio bootstrap [project] [intake-file]     AI entry: init→intake→concept→sprint
   ./studio resume <project>                      Next actions from status.json
   ./studio execute <project> [--json]            One next action; loop until HITL
+  ./studio settings [--reset-usage]              Policy + estimated token usage (no API keys)
+  ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
+  ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
+  ./studio veto <project> --decision ADR-…
+  ./studio train <skill-id> --from mistake --topic "…"
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
   ./studio health <project>                      Sprint state-graph check
@@ -2991,7 +3118,7 @@ Commands:
   # Phase 3: Sprint Management
   ./studio sprint <project>                      Create sprint
   ./studio review <project> [--approve|--reject] Sprint review (human)
-  ./studio reuse <project> [--approve|--record path action] Mandatory reuse review after sprint approval
+  ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
   ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
   ./studio feedback-list <project>               Show feedback queue
@@ -3097,6 +3224,45 @@ def main():
     elif command == "execute" and len(args) >= 1:
         as_json = "--json" in args
         orchestrator.cmd_execute(args[0], as_json=as_json)
+
+    elif command == "settings":
+        orchestrator.cmd_settings(reset_usage_flag="--reset-usage" in args)
+
+    elif command == "note" and len(args) >= 1:
+        drain = "--drain" in args
+        text_parts = [a for a in args[1:] if a != "--drain"]
+        orchestrator.cmd_note(args[0], " ".join(text_parts), drain=drain)
+
+    elif command == "inform" and len(args) >= 1:
+        gate = None
+        for i, arg in enumerate(args):
+            if arg == "--gate" and i + 1 < len(args):
+                gate = int(args[i + 1])
+        orchestrator.cmd_inform(args[0], gate=gate)
+
+    elif command == "veto" and len(args) >= 1:
+        ack = "--ack" in args
+        decision = ""
+        reason = ""
+        for i, arg in enumerate(args):
+            if arg == "--decision" and i + 1 < len(args):
+                decision = args[i + 1]
+            elif arg == "--reason" and i + 1 < len(args):
+                reason = args[i + 1]
+        orchestrator.cmd_veto(args[0], decision=decision, reason=reason, ack=ack)
+
+    elif command == "train" and len(args) >= 1:
+        skill_id = args[0]
+        topic = ""
+        source = "mistake"
+        for i, arg in enumerate(args):
+            if arg == "--topic" and i + 1 < len(args):
+                topic = args[i + 1]
+            elif arg == "--from" and i + 1 < len(args):
+                source = args[i + 1]
+        if not topic and len(args) >= 2 and not args[1].startswith("--"):
+            topic = " ".join(a for a in args[1:] if not a.startswith("--"))
+        orchestrator.cmd_train(skill_id, topic, source=source)
 
     elif command == "ticket-card" and len(args) >= 2:
         orchestrator.cmd_ticket_card(args[0], args[1])

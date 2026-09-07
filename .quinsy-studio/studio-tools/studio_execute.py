@@ -3,8 +3,8 @@
 Agentic execution protocol — next action until a typed HITL stop.
 
 Markdown tickets stay the source of truth. This module:
-  - emits one machine-readable step (IMPLEMENT / GATE / VERIFY / MOVE_DONE / HITL / STUDIO_LO)
-  - loads a compact ticket card instead of the whole backlog
+  - emits one machine-readable step (IMPLEMENT / GATE / VERIFY / MOVE_DONE / INFORM / HITL / STUDIO_LO)
+  - loads a compact ticket card (skills + playbooks) instead of the whole backlog
   - tracks execution-log, receipts, and bounded gate-fail retries
   - health-checks the sprint state graph
 """
@@ -19,7 +19,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
 from backlog_paths import find_ticket, read_ticket_meta
-from design_ticket_helpers import design_implement_blocked_message
+from design_ticket_helpers import (
+    design_implement_blocked_message,
+    parse_design_fields,
+    tickets_are_backend_only,
+)
 from sprint_hitl import (
     get_sprint_hitl,
     list_sprint_tickets,
@@ -27,6 +31,7 @@ from sprint_hitl import (
     sprint_directory,
 )
 from studio_learning_gate import open_lo_tickets
+from ticket_helpers import playbooks_for_skills
 
 TOOLS_DIR = Path(__file__).parent
 QUINSY_STUDIO = TOOLS_DIR.parent
@@ -39,13 +44,10 @@ HITL_KINDS = (
     "gate-0",
     "gate-1",
     "gate-2",
-    "milestones",
     "design-approve",
-    "sprint-scope",
-    "sprint-groom",
     "sprint-review",
-    "reuse",
-    "next-sprint",
+    "tech-veto",
+    "human-abort",
     "blocked-retries",
     "intake",
     "amendment",
@@ -71,6 +73,10 @@ class ExecuteStep:
     read: Optional[str] = None
     retries: int = 0
     loop: bool = True
+    inform: Optional[str] = None
+    inbox_pending: int = 0
+    parallel_train: Optional[List[Dict[str, Any]]] = None
+    cost: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         data: Dict[str, Any] = {
@@ -80,9 +86,17 @@ class ExecuteStep:
             "command": self.command,
             "read": self.read,
             "retries": self.retries,
-            "loop": self.loop and not self.kind.startswith("HITL") and self.kind != "HITL",
+            "loop": self.loop and self.kind != "HITL" and not str(self.kind).startswith("HITL"),
             "card": self.card,
         }
+        if self.inform:
+            data["inform"] = self.inform
+        if self.inbox_pending:
+            data["inbox_pending"] = self.inbox_pending
+        if self.parallel_train:
+            data["parallel_train"] = self.parallel_train
+        if self.cost:
+            data["cost"] = self.cost
         return data
 
 
@@ -227,6 +241,8 @@ def compact_card(path: Path) -> Dict[str, Any]:
     ac = extract_ac(body)
     files = extract_files(meta, body)
     deps = extract_deps(meta, body)
+    skills = parse_yaml_list(str(meta.get("skills") or ""))
+    playbooks = playbooks_for_skills(skills)
     try:
         rel = str(path.relative_to(STUDIO_ROOT))
     except ValueError:
@@ -236,11 +252,14 @@ def compact_card(path: Path) -> Dict[str, Any]:
         "title": meta.get("title") or path.stem,
         "status": meta.get("status") or "",
         "priority": meta.get("priority") or "",
+        "ticket_type": meta.get("ticket_type") or "",
         "target": extract_target(body),
         "scope": extract_scope(body),
         "ac": ac[:6],
         "files": files[:8],
         "deps": deps,
+        "skills": skills[:8],
+        "playbooks": playbooks[:4],
         "path": rel,
     }
 
@@ -371,6 +390,9 @@ def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional
 ## Default flow
 - Route / user path a real user would take (LO-0051):
 - Screenshot: (path or none — function-only ticket)
+
+## Skills read
+- (skill IDs + playbooks from the CARD)
 """,
         encoding="utf-8",
     )
@@ -401,17 +423,58 @@ def append_debug_attempt(
     return path
 
 
+def project_done_ids(project: str) -> Set[str]:
+    """Done ticket ids from backlog/done/ plus any sprint tickets already marked done."""
+    done: Set[str] = set()
+    done_dir = PROJECTS_DIR / project / "backlog" / "done"
+    if done_dir.exists():
+        for f in done_dir.glob("*.md"):
+            m = re.match(r"^([A-Z]+-\d+)", f.name)
+            if m:
+                done.add(m.group(1))
+    return done
+
+
+def _priority_rank(priority: Any) -> int:
+    raw = str(priority or "P9").upper().strip()
+    m = re.match(r"P?(\d+)", raw)
+    return int(m.group(1)) if m else 9
+
+
+def load_scope_order(project: str, sprint: str) -> List[str]:
+    path = sprint_directory(project, sprint) / "scope-proposal.json"
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    return [str(row.get("id")) for row in (data.get("proposed") or []) if row.get("id")]
+
+
 def pick_next_ticket(
     tickets: List[Dict[str, Any]],
     done_ids: Optional[Set[str]] = None,
+    *,
+    scope_order: Optional[List[str]] = None,
 ) -> Optional[Dict[str, Any]]:
-    """Prefer in-progress; else first backlog ticket whose deps are all done."""
+    """Prefer in-progress; else first unblocked backlog ticket (scope order, then priority, then id)."""
     done_ids = done_ids or {t["id"] for t in tickets if t.get("status") == "done"}
     in_progress = [t for t in tickets if t.get("status") == "implement"]
     if in_progress:
         return sorted(in_progress, key=lambda t: t["id"])[0]
     queued = [t for t in tickets if t.get("status") in ("backlog", "open")]
-    for ticket in sorted(queued, key=lambda t: t["id"]):
+    order_index = {tid: i for i, tid in enumerate(scope_order or [])}
+
+    def sort_key(t: Dict[str, Any]) -> tuple:
+        tid = t["id"]
+        return (
+            order_index.get(tid, 10_000),
+            _priority_rank(t.get("priority")),
+            tid,
+        )
+
+    for ticket in sorted(queued, key=sort_key):
         deps = ticket.get("deps") or []
         if all(d in done_ids for d in deps):
             return ticket
@@ -434,6 +497,13 @@ def _enrich_sprint_tickets(project: str, tickets: List[Dict]) -> List[Dict]:
             body = path.read_text(encoding="utf-8", errors="ignore")
             row["deps"] = extract_deps(meta, body)
             row["path"] = str(path)
+            if meta.get("priority"):
+                row["priority"] = meta["priority"]
+            fields = parse_design_fields(body)
+            if fields.get("ticket_type"):
+                row["ticket_type"] = fields["ticket_type"]
+            if meta.get("title") and not row.get("title"):
+                row["title"] = meta["title"]
         else:
             row["deps"] = row.get("deps") or []
         enriched.append(row)
@@ -448,6 +518,31 @@ def _hitl(kind: str, project: str, command: str, reason: str, ticket_id: Optiona
         command=command,
         loop=False,
     )
+
+
+def _inform(project: str, command: str, reason: str, *, ticket_id: Optional[str] = None) -> ExecuteStep:
+    return ExecuteStep(
+        kind="INFORM",
+        ticket_id=ticket_id,
+        reason=reason,
+        command=command,
+        inform=reason,
+        loop=True,
+    )
+
+
+def _train_sidecar(open_los: List[Dict]) -> List[Dict[str, Any]]:
+    sidecar: List[Dict[str, Any]] = []
+    for lo in open_los[:4]:
+        title = (lo.get("title") or lo.get("id") or "skill gap").replace('"', "")
+        sidecar.append(
+            {
+                "lo": lo.get("id"),
+                "topic": title,
+                "command": f'./studio train SO-001 --from mistake --topic "{title[:80]}"',
+            }
+        )
+    return sidecar
 
 
 def _has_in_progress(sprint_tickets: List[Dict[str, Any]]) -> bool:
@@ -483,7 +578,7 @@ def _studio_lo_step(open_los: List[Dict]) -> ExecuteStep:
 def _studio_lo_if_idle(
     open_los: List[Dict], sprint_tickets: Optional[List[Dict[str, Any]]] = None
 ) -> Optional[ExecuteStep]:
-    """Infuse as soon as a learning exists — do not wait for sprint close or a human learn prompt."""
+    """Infuse when idle (no in-progress ticket). Never substitute for IMPLEMENT of a ready ticket."""
     if not open_los:
         return None
     if _has_in_progress(sprint_tickets or []):
@@ -503,14 +598,21 @@ def decide_from_state(
     amendment_actions: Optional[List[str]] = None,
     prd_exists: bool = True,
     as_built_ready: bool = True,
+    inbox_open: Optional[List[Dict]] = None,
+    pending_veto: Optional[str] = None,
+    gate1_ready: bool = True,
+    gate2_ready: bool = True,
 ) -> ExecuteStep:
     """Pure next-step machine. Disk I/O lives in decide_next_action."""
     hg = status.get("human_gates") or {}
     open_los = open_los if open_los is not None else []
     log = log or {"entries": []}
     receipts_ok = receipts_ok or {}
+    inbox_open = inbox_open or []
     sprint = status.get("current_sprint") or ""
     adopt = (status.get("mode") or "core") == "adopt"
+    backend_only = tickets_are_backend_only(sprint_tickets)
+    in_progress = _has_in_progress(sprint_tickets)
 
     if amendment_actions:
         return ExecuteStep(
@@ -550,58 +652,88 @@ def decide_from_state(
             else "human must approve PRD + definitions",
         )
     if hg.get("1", {}).get("status") != "approved":
+        if not gate1_ready:
+            return ExecuteStep(
+                kind="IMPLEMENT",
+                reason="architecture after PRD: fill docs/architecture/ (blueprint, ADRs, data model) then HITL",
+                command=f"./studio blueprint {project}",
+                read="docs/architecture/",
+                loop=True,
+            )
         return _hitl(
             "gate-1",
             project,
             f"./studio approve {project} --gate 1",
-            "human must approve as-is architecture (no greenfield stack swap)"
-            if adopt
-            else "human must approve architecture",
+            "human must approve architecture — core start-of-project decision "
+            "(stack, persistence, vendors). Iterate with ./studio revise --gate 1",
         )
     if hg.get("2", {}).get("status") != "approved":
+        if not gate2_ready:
+            adopt_design = (
+                "design of what exists: surface map + DESIGN.md (no fake prototype)"
+                if adopt
+                else "design track after architecture: direction, design system, stills/mocks or clickable prototype"
+            )
+            return ExecuteStep(
+                kind="IMPLEMENT",
+                reason=adopt_design,
+                command=f"./studio design {project}",
+                read="design/",
+                loop=True,
+            )
         return _hitl(
             "gate-2",
             project,
             f"./studio approve {project} --gate 2",
-            "human must approve design of what exists + debt"
-            if adopt
-            else "human must approve design",
+            "human must approve design direction + system (iterate with Team 10; "
+            "stills, mockups, or clickable prototype). ./studio revise --gate 2 until approved",
         )
 
-    if needs_sprint_review(status):
+    abort_notes = [n for n in inbox_open if n.get("abort")]
+    if abort_notes:
+        return _hitl(
+            "human-abort",
+            project,
+            f"./studio note {project} --drain",
+            "human aborted the current ticket — do not start the next one",
+            ticket_id=None,
+        )
+
+    ui_review = needs_sprint_review(status) and not backend_only
+    if ui_review:
         return _hitl(
             "sprint-review",
             project,
             f"./studio review {project}",
-            "human tries shipped work — do not implement feedback",
+            "human tries shipped UI — do not implement design feedback",
         )
 
     hitl = get_sprint_hitl(status)
     all_done = bool(sprint_tickets) and all(t.get("status") == "done" for t in sprint_tickets)
-    sprint_closed = bool(sprint) and all_done and hitl.get("review_status") == "approved"
+    review_ok = hitl.get("review_status") == "approved" or (all_done and backend_only)
+    sprint_closed = bool(sprint) and all_done and review_ok
 
     if sprint_closed:
-        hitl = get_sprint_hitl(status)
-        from sprint_reuse_review import reuse_gate_message
-
-        reuse_msg = reuse_gate_message(project, status)
-        if reuse_msg:
-            return _hitl("reuse", project, f"./studio reuse {project}", reuse_msg.split("\n")[0][:120])
         if hitl.get("retro_status") != "done":
+            reuse_brief = (
+                f"Reuse is inform-only: ./studio reuse {project} (no --approve). "
+                "Then fill retro."
+            )
             return ExecuteStep(
                 kind="VERIFY",
                 reason="fill project retro then ./studio retro --complete",
                 command=f"./studio retro {project}",
+                inform=reuse_brief,
                 loop=True,
             )
         lo_step = _studio_lo_if_idle(open_los, sprint_tickets)
         if lo_step:
             return lo_step
-        return _hitl(
-            "next-sprint",
-            project,
-            f"./studio sprint {project}",
-            "human approves next sprint scope",
+        return ExecuteStep(
+            kind="VERIFY",
+            reason="agent-owned next sprint — propose scope (human may override)",
+            command=f"./studio sprint {project}",
+            loop=True,
         )
 
     if not sprint:
@@ -609,36 +741,32 @@ def decide_from_state(
         if lo_step:
             return lo_step
         return ExecuteStep(
-            kind="HITL",
-            reason="sprint-scope: no current sprint — propose then human --approve-scope",
+            kind="VERIFY",
+            reason="no current sprint — agent proposes scope (human may override)",
             command=f"./studio sprint {project}",
-            loop=False,
+            loop=True,
         )
 
     if hitl.get("scope_status") != "approved":
-        lo_step = _studio_lo_if_idle(open_los, sprint_tickets)
-        if lo_step:
-            return lo_step
-        return _hitl(
-            "sprint-scope",
-            project,
-            f"./studio sprint {project} --approve-scope",
-            "human must approve sprint scope",
+        return ExecuteStep(
+            kind="VERIFY",
+            reason="agent-owned sprint scope — approve and continue (human may override)",
+            command=f"./studio sprint {project} --approve-scope",
+            loop=True,
         )
     if hitl.get("groom_status") != "approved":
-        lo_step = _studio_lo_if_idle(open_los, sprint_tickets)
-        if lo_step:
-            return lo_step
-        return _hitl(
-            "sprint-groom",
-            project,
-            f"./studio groom {project} --approve",
-            "human must approve groom",
+        return ExecuteStep(
+            kind="VERIFY",
+            reason="agent-owned groom — approve and continue (human may override)",
+            command=f"./studio groom {project} --approve",
+            loop=True,
         )
 
     tickets = sprint_tickets
-    done_ids = {t["id"] for t in tickets if t.get("status") == "done"}
-    current = pick_next_ticket(tickets, done_ids)
+    # Cross-sprint deps (e.g. MOOD-0629 done last sprint) must count as satisfied.
+    done_ids = project_done_ids(project) | {t["id"] for t in tickets if t.get("status") == "done"}
+    scope_order = load_scope_order(project, sprint) if sprint else []
+    current = pick_next_ticket(tickets, done_ids, scope_order=scope_order)
     if current is None:
         lo_step = _studio_lo_if_idle(open_los, tickets)
         if lo_step:
@@ -659,6 +787,14 @@ def decide_from_state(
                 loop=False,
             )
         if tickets and all(t.get("status") == "done" for t in tickets):
+            if backend_only:
+                return ExecuteStep(
+                    kind="VERIFY",
+                    reason="backend-only sprint complete — inform review then retro",
+                    command=f"./studio retro {project}",
+                    inform="No UI shipped — sprint review is inform-only.",
+                    loop=True,
+                )
             return _hitl(
                 "sprint-review",
                 project,
@@ -666,10 +802,10 @@ def decide_from_state(
                 "all sprint tickets done",
             )
         return ExecuteStep(
-            kind="HITL",
-            reason="sprint-scope: no executable sprint ticket",
+            kind="VERIFY",
+            reason="no executable sprint ticket — check board or propose scope",
             command=f"./studio board {project}",
-            loop=False,
+            loop=True,
         )
 
     tid = current["id"]
@@ -677,9 +813,21 @@ def decide_from_state(
     read_path = current.get("path") or current.get("file")
 
     if current.get("status") in ("backlog", "open"):
-        lo_step = _studio_lo_if_idle(open_los, tickets)
-        if lo_step:
-            return lo_step
+        if inbox_open and not in_progress:
+            return _inform(
+                project,
+                f"./studio note {project} --drain",
+                f"INBOX: {len(inbox_open)} note(s) — classify after MOVE_DONE, then continue",
+                ticket_id=tid,
+            )
+        if pending_veto:
+            return _hitl(
+                "tech-veto",
+                project,
+                f"./studio veto {project} --ack",
+                pending_veto[:160],
+                ticket_id=tid,
+            )
         if design_block:
             return _hitl(
                 "design-approve",
@@ -688,6 +836,7 @@ def decide_from_state(
                 design_block[:160],
                 ticket_id=tid,
             )
+        train = _train_sidecar(open_los) if open_los else None
         return ExecuteStep(
             kind="IMPLEMENT",
             ticket_id=tid,
@@ -696,6 +845,8 @@ def decide_from_state(
             card=card,
             read=read_path,
             loop=True,
+            parallel_train=train,
+            inbox_pending=len(inbox_open),
         )
 
     # in implement
@@ -761,7 +912,9 @@ def decide_from_state(
 
 def decide_next_action(project: str) -> ExecuteStep:
     from amendment_intake import resume_amendment_actions
-    from sprint_reuse_review import reuse_gate_message
+    from studio_adopt import as_built_is_ready
+    from studio_human_inbox import open_notes
+    from studio_train import enqueue_train
 
     project_dir = PROJECTS_DIR / project
     if not project_dir.exists():
@@ -786,17 +939,31 @@ def decide_next_action(project: str) -> ExecuteStep:
             receipts_ok[t["id"]] = receipt_is_complete(project, sprint, t["id"])
             if t.get("path"):
                 t["card"] = compact_card(Path(t["path"]))
-        current = pick_next_ticket(tickets)
+        done_ids = project_done_ids(project) | {t["id"] for t in tickets if t.get("status") == "done"}
+        scope_order = load_scope_order(project, sprint)
+        current = pick_next_ticket(tickets, done_ids, scope_order=scope_order)
         if current and current.get("status") in ("backlog", "open") and current.get("path"):
             content = Path(current["path"]).read_text(encoding="utf-8", errors="ignore")
             design_block = design_implement_blocked_message(current["id"], content)
 
-    # reuse_gate_message imported for decide_from_state sprint-closed path
-    _ = reuse_gate_message
-    from studio_adopt import as_built_is_ready
+    inbox = open_notes(project, sprint) if sprint else []
+    veto = status.get("tech_veto") or {}
+    pending_veto = None
+    if veto.get("status") == "open" and veto.get("decision"):
+        pending_veto = f"{veto.get('decision')}: {veto.get('reason') or 'human tech-veto'}"
 
     adopt = (status.get("mode") or "core") == "adopt"
-    return decide_from_state(
+    from pre_impl_workflow import validate_human_gate
+
+    hg = status.get("human_gates") or {}
+    gate1_ready = True
+    gate2_ready = True
+    if hg.get("0", {}).get("status") == "approved" and hg.get("1", {}).get("status") != "approved":
+        gate1_ready, _ = validate_human_gate(project, 1)
+    if hg.get("1", {}).get("status") == "approved" and hg.get("2", {}).get("status") != "approved":
+        gate2_ready, _ = validate_human_gate(project, 2)
+
+    step = decide_from_state(
         project,
         status,
         tickets,
@@ -807,7 +974,25 @@ def decide_next_action(project: str) -> ExecuteStep:
         amendment_actions=resume_amendment_actions(project),
         prd_exists=prd.exists(),
         as_built_ready=as_built_is_ready(project) if adopt else True,
+        inbox_open=inbox,
+        pending_veto=pending_veto,
+        gate1_ready=gate1_ready,
+        gate2_ready=gate2_ready,
     )
+    if step.kind == "IMPLEMENT" and step.parallel_train:
+        for job in step.parallel_train:
+            try:
+                enqueue_train(
+                    "SO-001",
+                    job.get("topic") or "skill gap",
+                    source="lo",
+                    observation=job.get("lo") or "",
+                )
+            except ValueError:
+                pass
+    from studio_settings import apply_cost_policy
+
+    return apply_cost_policy(project, step)
 
 
 def format_execute_step(project: str, step: ExecuteStep) -> str:
@@ -821,10 +1006,35 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
         lines.append(f"  READ:    {step.read}  (this ticket only — not the backlog)")
     if step.retries:
         lines.append(f"  RETRIES: {step.retries}/{MAX_GATE_RETRIES}")
+    if step.inbox_pending:
+        lines.append(f"  INBOX:   {step.inbox_pending} queued note(s) — ACK only; drain after MOVE_DONE")
+    if step.cost:
+        from studio_settings import format_cost_line
+
+        lines.append(f"  {format_cost_line(step.cost)}")
+        if step.cost.get("warn") and step.kind != "INFORM":
+            lines.append(f"  WARN:    {step.cost.get('warn_detail')} — raise the named key in studio.settings.local.yaml if this step grows")
+        if step.cost.get("cap"):
+            lines.append(f"  HIT:     {step.cost['cap'].get('hit')}  used={step.cost['cap'].get('used')}  limit={step.cost['cap'].get('limit')}")
+    if step.inform and step.kind != "INFORM":
+        lines.append(f"  INFORM:  {step.inform}")
+    if step.parallel_train:
+        lines.append("  TRAIN:   spawn beside product work (does not block IMPLEMENT)")
+        for job in step.parallel_train[:4]:
+            cmd = job.get("command") or job.get("queued") or job.get("lo")
+            if cmd:
+                lines.append(f"    {cmd}")
     if step.kind == "HITL" or (isinstance(step.reason, str) and step.reason.startswith("HITL")):
         lines.append("  STOP. Wait for the human. Do not implement past this gate.")
+    elif step.kind == "INFORM":
+        if step.loop is False:
+            lines.append("  STOP. Raise the named cost key in studio.settings.local.yaml, then execute again.")
+            lines.append("  Do not keep stuffing files past this cap.")
+        else:
+            lines.append("  Inform only — do NEXT, then execute again. Do not wait for a signature.")
     elif step.kind == "STUDIO_LO":
-        lines.append("  Studio HQ only (.quinsy-studio/). Infuse now — do not start the next project ticket.")
+        lines.append("  Studio HQ only (.quinsy-studio/). Idle infusion — product had no IMPLEMENT.")
+        lines.append("  Mid-sprint gaps use TRAIN in parallel instead of blocking IMPLEMENT.")
         lines.append("  Then loop: ./studio execute <project>")
     else:
         lines.append("  Loop: do NEXT, then ./studio execute again. Do not ask to continue.")
@@ -843,6 +1053,10 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
             lines.append(f"    files: {', '.join(card['files'])}")
         if card.get("deps"):
             lines.append(f"    deps:  {', '.join(card['deps'])}")
+        if card.get("skills"):
+            lines.append(f"    skills: {', '.join(card['skills'])}")
+        if card.get("playbooks"):
+            lines.append(f"    playbooks: {', '.join(card['playbooks'])}")
     return "\n".join(lines)
 
 
@@ -884,10 +1098,59 @@ def health_report(project: str) -> List[Dict[str, str]]:
             {
                 "level": "warn",
                 "code": "open-lo",
-                "message": f"{len(los)} open LO-* (infuse now — blocks next project ticket)",
-                "fix": f"implement {los[0].get('id')} in .quinsy-studio/ then ./studio execute {project}",
+                "message": f"{len(los)} open LO-* — train in parallel; does not block IMPLEMENT",
+                "fix": f"./studio train SO-001 --from mistake --topic \"{los[0].get('title', '')}\"  (product: ./studio execute {project})",
             }
         )
+
+    try:
+        from studio_settings import (
+            format_cost_line,
+            load_settings,
+            load_usage,
+            session_budget,
+            step_limits,
+            warn_at_pct,
+        )
+
+        settings = load_settings()
+        usage = load_usage()
+        warn = warn_at_pct(settings)
+        sess_lim = session_budget(settings)
+        sess_used = int(usage.get("session") or 0)
+        if sess_lim and sess_used * 100 >= warn * sess_lim:
+            findings.append(
+                {
+                    "level": "warn" if sess_used <= sess_lim else "error",
+                    "code": "cost-session",
+                    "message": f"session tokens ≈{sess_used}/{sess_lim}",
+                    "fix": "raise cost.session_token_budget in studio.settings.local.yaml",
+                }
+            )
+        for name, used in (usage.get("steps") or {}).items():
+            lim = step_limits(settings, name)
+            if lim["budget"] and int(used) * 100 >= warn * lim["budget"]:
+                findings.append(
+                    {
+                        "level": "warn" if int(used) <= lim["budget"] else "error",
+                        "code": f"cost-{name}",
+                        "message": format_cost_line(
+                            {
+                                "profile": (settings.get("cost") or {}).get("profile"),
+                                "step": name,
+                                "turn": 0,
+                                "context_limit": lim["context"],
+                                "step_used": int(used),
+                                "step_budget": lim["budget"],
+                                "session_used": sess_used,
+                                "session_budget": sess_lim,
+                            }
+                        ),
+                        "fix": f"raise cost.steps.{name}.budget in studio.settings.local.yaml",
+                    }
+                )
+    except Exception:
+        pass
 
     if needs_sprint_review(status):
         findings.append(
@@ -940,7 +1203,8 @@ def health_report(project: str) -> List[Dict[str, str]]:
                             "fix": f"./studio gate {project} --level 5",
                         }
                     )
-            waiting = unmet_deps(t, {x["id"] for x in tickets if x.get("status") == "done"})
+            done_all = project_done_ids(project) | {x["id"] for x in tickets if x.get("status") == "done"}
+            waiting = unmet_deps(t, done_all)
             if t.get("status") in ("backlog", "open") and waiting:
                 findings.append(
                     {

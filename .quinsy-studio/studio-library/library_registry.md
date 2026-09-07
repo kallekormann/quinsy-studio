@@ -12,6 +12,8 @@
 
 **Rule:** Gate 2 and `./studio library promote` **never merge project tokens or UI into studio-library.**
 
+**Stubs** (`billing`, `feature-gating`) are marked `stub: true` in `manifest.json`. `./studio library pull` **refuses** them. Build the working asset in the project, then promote if it is generic.
+
 1. **Before writing new code** → `./studio library list` / `./studio library suggest <project> <topic>`
 2. **Pull boilerplate** → `./studio library pull <project> tokens button input`
 3. **Adapt in project** — map `--color-primary-*` to brand; keep domain components local

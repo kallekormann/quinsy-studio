@@ -107,6 +107,7 @@ def list_sprint_tickets(project: str, sprint: str) -> List[Dict]:
             "title": meta.get("title", path.stem),
             "status": folder_status,
             "priority": meta.get("priority", "?"),
+            "ticket_type": meta.get("ticket_type", ""),
             "file": str(path.relative_to(root)),
         })
     return sorted(tickets, key=lambda t: t["id"])
@@ -132,6 +133,12 @@ def sprint_ticket_summary(project: str, sprint: str) -> Dict:
         "by_status": by_status,
         "all_done": total > 0 and done == total,
     }
+
+
+def _backend_only_sprint(project: str, sprint: str) -> bool:
+    from design_ticket_helpers import tickets_are_backend_only
+
+    return tickets_are_backend_only(list_sprint_tickets(project, sprint))
 
 
 _SMOKE_KEYWORDS = re.compile(
@@ -270,6 +277,10 @@ def maybe_flag_sprint_review(project: str, status: Dict) -> bool:
     hitl = get_sprint_hitl(status)
     if hitl.get("review_status") == REVIEW_APPROVED:
         return False
+    if _backend_only_sprint(project, sprint):
+        hitl["review_status"] = "informed"
+        hitl["review_pending_since"] = datetime.now().isoformat()
+        return False
     hitl["review_status"] = REVIEW_PENDING
     hitl["review_pending_since"] = datetime.now().isoformat()
     return True
@@ -321,14 +332,12 @@ def is_sprint_closed(status: Dict, project: str) -> bool:
 def is_autonomous_sprint_execution(status: Dict, project: str) -> bool:
     """
     Agent implements sprint tickets without human checkpoints until every sprint ticket is done.
+    Scope/groom are agent-owned (human may override). UI sprint review is still HITL.
     """
     sprint = status.get("current_sprint")
-    if not sprint or needs_sprint_review(status) or is_sprint_closed(status, project):
+    if not sprint or is_sprint_closed(status, project):
         return False
-    hitl = get_sprint_hitl(status)
-    if hitl.get("scope_status") != "approved":
-        return False
-    if hitl.get("groom_status") != "approved":
+    if needs_sprint_review(status) and not _backend_only_sprint(project, sprint):
         return False
     summary = sprint_ticket_summary(project, sprint)
     return summary["total"] > 0 and not summary["all_done"]
@@ -338,11 +347,15 @@ def implement_blocked_reason(status: Dict, project: str) -> Optional[str]:
     """Return a user-facing message when ./studio move … implement must be blocked."""
     sprint = status.get("current_sprint") or "SPRINT-??"
     if needs_sprint_review(status):
-        return (
-            f"\n  ⏸  Sprint review pending for {sprint} — no project code changes.\n"
-            f"    Product ideas: ./studio feedback {project} \"...\" (never implement mid-review)\n"
-            f"    ./studio review {project} --approve when ready"
-        )
+        sprint_now = status.get("current_sprint") or ""
+        if sprint_now and _backend_only_sprint(project, sprint_now):
+            pass
+        else:
+            return (
+                f"\n  ⏸  Sprint review pending for {sprint} — no project code changes.\n"
+                f"    Product ideas: ./studio feedback {project} \"...\" (never implement mid-review)\n"
+                f"    ./studio review {project} --approve when ready"
+            )
     if is_sprint_closed(status, project):
         hitl = get_sprint_hitl(status)
         if hitl.get("retro_status") != RETRO_DONE:
@@ -351,38 +364,18 @@ def implement_blocked_reason(status: Dict, project: str) -> Optional[str]:
                 f"    ./studio retro {project}"
             )
         return (
-            f"\n  ⏸  Sprint {sprint} is closed — plan and groom the next sprint before implementing.\n"
+            f"\n  ⏸  Sprint {sprint} is closed — plan the next sprint before implementing.\n"
             f"    ./studio sprint {project}\n"
-            f"    ./studio sprint {project} --approve-scope\n"
-            f"    ./studio groom {project} --approve"
+            f"    ./studio sprint {project} --approve-scope (agent-owned; human may override)"
         )
-    hitl = get_sprint_hitl(status)
-    if hitl.get("scope_status") not in (None, "approved") and sprint:
-        return (
-            f"\n  ⏸  Sprint scope pending approval for {sprint}.\n"
-            f"    Read sprints/{sprint}/scope-proposal.md\n"
-            f"    ./studio sprint {project} --approve-scope"
-        )
-    if hitl.get("scope_status") != "approved" and sprint:
-        summary = sprint_ticket_summary(project, sprint)
-        if summary["total"] > 0 and not summary["all_done"]:
-            return (
-                f"\n  ⏸  Approve sprint scope before implementing.\n"
-                f"    ./studio sprint {project} --approve-scope"
-            )
     return None
 
 
 def can_plan_next_sprint(project: str, status: Dict) -> Tuple[bool, str]:
     """
-    Next sprint planning requires: current sprint finished, human review approved,
-    reuse review approved, retro done.
+    Next sprint planning requires: current sprint finished, review cleared (UI HITL or backend inform), retro done.
+    Reuse and open LOs are not blockers (inform / parallel train).
     """
-    from sprint_reuse_review import reuse_gate_message
-
-    reuse_msg = reuse_gate_message(project, status)
-    if reuse_msg:
-        return False, reuse_msg
     sprint = status.get("current_sprint")
     if not sprint:
         return True, ""
@@ -398,7 +391,8 @@ def can_plan_next_sprint(project: str, status: Dict) -> Tuple[bool, str]:
 
     hitl = get_sprint_hitl(status)
     review = hitl.get("review_status")
-    if review != REVIEW_APPROVED:
+    backend_only = _backend_only_sprint(project, sprint)
+    if review != REVIEW_APPROVED and not (backend_only and review in ("informed", REVIEW_PENDING, None)):
         if review == REVIEW_PENDING:
             return (
                 False,
@@ -421,12 +415,6 @@ def can_plan_next_sprint(project: str, status: Dict) -> Tuple[bool, str]:
             f"Retrospective required for {sprint} before the next sprint: "
             f"./studio retro {project} (fill retro) → ./studio retro {project} --complete",
         )
-
-    from studio_learning_gate import can_infuse_project_sprint
-
-    infusion_ok, infusion_msg = can_infuse_project_sprint()
-    if not infusion_ok:
-        return False, infusion_msg
 
     return True, ""
 

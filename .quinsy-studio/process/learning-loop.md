@@ -5,7 +5,7 @@
 ## Core principle
 
 ```
-Learning identified → classify → inbox + LO (same session) → execute STUDIO_LO → CHANGELOG
+Learning identified → classify → inbox + LO (same session) → train in parallel → CHANGELOG
 ```
 
 Do **not** wait for a human `./studio learn` prompt, retro close, or the next project sprint. If learnings pile up, the originating context is gone and the next project repeats the mistake.
@@ -29,13 +29,14 @@ Each harvest:
 2. **Appends** `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation, no client product names)
 3. **Opens** a compact LO-* with `infusion_kind` + `infusion_path`
 
-Then `./studio execute <project>` returns **`STUDIO_LO` before the next project `IMPLEMENT`** (in-progress tickets still finish VERIFY/GATE/DEBUG/MOVE_DONE). HITL gates 0–2, sprint-review, and design-approve still win.
+Then `./studio execute <project>` **continues product IMPLEMENT**. Open LOs queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, UI sprint-review, and design-approve still win.
 
 Do **not** copy project UI/tokens into `studio-library/`. The inbox + LO is the capture; the agent **generalizes** the rule or extracts a library asset on `STUDIO_LO`.
 
 ```bash
 ./studio learn "<title>" --signal <signal> --source <source>
-./studio execute <project>   # ACTION STUDIO_LO — infuse now
+./studio execute <project>   # ACTION IMPLEMENT (train sidecar if LOs are open)
+./studio train SO-001 --from mistake --topic "<title>"
 ```
 
 ### Signals
@@ -105,13 +106,13 @@ Shows all open learning items.
 
 ### Studio Infusion Gate (mandatory)
 
-Project sprint planning (`./studio sprint <project>`) **and the next project IMPLEMENT** are blocked while open **LO-*** tickets exist. Harvest is immediate; execute returns `STUDIO_LO` while the originating context is still in session.
+Project sprint planning is **not** blocked by open LO-* tickets. Harvest is immediate; `./studio train` infuses in parallel while product execute continues IMPLEMENT.
 
 ```
 Project work identifies a learning
     → harvest (inbox + classified LO) in the same session
-    → ./studio execute  → ACTION STUDIO_LO  (implement in .quinsy-studio/)
-    → ./studio infusion (gate clear)
+    → ./studio execute  → ACTION IMPLEMENT  (TRAIN sidecar)
+    → train agent infuses in .quinsy-studio/ (or STUDIO_LO when idle)
     → continue project tickets / next sprint
 ```
 

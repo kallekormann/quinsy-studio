@@ -62,8 +62,8 @@ def infusion_gate_message(open_items: Optional[List[Dict[str, str]]] = None) -> 
     if not items:
         return None
     lines = [
-        f"{len(items)} open studio learning item(s) (LO-*) must be infused before the next project ticket.",
-        "Harvest is immediate (inbox + LO). Execute returns STUDIO_LO while context is hot — do not pile LOs until the next sprint.",
+        f"{len(items)} open studio learning item(s) (LO-*). Train in parallel — product IMPLEMENT is not blocked.",
+        "Harvest is immediate (inbox + LO). Spawn ./studio train beside execute; do not pile LOs.",
         "Studio learnings → skills / process / tooling / studio-library — not project code.",
         "",
         "Open items:",
@@ -84,8 +84,9 @@ def infusion_gate_message(open_items: Optional[List[Dict[str, str]]] = None) -> 
 
 
 def can_infuse_project_sprint() -> Tuple[bool, str]:
-    """True when no open LO tickets remain."""
-    msg = infusion_gate_message()
-    if msg:
-        return False, msg
-    return True, ""
+    """Open LOs no longer block project sprints (parallel train). Message is informational."""
+    items = open_lo_tickets()
+    if not items:
+        return True, ""
+    msg = infusion_gate_message(items)
+    return True, msg or ""

@@ -17,28 +17,31 @@ Agent: "Implemented."
 
 | Category | Actions | HITL? |
 |----------|---------|-------|
-| **Budget** | costs above X €/month | **Yes** |
+| **Budget / paid vendor** | new paid vendor, costs above X €/month | **Yes** (tech-veto) |
 | **Legal** | contracts, licenses, GDPR exceptions | **Yes** |
 | **Irreversible** | deleting data, production deploy, DNS changes | **Yes** |
-| **Security** | security exceptions, access rights | **Yes** |
-| **As-built (adopt)** | confirm “this is what we have” after brownfield intake | **Yes** (`./studio approve --gate 0`) |
+| **Security** | security exceptions, access rights | **Yes** (tech-veto) |
+| **As-built / PRD (gate 0)** | confirm “this is what we have / are building” | **Yes** (`./studio approve --gate 0`) |
+| **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`). Iterate: `./studio revise --gate 1` |
+| **Design track (gate 2)** | direction, design system, stills/mocks or clickable prototype | **Yes** (`./studio approve --gate 2`). Starts after architecture. Iterate: `./studio revise --gate 2` |
 | **Release** | production release | **Yes** |
-| **Sprint review** | approve shipped sprint work | **Yes** |
-| **Milestone roadmap** | approve version plan after gate 2 | **Yes** |
-| **Milestone review** | approve completed product version (M0, M1, …) | **Yes** |
-| **Sprint feedback** | new ideas from review → backlog | **Yes** (clarify before ticket) |
-| **UI design spec** | new component / marketing / workflow UI | **Yes** (`./studio approve-design`) — requires §2 placement **and** §2c **in-context mocks** (AM-007) |
+| **UI sprint review** | shipped user-visible UI | **Yes** (`./studio review`) |
+| **Backend-only sprint** | API / data work with no UI | **Inform** — continue to retro |
+| **Reuse** | what was pulled / promoted / now in registry | **Inform brief** — no `--approve` |
+| **Sprint scope / groom** | which tickets this sprint | **Agent-owned** (human may override) |
+| **UI design spec** | new component / marketing / workflow / IA | **Yes** (`./studio approve-design`) — requires §2 placement **and** §2c **in-context mocks** (AM-007) |
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |
+| **Mid-execute chat** | thoughts while IMPLEMENT is in flight | **Queue** (`./studio note`) — ACK, do not preempt. Drain after MOVE_DONE. Only “stop this ticket” aborts |
 
 ---
 
-## Sprint cadence HITL (after gate 2 + milestone roadmap)
+## Sprint cadence HITL (after gates 0–2)
 
-Pre-implementation uses gates 0–2 (`./studio approve`). **After gate 2**, the agent drafts a **milestone roadmap** (`docs/phases/`); the human approves it before tickets and sprints. **During sprints**, the agent executes autonomously; the human joins at **sprint review**, then helps plan the **next** sprint. **Between milestones**, the human approves milestone completion before the next milestone backlog is written.
+Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, system, mocks/prototype). All three are HITL; you iterate with architecture and Team 10 until you approve. **During sprints**, the agent executes autonomously; the human joins at **UI sprint review** and per-ticket `approve-design`. Scope and groom are agent-owned (you may override). Reuse is an inform brief.
 
-See [milestone-planning.md](milestone-planning.md) for roadmap and milestone-review ceremony.
+See [milestone-planning.md](milestone-planning.md) for roadmap ceremony.
 
 ### Autonomous execution (mid-sprint)
 
@@ -46,15 +49,15 @@ While sprint tickets are not all `done`:
 
 | Do | Don't |
 |----|-------|
-| Agent implements every groomed sprint ticket in order | Ask the human "should I continue?" between tickets |
-| Agent moves tickets `implement` → `done` without pausing | Let the human change direction mid-sprint |
-| Human may `./studio feedback` (queued for after review) | Turn feedback into tickets or code before sprint review |
-| Agent captures feedback only during review | Agent implements feedback in project code during review |
-| `./studio resume` points at the next ticket to implement | Block on a single ticket for human approval |
+| Agent implements every sprint ticket in order | Ask the human "should I continue?" between tickets |
+| Agent moves tickets `implement` → `done` without pausing | Let a new chat message become a new assignment — **queue it** |
+| Human may `./studio note` or `./studio feedback` | Change files for the new thought until after MOVE_DONE |
+| Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
+| Open LOs spawn `./studio train` in parallel | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
 
-**Enforced by CLI:** `./studio move … implement` is blocked when sprint review is pending or the sprint is closed.
+**Enforced by CLI:** `./studio move … implement` is blocked when **UI** sprint review is pending or the sprint is closed pending retro. Scope/groom `--approve` is not required.
 
-**Execute loop:** `./studio execute <project>` returns one action. The agent runs `NEXT`, then execute again, until `HITL`. Gate failures write `sprints/SPRINT-NN/debug/<ticket>.md` and retry up to 3 times, then `blocked` + optional `gate-fail` LO. `move … done` requires a receipt (`./studio receipt`) plus a fresh level-5 gate.
+**Execute loop:** `./studio execute <project>` returns one action. The agent runs `NEXT`, then execute again, until `HITL`. `INFORM` still loops. Gate failures write `sprints/SPRINT-NN/debug/<ticket>.md` and retry up to 3 times, then `blocked` + optional `gate-fail` LO **and** a train job. `move … done` requires a receipt (`./studio receipt`) plus a fresh level-5 gate.
 
 ### Post gate 2 — before first sprint
 
@@ -90,8 +93,8 @@ Sprint review feedback (once per theme)
 | Step | Who | Command |
 |------|-----|---------|
 | **Scope proposal** | Agent | `./studio sprint <p>` → read `scope-proposal.md` |
-| **Approve scope** | **Human** | `./studio sprint <p> --approve-scope` |
-| **Sprint groom** | **Human** + agent | `./studio groom <p> --approve` before first `implement` |
+| **Approve scope** | **Agent** (human may override) | `./studio sprint <p> --approve-scope` |
+| **Sprint groom** | **Agent** (human may override) | `./studio groom <p> --approve` before first `implement` |
 | **Sprint work** | **Agent only** | `./studio move <p> <ID> implement` … `done` (all sprint tickets) |
 | **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 Immediate studio harvest — classify a learning the moment it is identified,
-write it into studio HQ (inbox + LO-*), and leave execute to infuse (STUDIO_LO).
+write it into studio HQ (inbox + LO-*), and queue parallel train (product IMPLEMENT continues).
 
 Does not copy project code or client names into playbooks/library.
-The inbox entry + classified LO is the capture; the agent generalizes on STUDIO_LO.
+The inbox entry + classified LO is the capture; the train agent generalizes.
 """
 
 from __future__ import annotations

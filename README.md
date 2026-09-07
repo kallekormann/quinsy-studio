@@ -27,6 +27,8 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 
 Pick one path. **`execute` is the driver** after that — one next action until HITL. `./studio resume` is only a checklist.
 
+Start-of-project HITL (you, not the agent): **gate 0 PRD/as-built → gate 1 architecture → gate 2 design track** (direction, design system, stills/mocks or clickable prototype). Then sprints.
+
 ### New product (PRD)
 
 Add `intake/<project>.md` → *"Bootstrap &lt;project&gt; and walk me through gate 0"*.
@@ -47,9 +49,9 @@ Do **not** `init` / `bootstrap` over a live tree. Hand over the repo + how to ru
 ./studio execute my-project       # fill docs/as-built/ → synthesize PRD → HITL gate 0
 ```
 
-The agent reconstructs **implementation state in depth** (cite file paths; a README restatement is not done). You still approve as-built truth, architecture, design of what exists, then a further-work milestone plan. Process: [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md)
+The agent reconstructs **implementation state in depth** (cite file paths; a README restatement is not done). You still approve as-built truth, architecture, and design of what exists, then a further-work milestone plan. Process: [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md)
 
-If a learning is identified, execute returns `STUDIO_LO` **before the next project ticket** (including mid-sprint).
+If a learning is identified mid-sprint, harvest is immediate and `./studio train` runs **beside** product work. Execute returns `STUDIO_LO` only when the product loop is idle.
 
 Full loop: [GETTING_STARTED — execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) · [learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified)
 
@@ -58,31 +60,32 @@ Full loop: [GETTING_STARTED — execute loop](.quinsy-studio/GETTING_STARTED.md#
 | Gate | You approve | Then |
 |------|-------------|------|
 | 0 | PRD + definitions **or** as-built truth (adopt) | `./studio blueprint` |
-| 1 | Architecture + ADRs (as-is on adopt) | `./studio design --scope journey\|core-views` or as-built |
-| 2 | Design mocks **or** design of what exists (adopt) | Library promotion (greenfield only) |
+| 1 | Architecture + ADRs after PRD (as-is on adopt) | Design track starts — `./studio design` |
+| 2 | Design direction + system + stills/mocks or clickable prototype (adopt: design of what exists) | Library promotion (greenfield only) → milestones |
 | Milestones | Version roadmap (`docs/phases/`) | Tickets for **active milestone** → sprints |
 
-You also approve **sprint scope**, **UI design specs** (`approve-design`), and **sprint review**. Mid-sprint, the agent loops tickets on its own — and infuses studio learnings as soon as they appear (`STUDIO_LO`), without waiting for you to run `./studio learn`.
+You also approve **UI design specs** (`approve-design`) and **UI sprint review**. Sprint scope/groom are agent-owned (you may override). Mid-sprint, the agent loops tickets on its own. Open LOs train in parallel — they do not replace `IMPLEMENT`.
 
 ```bash
 ./studio approve my-project --gate 0
 ./studio blueprint my-project && ./studio approve my-project --gate 1
 ./studio design my-project --scope core-views && ./studio approve my-project --gate 2
 ./studio approve my-project --milestones    # after agent drafts docs/phases/
-./studio sprint my-project --approve-scope  # after scope proposal
-./studio execute my-project                 # until HITL (sprint-review) or STUDIO_LO
+./studio sprint my-project --approve-scope  # agent-owned; you may override
+./studio execute my-project                 # until HITL (UI sprint-review, design-approve, …)
 ```
 
 ### Execute actions
 
 | ACTION | Meaning |
 |--------|---------|
-| `IMPLEMENT` | Adopt: fill `docs/as-built/` from code. Sprint: next unblocked ticket (compact CARD) |
+| `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Sprint: next unblocked ticket (CARD lists skills + playbooks) |
 | `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Adopt: synthesize PRD. Sprint: receipt + fresh QA level 5, then mark done |
-| `STUDIO_LO` | Infuse an open LO-* in `.quinsy-studio/` **now** — before the next project ticket |
-| `HITL` | **You:** gates 0–2 (as-built on adopt), design-approve, sprint scope, sprint review |
+| `INFORM` | Reuse brief / inbox drain — loop. **`cost-cap`:** stop; raise the named key in `studio.settings.local.yaml` |
+| `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT |
+| `HITL` | **You:** gate 0, gate 1 architecture, gate 2 design track, `approve-design`, UI sprint review, tech-veto, abort |
 
-Priority: adopt as-built (if needed) → HITL gates → finish an in-progress ticket → **infuse open LOs** → next `IMPLEMENT`. Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail) into `knowledge-base/learnings/inbox.md` + a classified LO. Do not let them pile until the next sprint.
+Priority: adopt as-built (if needed) → HITL gates 0–2 → finish an in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
 
 Full guide: [`.quinsy-studio/GETTING_STARTED.md`](.quinsy-studio/GETTING_STARTED.md) · Agent contract: [`AGENTS.md`](AGENTS.md)
 
@@ -98,16 +101,31 @@ Open this repo in Cursor. You approve HITL stops; the agent runs `./studio execu
 | 3. Architecture ready | *"Approve gate 1"* |
 | 4. Design ready | *"Approve gate 2"* (or *"Design core-views first"*) |
 | 5. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
-| 6. Build | *"Approve sprint scope, then execute until HITL"* |
-| 7. Sprint done | *"Sprint review"* → *"Approve review"* → reuse + retro **auto-harvest** → execute `STUDIO_LO` → next sprint |
-| 8. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
+| 6. Build | *"Let the sprint run — execute until HITL"* (agent owns scope; you may override) |
+| 7. Sprint done | *"Sprint review"* → UI: *"Approve review"* → reuse inform + retro **auto-harvest** → `./studio train` beside execute |
+| 8. Mid-sprint thought | *"Note: also consider denser type"* → agent ACKs (`./studio note`) and continues the current ticket |
+| 9. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | Drift | *"Execute my-project — back on track"* |
 
 More examples: [GETTING_STARTED — start here](.quinsy-studio/GETTING_STARTED.md#start-here-tell-the-agent) · [prompt cheat sheet](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet) · [execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) · [learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified)
 
 ## Using in Cursor
 
-Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `./studio verify-abstraction` → `focus` → **`execute`** (loop until HITL). You approve gates; the agent runs `./studio`. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
+Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `./studio verify-abstraction` → `./studio settings` → `focus` → **`execute`** (loop until HITL). You approve gates; the agent runs `./studio`. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
+
+**Other hosts (same `./studio` loop, keys stay in that tool):** [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md). Codex already reads [`AGENTS.md`](AGENTS.md). Product Gemini keys in a project `.env` are not the coding-agent key.
+
+## Cost & token policy
+
+Committed defaults in [`.quinsy-studio/studio.settings.yaml`](.quinsy-studio/studio.settings.yaml) are sized for a **medium project** (PRD → architecture → design → one sprint) so you should not need to tune them to start. Intake, architecture, and design have higher per-step budgets than implement / reuse / retro.
+
+```bash
+./studio settings                 # merged policy + estimated usage
+```
+
+Override locally (gitignored, **no API keys**): copy [studio.settings.local.example.yaml](.quinsy-studio/studio-templates/studio.settings.local.example.yaml) → `.quinsy-studio/studio.settings.local.yaml`. Set `cost.profile` (`economy` / `standard` / `premium`) or raise a single step (`cost.steps.design.context`). Estimates are `chars/4` of CARD + listed files — not Cursor/Anthropic/Google billing. `model_hint` is the biggest dollar lever (the host must honor it).
+
+When execute says `INFORM cost-cap`, it names the yaml key. Raise **that** key, then execute again. Do not keep stuffing files.
 
 ## Library-first (UI + code)
 
@@ -115,11 +133,13 @@ Before writing new code, pull from the studio library:
 
 ```bash
 ./studio library list
-./studio library suggest my-project "auth billing"
-./studio library pull my-project auth billing button
+./studio library suggest my-project "auth button"
+./studio library pull my-project auth tokens button
 ```
 
-After a ticket is done, promote generic changes:
+**Stubs** (`billing`, `feature-gating`) are **not pullable** — build in-project, then promote a working generic.
+
+After a ticket is done, promote **only if the generic asset improved**:
 
 ```bash
 ./studio library promote my-project packages/billing --ticket MY-0001
@@ -169,7 +189,7 @@ quinsy-studio/
 | Topic | Document |
 |-------|----------|
 | Execute loop (agentic sprint) | [GETTING_STARTED § execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) |
-| Immediate harvest + STUDIO_LO | [GETTING_STARTED § learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified) |
+| Immediate harvest + parallel train | [GETTING_STARTED § learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified) |
 | Operations manual | [.quinsy-studio/README.md](.quinsy-studio/README.md) |
 | Getting started | [.quinsy-studio/GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
 | Agent prompts (new product or existing repo) | [GETTING_STARTED § start here](.quinsy-studio/GETTING_STARTED.md#start-here-tell-the-agent) |
@@ -190,33 +210,38 @@ quinsy-studio/
 | Aesthetic presets (Team 10) | [knowledge-base/aesthetic-presets/README.md](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) |
 | Skill extensions (deep playbooks) | [knowledge-base/skill-extensions/README.md](.quinsy-studio/knowledge-base/skill-extensions/README.md) |
 | Agent context | [process/agent-context.md](.quinsy-studio/process/agent-context.md) |
+| Cost / token policy | [.quinsy-studio/studio.settings.yaml](.quinsy-studio/studio.settings.yaml) · `./studio settings` |
 | Git separation | [process/worlds.md](.quinsy-studio/process/worlds.md) |
 
 ## Quality rules
 
-1. **Library-first** — suggest + pull before coding; promote when generic
+1. **Library-first** — suggest + pull before coding; do not pull stubs; promote only when the generic asset improved
 2. **No code without a ticket** (after gate 2)
-3. **Three human gates** — no implementation before gate 2. Existing apps: `./studio adopt` (never empty-init)
-4. **Execute loop** — `./studio execute` until HITL; compact cards; receipt + gate 5 before `done`; `STUDIO_LO` before the next project ticket
-5. **Sprint HITL** — scope approval → review → feedback → clarify → ticket (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
+3. **Three human gates** — PRD, architecture, design track. No product IMPLEMENT before gate 2. Existing apps: `./studio adopt` (never empty-init)
+4. **Execute loop** — `./studio execute` until HITL; compact cards (skills + playbooks); receipt + gate 5 before `done`; train LOs in parallel (idle `STUDIO_LO` only)
+5. **Sprint HITL** — UI review + per-ticket `approve-design`; scope/groom/reuse are inform (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
 6. **Milestones** — roadmap after gate 2; milestone review before next version backlog
 7. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
 8. **Placement before layout** — Team 10 §2 Context & placement in design specs; `ia-feature-placement` for cross-surface moves
-9. **Immediate harvest** — classify + inbox + LO when a learning is identified; execute `STUDIO_LO` in the same session (`./studio infusion`)
+9. **Immediate harvest** — classify + inbox + LO when a learning is identified; `./studio train` beside product execute
 10. **Two git worlds** — never commit `projects/` to this repo; studio HQ stays project-agnostic (`./studio verify-abstraction`)
-11. **Anti-slop + ADRs + HITL** — see process docs
+11. **Cost caps** — medium-project defaults in `studio.settings.yaml`; on `INFORM cost-cap` raise the named key (do not dump more files)
+12. **Anti-slop + ADRs + HITL** — see process docs
 
 ## CLI overview
 
 ```bash
 ./studio --help
 ./studio install                  # after git clone
-./studio focus <project> && ./studio execute <project>   # loop until HITL; STUDIO_LO before next project ticket
+./studio focus <project> && ./studio execute <project>   # loop until HITL
+./studio settings                 # policy + estimated token usage
+./studio note <project> "…"       # mid-execute inbox (ACK; drain after MOVE_DONE)
+./studio train SO-001 --from mistake --topic "…"
 ./studio health <project>
 ./studio ticket-card <project> <ID>
 ./studio receipt <project> <ID>
-./studio learn "..." --signal tooling-gap   # harvest now → execute STUDIO_LO
-./studio infusion                           # must be clear before next project ticket
+./studio learn "..." --signal tooling-gap
+./studio infusion                 # lists open LOs; does not block IMPLEMENT
 ./studio verify-abstraction
 ./studio library list
 ./studio adopt <project> --from <git-url-or-path>

@@ -132,6 +132,26 @@ def requires_design_approval(content: str) -> bool:
     return ticket_type in DESIGN_TRACK_TYPES
 
 
+def ticket_looks_like_ui(ticket_type: str, title: str = "") -> bool:
+    """True when the ticket is design-track or ships a user-visible UI surface."""
+    tt = (ticket_type or "").strip() or infer_ticket_type(title or "")
+    return tt in DESIGN_TRACK_TYPES or tt in UI_IMPLEMENT_TYPES
+
+
+def tickets_are_backend_only(tickets: List[Dict]) -> bool:
+    """True when every ticket is explicitly non-UI. Unknown (no type, no title) is not backend-only."""
+    if not tickets:
+        return False
+    for ticket in tickets:
+        tt = str(ticket.get("ticket_type") or "").strip()
+        title = str(ticket.get("title") or "").strip()
+        if not tt and not title:
+            return False
+        if ticket_looks_like_ui(tt, title):
+            return False
+    return True
+
+
 def design_implement_blocked_message(ticket_id: str, content: str) -> Optional[str]:
     if not requires_design_approval(content):
         return None

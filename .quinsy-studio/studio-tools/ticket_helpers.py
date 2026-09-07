@@ -101,9 +101,37 @@ def role_for_skills(skills: List[str]) -> str:
     return "TBD (assign role)"
 
 
+SKILL_PREFIX_TEAM = {
+    "FE": "01-frontend-experience",
+    "BE": "02-backend-systems",
+    "CL": "03-compliance-legal",
+    "PS": "04-product-strategy-architecture",
+    "GM": "05-growth-marketing-content",
+    "PM": "06-product-management-operating-model",
+    "AI": "07-ai-autonomous-systems",
+    "PE": "08-platform-enterprise-engineering",
+    "SO": "09-studio-operations-evolution",
+    "UX": "10-product-design-experience",
+}
+
+
 def playbook_for_team(team: str) -> str:
     """Return the mandatory playbook reference for a team."""
     return TEAM_PLAYBOOK_MAP.get(team, "knowledge-base/anti_ai_slop_protocol.md")
+
+
+def playbooks_for_skills(skills: List[str]) -> List[str]:
+    """Playbook paths the implementer must read for these skill IDs."""
+    seen: List[str] = []
+    for skill in skills or []:
+        prefix = str(skill).split("-")[0]
+        team = SKILL_PREFIX_TEAM.get(prefix)
+        if not team:
+            continue
+        path = playbook_for_team(team)
+        if path not in seen:
+            seen.append(path)
+    return seen
 
 
 def _yaml_list(items) -> str:
