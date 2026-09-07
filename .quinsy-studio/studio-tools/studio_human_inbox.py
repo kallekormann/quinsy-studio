@@ -7,37 +7,72 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from sprint_hitl import sprint_directory
 
+
+def _projects_dir() -> Path:
+    from sprint_hitl import PROJECTS_DIR
+
+    return PROJECTS_DIR
+
 ABORT_RE = re.compile(r"^\s*(abort|stop this ticket|stop the ticket)\b", re.I)
+# Human is answering HITL or recovering drift — do not treat as a mid-execute note.
+HITL_REPLY_RE = re.compile(
+    r"(?i)("
+    r"\bback on track\b|"
+    r"\bresume(?: the)? project\b|"
+    r"approve-design|"
+    r"approve\s+gate\s*[012]|"
+    r"./studio approve|"
+    r"review\s+--approve|"
+    r"--approve\b"
+    r")"
+)
+
+
+def should_queue_as_note(text: str) -> bool:
+    """True when a chat bubble must be ./studio note'd and the current ACTION resumed."""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if ABORT_RE.match(t):
+        return True
+    if HITL_REPLY_RE.search(t):
+        return False
+    return True
 
 
 def inbox_json_path(project: str, sprint: str) -> Path:
-    return sprint_directory(project, sprint) / "human-inbox.json"
+    if (sprint or "").strip():
+        return sprint_directory(project, sprint) / "human-inbox.json"
+    return _projects_dir() / project / "docs" / "human-inbox.json"
 
 
 def inbox_md_path(project: str, sprint: str) -> Path:
-    return sprint_directory(project, sprint) / "human-inbox.md"
+    if (sprint or "").strip():
+        return sprint_directory(project, sprint) / "human-inbox.md"
+    return _projects_dir() / project / "docs" / "human-inbox.md"
 
 
 def load_inbox(project: str, sprint: str) -> Dict:
     path = inbox_json_path(project, sprint)
+    label = sprint or "pre-sprint"
     if not path.exists():
-        return {"sprint": sprint, "notes": []}
+        return {"sprint": label, "notes": []}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
         data.setdefault("notes", [])
         return data
     except json.JSONDecodeError:
-        return {"sprint": sprint, "notes": []}
+        return {"sprint": label, "notes": []}
 
 
 def save_inbox(project: str, sprint: str, data: Dict) -> Path:
     path = inbox_json_path(project, sprint)
     path.parent.mkdir(parents=True, exist_ok=True)
-    data["sprint"] = sprint
+    data["sprint"] = sprint or "pre-sprint"
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     return path
 
@@ -62,22 +97,40 @@ def append_note(project: str, sprint: str, text: str) -> Dict:
     if md.exists():
         md.write_text(md.read_text(encoding="utf-8") + line, encoding="utf-8")
     else:
-        md.write_text(f"# Human inbox — {sprint}\n\nQueued mid-execute. Drain after MOVE_DONE.\n\n{line}", encoding="utf-8")
+        scope = sprint or "pre-sprint"
+        md.write_text(
+            f"# Human inbox — {scope}\n\nQueued mid-execute. Drain after MOVE_DONE.\n\n{line}",
+            encoding="utf-8",
+        )
     return note
 
 
-def open_notes(project: str, sprint: str) -> List[Dict]:
-    if not sprint:
-        return []
+def _open_from_scope(project: str, sprint: str) -> List[Dict]:
     return [n for n in load_inbox(project, sprint).get("notes", []) if n.get("status") == "open"]
+
+
+def open_notes(project: str, sprint: str = "") -> List[Dict]:
+    """Open notes in the pre-sprint docs inbox plus the current sprint inbox."""
+    out: List[Dict] = []
+    seen = set()
+    scopes = [""]
+    if sprint:
+        scopes.append(sprint)
+    for scope in scopes:
+        for note in _open_from_scope(project, scope):
+            key = f"{scope or 'pre'}:{note.get('id')}"
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(note)
+    return out
 
 
 def has_abort(project: str, sprint: str) -> bool:
     return any(n.get("abort") for n in open_notes(project, sprint))
 
 
-def drain_open_notes(project: str, sprint: str) -> List[Dict]:
-    """Mark open notes drained (read after MOVE_DONE). Returns the drained list."""
+def _drain_scope(project: str, sprint: str) -> List[Dict]:
     data = load_inbox(project, sprint)
     drained = []
     for note in data.get("notes", []):
@@ -87,6 +140,14 @@ def drain_open_notes(project: str, sprint: str) -> List[Dict]:
             drained.append(note)
     if drained:
         save_inbox(project, sprint, data)
+    return drained
+
+
+def drain_open_notes(project: str, sprint: str) -> List[Dict]:
+    """Mark open notes drained (read after MOVE_DONE). Returns the drained list."""
+    drained = _drain_scope(project, "")
+    if sprint:
+        drained.extend(_drain_scope(project, sprint))
     return drained
 
 

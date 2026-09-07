@@ -59,6 +59,8 @@ Agents: read project `package.json` scripts and `.env.local` before suggesting `
 
 **Host ports:** before writing Compose published ports or local URLs, probe what is already bound. See [host-port-allocation.md](host-port-allocation.md) (LO-0066). Do not reuse another project’s 5432 / 6379 / 3000 / Supabase 54321–54323.
 
+**Laravel `artisan serve` in Docker:** `ServeCommand` strips most process env from the PHP child (Compose `DB_*`, vendor base URLs, session driver) unless you pass `--no-reload`. CLI `php artisan` in the same container still sees full env, so tinker can look healthy while HTTP 500s. Use `php artisan serve --host=0.0.0.0 --port=8000 --no-reload`, or `php -S` which inherits the container environment.
+
 ---
 
 ## SOLID principles

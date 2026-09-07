@@ -90,6 +90,20 @@ Distilled principles from parallel train jobs (Openverse imagery sprint). Full d
 - Chromium may SIGSEGV in Cursor/CI sandboxes — `QUINSY_SKIP_SMOKE=1` is an **explicit agent opt-out** for `./studio gate --level 5` only; gate output must say skipped.
 - Human machines and sprint review: leave unset; document skip in the ticket receipt when agents cannot run smoke.
 
+### Anti-slop ignore list (LO-0082)
+
+- Treat published third-party admin panel assets (`public/js|css|fonts/<panel>/`) and Composer `vendor/` like `node_modules`: do not scan minified vendor JS for magic numbers or type assertions.
+- `validate_anti_slop.py` `IGNORE_PATTERNS` is the allowlist of generated trees; extend it when a PHP/JS admin kit publishes into `public/`, not by rewriting vendor files.
+
+### Reuse harvest (LO-0100)
+
+- Auto-open an LO only for **registry generic packages** (`packages/auth`, billing, …). First-brand token kits and project `ui/` stay local (`./studio reuse --record <path> local`).
+- Do not copy client `theme-tokens` / `design-tokens` / `kit-*` into `studio-library/`.
+
+### Laravel serve in Compose (LO-0101)
+
+- `php artisan serve` strips Compose env from the PHP child unless `--no-reload`. CLI artisan can look healthy while HTTP 500s. Pass `--no-reload` or use `php -S`.
+
 ---
 
 ## Anti-Patterns

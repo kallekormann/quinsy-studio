@@ -33,7 +33,7 @@ Agent: "Implemented."
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |
-| **Mid-execute chat** | thoughts while IMPLEMENT is in flight | **Queue** (`./studio note`) — ACK, do not preempt. Drain after MOVE_DONE. Only “stop this ticket” aborts |
+| **Mid-execute chat** | thoughts while IMPLEMENT is in flight | **Queue** (`./studio guard` → `INBOX_ACK`) — auto-queued, do not preempt. Drain after MOVE_DONE. Only “stop this ticket” aborts |
 
 ---
 
@@ -50,8 +50,8 @@ While sprint tickets are not all `done`:
 | Do | Don't |
 |----|-------|
 | Agent implements every sprint ticket in order | Ask the human "should I continue?" between tickets |
-| Agent moves tickets `implement` → `done` without pausing | Let a new chat message become a new assignment — **queue it** |
-| Human may `./studio note` or `./studio feedback` | Change files for the new thought until after MOVE_DONE |
+| Agent moves tickets `implement` → `done` without pausing | Let a new chat message become a new assignment — **queue it** (`./studio note`) |
+| Agent **ACK-queues** a mid-execute chat bubble (`./studio note`) and resumes the same ACTION | Treat that bubble as a new assignment, run `guard` on it, or change files for it before MOVE_DONE |
 | Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
 | Open LOs spawn `./studio train` in parallel | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
 

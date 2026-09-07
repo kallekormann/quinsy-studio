@@ -13,10 +13,12 @@ from studio_execute import (
     count_gate_fails,
     decide_from_state,
     extract_ac,
+    format_execute_step,
     harvest_retro_learn_prompts,
     has_fresh_gate_pass,
     pick_next_ticket,
     receipt_issues,
+    ExecuteStep,
 )
 from ticket_helpers import render_ticket_markdown
 
@@ -463,6 +465,20 @@ class DecideTests(unittest.TestCase):
         )
         self.assertEqual(step.kind, "VERIFY")
         self.assertEqual(step.ticket_id, "DEMO-0002")
+
+    def test_format_execute_step_prints_mid_chat_when_looping(self):
+        step = ExecuteStep(
+            kind="IMPLEMENT",
+            ticket_id="DEMO-0002",
+            reason="next unblocked sprint ticket",
+            command="./studio move demo DEMO-0002 implement",
+            loop=True,
+        )
+        text = format_execute_step("demo", step)
+        self.assertIn("MID-CHAT:", text)
+        self.assertIn("./studio guard demo", text)
+        hitl = ExecuteStep(kind="HITL", reason="gate-1", command="./studio approve demo --gate 1", loop=False)
+        self.assertNotIn("MID-CHAT:", format_execute_step("demo", hitl))
 
     def test_decide_abort_preempts(self):
         step = decide_from_state(

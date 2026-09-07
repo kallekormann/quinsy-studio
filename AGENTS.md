@@ -2,6 +2,18 @@
 
 You operate **Quinsy Studio** in the IDE. Stay in context. Separate worlds. **Library-first.**
 
+## Every turn (before session start or the user's ask)
+
+A new chat bubble is **not** a new assignment while work is in flight.
+
+```bash
+./studio guard <p> "<verbatim user message>"
+```
+
+On `INBOX_ACK`: the note is already queued — one-line ACK, resume the same ACTION. Do not implement the note until after `MOVE_DONE` + drain. Only abort preempts. HITL replies (gate approve, `approve-design`, sprint review, “back on track”) are not queued.
+
+This is **studio-core** (`./studio guard`), not a project-local convention.
+
 ## Session start (mandatory)
 
 ```bash
@@ -21,8 +33,6 @@ On `HITL`: stop and wait — **gate 0** (PRD / as-built), **gate 1 architecture*
 On `INFORM`: do NEXT (inbox drain, reuse brief), then execute again — do not wait for a signature. **Exception:** `INFORM cost-cap` — stop stuffing files; the human raises the **named** key in `.quinsy-studio/studio.settings.local.yaml`. Architecture and design gates are **not** inform.
 
 On `STUDIO_LO`: only when the product loop is **idle**. Mid-sprint, harvest immediately and spawn `./studio train` **in parallel**; keep `IMPLEMENT`. Infuse in `.quinsy-studio/` only (CHANGELOG, move LO to `backlog/done/`). Do not leave LOs piled for a later human trigger.
-
-**Human chat mid-execute:** `./studio note <p> "…"` (or treat the message as a note). **ACK and continue the current ACTION.** Drain after `MOVE_DONE`. Only “stop this ticket” / abort may preempt.
 
 Read: [agent-context.md](.quinsy-studio/process/agent-context.md) | [ticket-team-allocation.md](.quinsy-studio/process/ticket-team-allocation.md) | [library_registry.md](.quinsy-studio/studio-library/library_registry.md)
 

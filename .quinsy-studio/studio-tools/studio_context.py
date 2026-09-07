@@ -17,6 +17,7 @@ try:
         feedback_only_message,
         is_autonomous_sprint_execution,
         is_sprint_closed,
+        list_sprint_tickets,
         looks_like_review_product_feedback,
         needs_sprint_review,
     )
@@ -26,6 +27,7 @@ except ImportError:
     is_autonomous_sprint_execution = lambda status, project: False  # type: ignore
     looks_like_review_product_feedback = lambda request: False  # type: ignore
     feedback_only_message = lambda project: "Sprint review pending."  # type: ignore
+    list_sprint_tickets = lambda project, sprint: []  # type: ignore
 
 STUDIO_ROOT = Path(__file__).parent.parent.parent
 QUINSY_STUDIO = STUDIO_ROOT / ".quinsy-studio"
@@ -156,15 +158,68 @@ def build_focus_report(project: str, status: Dict) -> str:
     return "\n".join(lines)
 
 
+def implementation_in_flight(project: str, status: Dict) -> bool:
+    """True for any project while a ticket or pre-gate execute loop is still working.
+
+    Does not call decide_next_action (that function enqueues train jobs).
+    """
+    if status.get("active_ticket"):
+        return True
+    sprint = status.get("current_sprint") or ""
+    if sprint:
+        try:
+            tickets = list_sprint_tickets(project, sprint)
+        except (OSError, TypeError, ValueError):
+            tickets = []
+        if any(t.get("status") == "implement" for t in tickets):
+            return True
+    hg = status.get("human_gates") or {}
+    if hg.get("0", {}).get("status") == "approved" and hg.get("1", {}).get("status") != "approved":
+        return True
+    if hg.get("1", {}).get("status") == "approved" and hg.get("2", {}).get("status") != "approved":
+        return True
+    return False
+
+
+def _ack_inbox(project: str, status: Dict, request: str, *, abort: bool) -> Tuple[str, str]:
+    from studio_human_inbox import append_note
+
+    sprint = status.get("current_sprint") or ""
+    note = append_note(project, sprint, request)
+    if abort:
+        return (
+            "abort",
+            f"ACK queued {note['id']} (abort) — stop the current ticket. "
+            f"./studio note {project} --drain then wait.",
+        )
+    return (
+        "inbox_ack",
+        f"ACK queued {note['id']} — current ACTION continues. "
+        f"Do not implement this note. Resume: ./studio execute {project}. "
+        f"Drain after MOVE_DONE: ./studio note {project} --drain",
+    )
+
+
 def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     """
     Classify a user request against project/sprint scope.
     Returns (verdict, message).
-    verdict: in_scope | needs_ticket | pre_impl | sprint_review | sprint_closed | autonomous_sprint | feedback_only | studio_meta | unclear
+    Core mid-execute rule (every project): if work is in flight, queue the
+    verbatim chat as an inbox note and tell the agent to resume ACTION.
+    verdict: inbox_ack | abort | in_scope | needs_ticket | pre_impl | sprint_review |
+             sprint_closed | autonomous_sprint | feedback_only | studio_meta | unclear
     """
+    from studio_human_inbox import ABORT_RE, should_queue_as_note
+
     req_tokens = _tokenize(request)
     if not req_tokens:
         return "unclear", "Could not parse request."
+
+    in_flight = implementation_in_flight(project, status)
+    if in_flight and ABORT_RE.match(request or ""):
+        return _ack_inbox(project, status, request, abort=True)
+    if in_flight and should_queue_as_note(request):
+        return _ack_inbox(project, status, request, abort=False)
 
     impl_signals = {
         "implement", "build", "deploy", "feature", "code", "api", "database",

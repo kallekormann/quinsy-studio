@@ -421,9 +421,55 @@ def harvest_retro_text(retro_text: str, source: str) -> List[Dict[str, object]]:
     return results
 
 
+# First-brand / client token trees stay in the project. Auto-opening HQ LOs for
+# every file under packages/ui or theme-tokens floods the studio backlog.
+_TOKEN_KIT_MARKERS = (
+    "theme-tokens",
+    "design-tokens",
+    "/tokens/",
+    "kit-utilities",
+    "kit-root",
+)
+_REGISTRY_GENERIC_PACKAGES = (
+    "packages/auth/",
+    "packages/billing/",
+    "packages/feature-gating/",
+    "packages/color-extraction/",
+    "packages/item-tags/",
+    "packages/item-search/",
+    "packages/canvas-export/",
+    "packages/rate-limit/",
+    "packages/slug/",
+    "packages/password-gate/",
+    "packages/rect-selection/",
+    "packages/viewport-fit/",
+)
+
+
+def _normalized_reuse_path(path: str) -> str:
+    return path.replace("\\", "/").lstrip("./")
+
+
+def _is_token_kit_path(path: str) -> bool:
+    lowered = _normalized_reuse_path(path).lower()
+    return any(marker in lowered for marker in _TOKEN_KIT_MARKERS)
+
+
+def _is_registry_generic_package(path: str) -> bool:
+    normalized = _normalized_reuse_path(path)
+    if not normalized.startswith("packages/"):
+        return False
+    parts = normalized.split("/")
+    if len(parts) < 2 or not parts[1]:
+        return False
+    root = f"packages/{parts[1]}/"
+    return root in _REGISTRY_GENERIC_PACKAGES
+
+
 def harvest_reuse_items(items: List[Dict], source: str) -> List[Dict[str, object]]:
-    """Uncovered reuse paths → classified LOs immediately (no wait for --approve)."""
+    """Uncovered generic registry packages → LOs. Token kits and project UI stay local."""
     results: List[Dict[str, object]] = []
+    seen_packages: set[str] = set()
     for item in items:
         if item.get("covered"):
             continue
@@ -431,17 +477,26 @@ def harvest_reuse_items(items: List[Dict], source: str) -> List[Dict[str, object
         if action not in ("promote", "lo_ticket", "promote_or_local"):
             continue
         path = str(item.get("path") or "")
+        if _is_token_kit_path(path):
+            continue
+        if _normalized_reuse_path(path).startswith("ui/"):
+            continue
+        if not _is_registry_generic_package(path):
+            continue
+        pkg = _normalized_reuse_path(path).split("/")[1]
+        if pkg in seen_packages:
+            continue
+        seen_packages.add(pkg)
         ticket_id = str(item.get("ticket_id") or "")
-        kind = "package" if action == "promote" or path.startswith("packages/") else "ui-component"
-        title = f"Reuse harvest: generalize `{path}`"
+        package_path = f"packages/{pkg}"
         harvested = harvest_identified_learning(
-            title,
+            f"Reuse harvest: generalize `{package_path}`",
             source=source,
             signal="library-gap",
-            path=path,
-            kind=kind,
+            path=package_path,
+            kind="package",
             observation=f"Sprint ticket {ticket_id} changed `{path}` without library promotion.",
         )
-        harvested["path"] = path
+        harvested["path"] = package_path
         results.append(harvested)
     return results

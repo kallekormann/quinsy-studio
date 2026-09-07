@@ -7,6 +7,20 @@ alwaysApply: true
 
 Read [AGENTS.md](../../AGENTS.md) and [.quinsy-studio/process/agent-context.md](../../.quinsy-studio/process/agent-context.md). Honor `./studio settings` (estimated token caps). On `INFORM cost-cap`, wait for the human to raise the named key.
 
+## Every turn (before the user's ask)
+
+A new chat bubble is **not** a new assignment while work is in flight on **any** project.
+
+```bash
+./studio guard <active-project> "<verbatim user message>"
+```
+
+- `INBOX_ACK` — note is already queued. One-line ACK, then `./studio execute` (same ACTION). Do not implement the note.
+- `ABORT` — stop the current ticket.
+- Gate / design / review approval, or “back on track” — handle that HITL; do not queue.
+
+This is core studio behavior, not a per-project rule. Sprint-review `FEEDBACK_ONLY` must not win while a ticket is still `implement`.
+
 ## Session start
 
 ```bash
@@ -30,6 +44,7 @@ Active project: `.quinsy-studio/.active-project.json`
 ./studio guard <project> "<user request>"
 ```
 
+- `INBOX_ACK` → note queued; resume current ACTION (every project)
 - `NEEDS_TICKET` → create ticket first, no code
 - `PRE_IMPL` → gates 0–2 not done; run `./studio resume`
 - `STUDIO_META` → only `.quinsy-studio/`, not project files

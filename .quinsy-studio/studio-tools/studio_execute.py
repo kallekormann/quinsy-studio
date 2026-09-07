@@ -605,6 +605,12 @@ def _has_in_progress(sprint_tickets: List[Dict[str, Any]]) -> bool:
     return any(t.get("status") == "implement" for t in (sprint_tickets or []))
 
 
+def execute_is_looping(project: str) -> bool:
+    """True when execute would keep working — not HITL, not a hard stop."""
+    step = decide_next_action(project)
+    return bool(step.loop) and step.kind != "HITL"
+
+
 def _studio_lo_step(open_los: List[Dict]) -> ExecuteStep:
     lo = open_los[0]
     lo_id = lo.get("id", "")
@@ -1002,7 +1008,7 @@ def decide_next_action(project: str) -> ExecuteStep:
             content = Path(current["path"]).read_text(encoding="utf-8", errors="ignore")
             design_block = design_implement_blocked_message(current["id"], content)
 
-    inbox = open_notes(project, sprint) if sprint else []
+    inbox = open_notes(project, sprint)
     veto = status.get("tech_veto") or {}
     pending_veto = None
     if veto.get("status") == "open" and veto.get("decision"):
@@ -1046,6 +1052,7 @@ def decide_next_action(project: str) -> ExecuteStep:
                 )
             except ValueError:
                 pass
+    step.inbox_pending = len(inbox)
     from studio_settings import apply_cost_policy
 
     return apply_cost_policy(project, step)
@@ -1053,6 +1060,12 @@ def decide_next_action(project: str) -> ExecuteStep:
 
 def format_execute_step(project: str, step: ExecuteStep) -> str:
     lines = [f"EXECUTE {project}"]
+    looping = step.kind != "HITL" and step.loop
+    if looping:
+        lines.append(
+            f'  MID-CHAT: ./studio guard {project} "<verbatim user message>" → INBOX_ACK '
+            "(queued) → resume this ACTION. Do not implement the note. Abort is the only preempt."
+        )
     lines.append(f"  ACTION:  {step.kind}" + (f" {step.ticket_id}" if step.ticket_id else ""))
     if step.reason:
         lines.append(f"  REASON:  {step.reason}")

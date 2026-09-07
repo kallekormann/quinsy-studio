@@ -143,6 +143,8 @@ IGNORE_PATTERNS = [
     r'package-lock\.json',
     r'yarn\.lock',
     r'pnpm-lock\.yaml',
+    r'[/\\]vendor[/\\]',
+    r'public[/\\](js|css|fonts)[/\\]filament',
 ]
 
 # File extensions that are checked

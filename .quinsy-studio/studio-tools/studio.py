@@ -800,10 +800,8 @@ class StudioOrchestrator:
 
         status = load_status(project)
         sprint = status.get("current_sprint") or ""
-        if not sprint:
-            print("  No current sprint — notes live on sprints/SPRINT-NN/human-inbox.md")
-            return False
-        print_header(f"NOTE — {project} ({sprint})")
+        scope = sprint or "pre-sprint"
+        print_header(f"NOTE — {project} ({scope})")
         if drain:
             drained = drain_open_notes(project, sprint)
             if not drained:
@@ -919,6 +917,8 @@ class StudioOrchestrator:
         verdict, message = guard_request(project, request, status)
         icons = {
             "in_scope": "✅",
+            "inbox_ack": "📥",
+            "abort": "🛑",
             "needs_ticket": "🎫",
             "pre_impl": "⏸",
             "sprint_review": "⏸",
@@ -931,7 +931,9 @@ class StudioOrchestrator:
         print_header(f"GUARD: {project}")
         print(f"\n  {icons.get(verdict, '•')} {verdict.upper()}")
         print(f"  {message}")
-        return verdict == "in_scope"
+        if verdict == "inbox_ack":
+            print(f"  Continue the current ACTION — do not start a new task.")
+        return verdict in {"in_scope", "inbox_ack"}
 
     def cmd_verify_worlds(self):
         """Verify studio git and project git are separated."""

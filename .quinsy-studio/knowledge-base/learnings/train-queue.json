@@ -107,6 +107,16 @@
         "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
       ],
       "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0008",
+      "skill_id": "SO-001",
+      "topic": "Anti-slop must ignore published third-party admin assets and Composer vendor, same as node_modules",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-07T21:59:25",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
     }
   ]
 }

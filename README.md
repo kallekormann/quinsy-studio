@@ -103,7 +103,7 @@ Open this repo in Cursor. You approve HITL stops; the agent runs `./studio execu
 | 5. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | 6. Build | *"Let the sprint run — execute until HITL"* (agent owns scope; you may override) |
 | 7. Sprint done | *"Sprint review"* → UI: *"Approve review"* → reuse inform + retro **auto-harvest** → `./studio train` beside execute |
-| 8. Mid-sprint thought | *"Note: also consider denser type"* → agent ACKs (`./studio note`) and continues the current ticket |
+| 8. Mid-sprint thought | Agent queues `./studio note` and **keeps implementing** — it does not switch to your new message |
 | 9. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | Drift | *"Execute my-project — back on track"* |
 

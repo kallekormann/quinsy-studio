@@ -116,6 +116,7 @@ class HarvestWriteTests(unittest.TestCase):
     def test_reuse_two_paths_do_not_collide(self):
         items = [
             {"path": "packages/auth", "action": "promote", "covered": False, "ticket_id": "D-1"},
+            {"path": "packages/auth/src/index.ts", "action": "promote", "covered": False, "ticket_id": "D-1"},
             {"path": "ui/components/dock", "action": "lo_ticket", "covered": False, "ticket_id": "D-2"},
             {"path": "src/local.ts", "action": "local", "covered": False, "ticket_id": "D-3"},
         ]
@@ -123,10 +124,23 @@ class HarvestWriteTests(unittest.TestCase):
             tmp = Path(raw)
             with _patch_harvest_dirs(tmp):
                 results = harvest_reuse_items(items, "demo/SPRINT-01")
-                self.assertEqual(len(results), 2)
-                kinds = {r["kind"] for r in results}
-                self.assertEqual(kinds, {"package", "ui-component"})
-                self.assertEqual(len(list((tmp / "open").glob("LO-*.md"))), 2)
+                self.assertEqual(len(results), 1)
+                self.assertEqual(results[0]["kind"], "package")
+                self.assertEqual(results[0]["path"], "packages/auth")
+                self.assertEqual(len(list((tmp / "open").glob("LO-*.md"))), 1)
+
+    def test_reuse_skips_token_kits_and_project_ui(self):
+        items = [
+            {"path": "packages/theme-tokens/design-tokens.json", "action": "promote", "covered": False, "ticket_id": "D-1"},
+            {"path": "packages/ui/src/kit-root.tsx", "action": "promote", "covered": False, "ticket_id": "D-1"},
+            {"path": "ui/components/molecules/media-frame.tsx", "action": "lo_ticket", "covered": False, "ticket_id": "D-1"},
+        ]
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            with _patch_harvest_dirs(tmp):
+                results = harvest_reuse_items(items, "demo/SPRINT-01")
+                self.assertEqual(results, [])
+                self.assertEqual(len(list((tmp / "open").glob("LO-*.md"))), 0)
 
     def test_render_emits_infusion_fields(self):
         md = render_ticket_markdown(

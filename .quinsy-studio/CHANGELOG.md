@@ -1,5 +1,49 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-07 — Reuse harvest skips token kits; Laravel serve --no-reload (LO-0100, LO-0101)
+
+### Changed
+
+- `studio_harvest.harvest_reuse_items` — auto-LO only registry generic packages; skip `theme-tokens` / `design-tokens` / `kit-*` and project `ui/`.
+- `library_registry.md` reuse enforcement — record first-brand kits `local`.
+- `backend_playbook.md` — `artisan serve --no-reload` (or `php -S`) so Compose env reaches HTTP.
+- SO-001 toolbox: reuse harvest + Laravel serve notes.
+
+### Closed
+
+- LO-0100, LO-0101 infused. LO-0102–LO-0109 closed as duplicates or product-backlog items (not HQ).
+
+## 2026-09-07 — Close reuse-harvest LOs for first-brand kits (LO-0083–0099)
+
+### Closed
+
+- LO-0083–LO-0099 → `backlog/done/` without promoting into `studio-library/`. Reuse harvest auto-opened package LOs for a project's first-brand token/UI tree; record `./studio reuse --record <path> local` instead of copying client kits into HQ.
+
+## 2026-09-07 — Mid-execute chat is inbox ACK, not a new assignment
+
+### Fixed
+
+- `./studio guard` is studio-core: while any project has work in flight, a user message is `INBOX_ACK` (auto-queued) and the current ACTION continues. Sprint-review `FEEDBACK_ONLY` no longer preempts an in-flight ticket.
+- Execute CARD prints `MID-CHAT:` on looping steps. Notes work before a sprint exists (`docs/human-inbox.json`).
+
+## 2026-09-07 — Anti-slop ignores published admin kit assets (LO-0082)
+
+### Changed
+
+- `studio-tools/validate_anti_slop.py` — skip Composer `vendor/` and published Filament-style `public/js|css|fonts/filament` (same class as `node_modules`).
+- SO-001 toolbox: extend `IGNORE_PATTERNS` for generated admin-kit trees; do not rewrite vendor files.
+
+### Closed
+
+- LO-0082 → `backlog/done/`.
+
+
+## 2026-09-07 — Close duplicate retro harvest LOs (LO-0076–0081)
+
+### Closed
+
+- LO-0076–LO-0081 → `backlog/done/` as duplicates of LO-0067–0075 / existing playbook rules (portability gate still lets principle-shaped retro lines through; prefer stronger dedupe next).
+
 ## 2026-09-07 — Portability gate for harvest / train / infusion
 
 ### Added

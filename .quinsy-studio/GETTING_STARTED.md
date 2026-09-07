@@ -296,7 +296,7 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 - Dump the whole backlog into context (use `ticket-card` / execute CARD)
 - Pull library **stubs** (`billing`, `feature-gating`) — build in-project, then promote a working generic
 - Leave open LO-* piled for a later human `learn` prompt — harvest immediately; `./studio train` in parallel
-- Treat a mid-execute chat message as a new assignment — `./studio note` (ACK) and continue the current ACTION
+- Treat a mid-execute chat message as a new assignment. Run `./studio guard <p> "<verbatim>"` first. On `INBOX_ACK`, resume the current ACTION. `FEEDBACK_ONLY` / `NEEDS_TICKET` must not preempt an in-flight ticket.
 - Keep stuffing files after `INFORM cost-cap` — wait for the named key to be raised in `studio.settings.local.yaml`
 
 ---
@@ -320,7 +320,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Status / board / health | `./studio status <p>` · `./studio board <p>` · `./studio health <p>` |
 | Sprint | `./studio sprint <p>` · `--approve-scope` (agent-owned) · `./studio execute <p>` (loop) · `./studio move <p> <ID> implement\|done` |
 | Ticket card / receipt | `./studio ticket-card <p> <ID>` · `./studio receipt <p> <ID>` |
-| Mid-execute note | `./studio note <p> "…"` (ACK; drain after MOVE_DONE) · `./studio note <p> --drain` |
+| Mid-execute chat | `./studio guard <p> "…"` → `INBOX_ACK` (queued). Drain: `./studio note <p> --drain` |
 | Library-first | `./studio library suggest <p> "auth button"` · `./studio library pull <p> auth tokens button` (not stubs) |
 | Sprint review | `./studio review <p>` · `./studio review <p> --approve` |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |

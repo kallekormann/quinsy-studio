@@ -2,6 +2,10 @@
 
 > How the IDE agent stays in studio/project scope and recovers from drift.
 
+## Every turn (before session start)
+
+Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit gate / design / review approval.
+
 ## Session start
 
 1. Read [`AGENTS.md`](../../AGENTS.md)
@@ -11,7 +15,7 @@
 5. If `ACTION` is `INFORM` (inbox drain / reuse brief), do NEXT and loop — do not wait for a signature. Architecture and design are HITL, not inform.
 6. If `ACTION` is `INFORM` and the reason is `cost-cap`, **stop**. Do not keep stuffing files. The human raises the **named** yaml key in `studio.settings.local.yaml`, then execute continues.
 7. If `ACTION` is `STUDIO_LO`, the product loop is idle — infuse in `.quinsy-studio/` now. Mid-sprint gaps: spawn `./studio train` and keep `IMPLEMENT`
-8. Mid-execute human messages: `./studio note` (ACK, resume the same NEXT). Drain after MOVE_DONE
+8. Mid-execute human messages: `./studio guard` → `INBOX_ACK` (auto-queued). Resume NEXT. Drain after MOVE_DONE
 9. `./studio resume <project>` is a human-readable checklist; do not stop after printing it
 
 Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog.
@@ -32,7 +36,13 @@ Studio HQ must stay **project-agnostic** in docs/tools — see [studio-abstracti
 
 ## When the user asks something
 
+### 0. Mid-execute inbox (first)
+
+If the previous turn was execute-loop work, `./studio guard` is still the first command — it returns `inbox_ack` and queues the note. Skip the rest of this section until after drain.
+
 ### 1. Check active project
+
+(Only for a fresh session, a HITL reply, or after inbox drain.)
 
 ```bash
 ./studio focus <project>    # set + print scope banner
@@ -41,9 +51,12 @@ Studio HQ must stay **project-agnostic** in docs/tools — see [studio-abstracti
 
 | Verdict | Agent action |
 |---------|--------------|
+| `inbox_ack` | Note queued. ACK one line. Resume `./studio execute` (same ACTION). Do not implement the note. |
+| `abort` | Stop the current ticket. Drain. Wait. |
 | `in_scope` | Proceed; tie work to ticket ID if post-gate-2 |
 | `needs_ticket` | Do **not** implement — create `./studio ticket` or ask user |
 | `pre_impl` | Redirect to current gate (`./studio resume`) |
+| `feedback_only` | Sprint review HITL — capture feedback, do not code |
 | `studio_meta` | Studio backlog only — not project code |
 | `unclear` | Ask one clarifying question |
 
