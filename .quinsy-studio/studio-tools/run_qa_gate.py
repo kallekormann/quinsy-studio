@@ -35,7 +35,11 @@ from dataclasses import dataclass, asdict
 # =============================================================================
 
 STUDIO_ROOT = Path(__file__).parent.parent.parent
+QUINSY_DIR = Path(__file__).parent.parent  # .quinsy-studio/
 PROJECTS_DIR = STUDIO_ROOT / "projects"
+
+# Durable Playwright browser cache (LO-0052) — not Cursor sandbox temp paths.
+PLAYWRIGHT_CACHE_ROOT = QUINSY_DIR / ".cache" / "playwright"
 
 @dataclass
 class QACheck:
@@ -337,6 +341,22 @@ def check_status_json(project_dir: Path) -> QAResult:
         )
 
 
+def durable_playwright_browsers_path(project_dir: Path) -> Path:
+    """Per-project Playwright browsers under studio cache (survives Cursor sandbox temp)."""
+    return PLAYWRIGHT_CACHE_ROOT / project_dir.name
+
+
+def smoke_env_with_durable_playwright(project_dir: Path) -> Dict[str, str]:
+    """Force PLAYWRIGHT_BROWSERS_PATH away from ephemeral sandbox caches (LO-0052)."""
+    env = os.environ.copy()
+    browsers_path = durable_playwright_browsers_path(project_dir)
+    browsers_path.mkdir(parents=True, exist_ok=True)
+    env["PLAYWRIGHT_BROWSERS_PATH"] = str(browsers_path)
+    # Host platform overrides from agent sandboxes cause mac-x64 vs arm64 misses.
+    env.pop("PLAYWRIGHT_HOST_PLATFORM_OVERRIDE", None)
+    return env
+
+
 def check_smoke_routes(project_dir: Path) -> QAResult:
     """Run runtime smoke tests when docs/smoke-routes.json is present."""
     smoke_config = project_dir / "docs" / "smoke-routes.json"
@@ -373,8 +393,10 @@ def check_smoke_routes(project_dir: Path) -> QAResult:
         )
 
     command = config.get("command", "npm run smoke")
+    # Install once into durable cache; subsequent gates reuse browsers (LO-0052).
     playwright_install = "npx playwright install chromium"
     full_command = f"{playwright_install} && {command}"
+    env = smoke_env_with_durable_playwright(project_dir)
 
     try:
         result = subprocess.run(
@@ -384,12 +406,14 @@ def check_smoke_routes(project_dir: Path) -> QAResult:
             capture_output=True,
             text=True,
             timeout=240,
+            env=env,
         )
         duration = (datetime.now() - start_time).total_seconds()
+        hint = f"PLAYWRIGHT_BROWSERS_PATH={env['PLAYWRIGHT_BROWSERS_PATH']}"
         return QAResult(
             check="smoke_routes",
             passed=result.returncode == 0,
-            output=result.stdout + result.stderr,
+            output=f"{hint}\n{result.stdout}{result.stderr}",
             duration=duration,
             error=None if result.returncode == 0 else f"Exit code: {result.returncode}",
         )

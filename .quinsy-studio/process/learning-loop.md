@@ -5,15 +5,37 @@
 ## Core principle
 
 ```
-Mistake → Learning item → Meta-retro → Improvement → CHANGELOG
+Learning identified → classify → inbox + LO (same session) → execute STUDIO_LO → CHANGELOG
 ```
+
+Do **not** wait for a human `./studio learn` prompt, retro close, or the next project sprint. If learnings pile up, the originating context is gone and the next project repeats the mistake.
 
 ---
 
-## Capture learning items
+## Immediate harvest
+
+The moment a learning is identified, studio HQ captures it:
+
+| Trigger | What happens |
+|---------|----------------|
+| `./studio learn "..."` | Classify → inbox + LO |
+| `./studio retro --complete` | Auto-harvest “went badly” / “improve” bullets (no learn prompts to run later) |
+| `./studio reuse` | Unpromoted `packages/` / `ui/components/` → classified LOs |
+| 3rd gate fail | Auto-harvest `signal: gate-fail` (kind: tooling) |
+
+Each harvest:
+
+1. **Classifies** into an infusion bucket (package, ui-component, design, ux, ia, layout, usability, frontend, backend, database, security, process, tooling)
+2. **Appends** `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation, no client product names)
+3. **Opens** a compact LO-* with `infusion_kind` + `infusion_path`
+
+Then `./studio execute <project>` returns **`STUDIO_LO` before the next project `IMPLEMENT`** (in-progress tickets still finish VERIFY/GATE/DEBUG/MOVE_DONE). HITL gates 0–2, sprint-review, and design-approve still win.
+
+Do **not** copy project UI/tokens into `studio-library/`. The inbox + LO is the capture; the agent **generalizes** the rule or extracts a library asset on `STUDIO_LO`.
 
 ```bash
 ./studio learn "<title>" --signal <signal> --source <source>
+./studio execute <project>   # ACTION STUDIO_LO — infuse now
 ```
 
 ### Signals
@@ -38,6 +60,8 @@ title: <title>
 status: open | in-progress | done
 signal: <signal>
 source: <source>
+infusion_kind: layout | ui-component | package | process | tooling | …
+infusion_path: knowledge-base/design_playbook.md
 priority: P0-P3
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
@@ -76,31 +100,35 @@ Shows all open learning items.
 ```bash
 ./studio retro <project>              # scaffold project retro (status: pending)
 ./studio retro <project> --complete   # validate filled retro → status: done
-./studio infusion                     # verify open LO-* tickets before next project sprint
+./studio infusion                     # verify open LO-* tickets before next project ticket
 ```
 
 ### Studio Infusion Gate (mandatory)
 
-Project sprint planning (`./studio sprint <project>`) is **blocked** while open **LO-*** tickets exist in `.quinsy-studio/backlog/open/`.
+Project sprint planning (`./studio sprint <project>`) **and the next project IMPLEMENT** are blocked while open **LO-*** tickets exist. Harvest is immediate; execute returns `STUDIO_LO` while the originating context is still in session.
 
 ```
-Project sprint review
-    → ./studio learn (capture signals)
-    → ./studio retro --complete (filled retro)
-    → Implement LO-* in studio HQ (process / skills / tools / library)
+Project work identifies a learning
+    → harvest (inbox + classified LO) in the same session
+    → ./studio execute  → ACTION STUDIO_LO  (implement in .quinsy-studio/)
     → ./studio infusion (gate clear)
-    → ./studio sprint <project> (next project sprint)
+    → continue project tickets / next sprint
 ```
 
 **Infusion targets** (generalize — never copy client project names into studio docs):
 
-| Signal | Infuse into |
-|--------|-------------|
-| `design-gap` | knowledge-base/, teams/10/skills/, design-spec-template |
-| `process-gap` | process/, human-in-the-loop.md |
-| `tooling-gap` | studio-tools/, CLI |
-| `knowledge-gap` | playbooks, skill-registry |
-| `library-gap` | studio-library/ + promote from project |
+| Kind | Infuse into |
+|------|-------------|
+| `ui-component` | `studio-library/ui/components/` + atomic-design playbook (LO, not project copy) |
+| `package` | `studio-library/packages/` |
+| `design` / `layout` | `knowledge-base/design_playbook.md` |
+| `ux` / `usability` | `knowledge-base/design-science-playbook.md` |
+| `ia` | `knowledge-base/contextual-ia-playbook.md` |
+| `frontend` / `backend` / `database` / `security` | matching playbooks / PE–BE skills |
+| `process` | `process/` |
+| `tooling` / `gate-fail` | `studio-tools/` |
+
+Signals still map to these kinds (`design-gap` → design, `library-gap` → package or ui-component, `gate-fail` → tooling).
 
 See [studio-abstraction.md](studio-abstraction.md) — learnings cite `--source <project>`; fixes use `<project>` placeholders.
 
@@ -108,11 +136,11 @@ See [studio-abstraction.md](studio-abstraction.md) — learnings cite `--source 
 
 ### Flow
 
-1. **Collect learning items**
+1. **Harvest immediately** (not a later Phase 6 batch)
+   - Inbox: `knowledge-base/learnings/inbox.md`
    - Open LOs from `./studio learn-list`
-   - Feedback from sprint retros
-   - Gate error analysis
-   - **Route signals:** `design-gap` / `process-gap` / `tooling-gap` from project retros → open or update LO ticket before next project sprint
+   - Retro `--complete`, reuse scan, 3rd gate fail
+   - **Route kinds:** design / ux / ia / layout / package / tooling → matching infusion path **in this session**
 
 2. **Skill review**
    - Every team skill is reviewed

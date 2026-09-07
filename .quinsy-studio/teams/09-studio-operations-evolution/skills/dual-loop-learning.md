@@ -63,18 +63,17 @@ Promotion via:
   ./studio promote <project> <asset-path>
 ```
 
-### 3. Learning Harvesting (Phase 6)
+### 3. Immediate harvest (do not batch until next sprint)
 
 ```markdown
-Workflow:
-  1. Run sprint retrospective
-  2. Collect learning items
-  3. For each learning:
-     a. Is it project-specific? → Local Loop
-     b. Is it universal? → Global Loop
-  4. Local Learnings → projects/[name]/docs/local_learnings.md
-  5. Global Learnings → .quinsy-studio/knowledge-base/ or studio-tools/
-  6. Update CHANGELOG
+When a learning is identified (gate, retro bullet, reuse path, explicit learn):
+  1. Classify (package / ui-component / design / ux / ia / layout / …)
+  2. Append knowledge-base/learnings/inbox.md (generic — no client names)
+  3. Open LO-* with infusion_kind + infusion_path
+  4. ./studio execute → STUDIO_LO before the next project IMPLEMENT
+  5. Generalize into the infusion path + CHANGELOG; move LO to done
+Project-specific only → projects/[name]/docs/local_learnings.md
+Do not copy project UI/tokens into studio-library.
 ```
 
 ### 4. Promotion Workflow
@@ -101,17 +100,18 @@ How to promote:
 ### ❌ Prohibited
 
 ```markdown
+- Letting LOs pile until the next sprint (context is gone; next project cannot use the learning)
 - Copying project-specific solutions to Studio HQ
-  - No learning harvesting after sprint
-  - Promotions without documentation
-  - Local learnings sold as global
+- Waiting for a human learn prompt or Phase 6 batch before capturing
+- Promotions without documentation
+- Local learnings sold as global
 ```
 
 ### ✅ Instead
 
 ```markdown
-- Strict separation Local/Global
-  - Mandatory learning harvesting in Phase 6
+- Immediate harvest when identified (inbox + LO) then execute STUDIO_LO
+  - Strict separation Local/Global
   - Promotion with complete documentation
   - Only universally applicable solutions in Studio HQ
 ```

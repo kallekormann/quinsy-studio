@@ -54,6 +54,10 @@ Product backlog (backlog/*.md, milestone: M0, no sprint tag)
 
 **Immature tickets stay in product backlog** until acceptance criteria are specific enough.
 
+**Mid-sprint goal rewrite (LO-0060):** If feedback pulls a replacement ticket into the **current** sprint, update `plan.md` and mark superseded tickets `sprint_deferred: true` (or clear `sprint:`) in the same turn. Do not leave the plan describing the old goal.
+
+**Mid-sprint maturity (LO-0058):** Replacement tickets often skip scope-proposal maturity. Before `implement`, ensure ≥2 specific BDD AC + Scope (design-approve when design-track). Groom may still warn `IMMATURE_TICKET` until the body is filled.
+
 Human checklist:
 
 1. Review proposed tickets

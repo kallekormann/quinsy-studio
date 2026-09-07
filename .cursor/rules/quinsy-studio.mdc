@@ -10,8 +10,10 @@ Read [AGENTS.md](../../AGENTS.md) and [.quinsy-studio/process/agent-context.md](
 ## Session start
 
 ```bash
-./studio install && ./studio verify-worlds && ./studio focus <project> && ./studio resume <project>
+./studio install && ./studio verify-worlds && ./studio focus <project> && ./studio execute <project>
 ```
+
+Do the `NEXT` command, then `./studio execute` again, until `ACTION` is `HITL`. Do not ask to continue mid-sprint. `./studio resume` is a checklist; **execute** is the driver.
 
 Active project: `.quinsy-studio/.active-project.json`
 
@@ -20,7 +22,7 @@ Active project: `.quinsy-studio/.active-project.json`
 ## Two worlds — never mix
 
 - **Studio HQ** (this repo): `.quinsy-studio/`, LO-* backlog — commit here only for studio work
-- **Project**: `projects/<name>/` — **separate git repo**; never `git add projects/` from studio root
+- **Project**: `projects/<name>/` — **separate git repo**; never `git add projects/` from studio root. Existing apps: `./studio adopt` (do not `init` over source).
 
 ## Before implementing anything
 
@@ -48,11 +50,11 @@ Adapt pulled code in the project. After ticket done, promote if generic:
 
 ## Sprint HITL (after milestone roadmap)
 
-Autonomous mid-sprint execution; human at **sprint scope approval** and **sprint review**. Milestone review when all M* tickets done. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. **Never implement feedback during review.** When sprint tickets are done: `./studio review` → human `--approve` → **reuse review** → retro → `./studio sprint`.
+Autonomous mid-sprint execution; human at **sprint scope approval** and **sprint review**. Milestone review when all M* tickets done. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. **Never implement feedback during review.** When sprint tickets are done: `./studio review` → human `--approve` → **reuse review** (auto-harvest) → retro `--complete` (auto-harvest) → `./studio execute` `STUDIO_LO` immediately.
 
 ## Drift recovery
 
-User: "back on track" / "resume project" → `./studio focus <p>` then first item from `./studio resume <p>` only.
+User: "back on track" / "resume project" → `./studio focus <p>` then `./studio execute <p>` (do NEXT until HITL).
 
 ## Library (gate 2)
 

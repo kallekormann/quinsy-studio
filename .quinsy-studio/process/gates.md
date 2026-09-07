@@ -28,6 +28,8 @@ Gate = automated check + human confirmation
 
 ## Gate 0 — Conception Gate
 
+> **Adopted repo:** gate 0 is **as-built truth** + a synthesized PRD, not a greenfield intake. See [brownfield-adopt.md](brownfield-adopt.md). `./studio approve --gate 0` still requires filled `docs/as-built/` (no `_TODO_`).
+
 ```bash
 ./studio gate <project> --level 0
 ```
@@ -166,6 +168,8 @@ python3 .quinsy-studio/studio-tools/design_math.py --audit-tokens projects/<p>/u
 | 5.6 | Skill-matching (studio registry) | studio check | required |
 
 ### Runtime smoke (web apps)
+
+**LO-0052 — durable Playwright browsers:** `./studio gate` sets `PLAYWRIGHT_BROWSERS_PATH` to `.quinsy-studio/.cache/playwright/<project>/` (gitignored). Do not rely on Cursor sandbox temp caches; they rotate and often mismatch mac-arm64 vs mac-x64. First gate may download Chromium once; later gates reuse the cache. Opt out only with `QUINSY_SKIP_SMOKE=1` when Chromium cannot launch.
 
 Add `projects/<p>/docs/smoke-routes.json`:
 

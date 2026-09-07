@@ -15,7 +15,10 @@ Create tickets:
 
 ```bash
 ./studio ticket <project> "<title>"   # → backlog/TICKET-NNN.md (status: backlog)
+./studio ticket-card <project> <ID>   # compact card for the implementer (not the whole file)
 ```
+
+New tickets are **compact**: frontmatter is the machine record; body is Target, Scope, AC only. Boilerplate DoD (gate 5, anti-slop) lives in process docs — do not paste it on every ticket.
 
 Move during sprint:
 

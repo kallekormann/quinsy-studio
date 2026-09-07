@@ -26,6 +26,11 @@ PRIORITY_ORDER = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
 
 
 def _extract_acceptance_criteria(body: str) -> List[str]:
+    from studio_execute import extract_ac
+
+    items = extract_ac(body)
+    if items:
+        return items
     section = re.search(
         r"##\s*(?:\d+\.\s*)?Acceptance Criteria.*?\n(.*?)(?:\n## |\Z)",
         body,
@@ -33,7 +38,7 @@ def _extract_acceptance_criteria(body: str) -> List[str]:
     )
     if not section:
         return []
-    items: List[str] = []
+    items = []
     for line in section.group(1).splitlines():
         line = line.strip()
         if line.startswith("- "):

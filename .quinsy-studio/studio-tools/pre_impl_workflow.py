@@ -60,25 +60,34 @@ def _min_content(path: Path, min_chars: int = 80) -> bool:
 
 def validate_gate_0(project: str) -> Tuple[bool, List[str]]:
     """Intake + definitions ready for human review."""
+    from studio_adopt import as_built_missing, is_adopt_project
+
     root = project_dir(project)
     issues: List[str] = []
+    adopt = is_adopt_project(project)
 
     prd = root / "docs" / "intake" / "prd.md"
     validation = root / "docs" / "intake" / "validation.json"
 
+    if adopt:
+        issues.extend(as_built_missing(project))
+
     if not prd.exists():
-        issues.append("Missing docs/intake/prd.md")
+        issues.append(
+            "Missing docs/intake/prd.md"
+            + (" — synthesize from as-built + intent" if adopt else "")
+        )
     elif not _min_content(prd, 200):
         issues.append("docs/intake/prd.md is empty or has placeholders")
 
     if validation.exists():
         try:
             data = json.loads(validation.read_text())
-            if not data.get("is_valid"):
+            if not data.get("is_valid") and not adopt:
                 issues.append("PRD validation failed — fix validation.json problems or document assumptions")
         except json.JSONDecodeError:
             issues.append("docs/intake/validation.json is invalid JSON")
-    else:
+    elif not adopt:
         issues.append("Missing docs/intake/validation.json — run ./studio intake")
 
     defs_dir = root / "docs" / "definitions"
@@ -120,8 +129,11 @@ def validate_gate_1(project: str) -> Tuple[bool, List[str]]:
 
 def validate_gate_2(project: str) -> Tuple[bool, List[str]]:
     """Design + Next.js prototype mocks ready for human review."""
+    from studio_adopt import is_adopt_project
+
     root = project_dir(project)
     issues: List[str] = []
+    adopt = is_adopt_project(project)
 
     design = root / "design" / "DESIGN.md"
     scope = root / "design" / "DESIGN-SCOPE.md"
@@ -133,9 +145,22 @@ def validate_gate_2(project: str) -> Tuple[bool, List[str]]:
     if not _min_content(design, 100):
         issues.append("Fill design/DESIGN.md")
     if not scope.exists() or not _min_content(scope, 40):
-        issues.append("Fill design/DESIGN-SCOPE.md (journey vs core-views decision)")
+        issues.append(
+            "Fill design/DESIGN-SCOPE.md (as-built existing product)"
+            if adopt
+            else "Fill design/DESIGN-SCOPE.md (journey vs core-views decision)"
+        )
     elif "scope:" not in _read_text(scope).lower() and "scope" not in _read_text(scope).lower():
-        issues.append("design/DESIGN-SCOPE.md must document mock scope (journey | core-views)")
+        issues.append("design/DESIGN-SCOPE.md must document mock scope (journey | core-views | as-built)")
+
+    if adopt:
+        surfaces = root / "docs" / "as-built" / "01-surfaces.md"
+        if not _min_content(surfaces, 80):
+            issues.append("Fill docs/as-built/01-surfaces.md (existing routes/screens)")
+        ia = root / "docs" / "ia" / "surface-map.md"
+        if not _min_content(ia, 60):
+            issues.append("Fill docs/ia/surface-map.md from existing UI (no greenfield prototype)")
+        return len(issues) == 0, issues
 
     if not tokens.exists():
         issues.append("Missing ui/tokens/design-tokens.json")

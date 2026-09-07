@@ -5,8 +5,12 @@
 ## Session start
 
 1. Read [`AGENTS.md`](../../AGENTS.md)
-2. Run `./studio bootstrap` or `./studio focus <project>`
-3. Run `./studio resume <project>` — execute listed actions only
+2. Run `./studio bootstrap` (new PRD), `./studio adopt <p> --from …` (existing codebase), or `./studio focus <project>`
+3. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`
+    4. If `ACTION` is `STUDIO_LO`, infuse that learning in `.quinsy-studio/` **now** (do not start the next project ticket)
+    5. `./studio resume <project>` is a human-readable checklist; do not stop after printing it
+
+Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog.
 
 Active project is stored in `.quinsy-studio/.active-project.json`.
 

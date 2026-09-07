@@ -1,5 +1,61 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-07 — Brownfield adopt (LO-0056)
+
+### Added
+
+- `./studio adopt <project> --from <git-url-or-path> [--intent intake/<p>.md]` — overlay studio docs on an existing codebase. Keeps the project’s `.git`. Never wipes `src/` / `app/`.
+- Process [brownfield-adopt.md](process/brownfield-adopt.md) + as-built templates (`docs/as-built/00`–`07`) and `studio-templates/adopt_intent.md`.
+- Execute: `mode: adopt` fills as-built (`IMPLEMENT`) then synthesizes PRD (`VERIFY`) before HITL gate 0. Gate 2 is design-of-what-exists — no empty Next.js prototype.
+
+### Changed
+
+- `init` / `bootstrap` / `start` / `design` refuse or skip empty-scaffold on a live tree.
+- Docs: GETTING_STARTED, root README, AGENTS — existing-project path vs greenfield PRD.
+
+## 2026-09-07 — Immediate harvest + mid-sprint infusion (LO-0055)
+
+### Added
+
+- `studio_harvest.py` — classify a learning when it is identified (package, ui-component, design/ux/ia/layout/usability, frontend/backend/database/security, process, tooling), append `knowledge-base/learnings/inbox.md`, open a compact LO with `infusion_kind` / `infusion_path`.
+- `./studio learn`, `./studio retro --complete`, `./studio reuse`, and 3rd gate fail all harvest immediately — no human learn prompt, no wait until next sprint.
+
+### Changed
+
+- `./studio execute` returns `STUDIO_LO` **before the next project IMPLEMENT**, including mid-sprint. In-progress tickets still finish VERIFY/GATE/DEBUG/MOVE_DONE. HITL (gates 0–2, sprint-review) still wins.
+- Does not copy project UI/tokens into `studio-library/`; inbox + LO is the capture; the agent generalizes on `STUDIO_LO`.
+
+## 2026-09-07 — Agentic execute loop (LO-0053)
+
+
+### Added
+
+- `./studio execute <project> [--json]` — one next action (`IMPLEMENT` / `GATE` / `VERIFY` / `MOVE_DONE` / `DEBUG` / `STUDIO_LO` / `HITL`). Agent loops until HITL; does not ask to continue.
+- Compact ticket cards (`./studio ticket-card`) and execution receipts (`./studio receipt`) — Plan, AC coverage, default flow (LO-0051) required before `move … done`.
+- `./studio health <project>` — sprint state-graph check (open LOs, missing receipts, unmet deps).
+- Bounded gate-fail debug files (`sprints/SPRINT-NN/debug/<ticket>.md`, max 3 retries) and auto-draft LO on exhaustion (`signal: gate-fail`).
+- Retro `--complete` harvests `./studio learn` prompts from went badly / improve.
+
+### Changed
+
+- `ticket_helpers.py` renders compact tickets (no duplicated skills/deps, no filler BDD, no per-ticket boilerplate DoD).
+- Session start: `./studio execute` is the driver; `resume` remains a checklist.
+- Docs: root `README.md`, `.quinsy-studio/README.md`, `GETTING_STARTED.md` — execute loop, compact tickets, receipts, health, `STUDIO_LO`.
+
+### Notes
+
+- Markdown remains ticket source of truth (no SQL). Tokens are saved by layered load (card vs full ticket), not storage format.
+
+
+## 2026-09-05 — Durable Playwright browsers for gate smoke (LO-0052)
+
+### Fixed
+
+- `studio-tools/run_qa_gate.py` — smoke sets `PLAYWRIGHT_BROWSERS_PATH` to `.quinsy-studio/.cache/playwright/<project>/` and clears `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE`, so gate smoke does not reinstall into ephemeral Cursor sandbox caches or hit mac-x64/arm64 mismatches.
+- `process/gates.md` — documents durable cache + `QUINSY_SKIP_SMOKE` opt-out.
+- `.gitignore` — ignores `.quinsy-studio/.cache/`.
+- Provenance: moody SPRINT-111 review (process-gap).
+
 ## 2026-09-04 — Visible-outcome DoD: real end-to-end walkthrough required, not just green tests (LO-0051)
 
 ### Changed

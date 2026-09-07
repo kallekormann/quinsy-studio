@@ -39,8 +39,9 @@ It consists of:
 - **External Skills** (`external-skills/`) — Imported best-in-class skill packages
 
 The studio operates in **Dual-Speed mode**:
-- **CORE** — for new platforms & complex systems (6 phases with human gates)
-- **LEAN** — for iterations & features in existing projects (4 phases)
+- **CORE** — new platforms from a PRD (6 phases with human gates)
+- **ADOPT** — existing codebase (`./studio adopt`); as-built reconstruction, then the same gates
+- **LEAN** — iterations & features on a studio-managed project (4 phases)
 
 ---
 
@@ -60,7 +61,7 @@ quinsy-studio/
 │   │   ├── 07-ai-autonomous-systems/
 │   │   ├── 08-platform-enterprise-engineering/
 │   │   └── 09-studio-operations-evolution/
-│   ├── knowledge-base/             # Playbooks (Design, Frontend, Backend, Compliance, AI, Anti-Slop)
+│   ├── knowledge-base/             # Playbooks + learnings/inbox.md (immediate harvest)
 │   ├── studio-tools/               # Python CLI (studio.py + all tools)
 │   ├── studio-templates/           # PRD, Ticket, ADR, Docker base, Learning logs
 │   ├── studio-library/             # Reusable assets (ui/, packages/, tokens)
@@ -81,7 +82,7 @@ quinsy-studio/
 - **Project World** (`projects/<name>/`) — Tickets, code, design, docker. **Each project has its own `.git`.**
 - **`intake/`** and **`projects/`** are gitignored in the studio repo. See [process/worlds.md](process/worlds.md).
 
-**IDE agents:** read [`AGENTS.md`](../AGENTS.md) at repo root + [process/agent-context.md](process/agent-context.md).
+**IDE agents:** read [`AGENTS.md`](../AGENTS.md) + [process/agent-context.md](process/agent-context.md). Session driver: `./studio execute <project>` until HITL.
 
 ---
 
@@ -91,27 +92,49 @@ See also: [GETTING_STARTED.md](GETTING_STARTED.md) (canonical) · [`AGENTS.md`](
 
 ### AI-driven (recommended)
 
+Pick one path. [GETTING_STARTED.md](GETTING_STARTED.md) is canonical.
+
+**New product** (PRD in `intake/`):
+
 ```bash
 ./studio install                   # once after git clone
 ./studio verify-worlds
-./studio verify-abstraction        # studio HQ docs/tools — no hard-coded project names
-./studio bootstrap my-project          # intake → stop at next human gate
+./studio verify-abstraction
+./studio bootstrap my-project
 ./studio focus my-project
-./studio resume my-project
+./studio execute my-project            # do NEXT; loop until ACTION is HITL
 ```
 
-### Step 1: Place PRD
+**Existing codebase** (implemented — do not empty-init):
+
+```bash
+./studio adopt my-project --from /path/to/repo   # or a git URL
+./studio focus my-project
+./studio execute my-project            # fill docs/as-built/ → PRD → HITL gate 0
+```
+
+Optional intent: copy [adopt_intent.md](studio-templates/adopt_intent.md) → `intake/<slug>.md` and pass `--intent`. Process: [brownfield-adopt.md](process/brownfield-adopt.md).
+
+`./studio resume my-project` prints a checklist. **`execute` is the driver** — see [The execute loop](#the-execute-loop). Open LOs return `STUDIO_LO` before the next project ticket.
+
+### Step 1: Place a PRD **or** point at an existing repo
+
+New product:
 
 ```bash
 cp studio-templates/prd_template.md ../intake/my-project.md
-# edit PRD, then:
+# edit PRD, then bootstrap (step 2)
 ```
 
-### Step 2: Bootstrap or manual init
+Existing codebase: skip the PRD. Use `./studio adopt` (step 2). Optional intent: `intake/<slug>.md` from [adopt_intent.md](studio-templates/adopt_intent.md).
+
+### Step 2: Bootstrap (new) or adopt (existing)
 
 ```bash
 ./studio bootstrap my-project
-# OR:
+# OR existing codebase (never empty-init):
+./studio adopt my-project --from /path/to/repo
+# OR manual greenfield:
 ./studio init my-project --archetype saas-application
 ./studio intake my-project intake/my-project.md
 ./studio start my-project --mode core
@@ -119,9 +142,10 @@ cp studio-templates/prd_template.md ../intake/my-project.md
 
 Intake does **not** create implementation tickets. After gate 2, the agent drafts a **milestone roadmap** (`docs/phases/`); you approve it before M0 tickets and sprints.
 
-### Step 3: Human gate 0 — PRD + definitions
+### Step 3: Human gate 0 — PRD + definitions (or as-built)
 
-Agent fills `projects/my-project/docs/definitions/`, then:
+New product: agent fills `projects/my-project/docs/definitions/`.  
+Adopted repo: agent fills `docs/as-built/`, synthesizes `docs/intake/prd.md`, then you confirm “this is what we have.”
 
 ```bash
 ./studio approve my-project --gate 0
@@ -138,9 +162,10 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 ### Step 5: Human gate 2 — Design
 
 ```bash
-./studio design my-project --scope core-views   # or: journey
-# Next.js prototype in design/prototype/, sticker sheet, ui/tokens
-./studio approve my-project --gate 2             # library promotion (design → studio-library)
+./studio design my-project --scope core-views   # or: journey | as-built
+# Greenfield: Next.js prototype in design/prototype/, sticker sheet, ui/tokens
+# Adopt: surface map of existing UI — do not scaffold a parallel prototype
+./studio approve my-project --gate 2             # library promotion on greenfield only
 ```
 
 ### Step 6: Milestone roadmap
@@ -159,7 +184,7 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 ./studio sprint my-project
 ./studio sprint my-project --approve-scope
 ./studio groom my-project --approve
-./studio move my-project MY-0001 implement
+./studio execute my-project                 # until HITL; STUDIO_LO before next project ticket
 # on done: ./studio library promote my-project packages/... --ticket MY-0001
 ```
 
@@ -167,7 +192,9 @@ Agent fills `projects/my-project/docs/definitions/`, then:
 
 ```bash
 ./studio gate my-project --level 5
-./studio retro my-project
+./studio retro my-project --complete    # auto-harvests LOs from badly / improve
+./studio execute my-project             # ACTION STUDIO_LO — infuse now
+./studio infusion
 ```
 
 ### Amendment intake (strategic direction, post gate 2)
@@ -207,10 +234,39 @@ No separate plugin — the repo *is* the integration.
 ./studio verify-worlds
 ./studio verify-abstraction
 ./studio focus <project>
-./studio resume <project>
+./studio execute <project>          # loop: do NEXT until ACTION is HITL
 ```
 
-`resume` prints the **next action only** — the agent should not skip ahead of human gates.
+`resume` prints a **checklist**. **`execute` is the driver** — one action at a time. Do not ask “should I continue?” mid-sprint. Stop only on `HITL`. On `STUDIO_LO`, infuse in studio HQ, then execute again.
+
+### The execute loop
+
+After sprint scope + groom are approved:
+
+```
+focus → execute → do NEXT → execute again → … until HITL
+```
+
+| ACTION | Meaning |
+|--------|---------|
+| `IMPLEMENT` | Next unblocked ticket. Load the **CARD** (`./studio ticket-card`); open that one `.md` only |
+| `VERIFY` | Fill `./studio receipt` (plan, AC coverage, default user flow) |
+| `GATE` | `./studio gate --level 5` (fresh after this ticket’s implement) |
+| `DEBUG` | Gate red → `sprints/SPRINT-NN/debug/<id>.md`, retry up to 3 times |
+| `MOVE_DONE` | Receipt + gate 5 → `move … done`, then execute again |
+| `STUDIO_LO` | Infuse an open LO-* in `.quinsy-studio/` **now** (mid-sprint too) — classified path on the CARD |
+| `HITL` | **You:** gates 0–2, design-approve, sprint scope, sprint review, next sprint |
+
+**Priority:** HITL → finish in-progress ticket → **`STUDIO_LO` if any LO is open** → next `IMPLEMENT`. Learnings are harvested when identified (see [§9](#9-optimizing-the-process) and [GETTING_STARTED — learnings](GETTING_STARTED.md#learnings-harvest-when-identified)).
+
+```bash
+./studio execute <project> [--json]
+./studio ticket-card <project> <ID>
+./studio receipt <project> <ID>
+./studio health <project>
+```
+
+Tickets stay **Markdown**. Compact cards save tokens; there is no SQL ticket database. `move … done` requires a receipt **and** QA level 5.
 
 ### What you say in chat
 
@@ -218,35 +274,38 @@ See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-a
 
 | You want | Example prompt |
 |----------|----------------|
-| **Start from PRD** | *"I added intake/nudge.md — bootstrap nudge and stop at gate 0 for my review"* |
-| **Continue** | *"Focus nudge and resume — what's the next step only?"* |
-| **Approve gate** | *"Gate 0 looks good — approve"* → `./studio approve nudge --gate 0` |
+| **Start from PRD** | *"I added intake/my-project.md — bootstrap my-project and stop at gate 0 for my review"* |
+| **Start from existing repo** | *"Adopt my-project from this folder and reconstruct as-built"* |
+| **Continue** | *"Focus &lt;project&gt; and execute — loop until HITL"* |
+| **Approve gate** | *"Gate 0 looks good — approve"* → `./studio approve <project> --gate 0` |
 | **Send back for revision** | *"Revise gate 1: no Supabase yet, IndexedDB only"* |
-| **Design** | *"Design nudge with scope core-views"* |
+| **Design** | *"Design &lt;project&gt; with scope core-views"* |
 | **Milestones** | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | **Amendment** | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
-| **Sprint + build** | *"Plan sprint, approve scope, implement first ticket"* |
-| **Sprint review** | *"Sprint review for nudge"* → try app → *"Approve review"* or `./studio feedback` |
-| **Sprint close** | reuse → retro `--complete` → `./studio infusion` (green) → next `./studio sprint` |
+| **Sprint + build** | *"Approve sprint scope, then execute until HITL"* |
+| **Sprint review** | *"Sprint review"* → try app → *"Approve review"* or `./studio feedback` |
+| **Sprint close** | reuse (auto-harvest) → retro `--complete` (auto-harvest) → execute `STUDIO_LO` immediately → next `./studio sprint` |
 | **New idea (sprint)** | *"Feedback: I want offline mode"* — **not** "create a ticket for offline" |
-| **Drift recovery** | *"Back on track"* / *"Resume nudge"* |
-| **Status** | *"What's the status of nudge?"* |
+| **Drift recovery** | *"Back on track"* / *"Execute &lt;project&gt;"* |
+| **Status** | *"What's the status of &lt;project&gt;?"* / *"Studio health"* |
 | **Off-sprint scope** | *"Is adding payments in scope?"* → agent runs `./studio guard` |
-| **Studio improvement** | *"Log a tooling gap: …"* → `./studio learn` (LO-* backlog) |
+| **Studio improvement** | *"Log a tooling gap: …"* → `./studio learn` then execute `STUDIO_LO` (also auto on retro / reuse / 3rd gate fail) |
 
 ### First session walkthrough
 
 ```
 You:  I added intake/my-app.md. Bootstrap my-app and walk me through gate 0.
-Agent: verify-worlds → bootstrap → focus → resume → fills docs/definitions/
+  — or —  Adopt my-app from this folder and reconstruct as-built.
+Agent: verify-worlds → bootstrap or adopt → focus → execute
+       (new: docs/definitions/; adopt: docs/as-built/ then PRD) → HITL gate 0
 You:  Gate 0 looks good — approve.
 Agent: ./studio approve my-app --gate 0 → blueprint phase
 You:  Continue with architecture.
-Agent: blueprint + ADRs → waits for gate 1
-You:  Approve gate 1. Design core views only.
-Agent: design --scope core-views → prototype + sticker sheet
+Agent: blueprint + ADRs (as-is on adopt) → waits for gate 1
+You:  Approve gate 1. Design core views only.   — or —  Map the existing UI.
+Agent: design --scope core-views  (adopt: surface map, no fake prototype)
 You:  Approve gate 2.
-Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → sprint scope → implement
+Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → sprint scope → execute loop until HITL sprint-review
 ```
 
 ### Two git worlds in Cursor
@@ -262,9 +321,9 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 | You (human) | Agent |
 |-------------|-------|
-| Approve gates 0–2 | Fill definitions, blueprint, design artifacts |
-| Review PRs / mocks | Run CLI, match tickets to skills |
-| Final product decisions | Library pull before coding; promote when generic |
+| Approve gates 0–2, design, sprint scope, sprint review | Fill artifacts; **execute loop** mid-sprint |
+| Review PRs / mocks / shipped app | Run CLI, match tickets to skills |
+| Final product decisions | Library pull before coding; compact cards; receipts + gate 5 before `done` |
 
 See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflow.
 
@@ -283,6 +342,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **IA surface map (project)** | `projects/<name>/docs/ia/surface-map.md` |
 | **Milestone roadmap** | `projects/<name>/docs/phases/` |
 | **Tickets** | `projects/<name>/backlog/*.md` (+ `implement/`, `done/`, `blocked/`) |
+| **Execution log / receipts / debug** | `projects/<name>/sprints/SPRINT-NN/execution-log.json`, `receipts/`, `debug/` |
 | **ADRs** | `projects/<name>/docs/adr/` |
 | **Decision Records** | `projects/<name>/docs/decisions/` |
 | **Sprints** | `projects/<name>/sprints/SPRINT-NN/` |
@@ -303,19 +363,21 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 
 ## 6. The Studio Process (Dual-Speed)
 
-### CORE Mode (New Platforms, Complex Systems)
+### CORE / ADOPT (human gates 0–2, then milestones)
+
+Same gate sequence. **CORE** starts from a PRD. **ADOPT** (`./studio adopt`) reconstructs as-built first, then synthesizes a PRD. Do not empty-init a live tree.
 
 | Phase | Action | Artifact | Gate |
 |-------|--------|----------|------|
-| **1. Intake** | PRD, definitions | `docs/intake/`, `docs/definitions/` | **HUMAN 0** |
-| **2. Architecture** | Blueprint, ADRs | `docs/architecture/`, `docs/adr/` | **HUMAN 1** |
-| **3. Design** | Mocks, tokens, sticker sheet | `design/prototype/`, `ui/` | **HUMAN 2** |
+| **1. Intake** | PRD + definitions, **or** as-built reconstruction (adopt) | `docs/intake/`, `docs/definitions/`, `docs/as-built/` | **HUMAN 0** |
+| **2. Architecture** | Blueprint, ADRs (as-is on adopt) | `docs/architecture/`, `docs/adr/` | **HUMAN 1** |
+| **3. Design** | Mocks + sticker sheet, **or** design of what exists (adopt) | `design/` (no fake prototype on adopt) | **HUMAN 2** |
 | **3b. Milestones** | Version roadmap, M0/M1 outlines | `docs/phases/` | **HUMAN** (`--milestones`) |
 | **3c. Amendments** | Strategic direction → revised roadmap + tickets | `docs/amendments/AM-NNN/` | **HUMAN** (`--amendment`) |
 | **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Scope approval |
-| **5. Implementation** | Library-first, tickets | Code in project | Design HITL + reuse on `done` |
+| **5. Implementation** | Execute loop until HITL | Code + receipts + gate 5; `STUDIO_LO` before next ticket | Design HITL + reuse on `done` |
 | **6. QA** | Anti-slop, tests | QA report | Gate 5 (QA level) |
-| **7. Learning** | Retro, promote | Library, LO-* | — |
+| **7. Learning** | Harvest when identified (not a later batch) | Inbox + LO-* → infuse | Execute `STUDIO_LO` |
 
 ### LEAN Mode (Features, Iterations)
 
@@ -344,22 +406,28 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 
 ```bash
 # Project management
+./studio adopt <project> --from <git-url-or-path> [--intent intake/<p>.md]
 ./studio bootstrap [project] [intake-file]
 ./studio init <project> --archetype <type>
 ./studio start <project> --mode [core|lean]
 ./studio status <project>
 ./studio board <project>
 ./studio focus <project>
-./studio resume <project>
+./studio resume <project>            # checklist
+./studio execute <project> [--json]  # one next action; loop until HITL
+./studio ticket-card <project> <id>
+./studio receipt <project> <id>
+./studio health <project>
 ./studio guard <project> "request"
 ./studio install [--with-skills]     # after git clone: npm UI deps (+ optional skills)
 ./studio verify-worlds
 ./studio verify-abstraction
 
 # Intake & pre-implementation (gates 0–2)
+./studio adopt <project> --from <git-url-or-path> [--intent intake/<p>.md]
 ./studio intake <project> <input-file>
 ./studio blueprint <project>
-./studio design <project> --scope journey|core-views
+./studio design <project> --scope journey|core-views|as-built
 ./studio approve <project> --gate 0|1|2
 ./studio approve-design <project> <TICKET-ID>   # Team 10 spec before UI implement
 ./studio approve <project> --milestones
@@ -389,6 +457,7 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio ticket <project> "title" [--from-feedback FB-001]
 ./studio move <project> <id> <status> [--reason "..."]
 ./studio groom <project>
+./studio execute <project>           # loop until HITL; STUDIO_LO before next project ticket
 
 # Quality & decisions
 ./studio gate <project> [--level N]
@@ -401,10 +470,10 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio repo <project> create|status
 
 # Learning & legacy sync
-./studio learn "title" --signal <s>
+./studio learn "title" --signal <s>            # harvest now (inbox + classified LO)
 ./studio learn-list
-./studio infusion                              # LO gate — clear before project sprint
-./studio retro <project> [--complete]
+./studio infusion                              # LO gate — clear before next project ticket
+./studio retro <project> [--complete]          # --complete auto-harvests LOs from badly/improve
 ./studio sync <project>              # heuristic scan project → library
 ./studio promote <project> <asset>   # single-path promote (legacy)
 ./studio update-skills
@@ -509,13 +578,13 @@ The studio optimizes itself via **Learning Items** (LO-*):
 Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`, ...
 
 **Workflow (Meta-Loop):**
-1. **Detect signal** — Gate failure, rework, tooling gap, design gap
-2. **Create learning item** (`./studio learn ...`)
-3. **Retrospective** — `./studio retro <p>` → fill → `./studio retro <p> --complete`
-4. **Infuse** — implement LO-* in `.quinsy-studio/` (process, skills, tools, library)
-5. **Gate** — `./studio infusion` must pass before next `./studio sprint <p>`
-6. **CHANGELOG entry** — document change
-7. **Test** — `test_skill_matching.py` + `./studio gate <project>`
+1. **Detect signal** — Gate failure, rework, tooling/design gap, reuse path
+2. **Harvest immediately** — `./studio learn`, retro `--complete`, reuse, or 3rd gate fail (inbox + classified LO)
+3. **Execute studio HQ now** — `./studio execute` → `STUDIO_LO` before the next project ticket
+4. **Infuse** — playbook / package / process / tooling (generalize — no client names, no project UI copy)
+5. **CHANGELOG** + move LO to `backlog/done/`
+6. **Gate** — `./studio infusion` must be clear before the next project IMPLEMENT
+7. **Test** — `python3 -m unittest test_studio_execute.py test_studio_harvest.py` (from `studio-tools/`)
 
 **Edit process documents directly:**
 - `process/lifecycle.md` — Phases
@@ -547,15 +616,14 @@ These do **not** influence how the studio operates in other projects.
 
 ### Loop 2: Global Studio Evolution (Studio World)
 
-Universally applicable insights are **promoted to the studio** and **infused before the next project sprint**:
+Universally applicable insights are **harvested the moment they are identified** and **infused before the next project ticket**:
 
-1. **Capture** — `./studio learn` → LO-* ticket in `backlog/open/`
-2. **Retro** — `./studio retro <p> --complete` (filled project retro + meta-retro)
-3. **Infuse** — implement LO in process / skills / `studio-tools/` / `studio-library/`
-4. **Gate** — `./studio infusion` (blocks `./studio sprint` while LO-* open)
-5. **Design (gate 2)** → `./studio approve --gate 2` auto-runs `promote-library`
-6. **Code** → `./studio library promote <project> <path> --ticket <id>`
-7. **CHANGELOG** — every studio change documented
+1. **Harvest** — learn / retro `--complete` / reuse / 3rd gate fail → inbox + classified LO
+2. **Execute studio HQ now** — `./studio execute` → `STUDIO_LO` (mid-sprint too)
+3. **Gate** — `./studio infusion` (blocks next project IMPLEMENT and `./studio sprint` while LO-* open)
+4. **Design (gate 2)** → `./studio approve --gate 2` auto-runs `promote-library`
+5. **Code** → `./studio library promote <project> <path> --ticket <id>` (never raw project UI copy)
+6. **CHANGELOG** — every studio change documented
 
 Registry: [studio-library/library_registry.md](studio-library/library_registry.md)
 
@@ -603,7 +671,9 @@ See [library_registry.md](studio-library/library_registry.md).
 | Check | When | How |
 |-------|------|-----|
 | **Anti-Slop Audit** | Every commit | `python3 .quinsy-studio/studio-tools/validate_anti_slop.py .` |
-| **QA Gate** | Before every release | `./studio gate <project> --level 5` |
+| **QA Gate** | Before `move … done` | `./studio gate <project> --level 5` |
+| **Execution receipt** | Before `move … done` | `./studio receipt <project> <ID>` — Plan, AC coverage, default flow |
+| **Execute / health** | Each session / when stuck | `./studio execute <project>` · `./studio health <project>` |
 | **Skill Matching Test** | Every QA gate + registry change | `python3 .quinsy-studio/studio-tools/test_skill_matching.py` |
 | **Studio abstraction** | After studio doc/tool edits | `./studio verify-abstraction` |
 | **Conflict Matrix** | After `update-skills` | `knowledge-base/external_skills_conflict_matrix.md` |
@@ -629,13 +699,20 @@ See [library_registry.md](studio-library/library_registry.md).
 | Skill matching test red | Check registry triggers → `teams/skill-registry.md` |
 | Docker template missing | Located at `studio-templates/docker/` — do not delete |
 | Studio files lost | **Git backup!** Check `.gitignore` (external skills are regenerable) |
-| Project name in studio docs | Run `./studio verify-abstraction`; use `<project>` in examples — see `process/studio-abstraction.md` |
+| Agent asks “should I continue?” mid-sprint | Tell it to `./studio execute` until `HITL` — do not approve ticket-by-ticket |
+| `move … done` refused | Need gate **level 5** passed **and** a filled `sprints/SPRINT-NN/receipts/<ID>.md` |
+| Execute says `HITL` | That is correct — you must approve (gate, design, scope, or sprint review) |
+| Execute says `STUDIO_LO` | Implement the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |
+| Open LOs piling up | Harvest is automatic — execute `STUDIO_LO` **now**, do not wait for next sprint |
+| Next sprint / next ticket blocked | `./studio infusion` — close open LO-* first |
 
 ---
 
 ## Further Documentation
 
+- `GETTING_STARTED.md` — Execute loop, **learnings / harvest**, prompts, session ritual
 - `process/lifecycle.md` — 7-phase lifecycle
+- `process/agent-context.md` — Session start + execute until HITL
 - `process/gates.md` — Gate definitions
 - `process/adr-policy.md` — ADR rules
 - `process/human-in-the-loop.md` — HITL

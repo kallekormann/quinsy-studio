@@ -12,8 +12,13 @@ Usage:
 Commands:
   # Project management
   ./studio init <project> --archetype <type>     Initialize project
+  ./studio adopt <project> --from <git-url|path> Overlay studio docs on an existing repo
   ./studio bootstrap [project] [intake-file]     AI entry: init→intake→concept→sprint
   ./studio resume <project>                      Next actions from status.json
+  ./studio execute <project> [--json]            One next action; loop until HITL
+  ./studio ticket-card <project> <id>            Compact ticket card
+  ./studio receipt <project> <id>                Scaffold execution receipt
+  ./studio health <project>                      Sprint state-graph check
   ./studio focus <project>                       Set active project + scope banner
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
@@ -189,6 +194,22 @@ from sprint_hitl import (
     RETRO_PENDING,
     REVIEW_APPROVED,
     sprint_ticket_summary,
+)
+from studio_execute import (
+    MAX_GATE_RETRIES,
+    append_debug_attempt,
+    append_execution_event,
+    count_gate_fails,
+    decide_next_action,
+    existing_gate_fail_lo,
+    format_execute_step,
+    format_health,
+    health_report,
+    load_execution_log,
+    receipt_is_complete,
+    receipt_path,
+    ticket_card_for,
+    write_receipt_stub,
 )
 from amendment_intake import (
     amendment_path_for_cli,
@@ -388,12 +409,45 @@ class StudioOrchestrator:
     # PROJECT MANAGEMENT
     # -------------------------------------------------------------------------
 
+    def cmd_adopt(
+        self,
+        project: str,
+        source: str,
+        intent: Optional[str] = None,
+        archetype: str = "saas-application",
+    ):
+        """Overlay studio process on an existing codebase. Never wipe source."""
+        from studio_adopt import adopt_project
+
+        print_header(f"ADOPT: {project}")
+        try:
+            result = adopt_project(project, source, intent=intent, archetype=archetype)
+        except (ValueError, RuntimeError) as exc:
+            print(f"\n  ❌ {exc}")
+            print(f"     Usage: ./studio adopt {project} --from <git-url-or-path> [--intent intake/{project}.md]")
+            return False
+
+        print(f"\n  Path:    {result.get('path')}")
+        print(f"  Source:  {result.get('source_action')}")
+        if result.get("intent"):
+            print(f"  Intent:  {result['intent']}")
+        for note in result.get("notes") or []:
+            print(f"  • {note}")
+        print("\n  Overlay complete. Application source was not wiped.")
+        print("  Next (agent): fill docs/as-built/ from the live code (cite paths).")
+        print(f"    ./studio focus {project}")
+        print(f"    ./studio execute {project}   # until HITL gate 0 (as-built + PRD)")
+        print("  Process: .quinsy-studio/process/brownfield-adopt.md")
+        return True
+
     def _print_bootstrap_discovery(self):
         """List intake PRDs and existing projects for AI/human discovery."""
         print_header("QUINSY STUDIO — BOOTSTRAP")
         print("\n  Place a PRD in intake/, then run:")
         print("    ./studio bootstrap <project>")
         print("    ./studio bootstrap <project> intake/<file>.md")
+        print("\n  Existing codebase (do not empty-init):")
+        print("    ./studio adopt <project> --from <git-url-or-path>")
         print("\n  Resume an existing project:")
         print("    ./studio resume <project>")
 
@@ -436,23 +490,38 @@ class StudioOrchestrator:
 
         print_header(f"BOOTSTRAP: {project}")
 
+        from studio_adopt import looks_like_application_source
+
+        if project_dir.exists() and looks_like_application_source(project_dir):
+            if not (project_dir / "status.json").exists():
+                print(f"\n  ❌ '{project}' already has application source and is not a studio project.")
+                print(f"     Overlay instead of empty scaffold:")
+                print(f"       ./studio adopt {project} --from {project_dir}")
+                return False
+
         if not project_dir.exists() or not (project_dir / "status.json").exists():
             if not intake_path:
                 print(f"\n  ❌ Project '{project}' not initialized and no intake PRD found.")
                 print(f"     Place intake/<name>.md or run: ./studio bootstrap {project} intake/<file>.md")
+                print(f"     Existing codebase: ./studio adopt {project} --from <git-url-or-path>")
                 return False
             self.cmd_init(project, archetype)
 
         prd_file = project_dir / "docs" / "intake" / "prd.md"
-        if not prd_file.exists():
+        status = load_status(project) if (project_dir / "status.json").exists() else {}
+
+        if not prd_file.exists() and status.get("mode") != "adopt":
             if not intake_path:
                 print(f"\n  ❌ No intake file for '{project}'. Add intake/<name>.md or pass the path.")
+                print(f"     Existing codebase: ./studio adopt {project} --from <git-url-or-path>")
                 return False
             ok = self.cmd_intake(project, intake_path_for_cli(intake_path))
             if not ok:
                 return False
 
         status = load_status(project)
+        if status.get("mode") == "adopt":
+            return self._bootstrap_from_status(project, status)
         if not status.get("mode") or status.get("phase") == "0":
             self.cmd_start(project, mode)
             status = load_status(project)
@@ -464,7 +533,13 @@ class StudioOrchestrator:
         hg = status.get("human_gates", {})
 
         if hg.get("0", {}).get("status") != "approved":
-            self._print_gate_pause(project, 0, "Fill docs/definitions/ from PRD, then approve intake.")
+            adopt = status.get("mode") == "adopt"
+            hint = (
+                "Fill docs/as-built/ from code, synthesize PRD, then approve as-built truth."
+                if adopt
+                else "Fill docs/definitions/ from PRD, then approve intake."
+            )
+            self._print_gate_pause(project, 0, hint)
             return True
 
         if status.get("phase") == PHASE_INTAKE or hg.get("1", {}).get("status") != "approved":
@@ -476,6 +551,13 @@ class StudioOrchestrator:
                 return True
 
         if status.get("phase") in (PHASE_INTAKE, PHASE_BLUEPRINT, PHASE_DESIGN) or hg.get("2", {}).get("status") != "approved":
+            if status.get("mode") == "adopt":
+                self._print_gate_pause(
+                    project,
+                    2,
+                    "Document design of what exists (surface map). Do not scaffold an empty Next.js prototype.",
+                )
+                return True
             design = PROJECTS_DIR / project / "design" / "DESIGN.md"
             if not design.exists():
                 scope = status.get("design_scope") or "core-views"
@@ -500,6 +582,13 @@ class StudioOrchestrator:
             1: "Architecture blueprint",
             2: "Design — prototype mocks & sticker sheet",
         }
+        status = load_status(project)
+        if status.get("mode") == "adopt":
+            labels = {
+                0: "As-built truth + synthesized PRD",
+                1: "As-is architecture (no stack swap)",
+                2: "Design of what exists + debt",
+            }
         print(f"\n  ⏸ HUMAN GATE {gate}: {labels.get(gate, 'Review')}")
         print(f"     {hint}")
         print(f"     ./studio approve {project} --gate {gate}")
@@ -534,27 +623,48 @@ class StudioOrchestrator:
             actions.append(f"./studio reuse {project} --approve")
 
         prd_file = project_dir / "docs" / "intake" / "prd.md"
+        adopt = status.get("mode") == "adopt"
 
-        if not prd_file.exists():
+        if adopt and not prd_file.exists() and not (project_dir / "docs" / "as-built" / "00-product.md").exists():
+            actions.append("AI: fill docs/as-built/ from the live codebase (cite paths; no _TODO_)")
+            actions.append(f"Then synthesize docs/intake/prd.md — Human: ./studio approve {project} --gate 0")
+        elif adopt and hg.get("0", {}).get("status") != "approved":
+            from studio_adopt import as_built_is_ready
+
+            if not as_built_is_ready(project):
+                actions.append("AI: fill docs/as-built/ (cite paths; high-level summary is not done)")
+            else:
+                actions.append("AI: synthesize docs/intake/prd.md + fill docs/definitions/ from as-built")
+            actions.append(f"Human: confirm as-built truth → ./studio approve {project} --gate 0")
+        elif not prd_file.exists():
             intake_path = resolve_intake_file(project)
             if intake_path:
                 actions.append(f"./studio intake {project} {intake_path_for_cli(intake_path)}")
             else:
                 actions.append(f"Add intake/<prd>.md, then ./studio bootstrap {project}")
+                actions.append(f"Existing codebase: ./studio adopt {project} --from <git-url-or-path>")
         elif hg.get("0", {}).get("status") != "approved":
             actions.append("AI: fill projects/{p}/docs/definitions/ from PRD (no _TODO_)".format(p=project))
             actions.append(f"Human: review PRD + definitions → ./studio approve {project} --gate 0")
         elif hg.get("1", {}).get("status") != "approved":
             actions.append(f"./studio blueprint {project}")
-            actions.append("AI: fill docs/architecture/, create ADRs")
+            actions.append(
+                "AI: fill docs/architecture/ from as-is + ADRs for existing decisions"
+                if adopt
+                else "AI: fill docs/architecture/, create ADRs"
+            )
             actions.append(f"Human: review blueprint → ./studio approve {project} --gate 1")
         elif hg.get("2", {}).get("status") != "approved":
-            if not status.get("design_scope"):
+            if adopt:
+                actions.append("AI: fill design/DESIGN.md + docs/ia/surface-map.md from existing UI")
+                actions.append("Do NOT scaffold design/prototype as a fake app")
+                actions.append(f"Human: review design of what exists → ./studio approve {project} --gate 2")
+            elif not status.get("design_scope"):
                 actions.append(f"Human: choose mock scope → ./studio design {project} --scope journey|core-views")
             else:
                 actions.append(f"./studio design {project} --scope {status['design_scope']}")
-            actions.append("AI: build design/prototype (Next.js), ui/tokens, sticker-sheet")
-            actions.append(f"Human: review mocks → ./studio approve {project} --gate 2")
+                actions.append("AI: build design/prototype (Next.js), ui/tokens, sticker-sheet")
+                actions.append(f"Human: review mocks → ./studio approve {project} --gate 2")
         elif not status.get("current_sprint"):
             actions.append(f"./studio sprint {project}")
         elif needs_sprint_review(status):
@@ -622,8 +732,66 @@ class StudioOrchestrator:
             print(f"\n  Read first: projects/{project}/agent-briefing.md")
         print(f"  Process: .quinsy-studio/process/lifecycle.md")
         set_active_project(project, status)
+        print(f"\n  Agentic loop: ./studio execute {project}")
+        print("  Do NEXT, then execute again, until ACTION is HITL. Do not ask to continue.")
         return True
-    
+
+    def cmd_execute(self, project: str, as_json: bool = False):
+        """Emit exactly one next action. Agent must loop until HITL."""
+        if not (PROJECTS_DIR / project).exists():
+            print(f"\n  ❌ Project '{project}' not found.")
+            return False
+        status = load_status(project)
+        step = decide_next_action(project)
+        if as_json:
+            print(json.dumps(step.to_dict(), indent=2))
+        else:
+            print_header(f"EXECUTE: {project}")
+            print(format_execute_step(project, step))
+        set_active_project(project, status)
+        return True
+
+    def cmd_ticket_card(self, project: str, ticket_id: str):
+        """Print a compact card — not the full ticket or backlog."""
+        card = ticket_card_for(project, ticket_id)
+        if not card:
+            print(f"  Ticket {ticket_id} not found in {project}")
+            return False
+        print_header(f"CARD {ticket_id}")
+        print(f"  {card.get('id')}: {card.get('title')}")
+        if card.get("target"):
+            print(f"  target: {card['target']}")
+        if card.get("scope"):
+            print(f"  scope:  {card['scope']}")
+        for ac in card.get("ac") or []:
+            print(f"  ac: {ac}")
+        if card.get("files"):
+            print(f"  files: {', '.join(card['files'])}")
+        if card.get("deps"):
+            print(f"  deps:  {', '.join(card['deps'])}")
+        print(f"  path:  {card.get('path')}  (read this file only when implementing)")
+        return True
+
+    def cmd_receipt(self, project: str, ticket_id: str):
+        """Scaffold the execution receipt required before move … done."""
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if not sprint:
+            print("  No current sprint — cannot write a receipt.")
+            return False
+        card = ticket_card_for(project, ticket_id)
+        path = write_receipt_stub(project, sprint, ticket_id, card)
+        print_header(f"RECEIPT {ticket_id}")
+        print(f"  {path.relative_to(STUDIO_ROOT)}")
+        print("  Fill Plan, AC coverage, and Default flow (LO-0051), then ./studio execute")
+        return True
+
+    def cmd_health(self, project: str):
+        """Validate sprint / LO / receipt / gate state graph."""
+        print_header(f"HEALTH: {project}")
+        print(format_health(project, health_report(project)))
+        return True
+
     def cmd_focus(self, project: str):
         """Set active project context for IDE agent (scope banner)."""
         project_dir = PROJECTS_DIR / project
@@ -813,8 +981,15 @@ class StudioOrchestrator:
 
     def cmd_init(self, project: str, archetype: str = "saas-application"):
         """Initialize a new project (full scaffold via init_project_env)."""
-        init_project(project, archetype)
+        from studio_adopt import looks_like_application_source
+
         project_dir = PROJECTS_DIR / project
+        if project_dir.exists() and looks_like_application_source(project_dir):
+            print(f"\n  ❌ '{project}' already has application source.")
+            print(f"     Do not run empty init. Overlay studio docs:")
+            print(f"       ./studio adopt {project} --from {project_dir}")
+            return False
+        init_project(project, archetype)
         print(f"\n  Next steps:")
         print(f"    1. Process intake: ./studio intake {project} intake/<your-prd>.md")
         print(f"    2. Start project:  ./studio start {project} --mode core")
@@ -824,6 +999,12 @@ class StudioOrchestrator:
         """Start a project in the selected mode."""
         
         status = load_status(project)
+        if status.get("mode") == "adopt":
+            print_header(f"START PROJECT: {project} (Mode: ADOPT)")
+            print("  Existing codebase — do not switch to CORE empty-scaffold.")
+            print("  See .quinsy-studio/process/brownfield-adopt.md")
+            print(f"  Loop: ./studio execute {project}")
+            return True
         status["mode"] = mode
         status["phase"] = "1"
         save_status(project, status)
@@ -972,7 +1153,11 @@ class StudioOrchestrator:
         status["phase"] = PHASE_BLUEPRINT
         save_status(project, status)
 
-        print(f"\n  AI: fill docs/architecture/ and docs/adr/")
+        if status.get("mode") == "adopt":
+            print(f"\n  AI: fill docs/architecture/ from **as-is** (cite paths). ADRs for decisions already in the code.")
+            print("  Do not invent a greenfield stack swap unless the intent brief asks for it.")
+        else:
+            print(f"\n  AI: fill docs/architecture/ and docs/adr/")
         print(f"  Human: ./studio approve {project} --gate 1 when ready")
         return True
 
@@ -981,13 +1166,26 @@ class StudioOrchestrator:
     # -------------------------------------------------------------------------
 
     def cmd_design(self, project: str, scope: str = "core-views"):
-        """Scaffold design docs + Next.js prototype. scope: journey | core-views"""
+        """Scaffold design docs + Next.js prototype. scope: journey | core-views | as-built"""
         status = load_status(project)
         hg = status.get("human_gates", {})
 
         if hg.get("1", {}).get("status") != "approved":
             print(f"  ⚠️  Gate 1 (architecture) must be approved first")
             return False
+
+        if status.get("mode") == "adopt":
+            from studio_adopt import overlay_studio
+
+            print_header(f"PHASE 3: DESIGN TRUTH — {project} (as-built)")
+            overlay_studio(PROJECTS_DIR / project, project, archetype=status.get("archetype") or "saas-application")
+            status["phase"] = PHASE_DESIGN
+            status["design_scope"] = "as-built"
+            save_status(project, status)
+            print("  Document existing UI in design/DESIGN.md and docs/ia/surface-map.md")
+            print("  Do NOT scaffold design/prototype as a parallel app")
+            print(f"  Human: ./studio approve {project} --gate 2 when the surface map is honest")
+            return True
 
         if scope not in ("journey", "core-views"):
             print(f"  ⚠️  scope must be 'journey' or 'core-views'")
@@ -1085,7 +1283,10 @@ class StudioOrchestrator:
             status["gate_status"] = "approved"
             save_status(project, status)
             print(f"\n  ✅ Intake & definitions approved")
-            print(f"  Next: ./studio blueprint {project}")
+            if status.get("mode") == "adopt":
+                print(f"  Next: ./studio blueprint {project}  (as-is architecture; no stack swap)")
+            else:
+                print(f"  Next: ./studio blueprint {project}")
             return True
 
         if gate == 1:
@@ -1099,7 +1300,11 @@ class StudioOrchestrator:
             status["gate_status"] = "approved"
             save_status(project, status)
             print(f"\n  ✅ Architecture blueprint approved")
-            print(f"  Next: ./studio design {project} --scope journey|core-views")
+            if status.get("mode") == "adopt":
+                print(f"  Next: fill design truth of existing UI (no new prototype)")
+                print(f"        ./studio design {project} --scope as-built")
+            else:
+                print(f"  Next: ./studio design {project} --scope journey|core-views")
             return True
 
         if gate == 2:
@@ -1112,6 +1317,13 @@ class StudioOrchestrator:
             status["gate"] = "2"
             status["gate_status"] = "approved"
             save_status(project, status)
+
+            if status.get("mode") == "adopt":
+                print(f"\n  ✅ Design of what exists approved")
+                print("  Do not copy project UI into studio-library.")
+                print(f"  Next: draft docs/phases/ from as-built gap matrix")
+                print(f"        ./studio approve {project} --milestones")
+                return True
 
             print(f"\n  Generating tickets from approved PRD + design...")
             if not self._run_ticket_manifest(project):
@@ -1497,6 +1709,31 @@ class StudioOrchestrator:
         hitl["reuse_sprint"] = sprint
         save_status(project, status)
 
+        from studio_harvest import harvest_reuse_items
+
+        harvested = harvest_reuse_items(data.get("items") or [], f"{project}/{sprint}")
+        recorded = False
+        for item in harvested:
+            path = str(item.get("path") or "")
+            lo_id = str(item.get("lo_id") or "")
+            if not path or not lo_id:
+                continue
+            record_reuse_decision(
+                project,
+                sprint,
+                path,
+                "lo_ticket",
+                ref=lo_id,
+                note="auto-harvest",
+            )
+            recorded = True
+            created = "created" if item.get("created") else "existing"
+            print(
+                f"  Harvested {lo_id} [{created}] {item.get('kind')} → {item.get('infusion_path')} ({path})"
+            )
+        if recorded:
+            md_path, data = prepare_reuse_review(project, sprint, status)
+
         analysis_ticket_count = len([
             t for t in sprint_ticket_summary(project, sprint)["tickets"] if t["status"] == "done"
         ])
@@ -1774,6 +2011,18 @@ class StudioOrchestrator:
                 print(f"     Current: gate={gate_level}, status={gate_status}")
                 print(f"     Run: ./studio gate {project} --level {MIN_DONE_GATE_LEVEL}")
                 return False
+            sprint_pre = status_pre.get("current_sprint") or ""
+            content_pre = ticket_file.read_text()
+            sprint_match = re.search(r"^sprint:\s*(\S+)", content_pre, re.MULTILINE)
+            ticket_sprint = sprint_match.group(1) if sprint_match else None
+            if sprint_pre and ticket_sprint == sprint_pre:
+                if not receipt_is_complete(project, sprint_pre, ticket_id):
+                    rec = receipt_path(project, sprint_pre, ticket_id)
+                    print(f"\n  ❌ Cannot mark {ticket_id} done without an execution receipt.")
+                    print(f"     Fill: {rec.relative_to(STUDIO_ROOT)}")
+                    print(f"     ./studio receipt {project} {ticket_id}")
+                    print("     Required sections: Plan, AC coverage, Default flow (LO-0051)")
+                    return False
 
         if new_status == "implement":
             status_pre = load_status(project)
@@ -1835,6 +2084,10 @@ class StudioOrchestrator:
             status["active_ticket"] = ticket_id
             save_status(project, status)
             print(f"\n  📚 {format_library_first_hint(project, ticket_title)}")
+            sprint_now = status.get("current_sprint") or ""
+            if sprint_now:
+                append_execution_event(project, sprint_now, "implement", ticket_id, reason or "implement")
+                print(f"  Next: ./studio receipt {project} {ticket_id}  then implement from the CARD, then ./studio execute {project}")
 
         if new_status == "done":
             snapshots = status.get("ticket_file_snapshots", {})
@@ -1854,6 +2107,10 @@ class StudioOrchestrator:
                 print(f"\n  ⏸ All sprint tickets done — human review required")
                 print(f"    ./studio review {project}")
             save_status(project, status)
+            sprint_done = status.get("current_sprint") or ""
+            if sprint_done:
+                append_execution_event(project, sprint_done, "done", ticket_id, reason or "done")
+                print(f"  Loop: ./studio execute {project}")
         
         # If moving to done, check if all tickets are done
         if new_status == "done":
@@ -1954,7 +2211,32 @@ class StudioOrchestrator:
             })
         
         save_status(project, status)
-        
+
+        sprint = status.get("current_sprint") or ""
+        ticket_id = status.get("active_ticket")
+        excerpt = (result.stdout or "")[-1500:]
+        if sprint and ticket_id:
+            if result.returncode == 0:
+                append_execution_event(project, sprint, "gate-pass", ticket_id)
+            else:
+                log = load_execution_log(project, sprint)
+                fails = count_gate_fails(log, ticket_id) + 1
+                append_execution_event(project, sprint, "gate-fail", ticket_id, "gate red")
+                dbg = append_debug_attempt(
+                    project, sprint, ticket_id, fails, f"QA gate level {level} failed", excerpt
+                )
+                print(f"\n  Debug log: {dbg.relative_to(STUDIO_ROOT)}")
+                print(f"  Retry {fails}/{MAX_GATE_RETRIES}: fix from hypotheses, then ./studio gate {project} --level 5")
+                if fails >= MAX_GATE_RETRIES:
+                    print(f"  Exhausted retries — ./studio move {project} {ticket_id} blocked")
+                    if not existing_gate_fail_lo(project):
+                        lo_id = self.cmd_learn(
+                            f"Gate fail retry exhausted ({ticket_id})",
+                            "gate-fail",
+                            project,
+                        )
+                        print(f"  Auto-harvested {lo_id} — ./studio execute {project} → STUDIO_LO")
+
         return result.returncode == 0
     
     # -------------------------------------------------------------------------
@@ -1962,115 +2244,53 @@ class StudioOrchestrator:
     # -------------------------------------------------------------------------
     
     def cmd_learn(self, title: str, signal: str, source: str = "Studio Development"):
-        """Create a learning item (strict studio schema, type: studio-evolution)."""
-        
-        lo_dir = BACKLOG_DIR / "open"
-        lo_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Find next LO number (scan open, done, blocked)
-        numbers = []
-        for sub in ("open", "done", "blocked"):
-            lo_sub = BACKLOG_DIR / sub
-            if lo_sub.exists():
-                for f in lo_sub.glob("LO-*.md"):
-                    m = re.search(r'LO-(\d+)', f.name)
-                    if m:
-                        numbers.append(int(m.group(1)))
-        next_num = max(numbers) + 1 if numbers else 0
-        
-        lo_id = f"LO-{next_num:04d}"
-        slug = slugify(title)
-        lo_file = lo_dir / f"{lo_id}-{slug}.md"
-        
-        # Rollenzuweisung je Signal (Studio-Ebene)
-        signal_roles = {
-            "tooling-gap": "Studio Automation Engineer (Director)",
-            "process-gap": "Process Guard (Director)",
-            "design-gap": "UI/Interaction Designer (Director)",
-            "quality-risk": "QA Specialist (Director)",
-            "conflict": "Process Guard (Director)",
-        }
-        role = signal_roles.get(signal, "Process Guard (Director)")
-        skills = {
-            "tooling-gap": ["SO-001"],
-            "process-gap": ["SO-002"],
-            "design-gap": ["FE-002"],
-            "quality-risk": ["SO-002"],
-            "conflict": ["SO-002", "SO-003"],
-        }.get(signal, ["SO-003"])
-        
-        ticket = {
-            "id": lo_id,
-            "title": title,
-            "type": "studio-evolution",
-            "status": "open",
-            "phase": 6,
-            "priority": "P2",
-            "estimate": "M",
-            "team": "09-studio-operations-evolution",
-            "skills": skills,
-            "assignee_role": role,
-            "ist_zustand": f"Observation: {title} (signal: {signal}, source: {source})",
-            "soll_zustand": "The studio is improved so this signal does not recur.",
-            "value": "The studio learns from projects (dual loop) and improves process, skills, or tooling.",
-            "modification_files": [".quinsy-studio/process/", ".quinsy-studio/studio-tools/", ".quinsy-studio/teams/"],
-            "constraints": [
-                "No changes to client projects (studio HQ only)",
-                "Every change → CHANGELOG.md entry",
-                "After implementation: skill-matching test + QA gate green",
-                f"Signal: {signal} — Source: {source}"
-            ],
-            "scenarios": [{
-                "name": "Studio improvement works",
-                "given": f"The learning signal ({signal}) occurs again",
-                "when": "The improved process/skill/tool is applied",
-                "then": "The signal no longer occurs or is handled correctly"
-            }],
-            "acceptance_criteria": [
-                "Improvement implemented in studio HQ",
-                "CHANGELOG.md updated",
-                "Test green"
-            ],
-            "definition_of_done": [
-                "Discussed in meta retro",
-                "Implemented (CHANGELOG.md entry)",
-                "Skill-matching test green",
-                "QA gate green"
-            ],
-            "dependencies": [],
-        }
-        
-        content = render_ticket_markdown(ticket)
-        lo_file.write_text(content)
-        
-        print(f"\n  Learning item created: {lo_file}")
-        print(f"  ID: {lo_id}")
-        print(f"  Signal: {signal}")
-        print(f"  Role: {role}")
-        
+        """Capture a learning immediately (classified LO + inbox). Execute will STUDIO_LO next."""
+        from studio_harvest import harvest_identified_learning
+
+        result = harvest_identified_learning(
+            title, source=source, signal=signal, observation=title
+        )
+        lo_id = result["lo_id"]
+        if result.get("created"):
+            print(f"\n  Learning captured: {lo_id}")
+        else:
+            print(f"\n  Learning already open: {lo_id} (deduped)")
+        print(f"  Kind: {result.get('kind')} → {result.get('infusion_path')}")
+        print(f"  Signal: {result.get('signal')}")
+        if result.get("inbox"):
+            print(f"  Inbox: .quinsy-studio/{result['inbox']}")
+        print("  Infuse now (do not wait for retro / next sprint):")
+        print("    ./studio execute <project>  → ACTION STUDIO_LO")
         return lo_id
-    
+
     def cmd_learn_list(self):
         """Show all learning items."""
-        
+
         print_header("LEARNING ITEMS")
-        
+
         lo_dir = BACKLOG_DIR / "open"
         if not lo_dir.exists():
             print("  No learning items found")
             return
-        
+
         los = list(lo_dir.glob("LO-*.md"))
         if not los:
             print("  No learning items found")
             return
-        
+
         print(f"\n  Total: {len(los)}")
         for lo in sorted(los):
             content = lo.read_text()
-            signal_match = re.search(r'signal:\s*(\w+)', content)
+            signal_match = re.search(r"signal:\s*(\S+)", content)
+            kind_match = re.search(r"infusion_kind:\s*(\S+)", content)
+            path_match = re.search(r"infusion_path:\s*(.+)", content)
             signal = signal_match.group(1) if signal_match else "unknown"
-            print(f"  - {lo.stem} [Signal: {signal}]")
+            kind = kind_match.group(1) if kind_match else ""
+            path = path_match.group(1).strip() if path_match else ""
+            extra = f" kind={kind}" if kind else ""
+            extra += f" → {path}" if path else ""
+            print(f"  - {lo.stem} [Signal: {signal}{extra}]")
+        print("\n  Next: ./studio execute <project>  → ACTION STUDIO_LO (infuse while context is hot)")
     
     def cmd_retro(self, project: str, complete: bool = False):
         """Start or complete a project sprint retrospective."""
@@ -2097,11 +2317,25 @@ class StudioOrchestrator:
             hitl["retro_completed_at"] = datetime.now().isoformat()
             save_status(project, status)
             print(f"\n  ✅ Retro complete: {message}")
-            print(f"  Capture studio learnings:")
-            print(f"    ./studio learn \"...\" --signal process-gap --source {project}")
-            print(f"    ./studio learn-list")
-            print(f"  Infuse studio improvements (LO-*) before next project sprint:")
-            print(f"    ./studio infusion")
+            retro_path = PROJECTS_DIR / project / "sprints" / sprint / "retro.md"
+            if retro_path.exists():
+                from studio_harvest import harvest_retro_text
+
+                harvested = harvest_retro_text(
+                    retro_path.read_text(encoding="utf-8", errors="ignore"), project
+                )
+                created = [h for h in harvested if h.get("created")]
+                skipped = [h for h in harvested if not h.get("created")]
+                if created or skipped:
+                    print("\n  Harvested into studio HQ (inbox + LO) — not waiting for a human learn prompt:")
+                    for h in created:
+                        print(
+                            f"    {h.get('lo_id')} [{h.get('kind')}] → {h.get('infusion_path')}"
+                        )
+                    for h in skipped:
+                        print(f"    {h.get('lo_id')} already open (deduped)")
+            print("  Infuse now (context is still this session):")
+            print(f"    ./studio execute {project}  → ACTION STUDIO_LO")
             return True
 
         retro_file = prepare_retro(project, sprint)
@@ -2126,7 +2360,7 @@ class StudioOrchestrator:
 - See: projects/{project}/sprints/{sprint}/retro.md
 
 ## Incoming learning items
-- (Agent: run `./studio learn "..." --signal ... --source {project}` for each improvement)
+- (Agent: harvest is automatic on retro --complete / gate-fail / reuse; execute STUDIO_LO immediately)
 
 ## Action Items
 - [ ] Agent filled project retro (went well / badly / improve) — not template-only
@@ -2148,11 +2382,12 @@ class StudioOrchestrator:
             print("\n  ✅ No open LO tickets — safe to plan the next project sprint.")
             print("  Generalize learnings into: process/, teams/skills/, knowledge-base/, studio-library/")
             return True
-        print(f"\n  ⏸  {len(items)} open studio learning item(s) block the next project sprint.")
+        print(f"\n  ⏸  {len(items)} open studio learning item(s) — infuse now, before the next project ticket.")
         ok, msg = can_infuse_project_sprint()
         print(f"\n{msg}")
         print("\n  Infusion targets:")
         print("    process/ · teams/*/skills/ · knowledge-base/ · studio-tools/ · studio-library/")
+        print(f"\n  Loop: ./studio execute <project>  → ACTION STUDIO_LO {items[0].get('id')}")
         return False
     
     def cmd_update_skills(self, extra_args=None):
@@ -2716,8 +2951,13 @@ Usage:
 Commands:
   # Project management
   ./studio init <project> --archetype <type>     Initialize project
+  ./studio adopt <project> --from <git-url|path> Overlay studio docs on an existing repo
   ./studio bootstrap [project] [intake-file]     AI entry: init→intake→concept→sprint
   ./studio resume <project>                      Next actions from status.json
+  ./studio execute <project> [--json]            One next action; loop until HITL
+  ./studio ticket-card <project> <id>            Compact ticket card
+  ./studio receipt <project> <id>                Scaffold execution receipt
+  ./studio health <project>                      Sprint state-graph check
   ./studio focus <project>                       Set active project + scope banner
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
@@ -2817,7 +3057,24 @@ def main():
     # Parse arguments
     args = sys.argv[2:]
 
-    if command == "bootstrap":
+    if command == "adopt" and len(args) >= 1:
+        project = args[0]
+        source = ""
+        intent = None
+        archetype = "saas-application"
+        for i, arg in enumerate(args):
+            if arg == "--from" and i + 1 < len(args):
+                source = args[i + 1]
+            elif arg == "--intent" and i + 1 < len(args):
+                intent = args[i + 1]
+            elif arg == "--archetype" and i + 1 < len(args):
+                archetype = args[i + 1]
+        if not source:
+            print("  Usage: ./studio adopt <project> --from <git-url-or-path> [--intent intake/<p>.md]")
+        else:
+            orchestrator.cmd_adopt(project, source, intent=intent, archetype=archetype)
+
+    elif command == "bootstrap":
         project = None
         intake_file = None
         archetype = "saas-application"
@@ -2836,6 +3093,19 @@ def main():
 
     elif command == "resume" and len(args) >= 1:
         orchestrator.cmd_resume(args[0])
+
+    elif command == "execute" and len(args) >= 1:
+        as_json = "--json" in args
+        orchestrator.cmd_execute(args[0], as_json=as_json)
+
+    elif command == "ticket-card" and len(args) >= 2:
+        orchestrator.cmd_ticket_card(args[0], args[1])
+
+    elif command == "receipt" and len(args) >= 2:
+        orchestrator.cmd_receipt(args[0], args[1])
+
+    elif command == "health" and len(args) >= 1:
+        orchestrator.cmd_health(args[0])
 
     elif command == "focus" and len(args) >= 1:
         orchestrator.cmd_focus(args[0])

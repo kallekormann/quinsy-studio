@@ -30,9 +30,9 @@ Milestones are documented under `projects/<p>/docs/phases/`.
 ## Placement in the lifecycle
 
 ```
-Gate 0 — PRD + definitions
-Gate 1 — Architecture + ADRs
-Gate 2 — Design + mocks + library promotion
+Gate 0 — PRD + definitions  (adopt: as-built truth + synthesized PRD)
+Gate 1 — Architecture + ADRs  (adopt: as-is, no stack swap)
+Gate 2 — Design + mocks + library promotion  (adopt: design of what exists; no fake prototype)
     │
     ▼
 Execution planning (agent)

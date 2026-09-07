@@ -41,6 +41,8 @@ def open_lo_tickets() -> List[Dict[str, str]]:
                 "title": meta.get("title", path.stem),
                 "priority": meta.get("priority", "P2"),
                 "signal": meta.get("signal", ""),
+                "infusion_kind": meta.get("infusion_kind", ""),
+                "infusion_path": meta.get("infusion_path", ""),
                 "path": str(path.relative_to(QUINSY_STUDIO)),
             },
         )
@@ -60,7 +62,8 @@ def infusion_gate_message(open_items: Optional[List[Dict[str, str]]] = None) -> 
     if not items:
         return None
     lines = [
-        f"{len(items)} open studio learning item(s) (LO-*) must be infused before the next project sprint.",
+        f"{len(items)} open studio learning item(s) (LO-*) must be infused before the next project ticket.",
+        "Harvest is immediate (inbox + LO). Execute returns STUDIO_LO while context is hot — do not pile LOs until the next sprint.",
         "Studio learnings → skills / process / tooling / studio-library — not project code.",
         "",
         "Open items:",

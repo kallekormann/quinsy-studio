@@ -24,6 +24,9 @@ intake/amendments/**/*.md
 # Local agent session (regenerated via ./studio focus)
 .quinsy-studio/.active-project.json
 
+# Durable Playwright browsers for gate smoke (LO-0052)
+.quinsy-studio/.cache/
+
 # Python
 __pycache__/
 *.pyc

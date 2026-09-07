@@ -64,6 +64,16 @@ Update when amendments or new surfaces land.
 | **Layout-first tickets** | "Widen dialog" without placement review | Reframe as `ia-feature-placement` or add placement section to spec |
 | **Nav-only IA** | UX-003 only audits top nav | Run contextual placement for feature tickets |
 | **Spec inherits wrong placement** | Remediation copies old wireframes | Placement section must justify surface, not inherit |
+| **Amendment IA over live product** (LO-0057 / LO-0059) | Sprint scopes UI to kit / guide slots while users already edit the capability on another surface | Confirm live home with HITL; update surface map; defer wrong-home tickets |
+| **Mid-sprint pull without maturity** (LO-0058) | Feedback ticket enters current sprint and flags `IMMATURE_TICKET` | Fill ≥2 BDD AC + Scope (and design-approve if design-track) before `implement` — pull is OK; immature body is not |
+
+## Live home vs amendment draft
+
+Amendment `04-ui-ux-concept.md` / surface maps are **proposals**. Before a sprint commits UI to that placement:
+
+1. Open the live product (or as-built notes) and ask: where does the user already expect this capability?
+2. If live home ≠ amendment home, prefer the live home unless the amendment is explicitly superseding it (and HITL approved).
+3. Record the decision in the ticket Scope / design spec §2 — not only in chat.
 
 ---
 

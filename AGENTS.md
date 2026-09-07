@@ -7,9 +7,17 @@ You operate **Quinsy Studio** in the IDE. Stay in context. Separate worlds. **Li
 ```bash
 ./studio install                  # once after git clone (skip if node_modules exists)
 ./studio verify-worlds
-./studio focus <project>
-./studio resume <project>
+./studio focus <project>          # or: ./studio adopt <p> --from <url-or-path> when the tree already has source
+./studio execute <project>        # do NEXT; loop until ACTION is HITL — do not ask to continue
 ```
+
+`./studio resume <project>` still prints a checklist. Prefer **execute**: one machine-readable step (`IMPLEMENT` / `GATE` / `VERIFY` / `MOVE_DONE` / `STUDIO_LO` / `HITL`). Read the compact CARD, and the full ticket `.md` only when the action is `IMPLEMENT`. Never dump the backlog into context.
+
+On `HITL`: stop and wait (gates 0–2 including **as-built** on adopted repos, design-approve, sprint scope, sprint review, next-sprint). Do not implement sprint-review feedback.
+
+**Existing codebase:** `./studio adopt <p> --from <url-or-path>` overlays studio docs without wiping source. Execute fills `docs/as-built/` (cite paths), then HITL gate 0. Do not `init`/`bootstrap` an empty scaffold over a live tree. See [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md).
+
+On `STUDIO_LO`: implement in `.quinsy-studio/` only, CHANGELOG, move LO to `backlog/done/`, then `./studio execute` again. Learnings are harvested **when identified** (learn / retro `--complete` / reuse / 3rd gate fail) — execute returns `STUDIO_LO` **before the next project ticket**, including mid-sprint. Do not leave LOs piled for a later human trigger.
 
 Read: [agent-context.md](.quinsy-studio/process/agent-context.md) | [ticket-team-allocation.md](.quinsy-studio/process/ticket-team-allocation.md) | [library_registry.md](.quinsy-studio/studio-library/library_registry.md)
 
@@ -32,7 +40,7 @@ After the ticket is done, if changes are generic:
 
 On `./studio move <project> <ID> implement` you get a library hint.  
 **UI tickets:** design-track types require Team 10 design spec + human `./studio approve-design <p> <ID>` before implement. **All UI/FE tickets:** Tailwind CSS + studio-library ([ui/docs/README.md](.quinsy-studio/studio-library/ui/docs/README.md)) — no hand-rolled modals or unstyled form controls.
-On `./studio move … done` → warns if registry paths changed without promotion; **requires `./studio gate <project> --level 5` green** (build + runtime smoke + tests — level 2 lint-only is not enough).
+On `./studio move … done` → warns if registry paths changed without promotion; **requires `./studio gate <project> --level 5` green** and a filled **execution receipt** (`./studio receipt`) with Plan, AC coverage, and default-flow (LO-0051). Level 2 lint-only is not enough.
 
 **Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally. **New components** go in studio-library first ([component-creation-playbook.md](.quinsy-studio/knowledge-base/component-creation-playbook.md)); Headless UI primitives live under `ui/primitives/headless/`.
 

@@ -92,6 +92,8 @@ Project (execution level)  ──▶  executed by the studio, local loop
 
 > After Phase 1: user approves PRD + `docs/definitions/`.
 > CLI: `./studio approve <project> --gate 0`
+>
+> **Existing codebase:** `./studio adopt` overlays studio docs; gate 0 is **as-built truth** + synthesized PRD. See [brownfield-adopt.md](brownfield-adopt.md).
 
 ---
 
@@ -118,6 +120,8 @@ CLI: `./studio blueprint <project>`
 ## Phase 3: Design (prototype)
 
 **Goal:** design tokens, atomic components, Next.js mocks, sticker sheet.
+
+> **Adopted repo:** document **design of what exists** (surface map). Do **not** scaffold a parallel Next.js prototype. See [brownfield-adopt.md](brownfield-adopt.md).
 
 | Output | Path |
 |--------|------|

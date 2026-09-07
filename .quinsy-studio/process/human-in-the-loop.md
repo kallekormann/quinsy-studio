@@ -21,7 +21,7 @@ Agent: "Implemented."
 | **Legal** | contracts, licenses, GDPR exceptions | **Yes** |
 | **Irreversible** | deleting data, production deploy, DNS changes | **Yes** |
 | **Security** | security exceptions, access rights | **Yes** |
-| **Architecture** | large architecture changes | **Yes** |
+| **As-built (adopt)** | confirm “this is what we have” after brownfield intake | **Yes** (`./studio approve --gate 0`) |
 | **Release** | production release | **Yes** |
 | **Sprint review** | approve shipped sprint work | **Yes** |
 | **Milestone roadmap** | approve version plan after gate 2 | **Yes** |
@@ -53,6 +53,8 @@ While sprint tickets are not all `done`:
 | `./studio resume` points at the next ticket to implement | Block on a single ticket for human approval |
 
 **Enforced by CLI:** `./studio move … implement` is blocked when sprint review is pending or the sprint is closed.
+
+**Execute loop:** `./studio execute <project>` returns one action. The agent runs `NEXT`, then execute again, until `HITL`. Gate failures write `sprints/SPRINT-NN/debug/<ticket>.md` and retry up to 3 times, then `blocked` + optional `gate-fail` LO. `move … done` requires a receipt (`./studio receipt`) plus a fresh level-5 gate.
 
 ### Post gate 2 — before first sprint
 
@@ -115,7 +117,7 @@ Sprint review feedback (once per theme)
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
 | **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
 | **Grooming** | **Human** + agent | `./studio groom <p>` — reprioritize backlog for next sprint |
-| **Retro** | **Agent** fills content, **human** reviews | `./studio retro <p>` → fill `retro.md` → `./studio retro <p> --complete` + meta-retro + `./studio learn` → `./studio infusion` (LO gate clear) |
+| **Retro** | **Agent** fills content, **human** reviews | `./studio retro <p>` → fill `retro.md` → `./studio retro <p> --complete` (auto-harvest) → `./studio execute` `STUDIO_LO` |
 | **Next sprint** | **Human** + agent | `./studio sprint <p>` → `./studio groom <p> --approve` |
 
 **Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
@@ -155,6 +157,14 @@ Clarify drafts and design specs for `marketing-page` / monetization UI must spel
 **Rule:** One feedback item per theme per sprint — `./studio feedback` dedupes similar notes (use `--force` to split).
 
 **Rule:** Feedback tickets land in **backlog without a sprint tag** until `./studio sprint` assigns mature tickets. Mature tickets need: `phase` in frontmatter, ≥2 specific BDD acceptance criteria, and `**Scope:**` in the body when created from feedback (`--from-feedback`).
+
+**Rule (LO-0057 / LO-0059):** Before scoping UI tickets from an **amendment surface map** (or kit / brand-guide IA), confirm the **live product home surface** with a short HITL check when product direction may have moved. Amendment IA is a draft — shipping against the wrong home (e.g. kit slots vs narrative/presentation rail) wastes foundation work. Prefer `./studio feedback` → clarify → ticket that names the real home, then defer superseded tickets.
+
+**Rule (LO-0060):** When feedback **rewrites the sprint goal mid-flight**, in the **same turn**: update `sprints/SPRINT-NN/plan.md` (goal + ticket table), set `sprint_deferred: true` (or remove `sprint:`) on superseded tickets, and tag the replacement ticket into the current sprint. Do not leave plan.md and deferred tickets for a later cleanup.
+
+**Rule (LO-0058):** Tickets **pulled into the current sprint** from feedback skip normal scope-proposal maturity checks and often flag `IMMATURE_TICKET` at groom. Before `implement`, fill mature AC (≥2 BDD) + Scope, and run design-approve when the ticket is design-track. Mid-sprint pull is allowed; immature body is not.
+
+**Rule (LO-0054):** Marketing / stylescape / product-still tickets that depict an **infinite canvas or board chrome** must **mount the real product canvas component** (or shared fixtures with public-safe URLs such as `shareInlineUrl`) — never invent parallel DOM frame chrome that only looks similar. Product token/CSS changes must auto-apply on marketing. Screenshot DoD: marketing still vs live product surface.
 
 **Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, **reuse review is approved**, retro is **complete** (`--complete`), **studio infusion gate** is clear (no open LO-* tickets), and (for the first sprint) the **milestone roadmap** is approved.
 

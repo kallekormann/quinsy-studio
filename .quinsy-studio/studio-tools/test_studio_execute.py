@@ -1,0 +1,341 @@
+#!/usr/bin/env python3
+"""Tests for the agentic execute protocol and compact tickets."""
+
+from __future__ import annotations
+
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from studio_execute import (
+    compact_card,
+    count_gate_fails,
+    decide_from_state,
+    extract_ac,
+    harvest_retro_learn_prompts,
+    has_fresh_gate_pass,
+    pick_next_ticket,
+    receipt_issues,
+)
+from ticket_helpers import render_ticket_markdown
+
+
+def _approved_status(**kwargs):
+    base = {
+        "human_gates": {
+            "0": {"status": "approved"},
+            "1": {"status": "approved"},
+            "2": {"status": "approved"},
+        },
+        "current_sprint": "SPRINT-01",
+        "sprint_hitl": {
+            "scope_status": "approved",
+            "groom_status": "approved",
+            "review_status": None,
+        },
+        "gate": "5",
+        "gate_status": "passed",
+    }
+    base.update(kwargs)
+    return base
+
+
+class ExtractAndCardTests(unittest.TestCase):
+    def test_extract_ac_compact_and_skips_filler_bdd(self):
+        body = """## AC
+- User can export PDF from the board
+- **Given:** Current project state
+- **When:** The ticket is implemented
+- **Then:** Watermark appears on free plan
+## Out of scope
+- billing
+"""
+        ac = extract_ac(body)
+        self.assertIn("User can export PDF from the board", ac)
+        self.assertIn("Watermark appears on free plan", ac)
+        self.assertFalse(any("Current project state" in x for x in ac))
+
+    def test_compact_card_does_not_dump_skills_section(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "DEMO-0001-export.md"
+            path.write_text(
+                "---\n"
+                "id: DEMO-0001\n"
+                "title: Export PDF\n"
+                "files: [src/export.ts]\n"
+                "dependencies: [DEMO-0000]\n"
+                "---\n\n"
+                "## Target\nPDF download on free path\n\n"
+                "## AC\n- downloads a file\n- shares type stack with screen\n",
+                encoding="utf-8",
+            )
+            card = compact_card(path)
+            self.assertEqual(card["id"], "DEMO-0001")
+            self.assertIn("downloads a file", card["ac"])
+            self.assertIn("src/export.ts", card["files"])
+            self.assertEqual(card["deps"], ["DEMO-0000"])
+            self.assertNotIn("skills", card)
+
+    def test_render_ticket_omits_boilerplate_dod_and_filler_bdd(self):
+        md = render_ticket_markdown(
+            {
+                "id": "LO-0099",
+                "title": "Compact tickets",
+                "acceptance_criteria": ["execute emits a card", "receipt required before done"],
+                "scenarios": [
+                    {
+                        "given": "Current project state",
+                        "when": "The ticket is implemented",
+                        "then": "should not appear as wrapper",
+                    }
+                ],
+                "definition_of_done": ["QA gate green"],
+                "skills": ["SO-001"],
+                "soll_zustand": "Agents load a short card first.",
+            }
+        )
+        self.assertIn("## AC", md)
+        self.assertIn("execute emits a card", md)
+        self.assertNotIn("Current project state", md)
+        self.assertNotIn("QA gate green", md)
+        self.assertNotIn("## 4. Definition of Done", md)
+        self.assertNotIn("## Skills", md)
+        self.assertNotIn("Playbook:", md)
+
+
+class PickAndReceiptTests(unittest.TestCase):
+    def test_pick_next_respects_dependencies(self):
+        tickets = [
+            {"id": "A-0002", "status": "backlog", "deps": ["A-0001"]},
+            {"id": "A-0001", "status": "backlog", "deps": []},
+            {"id": "A-0003", "status": "done", "deps": []},
+        ]
+        nxt = pick_next_ticket(tickets)
+        self.assertEqual(nxt["id"], "A-0001")
+        tickets[1]["status"] = "done"
+        nxt = pick_next_ticket(tickets, done_ids={"A-0001", "A-0003"})
+        self.assertEqual(nxt["id"], "A-0002")
+
+    def test_pick_next_prefers_in_progress(self):
+        tickets = [
+            {"id": "A-0001", "status": "backlog", "deps": []},
+            {"id": "A-0002", "status": "implement", "deps": []},
+        ]
+        self.assertEqual(pick_next_ticket(tickets)["id"], "A-0002")
+
+    def test_receipt_requires_three_sections(self):
+        self.assertEqual(receipt_issues(""), ["receipt empty"])
+        stub = "# R\n## Plan\n- ...\n## AC coverage\n- ...\n## Default flow\n- ...\n"
+        self.assertTrue(receipt_issues(stub))
+        good = (
+            "# R\n## Plan\n- pull library button\n"
+            "## AC coverage\n- board export\n## Default flow\n- /board/:id export\n"
+        )
+        self.assertEqual(receipt_issues(good), [])
+
+    def test_fresh_gate_pass_after_implement(self):
+        log = {
+            "entries": [
+                {"ts": "2026-09-07T10:00:00", "ticket": "T-1", "event": "implement"},
+                {"ts": "2026-09-07T10:05:00", "ticket": "T-1", "event": "gate-pass"},
+            ]
+        }
+        self.assertTrue(has_fresh_gate_pass(log, "T-1"))
+        self.assertFalse(has_fresh_gate_pass({"entries": log["entries"][:1]}, "T-1"))
+        self.assertEqual(
+            count_gate_fails(
+                {"entries": [{"ticket": "T-1", "event": "gate-fail"}] * 3},
+                "T-1",
+            ),
+            3,
+        )
+
+
+class DecideTests(unittest.TestCase):
+    def test_decide_implement_next_unblocked(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "card": {"id": "DEMO-0001", "ac": ["a"]}}],
+            log={"entries": []},
+            receipts_ok={},
+            amendment_actions=[],
+            prd_exists=True,
+            open_los=[],
+        )
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertEqual(step.ticket_id, "DEMO-0001")
+        self.assertTrue(step.loop)
+
+    def test_decide_hitl_on_sprint_review(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(
+                sprint_hitl={
+                    "review_status": "pending",
+                    "scope_status": "approved",
+                    "groom_status": "approved",
+                }
+            ),
+            [{"id": "DEMO-0001", "status": "done", "deps": []}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "HITL")
+        self.assertIn("sprint-review", step.reason)
+        self.assertFalse(step.loop)
+
+    def test_decide_verify_receipt_then_gate_then_done(self):
+        tickets = [{"id": "DEMO-0002", "status": "implement", "deps": [], "card": {"id": "DEMO-0002"}}]
+        status = _approved_status(gate="4", gate_status="failed")
+        step = decide_from_state(
+            "demo",
+            status,
+            tickets,
+            log={"entries": [{"ticket": "DEMO-0002", "event": "implement", "ts": "2026-09-07T10:00:00"}]},
+            receipts_ok={"DEMO-0002": False},
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "VERIFY")
+        step = decide_from_state(
+            "demo",
+            status,
+            tickets,
+            log={"entries": [{"ticket": "DEMO-0002", "event": "implement", "ts": "2026-09-07T10:00:00"}]},
+            receipts_ok={"DEMO-0002": True},
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertIn(step.kind, ("GATE", "DEBUG"))
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            tickets,
+            log={
+                "entries": [
+                    {"ticket": "DEMO-0002", "event": "implement", "ts": "2026-09-07T10:00:00"},
+                    {"ticket": "DEMO-0002", "event": "gate-pass", "ts": "2026-09-07T10:10:00"},
+                ]
+            },
+            receipts_ok={"DEMO-0002": True},
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "MOVE_DONE")
+
+    def test_decide_studio_lo_after_closed_sprint_retro(self):
+        with patch("sprint_reuse_review.reuse_gate_message", return_value=None):
+            step = decide_from_state(
+                "demo",
+                _approved_status(
+                    sprint_hitl={
+                        "scope_status": "approved",
+                        "groom_status": "approved",
+                        "review_status": "approved",
+                        "retro_status": "done",
+                    }
+                ),
+                [{"id": "DEMO-0001", "status": "done", "deps": []}],
+                open_los=[
+                    {
+                        "id": "LO-0053",
+                        "title": "execute loop",
+                        "path": "backlog/open/LO-0053.md",
+                        "priority": "P1",
+                    }
+                ],
+                amendment_actions=[],
+                prd_exists=True,
+            )
+        self.assertEqual(step.kind, "STUDIO_LO")
+        self.assertEqual(step.ticket_id, "LO-0053")
+
+    def test_decide_studio_lo_mid_sprint_before_next_implement(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "card": {"id": "DEMO-0001"}}],
+            open_los=[
+                {
+                    "id": "LO-0055",
+                    "title": "layout overflow",
+                    "path": "backlog/open/LO-0055.md",
+                    "priority": "P1",
+                    "infusion_kind": "layout",
+                    "infusion_path": "knowledge-base/design_playbook.md",
+                }
+            ],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "STUDIO_LO")
+        self.assertEqual(step.ticket_id, "LO-0055")
+        self.assertIn("layout", step.reason)
+
+    def test_decide_in_progress_beats_open_lo(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0002", "status": "implement", "deps": [], "card": {"id": "DEMO-0002"}}],
+            log={"entries": [{"ticket": "DEMO-0002", "event": "implement", "ts": "2026-09-07T10:00:00"}]},
+            receipts_ok={"DEMO-0002": False},
+            open_los=[{"id": "LO-0055", "title": "x", "path": "backlog/open/LO-0055.md"}],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertEqual(step.ticket_id, "DEMO-0002")
+
+    def test_decide_sprint_review_beats_open_lo(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(
+                sprint_hitl={
+                    "review_status": "pending",
+                    "scope_status": "approved",
+                    "groom_status": "approved",
+                }
+            ),
+            [{"id": "DEMO-0001", "status": "done", "deps": []}],
+            open_los=[{"id": "LO-0055", "title": "x", "path": "backlog/open/LO-0055.md"}],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "HITL")
+        self.assertIn("sprint-review", step.reason)
+
+    def test_decide_studio_lo_when_project_ticket_blocked_on_deps(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0002", "status": "backlog", "deps": ["DEMO-0001"]}],
+            open_los=[{"id": "LO-0055", "title": "x", "path": "backlog/open/LO-0055.md"}],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "STUDIO_LO")
+
+
+class HarvestTests(unittest.TestCase):
+    def test_harvest_retro_prompts(self):
+        retro = """# Retro
+## What went well?
+- tests were fast
+## What went badly?
+- gate smoke used a temp cache
+## What can we improve?
+- ...
+"""
+        prompts = harvest_retro_learn_prompts(retro, "demo")
+        self.assertTrue(any("temp cache" in p for p in prompts))
+        self.assertTrue(all("--source demo" in p for p in prompts))
+
+
+if __name__ == "__main__":
+    unittest.main()

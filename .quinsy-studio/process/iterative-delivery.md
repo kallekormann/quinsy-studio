@@ -329,7 +329,7 @@ After review is approved:
 ./studio retro <project>
 ```
 
-Creates `projects/<p>/sprints/SPRINT-NN/retro.md` (project retro). Optional studio-wide learnings: `./studio learn "..."`.
+Creates `projects/<p>/sprints/SPRINT-NN/retro.md` (project retro). `--complete` auto-harvests studio LOs from badly/improve; execute `STUDIO_LO` immediately.
 
 ### Retro template
 

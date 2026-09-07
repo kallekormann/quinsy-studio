@@ -3,11 +3,10 @@
 ticket_helpers.py — Shared ticket schema for Quinsy Studio
 
 Ensures that project tickets (JUMP-*, NUDG-*) and studio tickets (LO-*)
-follow the same strict format:
-  1. Unambiguous context & role assignment (assignee_role, current/target state)
-  2. Strict constraints (file paths, playbook references, no external packages)
-  3. BDD acceptance criteria (Given / When / Then)
-  4. Definition of Done
+follow the same compact format:
+  1. Frontmatter is the machine record (id, skills, deps, files)
+  2. Body is unique work only: Target, Scope, AC (no boilerplate DoD)
+  3. No filler Given/When/Then wrappers; G/W/T only for real scenarios
 
 Used by: generate_ticket_manifest.py, studio.py (cmd_ticket, cmd_learn)
 """
@@ -107,10 +106,39 @@ def playbook_for_team(team: str) -> str:
     return TEAM_PLAYBOOK_MAP.get(team, "knowledge-base/anti_ai_slop_protocol.md")
 
 
+def _yaml_list(items) -> str:
+    if not items:
+        return "[]"
+    return "[" + ", ".join(str(x) for x in items) + "]"
+
+
+def _is_filler_scenario(sc: Dict) -> bool:
+    given = str(sc.get("given", "")).lower()
+    when = str(sc.get("when", "")).lower()
+    return "current project state" in given or "the ticket is implemented" in when
+
+
+def _compact_ac_lines(ticket: Dict) -> List[str]:
+    """Specific AC only — no filler Given/When/Then wrappers."""
+    lines: List[str] = []
+    scenarios = ticket.get("scenarios") or []
+    real = [sc for sc in scenarios if not _is_filler_scenario(sc)]
+    if real:
+        for sc in real:
+            lines.append(
+                f"- G: {sc.get('given', '').strip()} / W: {sc.get('when', '').strip()} / T: {sc.get('then', '').strip()}"
+            )
+        return lines
+    for crit in ticket.get("acceptance_criteria") or []:
+        lines.append(f"- {crit}")
+    if not lines:
+        lines.append("- (add 2+ specific acceptance criteria)")
+    return lines
+
+
 def build_bdd_criteria(acceptance_criteria: List[str],
                        scenarios: Optional[List[Dict]] = None) -> List[str]:
-    """Build BDD acceptance criteria from flat criteria OR explicit
-    Given/When/Then scenarios. Always returns BDD blocks."""
+    """Legacy BDD blocks. New tickets use `_compact_ac_lines` instead."""
     lines: List[str] = []
     if scenarios:
         for i, sc in enumerate(scenarios, 1):
@@ -119,16 +147,13 @@ def build_bdd_criteria(acceptance_criteria: List[str],
             lines.append(f"- **When:** {sc.get('when', '...')}")
             lines.append(f"- **Then:** {sc.get('then', '...')}")
         return lines
-    # Fallback: convert flat criteria to BDD (simplest pattern)
     for crit in acceptance_criteria:
-        lines.append(f"- **Given:** Current project state")
-        lines.append(f"- **When:** The ticket is implemented")
-        lines.append(f"- **Then:** {crit}")
+        lines.append(f"- {crit}")
     return lines
 
 
 def render_ticket_markdown(ticket: Dict) -> str:
-    """Render a ticket in the strict studio schema (Markdown)."""
+    """Compact ticket: frontmatter is the machine record; body is unique work only."""
     ticket_id = ticket["id"]
     title = ticket["title"]
     ttype = ticket.get("type", "feature")
@@ -141,30 +166,9 @@ def render_ticket_markdown(ticket: Dict) -> str:
     skills = ticket.get("skills", [])
     deps = ticket.get("dependencies", [])
     created = ticket.get("created", datetime.now().strftime("%Y-%m-%d"))
-
-    # Context
-    ist = ticket.get("ist_zustand", "Not implemented yet.")
     soll = ticket.get("soll_zustand", "Ticket is fully implemented.")
-    value = ticket.get("value", "Visible progress in the project.")
-
-    # Constraints
+    value = ticket.get("value", "")
     files = ticket.get("modification_files", [])
-    rules = ticket.get("constraints", [])
-    playbook = ticket.get("playbook") or playbook_for_team(team)
-
-    # BDD criteria
-    bdd_lines = build_bdd_criteria(
-        ticket.get("acceptance_criteria", []),
-        ticket.get("scenarios")
-    )
-
-    # Definition of Done
-    dod = ticket.get("definition_of_done", [
-        "QA gate green (`./studio gate <project> --level 5`)",
-        "Anti-slop audit: 0 violations",
-        "Tests present and green",
-        "Documentation/CHANGELOG updated",
-    ])
 
     lines = [
         "---",
@@ -177,8 +181,9 @@ def render_ticket_markdown(ticket: Dict) -> str:
         f"estimate: {estimate}",
         f"assignee_role: {role}",
         f"team: {team}",
-        f"skills: {skills}",
-        f"dependencies: {deps}",
+        f"skills: {_yaml_list(skills)}",
+        f"dependencies: {_yaml_list(deps)}",
+        f"files: {_yaml_list(files)}",
         f"created: {created}",
     ]
     if ticket.get("sprint"):
@@ -189,54 +194,21 @@ def render_ticket_markdown(ticket: Dict) -> str:
         lines.insert(-1, f"design_status: {ticket['design_status']}")
     if ticket.get("design_spec"):
         lines.insert(-1, f"design_spec: {ticket['design_spec']}")
-    lines += [
-        "---",
-        "",
-        f"# {ticket_id} — {title}",
-        "",
-        "## 1. Context & Value",
-        f"- **Current state:** {ist}",
-        f"- **Target state:** {soll}",
-        f"- **Value:** {value}",
-        "",
-        "## 2. Technical Constraints",
-    ]
-    if files:
-        lines.append(f"- **Modification scope:** {', '.join(files)}")
-    else:
-        lines.append("- **Modification scope:** Project-specific (see scope)")
-    for rule in rules:
-        lines.append(f"- **Rule:** {rule}")
-    lines.append(f"- **Playbook:** `{playbook}` (mandatory)")
-    lines.append("- **Anti-slop:** No AI clichés, no unnecessary external packages without an ADR")
-
-    lines += [
-        "",
-        "## 3. Acceptance Criteria (BDD)",
-    ]
-    lines.extend(bdd_lines)
-
-    lines += [
-        "",
-        "## 4. Definition of Done",
-    ]
-    for item in dod:
-        lines.append(f"- [ ] {item}")
-
-    if deps:
-        lines += [
-            "",
-            "## Dependencies",
-        ]
-        for dep in deps:
-            lines.append(f"- {dep}")
-
-    if skills:
-        lines += [
-            "",
-            "## Skills",
-        ]
-        for skill in skills:
-            lines.append(f"- {skill}")
-
-    return "\n".join(lines)
+    if ticket.get("signal"):
+        lines.insert(-1, f"signal: {ticket['signal']}")
+    if ticket.get("source"):
+        lines.insert(-1, f"source: {ticket['source']}")
+    if ticket.get("infusion_kind"):
+        lines.insert(-1, f"infusion_kind: {ticket['infusion_kind']}")
+    if ticket.get("infusion_path"):
+        lines.insert(-1, f"infusion_path: {ticket['infusion_path']}")
+    lines += ["---", "", "## Target", soll, ""]
+    scope = ticket.get("scope") or value
+    if scope:
+        lines += ["## Scope", scope, ""]
+    lines.append("## AC")
+    lines.extend(_compact_ac_lines(ticket))
+    out = ticket.get("out_of_scope")
+    if out:
+        lines += ["", "## Out of scope", out if isinstance(out, str) else "\n".join(f"- {x}" for x in out)]
+    return "\n".join(lines) + "\n"
