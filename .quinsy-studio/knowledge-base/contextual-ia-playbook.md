@@ -66,6 +66,7 @@ Update when amendments or new surfaces land.
 | **Spec inherits wrong placement** | Remediation copies old wireframes | Placement section must justify surface, not inherit |
 | **Amendment IA over live product** (LO-0057 / LO-0059) | Sprint scopes UI to kit / guide slots while users already edit the capability on another surface | Confirm live home with HITL; update surface map; defer wrong-home tickets |
 | **Mid-sprint pull without maturity** (LO-0058) | Feedback ticket enters current sprint and flags `IMMATURE_TICKET` | Fill ≥2 BDD AC + Scope (and design-approve if design-track) before `implement` — pull is OK; immature body is not |
+| **Picker without presentation DoD** (LO-0063 / LO-0065) | Rail selection ships; presentation keeps a flat mid-page image list | Same epic (or paired ticket) must place imagery on the presentation surface with editorial layout quality before review |
 
 ## Live home vs amendment draft
 

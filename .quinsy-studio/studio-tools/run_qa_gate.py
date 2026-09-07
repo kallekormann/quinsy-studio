@@ -25,6 +25,7 @@ import os
 import json
 import subprocess
 import re
+import platform
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
@@ -346,14 +347,39 @@ def durable_playwright_browsers_path(project_dir: Path) -> Path:
     return PLAYWRIGHT_CACHE_ROOT / project_dir.name
 
 
+def _darwin_arm64_playwright_host_platform() -> Optional[str]:
+    """Playwright hostPlatform for Apple Silicon when os.cpus() is empty (Cursor sandbox)."""
+    if sys.platform != "darwin":
+        return None
+    machine = platform.machine().lower()
+    if machine not in ("arm64", "aarch64"):
+        return None
+    # Mirror playwright-core macVersion (darwin 20 → mac11, …; ≥25 caps at mac26).
+    try:
+        major = int(platform.release().split(".")[0])
+    except (TypeError, ValueError):
+        major = 24
+    if 20 <= major < 25:
+        mac_version = 11 + (major - 20)
+    elif major >= 25:
+        mac_version = min(major + 1, 26)
+    else:
+        mac_version = 15
+    return f"mac{mac_version}-arm64"
+
+
 def smoke_env_with_durable_playwright(project_dir: Path) -> Dict[str, str]:
     """Force PLAYWRIGHT_BROWSERS_PATH away from ephemeral sandbox caches (LO-0052)."""
     env = os.environ.copy()
     browsers_path = durable_playwright_browsers_path(project_dir)
     browsers_path.mkdir(parents=True, exist_ok=True)
     env["PLAYWRIGHT_BROWSERS_PATH"] = str(browsers_path)
-    # Host platform overrides from agent sandboxes cause mac-x64 vs arm64 misses.
+    # Drop stale sandbox overrides, then set arm64 when the host is Apple Silicon.
+    # Empty os.cpus() makes Playwright pick mac-x64 and miss durable arm64 browsers.
     env.pop("PLAYWRIGHT_HOST_PLATFORM_OVERRIDE", None)
+    arm64_host = _darwin_arm64_playwright_host_platform()
+    if arm64_host:
+        env["PLAYWRIGHT_HOST_PLATFORM_OVERRIDE"] = arm64_host
     return env
 
 

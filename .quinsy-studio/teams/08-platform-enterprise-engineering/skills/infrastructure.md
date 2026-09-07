@@ -32,6 +32,13 @@ Standard setup:
   - Health checks for every service
   - Volumes for persistent data
   - Networks for service isolation
+  - Unique Compose `name:` / container_name per project
+
+Host ports:
+  - Probe before pinning (docker ps published ports, then lsof listeners)
+  - Never assume 5432, 6379, 3000, or Supabase 54321–54323 are free
+  - Bind via project env (${POSTGRES_HOST_PORT}:5432), document in RUNBOOK.md
+  - See knowledge-base/host-port-allocation.md (LO-0066)
 
 Services:
   - app (Next.js / Laravel)
@@ -115,6 +122,7 @@ Rules:
 ```markdown
 - Manual server configuration
   - No Docker for local development
+  - Hardcoded host ports 5432 / 6379 / 3000 on a machine that already runs another stack
   - Secrets in code
   - No SSL
   - US servers for EU users (GDPR!)
@@ -125,6 +133,7 @@ Rules:
 ```markdown
 - Infrastructure as Code
   - Docker Compose for everyone
+  - Probe and pin unique host ports per project (host-port-allocation.md)
   - Secrets in Secret Manager
   - SSL everywhere
   - EU servers for EU users
@@ -135,5 +144,6 @@ Rules:
 ## References
 
 - `.quinsy-studio/knowledge-base/backend_playbook.md` — Backend rules
+- `.quinsy-studio/knowledge-base/host-port-allocation.md` — Probe host ports before Compose publish
 - `templates/docker/` — Docker templates
 - `.quinsy-studio/process/project-archetypes.md` — Stack recommendations

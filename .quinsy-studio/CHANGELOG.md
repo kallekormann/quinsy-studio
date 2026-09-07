@@ -1,5 +1,25 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-07 — Probe host ports before Docker publish (LO-0066)
+
+### Changed
+
+- New [host-port-allocation.md](knowledge-base/host-port-allocation.md): agents probe `docker ps` before pinning Compose host ports; no new CLI.
+- PE-001, backend playbook, agent-context, HITL, docker template: host ports via env (`POSTGRES_HOST_PORT`, `REDIS_HOST_PORT`); textbook 5432/6379/3000 are not a reservation.
+
+## 2026-09-07 — Playwright arm64 host override when os.cpus() is empty
+
+### Fixed
+
+- `studio-tools/run_qa_gate.py` — on Darwin arm64, set `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE` from `platform.machine()` so smoke finds durable arm64 browsers when Cursor sandboxes return empty `os.cpus()` (Playwright otherwise picks mac-x64).
+
+## 2026-09-07 — Imagery Suggested smoke + presentation layout DoD (LO-0062–0065)
+
+### Changed
+
+- `process/human-in-the-loop.md` — Suggested/found imagery must smoke signed-in provider path; empty-after-alive-copy is not done (LO-0062/0064). Imagery selection epics need presentation placement + composition quality DoD, not rail-only (LO-0063/0065).
+- `knowledge-base/contextual-ia-playbook.md` — anti-pattern: picker without presentation layout DoD.
+
 ## 2026-09-07 — Execute loop hygiene: tests, worlds, lean status.json
 
 ### Fixed

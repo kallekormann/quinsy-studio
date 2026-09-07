@@ -25,7 +25,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-15432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -38,7 +38,7 @@ services:
     container_name: {{PROJECT_NAME}}-redis
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_HOST_PORT:-16379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -49,7 +49,7 @@ services:
   # app:
   #   build: .
   #   ports:
-  #     - "3000:3000"
+  #     - "${APP_HOST_PORT:-13000}:3000"
   #   environment:
   #     DATABASE_URL: postgresql://postgres:postgres@db:5432/${PROJECT_NAME}
   #     REDIS_URL: redis://redis:6379

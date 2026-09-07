@@ -28,7 +28,9 @@ Compose file sets `name: <project>` and `container_name: <project>-postgres` so 
 
 ## Supabase local (projects using Supabase CLI)
 
-This template is **generic Postgres** (port 5432). Supabase-local projects use the **Supabase stack** (API ~54321, DB ~54322, Studio ~54323) — not legacy `db:migrate` against port 54320.
+This template is **generic Postgres**. **Do not leave host `5432` / `6379` if those ports are already published** on the machine (normal when several project stacks run). Probe, then set `POSTGRES_HOST_PORT` / `REDIS_HOST_PORT` in the **project** `docker/.env`. Procedure: [host-port-allocation.md](../../knowledge-base/host-port-allocation.md).
+
+Supabase-local projects use the **Supabase stack** on **unclaimed** host ports (defaults 54321–54323 are often taken). Not legacy `db:migrate` against port 54320.
 
 | Task | Command (in project repo) |
 |------|---------------------------|

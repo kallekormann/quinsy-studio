@@ -16,6 +16,8 @@
 
 Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog.
 
+**Docker / local URLs:** before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
+
 Active project is stored in `.quinsy-studio/.active-project.json`.
 
 ## Three context layers

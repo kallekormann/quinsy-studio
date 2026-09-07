@@ -57,6 +57,8 @@ Every decision is documented.
 
 Agents: read project `package.json` scripts and `.env.local` before suggesting `psql` or migrate commands.
 
+**Host ports:** before writing Compose published ports or local URLs, probe what is already bound. See [host-port-allocation.md](host-port-allocation.md) (LO-0066). Do not reuse another project’s 5432 / 6379 / 3000 / Supabase 54321–54323.
+
 ---
 
 ## SOLID principles
