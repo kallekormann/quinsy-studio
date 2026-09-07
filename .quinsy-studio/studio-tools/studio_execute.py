@@ -208,14 +208,26 @@ def extract_files(meta: Dict, body: str) -> List[str]:
     return []
 
 
+# Skill IDs look like FE-001 / UX-006 — never treat them as ticket dependencies.
+_SKILL_ID = re.compile(r"^(FE|UX|BE|AI|SO|PE|QA|DE|PM)-\d{3,}$")
+
+
 def extract_deps(meta: Dict, body: str = "") -> List[str]:
     raw = meta.get("dependencies")
     ids: List[str] = []
     if raw:
         ids.extend(parse_yaml_list(str(raw)))
-    for match in re.finditer(r"\b([A-Z]{2,8}-\d{3,})\b", " ".join(ids)):
-        pass
-    extra = re.findall(r"^-\s*([A-Z]{2,8}-\d{3,})\b", body, re.M) if body else []
+    # Only scan an explicit Dependencies section — never "## Skills" bullets (LO: skill≠dep).
+    dep_section = ""
+    if body:
+        match = re.search(
+            r"^##\s*Dependencies\b(.*?)(?=^##\s|\Z)",
+            body,
+            re.M | re.S | re.I,
+        )
+        if match:
+            dep_section = match.group(1)
+    extra = re.findall(r"^-\s*([A-Z]{2,8}-\d{3,})\b", dep_section, re.M) if dep_section else []
     seen: Set[str] = set()
     out: List[str] = []
     for item in ids + extra:
@@ -223,9 +235,10 @@ def extract_deps(meta: Dict, body: str = "") -> List[str]:
         dep_match = re.match(r"^([A-Z]{2,8}-\d{3,})", tid)
         if dep_match:
             tid = dep_match.group(1)
-        if tid and tid not in seen:
-            seen.add(tid)
-            out.append(tid)
+        if not tid or tid in seen or _SKILL_ID.match(tid):
+            continue
+        seen.add(tid)
+        out.append(tid)
     return out
 
 
