@@ -270,6 +270,27 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     return "in_scope", "Pre-implementation phase — align with ./studio resume next steps."
 
 
+_INTAKE_EXAMPLE_RE = re.compile(
+    r"^intake/amendments/[^/]+/amendment_[^/]+\.example\.md$"
+)
+_CLI_JUNK_PROJECT_RE = re.compile(r"^(LO-\d+|testproj)$")
+
+
+def _is_allowed_tracked_intake(path: str) -> bool:
+    """Committed generic amendment templates — not a worlds leak."""
+    return bool(_INTAKE_EXAMPLE_RE.match(path.replace("\\", "/")))
+
+
+def _looks_like_real_project(child: Path) -> bool:
+    """Skip CLI accidents (--help) and unit-test leftovers (testproj, LO-0042)."""
+    name = child.name
+    if name.startswith("-") or name.startswith("."):
+        return False
+    if _CLI_JUNK_PROJECT_RE.match(name):
+        return False
+    return (child / "status.json").exists() or (child / ".git").exists()
+
+
 def verify_worlds() -> Tuple[bool, List[str]]:
     """Ensure studio git and project git are separated."""
     issues: List[str] = []
@@ -283,7 +304,11 @@ def verify_worlds() -> Tuple[bool, List[str]]:
             capture_output=True,
             text=True,
         )
-        paths = [p for p in tracked.stdout.strip().splitlines() if p]
+        paths = [
+            p
+            for p in tracked.stdout.strip().splitlines()
+            if p and not _is_allowed_tracked_intake(p)
+        ]
         if paths:
             issues.append(
                 "Studio git tracks project/intake paths (must be gitignored): "
@@ -294,6 +319,8 @@ def verify_worlds() -> Tuple[bool, List[str]]:
     if PROJECTS_DIR.exists():
         for child in sorted(PROJECTS_DIR.iterdir()):
             if not child.is_dir() or child.name.startswith("."):
+                continue
+            if not _looks_like_real_project(child):
                 continue
             if not (child / ".git").exists():
                 issues.append(f"Project '{child.name}' missing local .git — run ./studio init {child.name}")

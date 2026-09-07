@@ -1,3 +1,13 @@
+# Quinsy Studio CHANGELOG
+
+## 2026-09-07 — Execute loop hygiene: tests, worlds, lean status.json
+
+### Fixed
+
+- `test_studio_learning_gate.py` is unittest (discoverable), not pytest-only.
+- `./studio verify-worlds` allows committed `intake/amendments/**/amendment_*.example.md` and ignores leftover dirs (`--help`, `LO-0042`, `testproj`). Non-example amendment binaries are gitignored.
+- File-hash snapshots move to `docs/ticket-file-snapshots.json`; `gate_history` is capped so execute does not parse an 8MB `status.json`.
+
 ## 2026-09-07 — Studio settings: per-step token policy + host adapters
 
 ### Added

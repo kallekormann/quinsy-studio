@@ -33,6 +33,10 @@ def open_lo_tickets() -> List[Dict[str, str]]:
     items: List[Dict[str, str]] = []
     for path in sorted(BACKLOG_OPEN.glob("LO-*.md")):
         meta = _parse_lo_frontmatter(path.read_text(encoding="utf-8", errors="ignore"))
+        try:
+            rel = str(path.relative_to(QUINSY_STUDIO))
+        except ValueError:
+            rel = str(path)
         items.append(
             {
                 "id": meta.get("id", path.stem.split("-")[0] + "-" + path.stem.split("-")[1])
@@ -43,7 +47,7 @@ def open_lo_tickets() -> List[Dict[str, str]]:
                 "signal": meta.get("signal", ""),
                 "infusion_kind": meta.get("infusion_kind", ""),
                 "infusion_path": meta.get("infusion_path", ""),
-                "path": str(path.relative_to(QUINSY_STUDIO)),
+                "path": rel,
             },
         )
     # Fix id extraction - use LO-NNNN from filename

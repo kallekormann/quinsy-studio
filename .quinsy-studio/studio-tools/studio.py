@@ -286,31 +286,16 @@ def find_project_ticket(project: str, ticket_id: str) -> tuple:
     return None, None
 
 def load_status(project: str) -> Dict:
-    """Load the project status."""
-    status_file = PROJECTS_DIR / project / "status.json"
-    if status_file.exists():
-        return json.loads(status_file.read_text())
-    return {
-        "name": project,
-        "phase": "0",
-        "gate": "0",
-        "gate_status": "open",
-        "mode": "core",
-        "created": datetime.now().strftime("%Y-%m-%d"),
-        "last_update": datetime.now().strftime("%Y-%m-%d"),
-        "archetype": "unknown",
-        "current_sprint": None,
-        "active_ticket": None,
-        "gate_history": [],
-        "human_gates": {}
-    }
+    """Load project status.json (snapshots live in docs/ticket-file-snapshots.json)."""
+    from studio_status import load_status as _load_status
+
+    return _load_status(project)
 
 def save_status(project: str, status: Dict):
-    """Save the project status."""
-    status["last_update"] = datetime.now().strftime("%Y-%m-%d")
-    status_file = PROJECTS_DIR / project / "status.json"
-    status_file.parent.mkdir(parents=True, exist_ok=True)
-    status_file.write_text(json.dumps(status, indent=2, ensure_ascii=False))
+    """Save project status.json without embedding file-hash snapshots."""
+    from studio_status import save_status as _save_status
+
+    _save_status(project, status)
 
 def resolve_intake_file(project: str, intake_file: Optional[str] = None) -> Optional[Path]:
     """Find the intake PRD for a project slug."""
@@ -2195,8 +2180,11 @@ class StudioOrchestrator:
         ticket_title = title_match.group(1).strip() if title_match else ticket_id
 
         if new_status == "implement":
-            snapshots = status.setdefault("ticket_file_snapshots", {})
+            from studio_status import load_snapshots, save_snapshots
+
+            snapshots = load_snapshots(project)
             snapshots[ticket_id] = snapshot_registry_files(project)
+            save_snapshots(project, snapshots)
             status["active_ticket"] = ticket_id
             save_status(project, status)
             print(f"\n  📚 {format_library_first_hint(project, ticket_title)}")
@@ -2206,8 +2194,9 @@ class StudioOrchestrator:
                 print(f"  Next: ./studio receipt {project} {ticket_id}  then implement from the CARD, then ./studio execute {project}")
 
         if new_status == "done":
-            snapshots = status.get("ticket_file_snapshots", {})
-            snap = snapshots.get(ticket_id, {})
+            from studio_status import snapshot_for_ticket
+
+            snap = snapshot_for_ticket(project, ticket_id, status)
             ok, warnings = check_reuse_before_done(project, ticket_id, snap)
             if warnings:
                 print(f"\n  ⚠️  REUSE REVIEW — changed paths not promoted to studio-library:")

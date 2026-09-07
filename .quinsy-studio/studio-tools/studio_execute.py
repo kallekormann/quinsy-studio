@@ -105,12 +105,11 @@ def _now() -> str:
 
 
 def load_project_status(project: str) -> Dict:
-    path = PROJECTS_DIR / project / "status.json"
-    if not path.exists():
-        return {}
+    from studio_status import load_status
+
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
+        return load_status(project)
+    except OSError:
         return {}
 
 

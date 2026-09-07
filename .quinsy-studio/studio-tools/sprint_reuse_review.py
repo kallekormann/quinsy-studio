@@ -117,7 +117,11 @@ def _path_covered(path: str, promoted: set, decisions: List[Dict]) -> bool:
 
 
 def analyze_sprint_reuse(project: str, sprint: str, status: Dict) -> Dict:
-    snapshots = status.get("ticket_file_snapshots", {})
+    from studio_status import load_snapshots
+
+    snapshots = load_snapshots(project)
+    if status.get("ticket_file_snapshots"):
+        snapshots = {**snapshots, **(status.get("ticket_file_snapshots") or {})}
     promoted = _promoted_paths(project)
     tickets = list_sprint_tickets(project, sprint)
     items: List[Dict] = []
