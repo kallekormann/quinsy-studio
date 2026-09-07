@@ -1,0 +1,112 @@
+{
+  "jobs": [
+    {
+      "id": "TR-0001",
+      "skill_id": "SO-001",
+      "topic": "Openverse licence short codes + adaptive bento pixel budgets",
+      "source": "mistake",
+      "observation": "",
+      "status": "done",
+      "created": "2026-09-07T19:25:57",
+      "completed": "2026-09-07T20:00:00",
+      "infused": [
+        "knowledge-base/backend_playbook.md",
+        "knowledge-base/design_playbook.md",
+        "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
+      ],
+      "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0002",
+      "skill_id": "SO-001",
+      "topic": "Provider licence adapters must map API short codes (e.g. by\u2192cc-by), not only display forms",
+      "source": "lo",
+      "observation": "LO-0067",
+      "status": "done",
+      "created": "2026-09-07T19:26:37",
+      "completed": "2026-09-07T20:00:00",
+      "infused": [
+        "knowledge-base/backend_playbook.md",
+        "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
+      ],
+      "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0003",
+      "skill_id": "SO-001",
+      "topic": "Solid-fill mosaics need per-cell pixel budgets so low-res sources never occupy lead cells",
+      "source": "lo",
+      "observation": "LO-0068",
+      "status": "done",
+      "created": "2026-09-07T19:26:37",
+      "completed": "2026-09-07T20:00:00",
+      "infused": [
+        "knowledge-base/design_playbook.md",
+        "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
+      ],
+      "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0004",
+      "skill_id": "SO-001",
+      "topic": "Suggested still empty in review \u2014 Openverse returned 502 outage **and** our mapp",
+      "source": "lo",
+      "observation": "LO-0069",
+      "status": "done",
+      "created": "2026-09-07T19:26:37",
+      "completed": "2026-09-07T20:00:00",
+      "infused": [
+        "process/human-in-the-loop.md",
+        "knowledge-base/backend_playbook.md",
+        "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
+      ],
+      "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0005",
+      "skill_id": "SO-001",
+      "topic": "V1 places images in selection order \u2192 low-res in lead cell (pixelation); res-awa",
+      "source": "lo",
+      "observation": "LO-0070",
+      "status": "done",
+      "created": "2026-09-07T19:26:37",
+      "completed": "2026-09-07T20:00:00",
+      "infused": [
+        "knowledge-base/design_playbook.md",
+        "knowledge-base/contextual-ia-playbook.md",
+        "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
+      ],
+      "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0006",
+      "skill_id": "SO-001",
+      "topic": "Solid-fill mosaics need per-cell pixel budgets so low-res sources never occupy l",
+      "source": "mistake",
+      "observation": "",
+      "status": "done",
+      "created": "2026-09-07T19:44:15",
+      "completed": "2026-09-07T20:00:00",
+      "infused": [
+        "knowledge-base/design_playbook.md",
+        "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
+      ],
+      "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0007",
+      "skill_id": "SO-001",
+      "topic": "Provider licence adapters must map API short codes (e.g. by\u2192cc-by), not only dis",
+      "source": "mistake",
+      "observation": "",
+      "status": "done",
+      "created": "2026-09-07T19:44:31",
+      "completed": "2026-09-07T20:00:00",
+      "infused": [
+        "knowledge-base/backend_playbook.md",
+        "teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md"
+      ],
+      "instruction": "Second agent: research (web or cited source), derive principles (no copyrighted verbatim), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    }
+  ]
+}

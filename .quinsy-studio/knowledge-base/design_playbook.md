@@ -209,6 +209,37 @@ transform: translateZ(0); /* or will-change: transform */
 
 ---
 
+## Imagery mosaics — per-cell pixel budgets (LO-0068 / LO-0070 / LO-0073)
+
+Editorial **bento** or solid-fill mosaics fail review when a low-resolution source occupies the **lead** (largest) cell — visible pixelation undermines mood. Placement by **selection order** (first picked → hero cell) is wrong when sources have mixed resolutions.
+
+### Resolution budget (before layout is “done”)
+
+1. **Measure each cell’s display budget** in CSS pixels at render size (width × height; account for `devicePixelRatio` when choosing source URLs).
+2. **Assign a minimum pixel requirement per cell** — lead cell highest, corner accents lowest. Example heuristic: `minPixels = cellCssW × cellCssH × dpr²` (tune per product; document the constant in the ticket).
+3. **Sort candidates by usable resolution** (short edge or area of the chosen rendition URL), not by pick order.
+4. **Greedy assign** highest-res sources to highest-budget cells; overflow low-res items to small cells or solid-fill / duotone fallbacks — never upscale a thumbnail into the hero slot.
+5. **DoD gate:** no cell may render a source whose native rendition is below its budget; smoke with at least one deliberately small Openverse thumb in the set.
+
+### Adaptive bento
+
+| Signal | Layout response |
+|--------|-----------------|
+| All sources high-res | Full mosaic; lead cell gets largest asset |
+| Mixed resolutions | Re-rank placement; demote low-res to 1×1 tiles |
+| All low-res | Prefer fewer, larger cells or solid-fill band — do not fake a dense grid |
+
+### Anti-pattern
+
+```
+❌ images[0] → leadCell, images[1] → cell2, …  // selection order
+✅ sortBy(resolution) → assignTo(cellsByDescendingBudget)
+```
+
+Pair with [contextual-ia-playbook.md](contextual-ia-playbook.md) — imagery epics need presentation placement DoD, not rail-only (LO-0065).
+
+---
+
 ## References
 
 - `.quinsy-studio/process/lifecycle.md` — phase 2 (design blueprinting)

@@ -45,9 +45,20 @@ def enqueue_train(
     topic = (topic or "").strip()
     if not skill_id or not topic:
         raise ValueError("skill-id and topic are required")
+    try:
+        from studio_portability import portability_verdict
+
+        verdict = portability_verdict(topic)
+        if not verdict["portable"]:
+            raise ValueError(
+                f"train topic not portable: {verdict.get('reason') or 'rewrite to a reusable principle'}"
+            )
+        topic = str(verdict["title"])
+    except ImportError:
+        pass
     data = load_queue()
     for existing in data.get("jobs", []):
-        if existing.get("status") == "open" and existing.get("topic") == topic:
+        if existing.get("status") == "open" and existing.get("topic") == topic and existing.get("skill_id") == skill_id:
             return existing
     job = {
         "id": f"TR-{len(data['jobs']) + 1:04d}",
@@ -58,9 +69,9 @@ def enqueue_train(
         "status": "open",
         "created": datetime.now().isoformat(timespec="seconds"),
         "instruction": (
-            "Second agent: research (web or cited source), derive principles "
-            "(no copyrighted verbatim), append to the skill toolbox and a playbook. "
-            "Product execute continues IMPLEMENT in parallel."
+            "Second agent: research (web or cited source), derive portable principles "
+            "(no project/product names in HQ docs; provenance only), append to the skill "
+            "toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
         ),
     }
     data["jobs"].append(job)

@@ -14,29 +14,46 @@ Do **not** wait for a human `./studio learn` prompt, retro close, or the next pr
 
 ## Immediate harvest
 
-The moment a learning is identified, studio HQ captures it:
+The moment a learning is identified, studio HQ captures it **only if portable**:
 
 | Trigger | What happens |
 |---------|----------------|
-| `./studio learn "..."` | Classify → inbox + LO |
-| `./studio retro --complete` | Auto-harvest “went badly” / “improve” bullets (no learn prompts to run later) |
+| `./studio learn "..."` | Portability gate → classify → inbox + LO (or project-local log) |
+| `./studio retro --complete` | Auto-harvest “went badly” / “improve” bullets through the same gate |
 | `./studio reuse` | Unpromoted `packages/` / `ui/components/` → classified LOs |
 | 3rd gate fail | Auto-harvest `signal: gate-fail` (kind: tooling) |
 
-Each harvest:
+### Portability gate (required)
+
+Before an LO or train job is created:
+
+1. **Rewrite** product brands / project folder names out of the title (e.g. stock-media provider, not a single product’s tab name).
+2. **Portability test:** would another product still benefit from the *principle* alone? If the title still needs project nouns, or is incident-shaped → **do not** open an LO.
+3. **Project-local log:** dropped items go to `projects/<p>/docs/studio-learnings-local.md` (provenance only).
+4. **Train only on skill gaps:** LO frontmatter `train_skills: [...]`. Empty → playbook/process infusion only (no train queue).
+5. **Infusion:** HQ playbooks/skills must not introduce project folder names outside provenance / `source:` lines (`./studio infusion` reports hits).
+
+```
+raw observation → generalize title → portable?
+  ├─ no  → projects/<p>/docs/studio-learnings-local.md
+  ├─ yes, playbook-only → LO (train_skills: [])
+  └─ yes, skill gap → LO + ./studio train <skill-id> --topic "<principle>"
+```
+
+Each portable harvest:
 
 1. **Classifies** into an infusion bucket (package, ui-component, design, ux, ia, layout, usability, frontend, backend, database, security, process, tooling)
-2. **Appends** `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation, no client product names)
-3. **Opens** a compact LO-* with `infusion_kind` + `infusion_path`
+2. **Appends** `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; `--source` is provenance only)
+3. **Opens** a compact LO-* with `infusion_kind`, `infusion_path`, and `train_skills`
 
-Then `./studio execute <project>` **continues product IMPLEMENT**. Open LOs queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, UI sprint-review, and design-approve still win.
+Then `./studio execute <project>` **continues product IMPLEMENT**. Open LOs with `train_skills` queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, UI sprint-review, and design-approve still win.
 
-Do **not** copy project UI/tokens into `studio-library/`. The inbox + LO is the capture; the agent **generalizes** the rule or extracts a library asset on `STUDIO_LO`.
+Do **not** copy project UI/tokens into `studio-library/`. Promote reusable assets via `./studio library promote` — learnings are principles/skills, not product dumps.
 
 ```bash
-./studio learn "<title>" --signal <signal> --source <source>
-./studio execute <project>   # ACTION IMPLEMENT (train sidecar if LOs are open)
-./studio train SO-001 --from mistake --topic "<title>"
+./studio learn "<portable principle>" --signal <signal> --source <project>
+./studio execute <project>   # ACTION IMPLEMENT (train sidecar only if train_skills set)
+./studio train BE-001 --from mistake --topic "<portable principle>"
 ```
 
 ### Signals
@@ -63,6 +80,7 @@ signal: <signal>
 source: <source>
 infusion_kind: layout | ui-component | package | process | tooling | …
 infusion_path: knowledge-base/design_playbook.md
+train_skills: [UX-003, FE-002]   # empty [] = playbook-only, no train queue
 priority: P0-P3
 created: YYYY-MM-DD
 updated: YYYY-MM-DD

@@ -173,6 +173,17 @@ Clarify drafts and design specs for `marketing-page` / monetization UI must spel
 
 **Rule (LO-0062 / LO-0064):** Provider-backed **Suggested / found imagery** is not done if the UI only shows query copy + “Looking up…” while returning empty. Before review: smoke Suggested on a **signed-in** board with network; “stuck loading” or empty after optimistic copy = not shipped. Degraded empty must be explicit (auth / network / no candidates) — never look “alive” with zero results.
 
+**Rule (LO-0069 / LO-0074):** Degraded **Suggested** copy must distinguish failure modes — reviewers cannot tell a **provider outage** (HTTP 5xx, timeout) from **adapter filter-empty** (e.g. licence slug mismatch dropping every result). Minimum messaging:
+
+| Condition | User-facing intent | Engineering signal |
+|-----------|-------------------|-------------------|
+| HTTP 5xx / timeout / DNS | “Image search is temporarily unavailable — try again” | Log status + provider id |
+| Auth / entitlement short-circuit | “Sign in to see suggestions” (or product equivalent) | Do not call provider |
+| 200 with zero after filter | “No images matched your licence rules” **only when filter is intentional**; if unexpected, treat as bug | Log `rejected_count` + top `rejected_reason` |
+| Healthy 200 + candidates | Show results; no perpetual “Looking up…” |
+
+Smoke both a **healthy provider response** and a **forced 502** (or stub) before review so copy and telemetry are verified — not only the happy path.
+
 **Rule (LO-0063 / LO-0065):** Imagery **selection** tickets that feed a presentation must include **presentation layout DoD** in the same epic (or a paired ticket before review): placement (e.g. bottom band) + composition quality (e.g. bento / editorial mosaic) — not only the rail picker. A uniform mid-page image list that does not communicate mood fails review for the imagery capability.
 
 **Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, **reuse review is approved**, retro is **complete** (`--complete`), **studio infusion gate** is clear (no open LO-* tickets), and (for the first sprint) the **milestone roadmap** is approved.

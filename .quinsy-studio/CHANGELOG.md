@@ -1,5 +1,37 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-07 — Portability gate for harvest / train / infusion
+
+### Added
+
+- `studio-tools/studio_portability.py` — rewrite + portability test; project-local log; HQ noun scan.
+- Harvest drops non-portable titles to `projects/<p>/docs/studio-learnings-local.md` (no LO).
+- LO frontmatter `train_skills`; execute train sidecar only for skill gaps.
+- `./studio train` rejects non-portable topics; `./studio infusion` reports project-name hits in HQ docs.
+
+### Changed
+
+- `process/learning-loop.md` — portability gate as required harvest step.
+- Train topics must be reusable principles (not product/surface incident lines).
+
+## 2026-09-07 — Studio LO infusion gate clear (LO-0067–LO-0075)
+
+### Added
+
+- `knowledge-base/backend_playbook.md` — licence adapter contract (LO-0067 / LO-0072); stock imagery provider priority — primary aggregator first, fallbacks last (LO-0075).
+- `knowledge-base/design_playbook.md` — per-cell pixel budgets and resolution-aware bento placement (LO-0068 / LO-0070 / LO-0073).
+- `teams/09-studio-operations-evolution/skills/studio-tooling-maintenance.md` — SO-001 toolbox: licence slugs, bento budgets, degraded Suggested UX, sandbox smoke skip (LO-0071), provider priority (LO-0075).
+
+### Changed
+
+- `knowledge-base/contextual-ia-playbook.md` — anti-pattern: selection-order mosaic placement (LO-0070).
+- `process/human-in-the-loop.md` — degraded Suggested copy must separate HTTP outage vs filter-empty (LO-0069 / LO-0074).
+- `process/gates.md` — LO-0071: explicit `QUINSY_SKIP_SMOKE` rule for agent sandboxes where Chromium SIGSEGVs.
+
+### Closed
+
+- LO-0067, LO-0068, LO-0069, LO-0070, LO-0071, LO-0072, LO-0073, LO-0074, LO-0075 → `backlog/done/`.
+
 ## 2026-09-07 — Probe host ports before Docker publish (LO-0066)
 
 ### Changed

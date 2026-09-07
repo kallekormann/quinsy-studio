@@ -530,19 +530,63 @@ def _inform(project: str, command: str, reason: str, *, ticket_id: Optional[str]
     )
 
 
-def _train_sidecar(open_los: List[Dict]) -> List[Dict[str, Any]]:
-    sidecar: List[Dict[str, Any]] = []
-    for lo in open_los[:4]:
-        title = (lo.get("title") or lo.get("id") or "skill gap").replace('"', "")
-        sidecar.append(
-            {
-                "lo": lo.get("id"),
-                "topic": title,
-                "command": f'./studio train SO-001 --from mistake --topic "{title[:80]}"',
-            }
-        )
-    return sidecar
+def _parse_train_skills(raw: str) -> List[str]:
+    text = (raw or "").strip()
+    if not text or text in ("[]", "none", "null"):
+        return []
+    # YAML list: [BE-001, FE-006] or BE-001, FE-006
+    text = text.strip("[]")
+    parts = [p.strip().strip("'\"") for p in text.split(",")]
+    return [p for p in parts if p]
 
+
+def _train_sidecar(open_los: List[Dict]) -> List[Dict[str, Any]]:
+    """Enqueue train only for LOs with train_skills (ability gaps). Topic = principle title."""
+    sidecar: List[Dict[str, Any]] = []
+    for lo in open_los:
+        skills = _parse_train_skills(str(lo.get("train_skills") or ""))
+        if not skills:
+            # Fall back: trainable infusion_kind → first skill from kind map via title only skipped
+            kind = (lo.get("infusion_kind") or "").strip()
+            if kind not in (
+                "backend",
+                "frontend",
+                "design",
+                "ux",
+                "ia",
+                "layout",
+                "usability",
+                "tooling",
+                "security",
+                "database",
+                "ui-component",
+                "package",
+            ):
+                continue
+            skills = ["SO-001"]
+        title = (lo.get("title") or lo.get("id") or "skill gap").replace('"', "")
+        # Portability: do not train on product-noun titles
+        try:
+            from studio_portability import portability_verdict
+
+            verdict = portability_verdict(title)
+            if not verdict["portable"]:
+                continue
+            title = str(verdict["title"])
+        except Exception:
+            pass
+        for skill_id in skills[:2]:
+            sidecar.append(
+                {
+                    "lo": lo.get("id"),
+                    "skill_id": skill_id,
+                    "topic": title[:80],
+                    "command": f'./studio train {skill_id} --from mistake --topic "{title[:80]}"',
+                }
+            )
+        if len(sidecar) >= 4:
+            break
+    return sidecar[:4]
 
 def _has_in_progress(sprint_tickets: List[Dict[str, Any]]) -> bool:
     return any(t.get("status") == "implement" for t in (sprint_tickets or []))
@@ -982,7 +1026,7 @@ def decide_next_action(project: str) -> ExecuteStep:
         for job in step.parallel_train:
             try:
                 enqueue_train(
-                    "SO-001",
+                    job.get("skill_id") or "SO-001",
                     job.get("topic") or "skill gap",
                     source="lo",
                     observation=job.get("lo") or "",

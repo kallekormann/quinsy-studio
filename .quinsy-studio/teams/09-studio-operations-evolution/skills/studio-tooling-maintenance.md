@@ -63,6 +63,35 @@ What to track:
 
 ---
 
+## Toolbox (trained — TR-0001–TR-0007)
+
+Distilled principles from parallel train jobs (Openverse imagery sprint). Full detail in linked playbooks — no client product names.
+
+### Provider licence adapters
+
+- Stock APIs return **short slugs** (`by`, `by-sa`, …) — not `cc-by` display forms. Allowlists and normalizers must accept provider-native codes at the adapter boundary ([backend_playbook.md](../../../knowledge-base/backend_playbook.md)).
+- One map: `provider_slug → canonical enum → display label`. Never match allowlists on human-readable strings.
+- Unit-test fixtures from the provider OpenAPI examples, not invented `cc-*` strings.
+
+### Imagery presentation / bento mosaics
+
+- Compute **per-cell pixel budget** before calling layout done; assign highest-resolution sources to largest cells ([design_playbook.md](../../../knowledge-base/design_playbook.md)).
+- Selection order is curation order, **not** placement order ([contextual-ia-playbook.md](../../../knowledge-base/contextual-ia-playbook.md)).
+- Low-res thumbs must not occupy lead cells — demote to small tiles or solid-fill fallbacks.
+
+### Suggested / degraded imagery UX
+
+- Distinguish **provider outage** (5xx) from **filter-empty** (mapper rejects valid slugs) in copy and logs ([human-in-the-loop.md](../../../process/human-in-the-loop.md) LO-0069 / LO-0074).
+- Smoke signed-in Suggested path + forced error path before review — optimistic “Looking up…” with zero results is not shipped.
+- Keep **Openverse (or primary aggregator) first**; add Unsplash/Pexels only after mapper fix + healthy primary API still yields empty Suggested ([backend_playbook.md](../../../knowledge-base/backend_playbook.md) LO-0075).
+
+### Gate smoke in agent sandboxes (LO-0071)
+
+- Chromium may SIGSEGV in Cursor/CI sandboxes — `QUINSY_SKIP_SMOKE=1` is an **explicit agent opt-out** for `./studio gate --level 5` only; gate output must say skipped.
+- Human machines and sprint review: leave unset; document skip in the ticket receipt when agents cannot run smoke.
+
+---
+
 ## Anti-Patterns
 
 ### ❌ Prohibited

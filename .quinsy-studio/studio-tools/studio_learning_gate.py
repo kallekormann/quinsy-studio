@@ -47,6 +47,7 @@ def open_lo_tickets() -> List[Dict[str, str]]:
                 "signal": meta.get("signal", ""),
                 "infusion_kind": meta.get("infusion_kind", ""),
                 "infusion_path": meta.get("infusion_path", ""),
+                "train_skills": meta.get("train_skills", ""),
                 "path": rel,
             },
         )
@@ -67,7 +68,7 @@ def infusion_gate_message(open_items: Optional[List[Dict[str, str]]] = None) -> 
         return None
     lines = [
         f"{len(items)} open studio learning item(s) (LO-*). Train in parallel — product IMPLEMENT is not blocked.",
-        "Harvest is immediate (inbox + LO). Spawn ./studio train beside execute; do not pile LOs.",
+        "Harvest is immediate (inbox + LO) **only when portable**. Spawn ./studio train for skill gaps only.",
         "Studio learnings → skills / process / tooling / studio-library — not project code.",
         "",
         "Open items:",
@@ -76,6 +77,29 @@ def infusion_gate_message(open_items: Optional[List[Dict[str, str]]] = None) -> 
         lines.append(f"  • {item['id']} [{item.get('priority', 'P2')}] {item.get('title', '')[:72]}")
     if len(items) > 12:
         lines.append(f"  … and {len(items) - 12} more")
+    try:
+        from studio_portability import open_lo_title_portability_failures, scan_hq_for_project_nouns
+    except ImportError:  # pragma: no cover
+        open_lo_title_portability_failures = None  # type: ignore
+        scan_hq_for_project_nouns = None  # type: ignore
+    if open_lo_title_portability_failures:
+        bad = open_lo_title_portability_failures(items)
+        if bad:
+            lines.extend(["", "⚠️  Non-portable open LO titles (rewrite or move to project-local log):"])
+            for b in bad[:6]:
+                lines.append(f"  • {b['id']}: {b['reason'][:90]}")
+    if scan_hq_for_project_nouns:
+        hq_hits = scan_hq_for_project_nouns()
+        if hq_hits:
+            lines.extend(
+                [
+                    "",
+                    f"⚠️  Portability: {len(hq_hits)} HQ doc hit(s) with project folder names "
+                    "(fix or confine to provenance lines):",
+                ]
+            )
+            for h in hq_hits[:8]:
+                lines.append(f"  • {h['path']}:{h['line']} ({h['noun']}) {h['snippet'][:60]}")
     lines.extend(
         [
             "",

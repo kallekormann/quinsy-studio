@@ -2485,21 +2485,37 @@ class StudioOrchestrator:
     def cmd_infusion(self):
         """Show studio learning infusion gate status (open LO-* tickets)."""
         from studio_learning_gate import can_infuse_project_sprint, open_lo_tickets
+        from studio_portability import open_lo_title_portability_failures, scan_hq_for_project_nouns
 
         print_header("STUDIO INFUSION GATE")
         items = open_lo_tickets()
-        if not items:
+        hq_hits = scan_hq_for_project_nouns()
+        bad_titles = open_lo_title_portability_failures(items) if items else []
+        if not items and not hq_hits:
             print("\n  ✅ No open LO tickets — safe to plan the next project sprint.")
+            print("  Portability: no project folder names found in HQ playbooks/skills (excl. CHANGELOG).")
             print("  Generalize learnings into: process/, teams/skills/, knowledge-base/, studio-library/")
             return True
-        print(f"\n  {len(items)} open studio learning item(s) — train in parallel; product IMPLEMENT is not blocked.")
-        ok, msg = can_infuse_project_sprint()
-        print(f"\n{msg}")
+        if items:
+            print(f"\n  {len(items)} open studio learning item(s) — train skill gaps in parallel; product IMPLEMENT is not blocked.")
+            ok, msg = can_infuse_project_sprint()
+            print(f"\n{msg}")
+        else:
+            print("\n  ✅ No open LO tickets.")
+        if bad_titles:
+            print("\n  ❌ Portability: rewrite or drop non-portable open LO titles before infusion.")
+        if hq_hits:
+            print(f"\n  ⚠️  Portability: {len(hq_hits)} HQ markdown hit(s) with project folder names:")
+            for h in hq_hits[:10]:
+                print(f"    • {h['path']}:{h['line']} ({h['noun']}) {h['snippet'][:70]}")
+            print("    Confine project names to provenance/`source:` lines, or replace with <project>.")
         print("\n  Infusion targets:")
         print("    process/ · teams/*/skills/ · knowledge-base/ · studio-tools/ · studio-library/")
-        print(f"\n  Product: ./studio execute <project>  → IMPLEMENT")
-        print(f"  Train:   ./studio train SO-001 --from mistake --topic \"{items[0].get('title', '')}\"")
-        return True
+        print("\n  Product: ./studio execute <project>  → IMPLEMENT")
+        if items:
+            skills = items[0].get("train_skills") or "SO-001"
+            print(f"  Train:   ./studio train <skill-id> --from mistake --topic \"<principle>\"  (skills: {skills})")
+        return not bad_titles
     
     def cmd_update_skills(self, extra_args=None):
         """Subscribe/update the external skill dependencies (agent-as-a-dependency)."""

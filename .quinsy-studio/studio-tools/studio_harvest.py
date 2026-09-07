@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
 Immediate studio harvest — classify a learning the moment it is identified,
-write it into studio HQ (inbox + LO-*), and queue parallel train (product IMPLEMENT continues).
+write it into studio HQ (inbox + LO-*) when **portable**, else project-local log.
 
 Does not copy project code or client names into playbooks/library.
-The inbox entry + classified LO is the capture; the train agent generalizes.
+Train only when LO declares train_skills (ability gap).
 """
 
 from __future__ import annotations
@@ -15,6 +15,21 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from ticket_helpers import render_ticket_markdown
+
+try:
+    from studio_portability import (
+        append_project_local_learning,
+        portability_verdict,
+        resolve_project_from_source,
+        train_skills_for_kind,
+    )
+except ImportError:  # pragma: no cover
+    from studio_tools.studio_portability import (  # type: ignore
+        append_project_local_learning,
+        portability_verdict,
+        resolve_project_from_source,
+        train_skills_for_kind,
+    )
 
 TOOLS_DIR = Path(__file__).parent
 QUINSY_STUDIO = TOOLS_DIR.parent
@@ -261,26 +276,59 @@ def harvest_identified_learning(
     priority: str = "P1",
 ) -> Dict[str, object]:
     """
-    Capture immediately into studio HQ. Returns lo_id, kind, created (False if deduped).
+    Capture immediately into studio HQ when portable.
+
+    Returns lo_id, kind, created. If not portable: created=False, dropped=True,
+    and a project-local note may be written under projects/<p>/docs/.
     """
     title = (title or "").strip()
     if not title:
         raise ValueError("learning title required")
     observation = (observation or title).strip()
+
+    verdict = portability_verdict(title, observation)
+    if not verdict["portable"]:
+        project = resolve_project_from_source(source)
+        local_path = ""
+        if project:
+            written = append_project_local_learning(
+                project,
+                observation=observation,
+                title=title,
+                reason=str(verdict.get("reason") or "not portable"),
+            )
+            local_path = str(written) if written else ""
+        return {
+            "created": False,
+            "dropped": True,
+            "lo_id": "",
+            "kind": kind or classify_learning(f"{title} {observation}", path=path, signal=signal),
+            "signal": signal,
+            "infusion_path": "",
+            "reason": verdict.get("reason"),
+            "local_log": local_path,
+            "inbox": "",
+        }
+
+    title = str(verdict["title"])
     kind = kind or classify_learning(f"{title} {observation}", path=path, signal=signal)
     meta = kind_meta(kind)
     signal = signal or str(meta["signal"])
+    skills = list(meta["skills"])  # type: ignore[arg-type]
+    train_skills = train_skills_for_kind(kind, skills)
     norm = _norm_title(title)
     existing = _existing_lo_match(norm)
     if existing:
         return {
             "created": False,
+            "dropped": False,
             "lo_id": existing,
             "kind": kind,
             "signal": signal,
             "infusion_path": meta["path"],
-        "inbox": _rel(INBOX_PATH) if INBOX_PATH.exists() else "",
-                }
+            "train_skills": train_skills,
+            "inbox": _rel(INBOX_PATH) if INBOX_PATH.exists() else "",
+        }
 
     BACKLOG_OPEN.mkdir(parents=True, exist_ok=True)
     lo_id = next_lo_id()
@@ -295,26 +343,31 @@ def harvest_identified_learning(
         "priority": priority,
         "estimate": "S",
         "team": meta["team"],
-        "skills": meta["skills"],
+        "skills": skills,
         "assignee_role": meta["role"],
         "soll_zustand": (
             f"General rule lives in `{infusion_path}` so the next project cannot repeat this. "
-            "No client names in studio HQ."
+            "No client / product names in studio HQ titles or infused body "
+            "(provenance `--source` / CHANGELOG only)."
         ),
-        "value": "Immediate harvest — context is still in this session.",
+        "value": "Immediate harvest — portable principle only.",
         "signal": signal,
         "source": source,
         "infusion_kind": kind,
         "infusion_path": infusion_path,
+        "train_skills": train_skills,
         "modification_files": [f".quinsy-studio/{infusion_path}", ".quinsy-studio/CHANGELOG.md"],
         "acceptance_criteria": [
             f"Inbox item {lo_id} generalized into `{infusion_path}` (or matching playbook/skill/package)",
+            "Infused text passes portability gate (no project folder names outside provenance)",
             "CHANGELOG.md updated",
             "LO moved to backlog/done/",
         ],
         "scope": (
             f"Kind `{kind}`. Promote or author in `{infusion_path}` using `{playbook}`. "
-            f"Observation: {observation[:400]}"
+            f"Principle title must stay product-agnostic. "
+            f"Train skills: {train_skills or 'none (playbook-only)'}. "
+            f"Observation (provenance): {observation[:350]}"
         ),
     }
     lo_file = BACKLOG_OPEN / f"{lo_id}-{_slugify(title)}.md"
@@ -334,13 +387,16 @@ def harvest_identified_learning(
     )
     return {
         "created": True,
+        "dropped": False,
         "lo_id": lo_id,
         "kind": kind,
         "signal": signal,
         "infusion_path": infusion_path,
+        "train_skills": train_skills,
         "inbox": _rel(INBOX_PATH),
         "lo_path": _rel(lo_file),
     }
+
 
 
 def harvest_retro_text(retro_text: str, source: str) -> List[Dict[str, object]]:

@@ -283,11 +283,12 @@ class DecideTests(unittest.TestCase):
             open_los=[
                 {
                     "id": "LO-0055",
-                    "title": "layout overflow",
+                    "title": "Nested board overflow needs h-dvh on chrome shells",
                     "path": "backlog/open/LO-0055.md",
                     "priority": "P1",
                     "infusion_kind": "layout",
                     "infusion_path": "knowledge-base/design_playbook.md",
+                    "train_skills": "[UX-003, FE-002]",
                 }
             ],
             amendment_actions=[],
@@ -297,6 +298,7 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.ticket_id, "DEMO-0001")
         self.assertTrue(step.parallel_train)
         self.assertIn("LO-0055", step.parallel_train[0]["lo"])
+        self.assertEqual(step.parallel_train[0]["skill_id"], "UX-003")
 
     def test_decide_in_progress_beats_open_lo(self):
         step = decide_from_state(

@@ -230,6 +230,8 @@ def render_ticket_markdown(ticket: Dict) -> str:
         lines.insert(-1, f"infusion_kind: {ticket['infusion_kind']}")
     if ticket.get("infusion_path"):
         lines.insert(-1, f"infusion_path: {ticket['infusion_path']}")
+    if ticket.get("train_skills") is not None:
+        lines.insert(-1, f"train_skills: {_yaml_list(ticket.get('train_skills') or [])}")
     lines += ["---", "", "## Target", soll, ""]
     scope = ticket.get("scope") or value
     if scope:

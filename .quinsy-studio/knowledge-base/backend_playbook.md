@@ -309,6 +309,52 @@ describe('POST /api/users', () => {
 
 ---
 
+## External provider adapters — licence codes (LO-0067 / LO-0072)
+
+Stock-media APIs (e.g. [Openverse](https://api.openverse.org/)) expose **provider-native licence slugs**, not SPDX display strings. The Openverse `license` query parameter and result fields use short codes such as `by`, `by-sa`, `by-nc`, `by-nc-sa`, `by-nd`, `by-nc-nd`, `cc0`, `pdm`, `nc-sampling+`, and `sampling+` — **not** `cc-by` / `cc-by-sa` prefixes.
+
+### Adapter contract
+
+| Layer | Responsibility |
+|-------|----------------|
+| **Provider slug** | Exact string from the API (`by`, `by-sa`, …) — treat as opaque, case-sensitive |
+| **Canonical enum** | Internal stable id (may map `by` → `CC_BY`) for business rules and filtering |
+| **Display label** | Human string (`CC BY 4.0`) — never used for allowlist matching |
+
+### Rules
+
+1. **Allowlists match provider slugs first.** If the adapter only accepts `cc-by` but the API returns `by`, every result is silently dropped — the UI looks like “no matches” while the network path is healthy.
+2. **Normalize at the boundary.** One function maps provider slug → canonical enum; downstream code never branches on display strings or guesses prefixes.
+3. **Version is separate.** Openverse also returns `license_version` (e.g. `4.0`). Slug + version compose the attribution URL — do not embed version inside the slug.
+4. **Fixture from OpenAPI.** Copy licence values from the provider’s published schema/examples into adapter unit tests; do not invent `cc-*` forms from memory.
+5. **Degraded telemetry.** Log `provider_slug`, `mapped`, and `rejected_reason` at debug level so a mapper bug is distinguishable from an HTTP outage (see HITL LO-0069 / LO-0074).
+
+```typescript
+// ✅ Boundary normalizer — provider slug is source of truth
+const OPENVERSE_SLUGS = new Set([
+  'by', 'by-sa', 'by-nc', 'by-nc-sa', 'by-nd', 'by-nc-nd',
+  'cc0', 'pdm', 'nc-sampling+', 'sampling+',
+]);
+
+function toCanonicalLicence(providerSlug: string): CanonicalLicence | null {
+  if (!OPENVERSE_SLUGS.has(providerSlug)) return null;
+  return SLUG_TO_CANONICAL[providerSlug]; // e.g. by → CC_BY
+}
+```
+
+---
+
+## Stock imagery — provider priority (LO-0075)
+
+When integrating multiple stock-media providers for **Suggested** / discovery rails:
+
+1. **Primary aggregator first.** Prefer a licence-broad meta-catalog (e.g. Openverse) as the default path — one adapter covers many sources with consistent slugs.
+2. **Fix mapper before adding providers.** If Suggested is empty on a healthy HTTP 200, suspect adapter filtering (licence slug mismatch) before blaming the primary API or adding fallbacks.
+3. **Fallback providers are last resort.** Only evaluate direct APIs (e.g. Unsplash, Pexels) when: (a) the primary adapter maps correctly, (b) the primary returns healthy responses, and (c) Suggested is still empty for product-valid queries.
+4. **Do not stack providers to mask bugs.** A second provider that “works” while the primary silently filters everything hides mapper and copy failures until review.
+
+---
+
 ## References
 
 - `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — backend slop rules

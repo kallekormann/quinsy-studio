@@ -169,7 +169,9 @@ python3 .quinsy-studio/studio-tools/design_math.py --audit-tokens projects/<p>/u
 
 ### Runtime smoke (web apps)
 
-**LO-0052 — durable Playwright browsers:** `./studio gate` sets `PLAYWRIGHT_BROWSERS_PATH` to `.quinsy-studio/.cache/playwright/<project>/` (gitignored). Do not rely on Cursor sandbox temp caches; they rotate and often mismatch mac-arm64 vs mac-x64. First gate may download Chromium once; later gates reuse the cache. Opt out only with `QUINSY_SKIP_SMOKE=1` when Chromium cannot launch.
+**LO-0052 — durable Playwright browsers:** `./studio gate` sets `PLAYWRIGHT_BROWSERS_PATH` to `.quinsy-studio/.cache/playwright/<project>/` (gitignored). Do not rely on Cursor sandbox temp caches; they rotate and often mismatch mac-arm64 vs mac-x64. First gate may download Chromium once; later gate runs reuse the cache.
+
+**LO-0071 — agent sandbox Chromium SIGSEGV:** Cursor and some CI sandboxes cannot launch Playwright Chromium (SIGSEGV / kill EPERM). Agents may set `QUINSY_SKIP_SMOKE=1` **only** for gate level 5 in that environment — gate output must record the skip explicitly (`run_qa_gate.py` returns “Skipped — QUINSY_SKIP_SMOKE set”). Human local runs and sprint-review smoke must leave it unset; skipping is not a substitute for browser verification before review.
 
 Add `projects/<p>/docs/smoke-routes.json`:
 
