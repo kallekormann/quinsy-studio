@@ -2,7 +2,7 @@
 id: LO-0057
 title: Original sprint scope assumed brand-kit slots owned imagery (MOOD-0516 / AM-009)
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

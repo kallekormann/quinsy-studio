@@ -291,6 +291,7 @@ Implemented in `.quinsy-studio/studio-tools/amendment_intake.py` (wired in `stud
 7. **Do not implement** until amendment approved, milestones re-approved if changed, tickets groomed
 8. **Cross-surface acceptance check** (LO-0048) — before marking the last ticket of an amendment's capability `done`, re-read `02-requirements-addendum.md` / `04-ui-ux-concept.md` for every **surface** the capability was promised on (e.g. marketing + application + atoms). A ticket proving distinctness on *one* surface does not close the capability for surfaces it didn't touch — list the untouched surfaces explicitly in the ticket or file a follow-up.
 9. **Unread-field check** (LO-0048) — before milestone review, search every field added to a frozen type in `docs/amendments/AM-NNN-*/` for at least one **runtime reader** under the project’s application code (`src/`, `app/`, `packages/`, etc. — not only the type’s own definition module). A field with zero readers ships silently inert — flag it in the review brief rather than letting gate-green imply coverage.
+10. **Live home-surface check** (LO-0057 / LO-0059) — before writing or grooming UI tickets that place a capability on an amendment surface (kit slots, brand guide, share dialog, …), confirm that surface is still the **live product home**. If shipped UX or later feedback moved the capability, update the amendment surface map or open clarifying feedback — do not scope a sprint against stale IA alone.
 ---
 
 ## Example (fictional project `acme-app`)

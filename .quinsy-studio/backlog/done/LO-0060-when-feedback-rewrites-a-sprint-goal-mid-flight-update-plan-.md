@@ -2,7 +2,7 @@
 id: LO-0060
 title: When feedback rewrites a sprint goal mid-flight, update plan.md + defer supersed
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

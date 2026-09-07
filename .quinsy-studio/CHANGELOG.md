@@ -1,5 +1,15 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-07 — Live home surface + mid-sprint rewrite + marketing canvas fidelity (LO-0054, LO-0057–0060)
+
+### Changed
+
+- `process/human-in-the-loop.md` — confirm live product home before scoping UI from amendment IA (LO-0057/0059); same-turn `plan.md` + defer when feedback rewrites sprint goal (LO-0060); mature AC before implement on mid-sprint pulls (LO-0058); marketing canvas stills must mount real product canvas / shared fixtures (LO-0054).
+- `process/amendment-intake.md` — agent obligation: live home-surface check before grooming amendment-placed UI.
+- `process/backlog-model.md` — mid-sprint goal rewrite + maturity for feedback pulls.
+- `knowledge-base/contextual-ia-playbook.md` — anti-patterns for amendment-over-live and immature mid-sprint pulls; live-vs-draft checklist.
+- `knowledge-base/visual-storytelling-playbook.md` — product fidelity rule for canvas/stylescape marketing stills.
+
 ## 2026-09-07 — Brownfield adopt (LO-0056)
 
 ### Added

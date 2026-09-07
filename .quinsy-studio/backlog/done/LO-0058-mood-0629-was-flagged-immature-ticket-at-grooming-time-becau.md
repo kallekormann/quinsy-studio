@@ -2,7 +2,7 @@
 id: LO-0058
 title: MOOD-0629 was flagged IMMATURE_TICKET at grooming time because it entered mid-sp
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

@@ -2,7 +2,7 @@
 id: LO-0059
 title: Before scoping imagery/UI tickets against AM-009 kit IA, confirm the live produc
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

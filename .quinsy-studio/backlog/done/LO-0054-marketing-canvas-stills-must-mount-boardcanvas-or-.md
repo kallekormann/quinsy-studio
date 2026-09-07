@@ -2,7 +2,7 @@
 id: LO-0054
 title: Marketing canvas stills must mount BoardCanvas (or share fixtures) with shareInlineUrl — never invent DOM frame chrome like MarketingStylescapeFrame
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P2
 estimate: M
