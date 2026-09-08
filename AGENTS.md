@@ -10,7 +10,7 @@ A new chat bubble is **not** a new assignment while work is in flight.
 ./studio guard <p> "<verbatim user message>"
 ```
 
-On `INBOX_ACK`: the note is already queued — one-line ACK, resume the same ACTION. Do not implement the note until after `MOVE_DONE` + drain. Only abort preempts. HITL replies (gate approve, `approve-design`, sprint review, “back on track”) are not queued.
+On `INBOX_ACK`: the note is already queued — one-line ACK, resume the same ACTION. Do not implement the note until after `MOVE_DONE` + drain. Only abort preempts. HITL replies (gate approve, `approve-design`, sprint review, “approved”, “looks good”, “back on track”) are not queued.
 
 This is **studio-core** (`./studio guard`), not a project-local convention.
 

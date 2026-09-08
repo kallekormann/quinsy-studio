@@ -61,6 +61,8 @@ Agents: read project `package.json` scripts and `.env.local` before suggesting `
 
 **Laravel `artisan serve` in Docker:** `ServeCommand` strips most process env from the PHP child (Compose `DB_*`, vendor base URLs, session driver) unless you pass `--no-reload`. CLI `php artisan` in the same container still sees full env, so tinker can look healthy while HTTP 500s. Use `php artisan serve --host=0.0.0.0 --port=8000 --no-reload`, or `php -S` which inherits the container environment.
 
+**PHPUnit vs operator database (LO-0112 / LO-0115):** `RefreshDatabase` / `migrate:fresh` against the Compose tenant Postgres wipes live domains, kits, and seed. Feature tests that need Postgres must use a throwaway database/schema, or transactions that cannot run `migrate:fresh` on the operator volume. Do not treat a green constraint test as permission to reset the human’s local stack.
+
 ---
 
 ## SOLID principles

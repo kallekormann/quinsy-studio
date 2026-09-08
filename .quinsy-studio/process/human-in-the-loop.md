@@ -55,7 +55,7 @@ While sprint tickets are not all `done`:
 | Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
 | Open LOs spawn `./studio train` in parallel | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
 
-**Enforced by CLI:** `./studio move … implement` is blocked when **UI** sprint review is pending or the sprint is closed pending retro. Scope/groom `--approve` is not required.
+**Enforced by CLI:** `./studio move … implement` is blocked when **UI** sprint review is pending or the sprint is closed pending retro. Scope/groom `--approve` is not required. When the last sprint ticket is `done`, execute returns **HITL sprint-review immediately** — do not start the next milestone until review → reuse → retro have run.
 
 **Execute loop:** `./studio execute <project>` returns one action. The agent runs `NEXT`, then execute again, until `HITL`. `INFORM` still loops. Gate failures write `sprints/SPRINT-NN/debug/<ticket>.md` and retry up to 3 times, then `blocked` + optional `gate-fail` LO **and** a train job. `move … done` requires a receipt (`./studio receipt`) plus a fresh level-5 gate.
 
@@ -98,7 +98,7 @@ Sprint review feedback (once per theme)
 | **Sprint work** | **Agent only** | `./studio move <p> <ID> implement` … `done` (all sprint tickets) |
 | **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |
 
-**Rule (sprint capacity):** Each sprint proposes **3–6** mature tickets (planner `max_tickets=6`; warn if fewer than 3). Agents must **not** manually narrow `scope-proposal.json` to 1–2 tickets unless the human explicitly asks for a hotfix / surgical sprint. Prefer filling with related P0/P1 backlog.
+**Rule (sprint capacity / LO-0124):** Each sprint proposes **3–6** mature tickets (planner `max_tickets=6`; warn if fewer than 3). Agents must **not** manually narrow `scope-proposal.json` to 1–2 tickets unless the human explicitly asks for a hotfix / surgical sprint, **or** the sprint is an intentional **review-feedback polish** slice (2 related motion/UI tickets from the prior review). Prefer filling with related P0/P1 backlog when available; under-capacity warnings are expected and OK for those polish sprints.
 | **Sprint review** | **Human** tries shipped work | Read review.md — **live app** (`npm run dev` at project root) and extension `dist/` if shipped; **not** `design/prototype` after implement |
 
 **Rule (LO-0066):** Before writing Docker Compose **published host ports** or local app URLs, probe `docker ps` (and listeners). Multiple project stacks share one machine. Do not take 5432 / 6379 / 3000 / Supabase 54321–54323 if they are already bound. Pin via project env and RUNBOOK. See `knowledge-base/host-port-allocation.md`. Do not stop another project’s containers to free a default port.
@@ -170,6 +170,12 @@ Clarify drafts and design specs for `marketing-page` / monetization UI must spel
 **Rule (LO-0058):** Tickets **pulled into the current sprint** from feedback skip normal scope-proposal maturity checks and often flag `IMMATURE_TICKET` at groom. Before `implement`, fill mature AC (≥2 BDD) + Scope, and run design-approve when the ticket is design-track. Mid-sprint pull is allowed; immature body is not.
 
 **Rule (LO-0054):** Marketing / stylescape / product-still tickets that depict an **infinite canvas or board chrome** must **mount the real product canvas component** (or shared fixtures with public-safe URLs such as `shareInlineUrl`) — never invent parallel DOM frame chrome that only looks similar. Product token/CSS changes must auto-apply on marketing. Screenshot DoD: marketing still vs live product surface.
+
+**Rule (LO-0116):** Marketing **scroll-story** tickets must **lock one motion model in the design spec before IMPLEMENT** (sticky stack vs scroll-scrub vs discrete chapters). Do not iterate models mid-sprint. Pair with design-science DoD: fixed illustration height, no page-wide enter cascades, native 1:1 scroll on sticky pins (see `knowledge-base/design-science-playbook.md`).
+
+**Rule (LO-0120 / LO-0122):** Sticky stage crossfades must keep the **current/active slide sharp** until the next slide is meaningfully in the sticky band. Drive blur/opacity from **relative sticky progress**: incoming blurs into view then clears; outgoing **fades** (opacity). Never mark the current slide outgoing-blurred while the next is still off-screen below the band.
+
+**Rule (LO-0121):** Marketing “appear” stills that only tilt feel stiff. Prefer a **throw-on** start state (blur + reduced opacity + slight overscale) settling simultaneously with a modest end tilt (~3°), not tilt-only.
 
 **Rule (LO-0062 / LO-0064):** Provider-backed **Suggested / found imagery** is not done if the UI only shows query copy + “Looking up…” while returning empty. Before review: smoke Suggested on a **signed-in** board with network; “stuck loading” or empty after optimistic copy = not shipped. Degraded empty must be explicit (auth / network / no candidates) — never look “alive” with zero results.
 

@@ -42,6 +42,29 @@ class PortabilityTests(unittest.TestCase):
         self.assertTrue(looks_like_principle("Nested board overflow needs h-dvh on chrome"))
         self.assertTrue(looks_like_principle("Reuse harvest: generalize packages/auth patterns"))
 
+    def test_product_ticket_and_vendor_incidents_are_not_principles(self):
+        self.assertFalse(
+            looks_like_principle(
+                "Do not put AFFI-0007-0010 in a sprint until Awin has approved a live corpus"
+            )
+        )
+        self.assertFalse(
+            looks_like_principle(
+                "SPRINT-03 originally still had Awin ingest and agent-loop tickets"
+            )
+        )
+        v = portability_verdict(
+            "Do not put AFFI-0007-0010 in a sprint until Awin has approved a live corpus"
+        )
+        self.assertFalse(v["portable"])
+
+    def test_long_incident_sentence_is_not_a_principle(self):
+        self.assertFalse(
+            looks_like_principle(
+                "Sprint review and retro lagged behind the two shipped tickets, so M0b planning could not start"
+            )
+        )
+
     def test_train_skills_empty_for_process(self):
         self.assertEqual(train_skills_for_kind("process", ["SO-002"]), [])
         self.assertIn("BE-001", train_skills_for_kind("backend", ["BE-001", "BE-004"]))

@@ -32,3 +32,22 @@ Nielsen heuristics (see `design_playbook.md`): visibility, match, control, consi
 WCAG 2.1 AA — load FE-004 + `ux-accessibility` external skill at implement.
 
 Run `./studio approve-design` only after contrast table is filled with calculated ratios.
+
+## Marketing scroll stories (LO-0118 / LO-0119)
+
+**Lock the motion model in the design spec before implement** — sticky stack vs scroll-scrub vs discrete chapters. Changing mid-flight burns review patience and produces laggy or “stuck” feels.
+
+DoD defaults for scroll-story / illustration tickets:
+
+| Default | Why |
+|---------|-----|
+| **Fixed illustration height** (shared px/`dvh` across stages) | Stage swaps must not reflow the page |
+| **No page-wide enter cascades** (`translateY` reveals on every section/frame) | One hero rise is enough; cascading rises make the page flip |
+| **Native 1:1 scroll on sticky pins** | Smooth-scroll lerp / scrub lag fights sticky and feels stuck |
+| **`prefers-reduced-motion`** | Opacity-only or static end pose |
+
+Name the chosen model in §2c of the design spec; do not invent a second model during IMPLEMENT.
+
+**Appear / throw-on DoD (LO-0123):** Design specs for scroll-enter illustrations must name **start state** (blur, opacity, scale) and **end tilt degrees** (and side rule) before IMPLEMENT — not “add a little tilt” alone.
+
+**Sticky motion smoke (LO-0125):** Before marking sticky-stage motion tickets done, prototype cover progress on **one** section (current sharp → next blur-in → previous fade) and record the cover-range px in the design spec.

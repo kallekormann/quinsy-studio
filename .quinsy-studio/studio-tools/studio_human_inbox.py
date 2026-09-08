@@ -27,8 +27,13 @@ HITL_REPLY_RE = re.compile(
     r"approve\s+gate\s*[012]|"
     r"./studio approve|"
     r"review\s+--approve|"
-    r"--approve\b"
+    r"--approve\b|"
+    r"\bapprove(?:d)?\s+(?:the\s+)?(?:review|amendment|design|gate|sprint)\b|"
+    r"\b(?:review|amendment|design|sprint)\s+(?:is\s+)?approved\b"
     r")"
+)
+SHORT_HITL_RE = re.compile(
+    r"(?i)^\s*(approved|looks good|lgtm|shipped looks good)\s*[.!]?\s*$"
 )
 
 
@@ -39,7 +44,7 @@ def should_queue_as_note(text: str) -> bool:
         return False
     if ABORT_RE.match(t):
         return True
-    if HITL_REPLY_RE.search(t):
+    if HITL_REPLY_RE.search(t) or SHORT_HITL_RE.match(t):
         return False
     return True
 

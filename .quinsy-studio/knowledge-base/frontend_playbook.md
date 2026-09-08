@@ -325,6 +325,7 @@ test('homepage loads', async ({ page }) => {
 3. **Do not treat variable `className={CONST}` as Tailwind-visible** unless the constant’s file is scanned **or** the full string also appears as a literal somewhere in `content`.
 4. **DoD for dock/position tickets:** DevTools Computed shows non-auto `right`/`left`, **or** confirm the utility exists in built CSS — not only that the TSX constant looks correct.
 5. **Belt:** optional `style={{ right: N, width: N }}` for critical floating rails so purge mistakes cannot silent-regress.
+6. **Tailwind v4 workspace packages (LO-0110 / LO-0113):** `@import "tailwindcss"` only scans the app that owns `globals.css`. Markup in a sibling package (`packages/ui`, bind-mounted `@org/ui`) is **not** in that graph. Public pages can ship copy, kit CSS variables on `<html>`, and still look like an unstyled document. **Do:** `@source` the package that contains the class strings (or list it in v3 `content`). **Don't:** mark a public UI ticket done on HTML/AC tests alone — confirm masthead/grid/hero utilities exist in computed CSS.
 
 ### Anti-pattern
 

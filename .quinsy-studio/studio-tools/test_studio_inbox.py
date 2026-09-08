@@ -33,6 +33,8 @@ class ClassifyTests(unittest.TestCase):
         self.assertFalse(should_queue_as_note("back on track"))
         self.assertFalse(should_queue_as_note("approve gate 1"))
         self.assertFalse(should_queue_as_note("./studio approve demo --gate 0"))
+        self.assertFalse(should_queue_as_note("approved"))
+        self.assertFalse(should_queue_as_note("approved the review"))
         self.assertFalse(should_queue_as_note(""))
 
 

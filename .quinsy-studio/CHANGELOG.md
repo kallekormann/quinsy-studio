@@ -1,5 +1,68 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-08 — Portability gate drops project-incident LOs (LO-0129, LO-0131)
+
+### Fixed
+
+- Harvest no longer opens HQ LOs from long incident sentences, product ticket IDs, or vendor-sprint bullets. Those go to `projects/<p>/docs/studio-learnings-local.md`.
+- Guard does not queue short HITL replies (`approved`, `looks good`) or review/amendment approve.
+
+### Changed
+
+- `process/learning-loop.md` — HQ vs project-local examples.
+- `process/human-in-the-loop.md` — last ticket `done` → HITL sprint-review immediately.
+
+### Closed
+
+- LO-0129, LO-0131 infused. LO-0127, LO-0128, LO-0130, LO-0132 dropped (project-local, not studio HQ).
+
+## 2026-09-08 — Polish-sprint capacity + motion smoke numbers (LO-0124–0126)
+
+### Changed
+
+- `process/human-in-the-loop.md` — intentional 2-ticket review-polish sprints OK under capacity warn (LO-0124).
+- `knowledge-base/design-science-playbook.md` — prototype one sticky section before done (LO-0125).
+- `knowledge-base/design_playbook.md` — put cover-range / throw-on numbers in the design spec (LO-0126).
+
+### Closed
+
+- LO-0124–LO-0126 infused.
+
+## 2026-09-08 — Sticky blur timing + appear throw-on DoD (LO-0120–0123)
+
+### Changed
+
+- `process/human-in-the-loop.md` — sticky stages: current stays sharp; incoming blur-in; outgoing fade; throw-on over tilt-only (LO-0120–0122).
+- `knowledge-base/design-science-playbook.md` — appear DoD requires start blur/opacity/scale + end tilt degrees (LO-0123).
+
+### Closed
+
+- LO-0120–LO-0123 infused.
+
+## 2026-09-08 — Marketing scroll-story motion DoD (LO-0116–0119)
+
+### Changed
+
+- `process/human-in-the-loop.md` — lock scroll-story motion model in design spec before IMPLEMENT (LO-0116).
+- `knowledge-base/design_playbook.md` — sticky stages: prefer blur crossfade over SoftCard chrome + scale-recess (LO-0117).
+- `knowledge-base/design-science-playbook.md` — fixed illustration height, no page-wide enter cascades, native sticky scroll (LO-0118, LO-0119).
+- Queued train TR-0009 (UX-002), TR-0010 (UX-003).
+
+### Closed
+
+- LO-0116–LO-0119 infused.
+
+## 2026-09-08 — Tailwind v4 `@source` workspace UI; PHPUnit isolation (LO-0110–0115)
+
+### Changed
+
+- `frontend_playbook.md` — Tailwind v4 `@import` does not scan sibling UI packages; `@source` (or v3 `content`) before marking public chrome done (LO-0110, LO-0113).
+- `backend_playbook.md` — do not `RefreshDatabase` / `migrate:fresh` the operator Compose Postgres from feature tests (LO-0112, LO-0115).
+
+### Closed
+
+- LO-0110, LO-0113 infused (scan). LO-0112, LO-0115 infused (test DB). LO-0111, LO-0114 closed as product-backlog (color swatch on initialize status), not HQ.
+
 ## 2026-09-07 — Reuse harvest skips token kits; Laravel serve --no-reload (LO-0100, LO-0101)
 
 ### Changed

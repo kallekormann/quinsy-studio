@@ -192,6 +192,12 @@ transition: opacity 0.2s ease-in-out;
 transform: translateZ(0); /* or will-change: transform */
 ```
 
+### Sticky scroll stages — avoid SoftCard decks (LO-0117)
+
+When a marketing scroll story advances stages (copy + illustration), **do not default to white SoftCard chrome + scale-recess stacking**. That reads as a card deck, not a continuous product story. Prefer **blur/opacity crossfade** (or bare stages on the page surface) while keeping sticky scroll motion. SoftCards stay for interactive pricing/FAQ — not for every scroll beat.
+
+**Throw-on / cover numbers in the spec (LO-0126):** Design specs must list concrete start values (blur radius, opacity, scale) and end tilt degrees — and sticky **cover-range px** when using progress-driven stages — so IMPLEMENT does not invent them.
+
 ---
 
 ## Accessibility (a11y)

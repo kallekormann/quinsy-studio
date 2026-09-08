@@ -526,3 +526,244 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Reuse harvest should record first-brand / client token kits as `local`, not auto-open promote LOs.
 - **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
 
+## LO-0110 — Tailwind v4 did not generate utilities for the shared magazine package, so local
+- **When:** 2026-09-08T07:30:36
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** package
+- **Infuse into:** `studio-library/packages/`
+- **Playbook:** `studio-library/library_registry.md`
+- **Signal:** library-gap
+- **Observation:** Tailwind v4 did not generate utilities for the shared magazine package, so localhost:13000 shipped copy without masthead/grid/16:9 chrome.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0111 — Initialize status showed `Initialized · #9a4a1c`; the hex is the kit primary but
+- **When:** 2026-09-08T07:30:36
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Initialize status showed `Initialized · #9a4a1c`; the hex is the kit primary but does not read as a color.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0112 — SchemaConstraintsTest `RefreshDatabase` ran against the live Compose Postgres an
+- **When:** 2026-09-08T07:30:36
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** database
+- **Infuse into:** `knowledge-base/local-first-sync-playbook.md`
+- **Playbook:** `knowledge-base/backend_playbook.md`
+- **Signal:** knowledge-gap
+- **Observation:** SchemaConstraintsTest `RefreshDatabase` ran against the live Compose Postgres and wiped the operator domain/kit; it had to be restored by hand.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0113 — Add Tailwind `@source` (or equivalent) so magazine chrome CSS is generated befor
+- **When:** 2026-09-08T07:30:36
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** layout
+- **Infuse into:** `knowledge-base/design_playbook.md`
+- **Playbook:** `knowledge-base/design_playbook.md`
+- **Signal:** design-gap
+- **Observation:** Add Tailwind `@source` (or equivalent) so magazine chrome CSS is generated before marking public UI done.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0114 — Show kit primary as a swatch, not raw hex in the status sentence
+- **When:** 2026-09-08T07:30:36
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Show kit primary as a swatch, not raw hex in the status sentence.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0115 — Point PHPUnit at a throwaway schema, or never RefreshDatabase the operator datab
+- **When:** 2026-09-08T07:30:36
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** database
+- **Infuse into:** `knowledge-base/local-first-sync-playbook.md`
+- **Playbook:** `knowledge-base/backend_playbook.md`
+- **Signal:** knowledge-gap
+- **Observation:** Point PHPUnit at a throwaway schema, or never RefreshDatabase the operator database.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0116 — Scroll story iterated too many times (discrete chapters → scrub lerp → 1:1 scrub
+- **When:** 2026-09-08T07:58:17
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Scroll story iterated too many times (discrete chapters → scrub lerp → 1:1 scrub → sticky cards) before the stuck/lag feel settled; cost user patience
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0117 — White card chrome + scale-recess still felt like a deck of SoftCards; blur cross
+- **When:** 2026-09-08T07:58:17
+- **Source:** `moody` (provenance only)
+- **Kind:** layout
+- **Infuse into:** `knowledge-base/design_playbook.md`
+- **Playbook:** `knowledge-base/design_playbook.md`
+- **Signal:** design-gap
+- **Observation:** White card chrome + scale-recess still felt like a deck of SoftCards; blur crossfade deferred to next sprint (FB-001 / MOOD-0635)
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0118 — For scroll-story tickets: lock motion model early (sticky stack vs scrub) in the
+- **When:** 2026-09-08T07:58:17
+- **Source:** `moody` (provenance only)
+- **Kind:** ux
+- **Infuse into:** `knowledge-base/design-science-playbook.md`
+- **Playbook:** `knowledge-base/design-science-playbook.md`
+- **Signal:** design-gap
+- **Observation:** For scroll-story tickets: lock motion model early (sticky stack vs scrub) in the design spec before implement churn
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0119 — Prefer fixed illustration height + no page-wide enter animations as DoD defaults
+- **When:** 2026-09-08T07:58:17
+- **Source:** `moody` (provenance only)
+- **Kind:** ux
+- **Infuse into:** `knowledge-base/design-science-playbook.md`
+- **Playbook:** `knowledge-base/design-science-playbook.md`
+- **Signal:** design-gap
+- **Observation:** Prefer fixed illustration height + no page-wide enter animations as DoD defaults on marketing motion tickets
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0120 — Blur stage timing was inverted vs intent: current slide blurred before the next
+- **When:** 2026-09-08T09:08:57
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Blur stage timing was inverted vs intent: current slide blurred before the next was on screen; incoming stayed sharp while sliding
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0121 — Built-around tilt-only (~5°) felt stiff — missing the throw-on (blur + opacity +
+- **When:** 2026-09-08T09:08:57
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Built-around tilt-only (~5°) felt stiff — missing the throw-on (blur + opacity + scale) that sells mood-board landings
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0122 — For sticky stage crossfades: drive opacity/blur from **relative sticky progress*
+- **When:** 2026-09-08T09:08:57
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** For sticky stage crossfades: drive opacity/blur from **relative sticky progress** (incoming clears as it pins; outgoing fades) — never mark current `outgoing` while next is still below the band
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0123 — Appear motion DoD: specify start state (blur/opacity/scale) and end tilt degrees
+- **When:** 2026-09-08T09:08:57
+- **Source:** `moody` (provenance only)
+- **Kind:** ux
+- **Infuse into:** `knowledge-base/design-science-playbook.md`
+- **Playbook:** `knowledge-base/design-science-playbook.md`
+- **Signal:** design-gap
+- **Observation:** Appear motion DoD: specify start state (blur/opacity/scale) and end tilt degrees in the design spec before IMPLEMENT
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0124 — Under-capacity warnings (2 tickets) are noisy but correct for intentional polish
+- **When:** 2026-09-08T09:37:36
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Under-capacity warnings (2 tickets) are noisy but correct for intentional polish sprints
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0125 — Prototype sticky-stage progress on one section before marking motion tickets don
+- **When:** 2026-09-08T09:37:36
+- **Source:** `moody` (provenance only)
+- **Kind:** ux
+- **Infuse into:** `knowledge-base/design-science-playbook.md`
+- **Playbook:** `knowledge-base/design-science-playbook.md`
+- **Signal:** design-gap
+- **Observation:** Prototype sticky-stage progress on one section before marking motion tickets done
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0126 — Keep cover-range / throw-on start values in the design spec so IMPLEMENT does no
+- **When:** 2026-09-08T09:37:36
+- **Source:** `moody` (provenance only)
+- **Kind:** design
+- **Infuse into:** `knowledge-base/design_playbook.md`
+- **Playbook:** `knowledge-base/design_playbook.md`
+- **Signal:** design-gap
+- **Observation:** Keep cover-range / throw-on start values in the design spec so IMPLEMENT does not guess degrees and opacity
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0129 — Guard must not queue HITL "approved" or review/amendment approve as inbox notes
+- **When:** 2026-09-08T10:01:31
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** tooling-gap
+- **Observation:** Guard queued HITL “approved” as inbox notes even though review/amendment approve must not be queued.
+- **Status:** infused — `studio_human_inbox.py` (LO-0129 done)
+
+## LO-0131 — Close UI sprints (review → reuse → retro) as soon as the last ticket is done
+- **When:** 2026-09-08T10:01:31
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Close UI sprints as soon as the last ticket is `done`, so the next milestone is not blocked on ceremony.
+- **Status:** infused — `process/human-in-the-loop.md` (LO-0131 done)
+
+
+## LO-0132 — Gate smoke needs unrestricted Playwright; Google Font DoD must cover specimens + ensureGoogleFontLink for product faces
+- **When:** 2026-09-08T11:59:48
+- **Source:** `moody` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/gates.md`
+- **Signal:** process-gap
+- **Observation:** Gate smoke needs unrestricted Playwright; Google Font DoD must cover specimens + ensureGoogleFontLink for product faces
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0133 — Gate smoke SEGV’d in the Cursor sandbox (Playwright Chromium); needed unrestrict
+- **When:** 2026-09-08T11:59:48
+- **Source:** `moody` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/gates.md`
+- **Signal:** tooling-gap
+- **Observation:** Gate smoke SEGV’d in the Cursor sandbox (Playwright Chromium); needed unrestricted env — burned retries on MOOD-0640
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0134 — Marketing specimens + presentation view still pulled Google Fonts after root lay
+- **When:** 2026-09-08T11:59:48
+- **Source:** `moody` (provenance only)
+- **Kind:** layout
+- **Infuse into:** `knowledge-base/design_playbook.md`
+- **Playbook:** `knowledge-base/design_playbook.md`
+- **Signal:** design-gap
+- **Observation:** Marketing specimens + presentation view still pulled Google Fonts after root layout was fixed — easy to miss without network assert
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0135 — `AuthLoginForm` consent is generic but project `ui/` promote is blocked; reuse l
+- **When:** 2026-09-08T11:59:48
+- **Source:** `moody` (provenance only)
+- **Kind:** package
+- **Infuse into:** `studio-library/packages/`
+- **Playbook:** `studio-library/library_registry.md`
+- **Signal:** library-gap
+- **Observation:** `AuthLoginForm` consent is generic but project `ui/` promote is blocked; reuse left an LO hint
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0136 — Run gate smoke with Playwright outside sandbox (or document `required_permission
+- **When:** 2026-09-08T11:59:48
+- **Source:** `moody` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/gates.md`
+- **Signal:** tooling-gap
+- **Observation:** Run gate smoke with Playwright outside sandbox (or document `required_permissions: all` for smoke) so legal/font tickets don’t eat 3 retries
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+

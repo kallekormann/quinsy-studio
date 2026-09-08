@@ -17,7 +17,7 @@ A new chat bubble is **not** a new assignment while work is in flight on **any**
 
 - `INBOX_ACK` — note is already queued. One-line ACK, then `./studio execute` (same ACTION). Do not implement the note.
 - `ABORT` — stop the current ticket.
-- Gate / design / review approval, or “back on track” — handle that HITL; do not queue.
+- Gate / design / review approval, “approved”, “looks good”, or “back on track” — handle that HITL; do not queue.
 
 This is core studio behavior, not a per-project rule. Sprint-review `FEEDBACK_ONLY` must not win while a ticket is still `implement`.
 

@@ -124,27 +124,35 @@ def rewrite_title_for_portability(title: str) -> str:
 
 
 def looks_like_principle(title: str) -> bool:
-    """Cheap check: reusable rule, not a one-board incident."""
+    """Reusable studio rule — not a one-project incident sentence."""
     t = (title or "").strip()
     if len(t) < 20:
         return False
     lower = t.lower()
-    # Incident-shaped: screenshot / ticket ids / named feedback
-    if re.search(r"\b(screenshot|ticket\s*#|fb-\d+|mood-\d+|lo-\d+)\b", lower):
+    # Incident-shaped: screenshots, product tickets, sprint numbers, inbox notes
+    if re.search(
+        r"\b(screenshot|ticket\s*#|fb-\d+|lo-\d+|n-\d{3}|"
+        r"sprint-\d+|[a-z]{3,5}-\d{4,})\b",
+        lower,
+    ):
         return False
     if re.search(r"\bboard\s+[a-f0-9]{8,}(-[a-f0-9]+)+\b", lower):
         return False
     if re.search(r"\bboard/[a-z0-9_-]{4,}\b", lower):
         return False
-    # Prefer verb / modal / structural learning cues
-    if re.search(
-        r"\b(must|never|always|should|when|before|after|adapters?|budget|"
-        r"degraded|map|prefer|reuse|generalize|promote|overflow|gate|smoke|"
-        r"cache|licence|license|pixel|provider|playbook|skill|needs|chrome)\b",
-        lower,
-    ):
-        return True
-    return len(t.split()) >= 5
+    if re.search(r"\b(awin|filament)\b", lower):
+        return False
+    # Require a rule cue — a long incident sentence is not a principle.
+    return bool(
+        re.search(
+            r"\b(must|never|always|should|when|before|after|as soon as|"
+            r"do not queue|must not|adapters?|budget|degraded|map|prefer|"
+            r"reuse|generalize|promote|overflow|gate|smoke|cache|licence|"
+            r"license|pixel|provider|playbook|skill|needs|chrome|hitl|"
+            r"inbox|queue)\b",
+            lower,
+        )
+    )
 def portability_verdict(
     title: str,
     observation: str = "",
