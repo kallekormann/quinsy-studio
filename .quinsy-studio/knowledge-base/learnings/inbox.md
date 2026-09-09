@@ -887,3 +887,53 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Article editor must be closed-library blocks + visitor-template preview, not a Word HTML field.
 - **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
 
+## LO-0149 — Domain Details section map shipped as a Repeater/card stack; operators cannot sc
+- **When:** 2026-09-09T10:47:04
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Domain Details section map shipped as a Repeater/card stack; operators cannot scan all sections as a list.
+- **Status:** infused — ordered named rows ship as a table/list (HITL LO-0149)
+
+## LO-0150 — Do not promote AFFI magazine `packages/ui` chrome into HQ studio-library
+- **When:** 2026-09-09T10:47:04
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** package
+- **Infuse into:** `studio-library/packages/`
+- **Playbook:** `studio-library/library_registry.md`
+- **Signal:** library-gap
+- **Observation:** Do not promote AFFI magazine `packages/ui` chrome into HQ studio-library.
+- **Status:** infused — project public chrome stays local at reuse (LO-0150)
+
+## LO-0151 — Tests and Vergleiche still 404: Public map rows appear even with no published la
+- **When:** 2026-09-09T12:06:06
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Tests and Vergleiche still 404: Public map rows appear even with no published landing or articles.
+- **Status:** infused — public nav lists only published, non-empty destinations (LO-0151)
+
+## LO-0152 — Domain Details still buries the map under metadata; tabs sit below the form; Pub
+- **When:** 2026-09-09T12:06:06
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Domain Details still buries the map under metadata; tabs sit below the form; Public checkbox is not centered.
+- **Status:** infused — operator edit tabs under actions; map first; one field per row (LO-0152)
+
+## LO-0153 — Keep AFFI `packages/ui` magazine chrome local (reuse recorded)
+- **When:** 2026-09-09T12:06:06
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** package
+- **Infuse into:** `studio-library/packages/`
+- **Playbook:** `studio-library/library_registry.md`
+- **Signal:** library-gap
+- **Observation:** Keep AFFI `packages/ui` magazine chrome local (reuse recorded).
+- **Status:** closed — duplicate of LO-0150
+

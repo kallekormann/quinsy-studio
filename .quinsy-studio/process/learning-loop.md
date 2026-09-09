@@ -40,6 +40,7 @@ Before an LO or train job is created:
 | Guard must not queue HITL “approved” / review approve | Do not sprint tickets AFFI-0007 until vendor X signs off |
 | Close UI sprints (review → reuse → retro) when the last ticket is done | This sprint still had vendor ingest tickets with no publisher site |
 | Shared CSS must be in the host stylesheet scan so chrome cannot ship unstyled | Keep magazine `@source` in this app’s public host DoD |
+| Public chrome must not list destinations that 404 (portable nav DoD) | Named section labels that 404 in this brand’s masthead |
 | Reuse harvest: generalize `packages/auth` | Copy this product’s first-brand token kit into the library |
 
 A five-word incident is **not** a principle. Retro bullets that name a ticket, sprint, vendor, or surface go local. Rewrite into a rule that the *next* product would still need, or do not open an LO.

@@ -112,3 +112,4 @@ When moving a ticket to `done`, studio compares files under registry watch paths
 - Changes under `projects/<name>/ui/` are **project-local** — no library promotion required
 - Warnings apply only if you changed `packages/` without logging promotion
 - **Reuse harvest** auto-opens an LO only for **registry generic packages** (`packages/auth`, billing, …). First-brand token kits (`theme-tokens`, `design-tokens`, `kit-*`), project `ui/`, and first-brand public chrome (`packages/ui`, magazine nav/legal layout, site types used only by that host) stay local — record `./studio reuse --record <path> local`. Do not `library promote` those paths. Do not copy client kits into `studio-library/`.
+- **LO-0150:** Host masthead, site nav, and page renderers in project `packages/ui` are the product face. Reuse records them `local`. Promoting them copies a host into HQ.

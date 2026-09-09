@@ -117,6 +117,12 @@ Sprint review feedback (once per theme)
 
 **Rule (LO-0148):** When the public site renders a **closed block library**, the operator editor must edit those **blocks** and preview the **visitor template** (iframe or equivalent). A Word/HTML field as the page source of truth is not done.
 
+**Rule (LO-0149):** Ordered collections of named rows (section maps, nav maps, similar admin lists) ship as a **table or list** (one row per item: label, keys, enable, reorder). A stacked card Repeater that hides the full set is not done.
+
+**Rule (LO-0151):** Public masthead/nav items must resolve to a **published, non-empty destination**. Do not list a map row (or equivalent) that 404s or has zero published items. Empty or unpublished sections stay off chrome.
+
+**Rule (LO-0152):** Operator record edit: the **tab bar sits under header actions** (not below the form); the **ordered list/map is the first tab**; remaining metadata is **one field per row** in a single column. A stacked checkbox that is not vertically centered in its table cell is not done.
+
 **Rule (LO-0032):** Tickets that ship an **on-screen brand guide / print preview** and a **PDF (or printable HTML) of the same surface** must include DoD that **screen and PDF share the same type stack** (hero/title + body). Serif on screen + sans in PDF (or reverse) is a WYSIWYG bug — not done. Prefer one shared CSS/token source for both renderers.
 | **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` — **LO-0025:** `--approve` is refused unless every current-sprint ticket is `done` |
 

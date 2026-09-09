@@ -20,6 +20,8 @@ Two ways in — both are implemented:
 
 Open **quinsy-studio** at the repo root (not `projects/<name>/` alone). Cursor rules: [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc). Claude Code: [`CLAUDE.md`](../CLAUDE.md). Gemini CLI: [`GEMINI.md`](../GEMINI.md).
 
+**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run. They are not a sandbox. In Cursor, Claude Code, Gemini, or any other agent IDE, the model can still see other `projects/` trees (and Shell always can). If you develop more than one product at a time in that window, agents can mix concepts or git the wrong repo. Use a dedicated chat or CLI process per product, pass that `<project>` on every `./studio` command, and never copy or commit another product into the active git.
+
 ```bash
 ./studio install                    # once after clone (Tailwind + Headless UI)
 ./studio verify-worlds
@@ -348,7 +350,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 4. Talk to the agent in plain language — e.g. *"Bootstrap my-project"*, *"Adopt my-project from this repo"*, *"Execute my-project"*, *"Approve gate 0 / 1 / 2"*. The agent runs `./studio` commands; you approve HITL stops.
 
-5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. `./studio focus <project>` hides sibling `projects/*` trees from the agent — do not copy or git another product into the active repo. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md).
+5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md). Focus is an assignment, not a sandbox (see [Start here](#start-here-tell-the-agent)).
 
 Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in-cursor) · [agent-context](process/agent-context.md)
 

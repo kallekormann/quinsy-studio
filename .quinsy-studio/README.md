@@ -318,7 +318,9 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 | Studio HQ | `.quinsy-studio/`, `AGENTS.md` | Studio repo root |
 | Project | `projects/<name>/` | **Inside** `projects/<name>/` (separate `.git`) |
 
-`projects/` and `intake/` are gitignored in the studio repo. After `./studio focus <project>`, sibling `projects/*` trees are hidden from the agent — do not copy or commit another product into the active git. Run `./studio verify-worlds` if unsure.
+`projects/` and `intake/` are gitignored in the studio repo. Run `./studio verify-worlds` if unsure.
+
+**Several products in one IDE:** `./studio focus` / `execute <project>` assign the loop; they do not sandbox the agent. Sibling `projects/` trees stay on disk, so parallel auto-pilots in the same window (Cursor, Claude Code, Gemini, or another agent IDE) can mix concepts or commit the wrong git. Prefer one chat or CLI process per product, always pass that `<project>` to `./studio`, and never copy another product into this repo.
 
 ### Agent vs. you
 

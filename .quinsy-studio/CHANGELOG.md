@@ -1,5 +1,43 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-09 — Public nav DoD + operator edit layout (LO-0151, LO-0152)
+
+### Changed
+
+- `process/human-in-the-loop.md` — public nav lists only published, non-empty destinations (LO-0151). Operator edit: tabs under header actions, ordered map first, one field per row (LO-0152).
+- `process/learning-loop.md` — named 404s in a brand masthead stay in the project-local log; the portable rule is empty-destination chrome.
+
+### Closed
+
+- LO-0151, LO-0152 infused.
+- LO-0153 closed as duplicate of LO-0150 (project public chrome stays local at reuse).
+
+## 2026-09-09 — Warn that IDE focus is not a product sandbox
+
+### Changed
+
+- `README.md` and `GETTING_STARTED.md` — several products in one workspace can still be seen by the agent; users keep one chat/CLI process per product.
+
+## 2026-09-09 — Ordered admin maps as lists (LO-0149)
+
+### Changed
+
+- `process/human-in-the-loop.md` — ordered named rows (section/nav maps) ship as a table/list, not a stacked card Repeater (LO-0149).
+
+### Closed
+
+- LO-0149 infused.
+
+## 2026-09-09 — Project public chrome stays local (LO-0150)
+
+### Changed
+
+- `studio-library/library_registry.md` — project `packages/ui` masthead/nav/page renderers stay `local` at reuse; do not promote host face into HQ (LO-0150).
+
+### Closed
+
+- LO-0150 infused.
+
 ## 2026-09-09 — Sibling project isolation (focus / guard / git)
 
 ### Added
