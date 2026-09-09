@@ -937,3 +937,13 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Keep AFFI `packages/ui` magazine chrome local (reuse recorded).
 - **Status:** closed — duplicate of LO-0150
 
+## LO-0154 — Next sprint: public article must serve saved `content_blocks` (not a stale ISR f
+- **When:** 2026-09-09T13:54:09
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Next sprint: public article must serve saved `content_blocks` (not a stale ISR fetch or the Im Sucher fixture) after operator Save.
+- **Status:** infused — public document route serves operator Save; no silent fixture fallback (LO-0154)
+

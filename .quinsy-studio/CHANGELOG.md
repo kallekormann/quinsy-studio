@@ -1,5 +1,15 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-09 — Public document matches operator Save (LO-0154)
+
+### Changed
+
+- `process/human-in-the-loop.md` — published Save must be what the public document route serves; no silent fixture fallback when a live record id exists (LO-0154).
+
+### Closed
+
+- LO-0154 infused.
+
 ## 2026-09-09 — Public nav DoD + operator edit layout (LO-0151, LO-0152)
 
 ### Changed
