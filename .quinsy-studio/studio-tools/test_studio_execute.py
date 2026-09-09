@@ -475,6 +475,7 @@ class DecideTests(unittest.TestCase):
             loop=True,
         )
         text = format_execute_step("demo", step)
+        self.assertIn("ISOLATE:", text)
         self.assertIn("MID-CHAT:", text)
         self.assertIn("./studio guard demo", text)
         hitl = ExecuteStep(kind="HITL", reason="gate-1", command="./studio approve demo --gate 1", loop=False)

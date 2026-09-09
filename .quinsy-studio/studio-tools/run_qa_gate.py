@@ -97,13 +97,13 @@ def get_checks_for_level(level: int) -> List[QACheck]:
         checks.extend([
             QACheck(
                 name="eslint",
-                command="npx eslint . --max-warnings 0",
+                command="npx --no-install eslint . --max-warnings 0",
                 description="ESLint (no warnings)",
                 timeout=60
             ),
             QACheck(
                 name="prettier",
-                command="npx prettier --check .",
+                command="npx --no-install prettier --check .",
                 description="Prettier formatting",
                 timeout=30
             ),
@@ -114,7 +114,7 @@ def get_checks_for_level(level: int) -> List[QACheck]:
         checks.extend([
             QACheck(
                 name="typescript",
-                command="npx tsc --noEmit",
+                command="npx --no-install tsc --noEmit",
                 description="TypeScript type check",
                 timeout=120
             ),
@@ -125,7 +125,7 @@ def get_checks_for_level(level: int) -> List[QACheck]:
         checks.extend([
             QACheck(
                 name="unit_tests",
-                command="npx vitest run --reporter=verbose",
+                command="npx --no-install vitest run --reporter=verbose",
                 description="Unit tests (Vitest)",
                 timeout=120
             ),
@@ -389,12 +389,16 @@ def check_smoke_routes(project_dir: Path) -> QAResult:
     start_time = datetime.now()
 
     # Agent / CI sandboxes may SIGSEGV Chromium (kill EPERM). Opt out explicitly —
-    # never silent. Human local machines should leave this unset.
+    # never silent. Before marking tickets done, re-run smoke outside the sandbox
+    # (LO-0071 / LO-0132). Human local machines should leave this unset.
     if os.environ.get("QUINSY_SKIP_SMOKE", "").strip() in ("1", "true", "yes"):
         return QAResult(
             check="smoke_routes",
             passed=True,
-            output="Skipped — QUINSY_SKIP_SMOKE set (Chromium unavailable in this environment)",
+            output=(
+                "Skipped — QUINSY_SKIP_SMOKE set (Chromium unavailable in this environment). "
+                "Re-run smoke unrestricted before ./studio move … done."
+            ),
             duration=0,
         )
 

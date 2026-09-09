@@ -32,7 +32,7 @@ Prefer (1): UI posts a message → main thread fetches → UI renders result.
 Before `./studio move … done`:
 
 1. Load the plugin in **Figma desktop** (or documented host).
-2. Click the real primary CTA (e.g. Login with Moody) — browser OAuth opens.
+2. Click the real primary CTA (e.g. Login with the product) — browser OAuth opens.
 3. Confirm no CORS / CSP failure on `plugin-auth` / `boards` in the console (request host is `localhost`, not `127.0.0.1`).
 4. Board list (or equivalent) loads after login.
 5. Unit tests alone are insufficient.

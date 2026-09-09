@@ -48,9 +48,9 @@ Before marking capture/toggle tickets done:
 6. **Inbox path (LO-0013):** “inbox saved” in the extension console is **not** enough. Either:
    - the capture appears in the **web app board Inbox** after sync (cloud `POST` / API), or
    - the ticket explicitly ships Sync UX + docs that local IDB ≠ board Inbox until sync.
-7. **Cloud sync URL probe (LO-0042):** when the extension tries multiple localhost ports (stale `VITE_*` / `NEXT_PUBLIC_APP_URL`), **do not abort** on plain-text wrong-app responses such as `Server action not found.` (another Next app on `:3000`). Keep probing until the product API returns **Moody-shaped JSON** (`{ error }` / `{ ok, item }`) or a real auth/validation rejection. Stop only on product JSON auth/config errors — not on sibling apps’ 404 text. Align baked app URL with the live `npm run dev` port after rebuild + Load unpacked.
+7. **Cloud sync URL probe (LO-0042):** when the extension tries multiple localhost ports (stale `VITE_*` / `NEXT_PUBLIC_APP_URL`), **do not abort** on plain-text wrong-app responses such as `Server action not found.` (another Next app on `:3000`). Keep probing until the product API returns **product-shaped JSON** (`{ error }` / `{ ok, item }`) or a real auth/validation rejection. Stop only on product JSON auth/config errors — not on sibling apps’ 404 text. Align baked app URL with the live `npm run dev` port after rebuild + Load unpacked.
 
 ## Related
 
 - Sprint review brief must point reviewers at live app + extension `dist/` — see `sprint_hitl.py` review template (LO-0012).
-- Capture → board Inbox sync is a product ticket when missing (e.g. Moody MOOD-0182 pattern).
+- Capture → board Inbox sync is a product ticket when missing (pattern: companion capture → authenticated inbox).

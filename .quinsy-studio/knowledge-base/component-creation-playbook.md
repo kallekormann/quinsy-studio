@@ -9,6 +9,7 @@ Before designing or implementing a new control or chrome pattern:
 1. **Reuse** — `./studio library suggest` / existing project `ui/` components. Prefer mounting the real composition over copying classes.
 2. **Project component** — if the same interaction appears (or will appear) on multiple surfaces in one product, extract a reusable component in the project first — do not ship parallel one-offs.
 3. **Studio library** — if the pattern is product-agnostic (tokens + props, no brand copy), add or promote under `.quinsy-studio/studio-library/` and register in `manifest.json`.
+   - **LO-0135:** Project-local `ui/` copies cannot promote into studio-library via `./studio library promote`. When a project improves a generic form (e.g. legal-consent checkbox on signup), either edit `.quinsy-studio/studio-library/` directly or open a studio LO — do not expect promote from `projects/<p>/ui/`.
 
 **Example organism:** right-rail **icon navigation + peer detail panel** (`studio-rail`: `StudioRail` + `StudioPanel` / `StudioDock`). Dense SaaS / canvas tools often need this; treat it as a shared chrome pattern, not page-local markup.
 

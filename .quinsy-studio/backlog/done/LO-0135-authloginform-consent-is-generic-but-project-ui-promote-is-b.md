@@ -2,7 +2,7 @@
 id: LO-0135
 title: `AuthLoginForm` consent is generic but project `ui/` promote is blocked; reuse l
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

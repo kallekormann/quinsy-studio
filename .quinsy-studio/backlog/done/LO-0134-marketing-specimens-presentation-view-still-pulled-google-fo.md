@@ -2,7 +2,7 @@
 id: LO-0134
 title: Marketing specimens + presentation view still pulled Google Fonts after root lay
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

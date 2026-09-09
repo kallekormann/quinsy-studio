@@ -1061,6 +1061,9 @@ def decide_next_action(project: str) -> ExecuteStep:
 def format_execute_step(project: str, step: ExecuteStep) -> str:
     lines = [f"EXECUTE {project}"]
     looping = step.kind != "HITL" and step.loop
+    lines.append(
+        f"  ISOLATE: only projects/{project}/ — do not Read, copy, or git sibling projects/"
+    )
     if looping:
         lines.append(
             f'  MID-CHAT: ./studio guard {project} "<verbatim user message>" → INBOX_ACK '

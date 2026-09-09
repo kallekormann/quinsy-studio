@@ -45,6 +45,12 @@ When implementing Try/PLG entry or UpgradeModal / export paywalls, acceptance **
 2. **Blocking vs soft** — “paywall at export” means the UpgradeModal (or equivalent) **opens** at that moment for free tier; a footer link alone fails review.
 3. **What still works free** — e.g. password share stays free while raster branding is monetized.
 
+### E. Soft-path to Account / plan (LO-0142 / LO-0143)
+When marketing or paywall soft-paths defer checkout to Settings Account (or plan tab):
+1. **URL alone is not done** — Free users must see Free plan + Upgrade CTA in the first Account viewport, **or** the upgrade dialog must auto-open (`?upgrade=1`).
+2. **Click-to-open only fails soft-path intent** — if the journey was “upgrade now,” do not require hunting an unmarked control.
+3. **Assert before `move … done`** — free-tier unit/UI/smoke (see `process/gates.md` LO-0143). Pattern: `studio-library/ui/docs/patterns/upgrade-soft-path.md`.
+
 ---
 *   **Code Structure Example:**
     ```typescript

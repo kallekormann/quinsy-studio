@@ -767,3 +767,123 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Run gate smoke with Playwright outside sandbox (or document `required_permissions: all` for smoke) so legal/font tickets don’t eat 3 retries
 - **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
 
+## LO-0137 — Gate 5 Prettier was sensitive to a stray npx prettier vs project prettier; smoke
+- **When:** 2026-09-08T12:24:06
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/gates.md`
+- **Signal:** tooling-gap
+- **Observation:** Gate 5 Prettier was sensitive to a stray npx prettier vs project prettier; smoke still needs unrestricted Playwright.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0138 — Keep Im Sucher chrome in-project (reuse recorded local); do not promote magazine
+- **When:** 2026-09-08T12:24:06
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** package
+- **Infuse into:** `studio-library/packages/`
+- **Playbook:** `studio-library/library_registry.md`
+- **Signal:** library-gap
+- **Observation:** Keep Im Sucher chrome in-project (reuse recorded local); do not promote magazine packages.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0139 — Legal disclosure tickets must include network assert on anonymous share if Privacy forbids pre-auth font CDNs
+- **When:** 2026-09-08T12:33:34
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Legal disclosure tickets must include network assert on anonymous share if Privacy forbids pre-auth font CDNs
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0140 — When Privacy claims “CDN only after signup,” add a smoke/network assert on `/sha
+- **When:** 2026-09-08T12:33:34
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** When Privacy claims “CDN only after signup,” add a smoke/network assert on `/share/…` anonymous presentation in the same sprint as the copy
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0141 — AFFI home should be the domains list when a host exists
+- **When:** 2026-09-08T12:47:54
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** AFFI home should be the domains list when a host exists.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0142 — Soft-path to Account should either auto-open UpgradeModal (`?upgrade=1`) or land
+- **When:** 2026-09-08T13:38:01
+- **Source:** `moody` (provenance only)
+- **Kind:** ui-component
+- **Infuse into:** `studio-library/ui/components/`
+- **Playbook:** `knowledge-base/atomic-design-playbook.md`
+- **Signal:** library-gap
+- **Observation:** Soft-path to Account should either auto-open UpgradeModal (`?upgrade=1`) or land scrolled to a clear Free + Upgrade row
+- **Status:** infused — pattern/gates/skills + CHANGELOG; LO moved to backlog/done/
+
+## LO-0143 — Add a free-tier Settings Account smoke (or unit/UI assert) before calling soft-p
+- **When:** 2026-09-08T13:38:01
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Add a free-tier Settings Account smoke (or unit/UI assert) before calling soft-path “done”
+- **Status:** infused — pattern/gates/skills + CHANGELOG; LO moved to backlog/done/
+
+## LO-0144 — Sprint review lingered while AM-002 (console) and writer-skill work were still o
+- **When:** 2026-09-08T14:29:45
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Sprint review lingered while AM-002 (console) and writer-skill work were still only feedback.
+- **Status:** infused — process HITL/lifecycle + CHANGELOG; LO moved to backlog/done/
+
+## LO-0145 — Never treat phpunit.xml `force` as enough inside Compose; TestCase must pin `aff
+- **When:** 2026-09-08T14:29:45
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Never treat phpunit.xml `force` as enough inside Compose; TestCase must pin `affi_phpunit`.
+- **Status:** infused — process/gates + backend_playbook + CHANGELOG; LO moved to backlog/done/
+
+## LO-0146 — Operator still has to paste article ideas in chat; AFFI has no ideation queue (A
+- **When:** 2026-09-08T18:47:17
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** backend
+- **Infuse into:** `knowledge-base/backend_playbook.md`
+- **Playbook:** `knowledge-base/backend_playbook.md`
+- **Signal:** knowledge-gap
+- **Observation:** Operator still has to paste article ideas in chat; AFFI has no ideation queue (AFFI-0035).
+- **Status:** infused — backend_playbook + BE-001/BE-004 toolbox + CHANGELOG; LO moved to backlog/done/
+
+## LO-0147 — Next corpus work uses the shared idea queue (Tests/Vergleiche + remaining Ratgeb
+- **When:** 2026-09-09T08:37:33
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** backend
+- **Infuse into:** `knowledge-base/backend_playbook.md`
+- **Playbook:** `knowledge-base/backend_playbook.md`
+- **Signal:** knowledge-gap
+- **Observation:** Next corpus work uses the shared idea queue (Tests/Vergleiche + remaining Ratgeber), not another silent rewrite of the compiled fifteen.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0148 — Article editor must be closed-library blocks + visitor-template preview, not a W
+- **When:** 2026-09-09T08:37:33
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Article editor must be closed-library blocks + visitor-template preview, not a Word HTML field.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+

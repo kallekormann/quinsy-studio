@@ -279,7 +279,7 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 ### Flow
 
 1. Human tries shipped work (`./studio review <project>`)
-2. Approve or reject sprint (`./studio review --approve` / `--reject`)
+2. Approve or reject sprint (`./studio review --approve` / `--reject`) — do not linger for work that is still only feedback (LO-0144)
 3. Capture feedback (`./studio feedback`) — not direct tickets
 4. Clarify + ticket from feedback (`./studio clarify` → `./studio ticket --from-feedback`)
 5. Run the sprint retrospective (`./studio retro <project>`)

@@ -37,6 +37,7 @@ Active project: `.quinsy-studio/.active-project.json`
 
 - **Studio HQ** (this repo): `.quinsy-studio/`, LO-* backlog — commit here only for studio work
 - **Project**: `projects/<name>/` — **separate git repo**; never `git add projects/` from studio root. Existing apps: `./studio adopt` (do not `init` over source).
+- **Siblings:** after `./studio focus <project>`, other `projects/*` trees are out of bounds. Do not Read, copy, or git them into the active repo. Switch products with `./studio focus <other>` (new session).
 
 ## Before implementing anything
 

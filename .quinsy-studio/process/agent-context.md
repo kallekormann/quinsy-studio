@@ -24,6 +24,17 @@ Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact car
 
 Active project is stored in `.quinsy-studio/.active-project.json`.
 
+## Sibling isolation
+
+The IDE workspace is Studio HQ, so every `projects/<name>/` tree is on disk. After `./studio focus <project>` (also reapplied on `execute` and `verify-worlds`):
+
+- Sibling folders are listed in a local `.cursorignore` so Read/Grep/Glob should not see them
+- A generated Cursor rule names the **only** allowed product tree
+- Guard returns `cross_project` if the request names a sibling folder
+- Project `pre-commit` refuses a wrong git toplevel and staged `projects/` symlinks
+
+Do not use Shell to `ls`/`cp`/`git` a sibling. Switch products with `./studio focus <other>` in a new session — never merge two product gits.
+
 ## Three context layers
 
 | Layer | Scope | Examples |
@@ -53,6 +64,7 @@ If the previous turn was execute-loop work, `./studio guard` is still the first 
 |---------|--------------|
 | `inbox_ack` | Note queued. ACK one line. Resume `./studio execute` (same ACTION). Do not implement the note. |
 | `abort` | Stop the current ticket. Drain. Wait. |
+| `cross_project` | Request names a sibling `projects/` folder — even mid-execute. Do not Read/copy/git it. `./studio focus` to switch. Do not queue as an inbox note. |
 | `in_scope` | Proceed; tie work to ticket ID if post-gate-2 |
 | `needs_ticket` | Do **not** implement — create `./studio ticket` or ask user |
 | `pre_impl` | Redirect to current gate (`./studio resume`) |

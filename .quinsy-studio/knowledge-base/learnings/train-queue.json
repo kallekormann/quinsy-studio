@@ -89,6 +89,46 @@
       "status": "open",
       "created": "2026-09-08T12:00:09",
       "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0010",
+      "skill_id": "SO-001",
+      "topic": "QA gate must use npx --no-install prettier so it cannot download a stray formatter",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-08T12:25:49",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0011",
+      "skill_id": "SO-001",
+      "topic": "soft-path Settings Account must verify Free+Upgrade or auto-open modal",
+      "source": "mistake",
+      "observation": "",
+      "status": "done",
+      "created": "2026-09-08T13:43:46",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0012",
+      "skill_id": "UX-005",
+      "topic": "soft-path to Account must show Free+Upgrade or auto-open upgrade dialog",
+      "source": "mistake",
+      "observation": "",
+      "status": "done",
+      "created": "2026-09-08T13:45:05",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0013",
+      "skill_id": "FE-002",
+      "topic": "when soft-path defers checkout must land on plan tab with free badge and upgrade CTA or auto-open",
+      "source": "mistake",
+      "observation": "",
+      "status": "done",
+      "created": "2026-09-08T13:48:12",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
     }
   ]
 }

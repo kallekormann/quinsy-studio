@@ -55,9 +55,12 @@ cd projects/<name> && git remote -v   # → project repo
 
 1. **Never** `git add projects/` from the studio repo root
 2. **Never** commit project code into quinsy-studio
-3. Project git operations run **inside** `projects/<name>/`
-4. Studio tooling changes live in `.quinsy-studio/` only
-5. Studio docs/tools use `<project>` placeholders — see [studio-abstraction.md](studio-abstraction.md)
+3. Project git operations run **inside** `projects/<name>/` (`git -C projects/<name> …`). The git toplevel must be that folder — never the studio root, never a sibling project
+4. **Never** Read, copy, merge, or commit another `projects/<sibling>/` tree into the active project
+5. Studio tooling changes live in `.quinsy-studio/` only
+6. Studio docs/tools use `<project>` placeholders — see [studio-abstraction.md](studio-abstraction.md)
+
+`./studio focus <project>` (and `./studio isolate <project>`) rewrites a local `.cursorignore` block so sibling project folders are hidden from the IDE agent, and installs a project `pre-commit` hook that refuses escaped paths / symlinks into `projects/`. Those files are gitignored in Studio HQ.
 
 ## .gitignore (studio root)
 

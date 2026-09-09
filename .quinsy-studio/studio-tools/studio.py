@@ -24,7 +24,8 @@ Commands:
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
   ./studio health <project>                      Sprint state-graph check
-  ./studio focus <project>                       Set active project + scope banner
+  ./studio focus <project>                       Set active project + isolate siblings
+  ./studio isolate <project>                     Hide sibling projects/ from the agent
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
   ./studio verify-abstraction                    Scan studio HQ for project-name leaks
@@ -728,6 +729,9 @@ class StudioOrchestrator:
         if not (PROJECTS_DIR / project).exists():
             print(f"\n  ❌ Project '{project}' not found.")
             return False
+        from studio_isolation import apply_project_isolation
+
+        apply_project_isolation(project)
         status = load_status(project)
         step = decide_next_action(project)
         if as_json:
@@ -906,9 +910,37 @@ class StudioOrchestrator:
         from studio_settings import reset_usage
 
         reset_usage(project)
+        from studio_isolation import apply_project_isolation
+
+        siblings, _ignore, _rule = apply_project_isolation(project)
         print_header(f"FOCUS: {project}")
         print("\n" + build_focus_report(project, status))
+        if siblings:
+            print(f"\n  ISOLATION: sibling trees hidden from the agent: {', '.join(siblings)}")
+            print("  Do not Read, copy, or git those folders into this project.")
+        else:
+            print("\n  ISOLATION: no sibling projects under projects/")
         print(f"\n  Active context saved: .quinsy-studio/.active-project.json")
+        return True
+
+    def cmd_isolate(self, project: str):
+        """Hide sibling project trees from the IDE agent (also runs on focus)."""
+        project_dir = PROJECTS_DIR / project
+        if not project_dir.exists():
+            print(f"\n  ❌ Project '{project}' not found.")
+            return False
+        from studio_isolation import apply_project_isolation
+
+        siblings, ignore, rule = apply_project_isolation(project)
+        print_header(f"ISOLATE: {project}")
+        print(f"\n  Active tree: projects/{project}/")
+        if siblings:
+            print(f"  Hidden: {', '.join('projects/' + s + '/' for s in siblings)}")
+        else:
+            print("  Hidden: (no siblings)")
+        print(f"  Cursor ignore: {ignore}")
+        print(f"  Agent rule:    {rule}")
+        print("  Git: only `git -C projects/{p} …` — never add a sibling into this repo.".format(p=project))
         return True
 
     def cmd_guard(self, project: str, request: str):
@@ -926,6 +958,7 @@ class StudioOrchestrator:
             "autonomous_sprint": "🤖",
             "feedback_only": "📝",
             "studio_meta": "🏢",
+            "cross_project": "🚧",
             "unclear": "❓",
         }
         print_header(f"GUARD: {project}")
@@ -933,6 +966,8 @@ class StudioOrchestrator:
         print(f"  {message}")
         if verdict == "inbox_ack":
             print(f"  Continue the current ACTION — do not start a new task.")
+        if verdict == "cross_project":
+            print("  Stay in this project tree. Switch products with ./studio focus <other>.")
         return verdict in {"in_scope", "inbox_ack"}
 
     def cmd_verify_worlds(self):
@@ -3092,7 +3127,8 @@ Commands:
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
   ./studio health <project>                      Sprint state-graph check
-  ./studio focus <project>                       Set active project + scope banner
+  ./studio focus <project>                       Set active project + isolate siblings
+  ./studio isolate <project>                     Hide sibling projects/ from the agent
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
   ./studio verify-abstraction                    Scan studio HQ for project-name leaks
@@ -3282,6 +3318,9 @@ def main():
 
     elif command == "focus" and len(args) >= 1:
         orchestrator.cmd_focus(args[0])
+
+    elif command == "isolate" and len(args) >= 1:
+        orchestrator.cmd_isolate(args[0])
 
     elif command == "guard" and len(args) >= 2:
         orchestrator.cmd_guard(args[0], " ".join(args[1:]))

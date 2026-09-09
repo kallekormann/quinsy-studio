@@ -118,6 +118,7 @@ def build_focus_report(project: str, status: Dict) -> str:
         "",
         "Scope rules:",
         "  • Work only in projects/{p}/ unless improving .quinsy-studio/ (LO-* tickets)".format(p=project),
+        "  • Sibling projects/ folders are opaque — never Read, copy, or git them into this repo",
         "  • No code without a backlog ticket (after gate 2)",
         "  • Off-sprint work → propose ticket or ./studio learn for studio improvements",
         "",
@@ -206,7 +207,7 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     Returns (verdict, message).
     Core mid-execute rule (every project): if work is in flight, queue the
     verbatim chat as an inbox note and tell the agent to resume ACTION.
-    verdict: inbox_ack | abort | in_scope | needs_ticket | pre_impl | sprint_review |
+    verdict: inbox_ack | abort | cross_project | in_scope | needs_ticket | pre_impl | sprint_review |
              sprint_closed | autonomous_sprint | feedback_only | studio_meta | unclear
     """
     from studio_human_inbox import ABORT_RE, should_queue_as_note
@@ -218,6 +219,18 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     in_flight = implementation_in_flight(project, status)
     if in_flight and ABORT_RE.match(request or ""):
         return _ack_inbox(project, status, request, abort=True)
+
+    from studio_isolation import request_names_sibling
+
+    sibling = request_names_sibling(request, project)
+    if sibling:
+        return (
+            "cross_project",
+            f"Request names sibling project '{sibling}'. Stay in projects/{project}/. "
+            f"Do not Read, copy, or git '{sibling}' into this repo. "
+            f"Switch with ./studio focus {sibling} in a separate session.",
+        )
+
     if in_flight and should_queue_as_note(request):
         return _ack_inbox(project, status, request, abort=False)
 
@@ -387,6 +400,14 @@ def verify_worlds() -> Tuple[bool, List[str]]:
                 )
                 if nested.stdout.strip():
                     issues.append(f"Studio index still tracks projects/{child.name}/")
+
+    from studio_isolation import apply_project_isolation, project_git_isolation_issues
+
+    active = load_active_project()
+    name = (active or {}).get("project") if isinstance(active, dict) else None
+    if name and (PROJECTS_DIR / name).is_dir():
+        apply_project_isolation(name)
+        issues.extend(project_git_isolation_issues(name))
 
     return len(issues) == 0, issues
 

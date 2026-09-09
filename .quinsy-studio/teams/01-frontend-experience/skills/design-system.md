@@ -136,6 +136,15 @@ How to promote?
 4. Add a CHANGELOG.md entry
 ```
 
+### 7. Upgrade soft-path (LO-0142, TR-0013)
+
+When a soft-path defers checkout to Settings/Account:
+
+- Land on the real plan tab — not `#billing` or a dead hash.
+- Free-tier first viewport: plan badge + primary Upgrade CTA, **or** auto-open upgrade dialog via query (`?upgrade=1` / `?tab=account&upgrade=1`).
+- Do not mark done because the URL parses if Free users still see Pro-only chrome or no Upgrade control.
+- Pattern: [upgrade-soft-path.md](../../../studio-library/ui/docs/patterns/upgrade-soft-path.md). Gate DoD: [gates.md](../../../process/gates.md) LO-0143.
+
 ---
 
 ## Anti-patterns

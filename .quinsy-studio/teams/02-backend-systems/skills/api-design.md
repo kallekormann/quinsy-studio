@@ -188,6 +188,15 @@ Limits:
 
 ---
 
+## Toolbox (trained — LO-0146)
+
+### Operator idea queues
+
+- When operators must feed a writer or synthesis loop, the idea queue is a **product admin resource**, not IDE chat.
+- Markdown briefing files may seed a first corpus; they are not the ongoing operator inbox. Ticket the admin surface; do not invent topics from chat mid-sprint.
+
+---
+
 ## References
 
 - `.quinsy-studio/process/adr-policy.md` — ADR for API decisions

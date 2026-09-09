@@ -61,7 +61,13 @@ Agents: read project `package.json` scripts and `.env.local` before suggesting `
 
 **Laravel `artisan serve` in Docker:** `ServeCommand` strips most process env from the PHP child (Compose `DB_*`, vendor base URLs, session driver) unless you pass `--no-reload`. CLI `php artisan` in the same container still sees full env, so tinker can look healthy while HTTP 500s. Use `php artisan serve --host=0.0.0.0 --port=8000 --no-reload`, or `php -S` which inherits the container environment.
 
-**PHPUnit vs operator database (LO-0112 / LO-0115):** `RefreshDatabase` / `migrate:fresh` against the Compose tenant Postgres wipes live domains, kits, and seed. Feature tests that need Postgres must use a throwaway database/schema, or transactions that cannot run `migrate:fresh` on the operator volume. Do not treat a green constraint test as permission to reset the human’s local stack.
+**PHPUnit vs operator database (LO-0112 / LO-0115 / LO-0145):** `RefreshDatabase` / `migrate:fresh` against the Compose tenant Postgres wipes live domains, kits, and seed. Feature tests that need Postgres must use a throwaway database/schema, or transactions that cannot run `migrate:fresh` on the operator volume. Do not treat a green constraint test as permission to reset the human’s local stack. **`phpunit.xml` `force` is not enough** when Compose injects `DB_*` into the PHP process — the test `TestCase` must pin the isolated test database name in process env **before** the application boots.
+
+**Filament operator home (LO-0141):** set panel `homeUrl` to the primary resource **index** (the list of existing records), not an empty dashboard. Header `StatsOverviewWidget`s are lazy by default — set `protected static bool $isLazy = false` so counts render on first paint, not after `x-intersect`.
+
+**Operator idea queues (LO-0146):** If operators must feed a writer or synthesis loop, the idea queue is a **product admin surface**, not IDE chat. Markdown briefing files can seed a first corpus; they are not the ongoing operator inbox.
+
+**Seeded corpus vs next wave (LO-0147):** A first compiled or seeded set of pages is not the ongoing backlog. Later corpus work consumes the **shared idea queue** (or admin briefs), not a silent rewrite of the seeded titles.
 
 ---
 

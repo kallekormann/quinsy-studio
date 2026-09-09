@@ -78,6 +78,7 @@ Unstyled re-exports. Style with Tailwind + project tokens.
 |---------|-----|
 | Transitions | [patterns/transitions.md](./patterns/transitions.md) |
 | Forms | [patterns/forms.md](./patterns/forms.md) |
+| Upgrade soft-path | [patterns/upgrade-soft-path.md](./patterns/upgrade-soft-path.md) |
 | Dark mode | [patterns/dark-mode.md](./patterns/dark-mode.md) |
 
 ## Enforcement (tickets)

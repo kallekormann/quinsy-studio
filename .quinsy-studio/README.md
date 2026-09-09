@@ -318,7 +318,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 | Studio HQ | `.quinsy-studio/`, `AGENTS.md` | Studio repo root |
 | Project | `projects/<name>/` | **Inside** `projects/<name>/` (separate `.git`) |
 
-`projects/` and `intake/` are gitignored in the studio repo. Run `./studio verify-worlds` if unsure.
+`projects/` and `intake/` are gitignored in the studio repo. After `./studio focus <project>`, sibling `projects/*` trees are hidden from the agent — do not copy or commit another product into the active git. Run `./studio verify-worlds` if unsure.
 
 ### Agent vs. you
 

@@ -57,6 +57,8 @@ While sprint tickets are not all `done`:
 
 **Enforced by CLI:** `./studio move … implement` is blocked when **UI** sprint review is pending or the sprint is closed pending retro. Scope/groom `--approve` is not required. When the last sprint ticket is `done`, execute returns **HITL sprint-review immediately** — do not start the next milestone until review → reuse → retro have run.
 
+**Rule (LO-0144):** Close **this** sprint as soon as its tickets are `done` (UI review or backend inform → reuse → retro). Do not keep review open because a later amendment, operator console, or unwritten skill is still only feedback. Capture that work with `./studio feedback` → clarify → ticket for a later sprint.
+
 **Execute loop:** `./studio execute <project>` returns one action. The agent runs `NEXT`, then execute again, until `HITL`. `INFORM` still loops. Gate failures write `sprints/SPRINT-NN/debug/<ticket>.md` and retry up to 3 times, then `blocked` + optional `gate-fail` LO **and** a train job. `move … done` requires a receipt (`./studio receipt`) plus a fresh level-5 gate.
 
 ### Post gate 2 — before first sprint
@@ -113,10 +115,14 @@ Sprint review feedback (once per theme)
 
 **Rule (LO-0040):** Before inventing parallel UI chrome, apply the **component reuse ladder**: (1) reuse an existing component, (2) else extract a **project-scoped** reusable component shared across surfaces, (3) else promote/author in **studio-library** when cross-project generic. Right-rail **icon nav + detail panel** (`StudioDock` / `studio-rail`) must be mounted as that organism — not a one-off lookalike. LO titles and infusions stay **general** (no single-surface copy as the primary rule); cite `--source <project>` only as provenance.
 
+**Rule (LO-0148):** When the public site renders a **closed block library**, the operator editor must edit those **blocks** and preview the **visitor template** (iframe or equivalent). A Word/HTML field as the page source of truth is not done.
+
 **Rule (LO-0032):** Tickets that ship an **on-screen brand guide / print preview** and a **PDF (or printable HTML) of the same surface** must include DoD that **screen and PDF share the same type stack** (hero/title + body). Serif on screen + sans in PDF (or reverse) is a WYSIWYG bug — not done. Prefer one shared CSS/token source for both renderers.
 | **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` — **LO-0025:** `--approve` is refused unless every current-sprint ticket is `done` |
 
 **Rule (LO-0025):** `./studio review <p> --approve` must **refuse** while any current-sprint ticket is still `open` / `implement` / not `done`. Mid-sprint approve freezes implementation incorrectly. Finish tickets → `./studio review` → human `--approve`.
+
+**Rule (LO-0144):** Review is for **this sprint’s shipped tickets**, not for work that is still only feedback (amendments, console, unwritten skills). Do not linger in review waiting for that work to become a ticket in the same close. Ticket it, then plan the next sprint.
 | **Reuse review** | **Agent** + **Human** | `./studio reuse <p>` → promote / LO ticket / `--record local` → `./studio reuse <p> --approve` |
 | **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket** |
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |

@@ -170,6 +170,14 @@ Examples:
 
 ---
 
+## Toolbox (trained — LO-0146)
+
+### Missing operator queue
+
+- If the product has no admin idea queue, do not silently take a chat paste as the system of record. Fail closed: ticket the queue, keep markdown as a briefing seed only.
+
+---
+
 ## References
 
 - `.quinsy-studio/knowledge-base/backend_playbook.md` — backend rules

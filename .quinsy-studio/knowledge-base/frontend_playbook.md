@@ -11,6 +11,12 @@ No compromise on performance.
 
 ---
 
+## Upgrade soft-path → Account (LO-0142)
+
+Paywall / marketing soft-paths that defer checkout must land on a **real** Account (or plan) tab — not a dead hash — and show Free + Upgrade (or auto-open the upgrade dialog via `?upgrade=1`). See `studio-library/ui/docs/patterns/upgrade-soft-path.md`. Gate DoD: LO-0143 in `process/gates.md`.
+
+---
+
 ## Canvas shell vs document routes (LO-0035)
 
 Infinite-canvas apps often lock the board shell with `h-dvh overflow-hidden`. That is correct for Konva/canvas, but **document UIs** under the same segment (`/board/[id]/brand-guide`, `/presentation`, etc.) will not scroll on `body`.
@@ -225,9 +231,8 @@ const HeavyComponent = dynamic(() => import('./HeavyComponent'), { loading: () =
 import Image from 'next/image';
 <Image src="/photo.jpg" width={500} height={300} alt="Description" priority={false} />
 
-// 3. Font optimization
-import { Inter } from 'next/font/google';
-const inter = Inter({ subsets: ['latin'] });
+// 3. Font optimization — prefer self-host for pre-auth (LO-0134); avoid next/font/google there
+import localFont from 'next/font/local';
 
 // 4. Script optimization
 import Script from 'next/script';
@@ -353,12 +358,21 @@ className="absolute bottom-20 right-3 top-14 z-30 flex w-[280px] ..."
 ### Rules
 
 1. **Smoke downloads a PDF** for brand-guide Download PDF and Export → PDF (free path) before marking done.
-2. **File size > 0** — record downloaded PNG/PDF byte length in the smoke note; empty files and silent “success” without a download are not done (LO-0028 follow-up / moody S65).
+2. **File size > 0** — record downloaded PNG/PDF byte length in the smoke note; empty files and silent “success” without a download are not done (LO-0028 follow-up).
 3. **Playwright Chromium** must be installed for local/dev when the brand-guide PDF API uses `chromium.launch` — document in project setup / RUNBOOK, or provide a non-headless fallback.
 4. **Watermark must not hard-block download** — on decode failure, skip watermark and still save PDF (or fix decode); never leave the user with only an error toast.
 5. **Anti-slop on export paths (LO-0029)** — no bare `100`/`1000`/`86400`; no consecutive `await`/`await` lines. Use named constants and await chaining / helpers before gate 5.
 6. Review briefs for PDF tickets: numbered steps that click Download PDF / Export PDF and confirm a **non-empty** file appears.
 7. **WYSIWYG type stack (LO-0032)** — if the ticket touches an on-screen brand guide / print preview **and** a PDF (or printable HTML) of the same surface, DoD must assert **the same font-family stack** for hero/title and body on screen and in PDF. Shared CSS/tokens preferred over divergent React vs PDF HTML. Serif on screen + sans in PDF (or the reverse) is not done.
+
+### Pre-auth / marketing fonts (LO-0134)
+
+Tickets that claim “no third-party font CDN pre-auth” are not done until **all** of these are true:
+
+1. Root (or marketing) layout uses `next/font/local` (or equivalent) — not `next/font/google` for faces shown pre-auth.
+2. Static marketing specimens / iframes do not `<link>` `fonts.googleapis.com` / `fonts.gstatic.com`.
+3. Client helpers that inject Google Font stylesheets (`ensureGoogleFontLink` patterns) **skip** product faces already self-hosted.
+4. Smoke (or Network assert) on marketing routes shows zero requests to those hosts.
 
 ---
 

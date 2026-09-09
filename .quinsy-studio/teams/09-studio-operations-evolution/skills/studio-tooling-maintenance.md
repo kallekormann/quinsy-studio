@@ -63,7 +63,7 @@ What to track:
 
 ---
 
-## Toolbox (trained — TR-0001–TR-0007)
+## Toolbox (trained — TR-0001–TR-0007, TR-0011)
 
 Distilled principles from parallel train jobs (Openverse imagery sprint). Full detail in linked playbooks — no client product names.
 
@@ -103,6 +103,11 @@ Distilled principles from parallel train jobs (Openverse imagery sprint). Full d
 ### Laravel serve in Compose (LO-0101)
 
 - `php artisan serve` strips Compose env from the PHP child unless `--no-reload`. CLI artisan can look healthy while HTTP 500s. Pass `--no-reload` or use `php -S`.
+
+### Upgrade soft-path DoD (LO-0142 / LO-0143, TR-0011)
+
+- Soft-path to Settings/Account is **not** done when only the URL changes. Before `move … done`, assert free-tier: plan label + Upgrade CTA visible, **or** upgrade dialog auto-opens (`?upgrade=1`).
+- Pattern: [upgrade-soft-path.md](../../../studio-library/ui/docs/patterns/upgrade-soft-path.md). Gate rule: [gates.md](../../../process/gates.md) LO-0143.
 
 ---
 

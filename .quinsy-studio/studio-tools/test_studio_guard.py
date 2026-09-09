@@ -92,6 +92,35 @@ class GuardInboxAckTests(unittest.TestCase):
             )
         self.assertEqual(verdict, "inbox_ack")
 
+    def test_sibling_project_name_is_cross_project(self):
+        status = {
+            "human_gates": {
+                "0": {"status": "approved"},
+                "1": {"status": "approved"},
+                "2": {"status": "approved"},
+            },
+            "current_sprint": None,
+            "active_ticket": None,
+        }
+        with patch("studio_context.implementation_in_flight", return_value=False), patch(
+            "studio_isolation.request_names_sibling", return_value="other-app"
+        ):
+            verdict, msg = guard_request("acme-app", "copy other-app git into this repo", status)
+        self.assertEqual(verdict, "cross_project")
+        self.assertIn("other-app", msg)
+
+    def test_sibling_beats_inbox_ack_while_in_flight(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context._ack_inbox") as ack, patch(
+            "studio_isolation.request_names_sibling", return_value="other-app"
+        ):
+            verdict, msg = guard_request(
+                "acme-app", "copy other-app into this repo", status
+            )
+        ack.assert_not_called()
+        self.assertEqual(verdict, "cross_project")
+        self.assertIn("other-app", msg)
+
 
 if __name__ == "__main__":
     unittest.main()

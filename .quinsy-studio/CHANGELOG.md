@@ -1,5 +1,125 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-09 — Sibling project isolation (focus / guard / git)
+
+### Added
+
+- `studio_isolation.py` — `./studio focus`, `./studio isolate`, and `./studio execute` hide other `projects/*` via `.cursorignore` + a generated Cursor rule. Guard returns `CROSS_PROJECT` if the request names a sibling. Execute CARD prints `ISOLATE`. Project `pre-commit` refuses a wrong git toplevel, escaped paths, and `projects/` symlinks.
+- `verify-worlds` reapplies isolation for the active project and fails if that project's git toplevel is the wrong repo.
+
+### Changed
+
+- `.gitignore` — `.cursorignore` and `.cursor/rules/quinsy-project-isolation.mdc` are local (regenerated on focus).
+
+## 2026-09-09 — Closed-library editor + visitor preview (LO-0148)
+
+### Changed
+
+- `process/human-in-the-loop.md` — operator editor matches the public block library and visitor template, not a Word/HTML page field (LO-0148).
+
+### Closed
+
+- LO-0148 infused.
+
+## 2026-09-09 — Seeded corpus is not the next-wave backlog (LO-0147)
+
+### Changed
+
+- `knowledge-base/backend_playbook.md` — further corpus work uses the idea queue / admin briefs, not a silent rewrite of the seeded set (LO-0147).
+
+### Closed
+
+- LO-0147 infused.
+
+## 2026-09-08 — Close sprint review when this sprint is done (LO-0144)
+
+### Changed
+
+- `process/human-in-the-loop.md` — do not keep sprint review open for later amendments, consoles, or unwritten skills that are still only feedback (LO-0144).
+- `process/lifecycle.md` — Phase 7 review is for shipped sprint tickets (LO-0144).
+
+### Closed
+
+- LO-0144 infused.
+
+## 2026-09-08 — Isolated test DB pin + operator idea queues (LO-0145 / LO-0146)
+
+### Changed
+
+- `process/gates.md` — `phpunit.xml` `force` is not enough inside Compose; TestCase must pin the isolated test database before schema refresh (LO-0145).
+- `knowledge-base/backend_playbook.md` — same TestCase pin (LO-0145); operator idea queues belong in product admin, not IDE chat (LO-0146).
+- `teams/02-backend-systems/skills/api-design.md` — toolbox: in-product idea queue (LO-0146).
+- `teams/02-backend-systems/skills/error-handling.md` — toolbox: do not treat chat paste as the system of record (LO-0146).
+
+### Closed
+
+- LO-0145, LO-0146 infused.
+
+## 2026-09-08 — Upgrade soft-path DoD (LO-0142 / LO-0143)
+
+### Changed
+
+- `studio-library/ui/docs/patterns/upgrade-soft-path.md` — soft-path must surface Free + Upgrade or auto-open upgrade dialog (LO-0142).
+- `studio-library/ui/docs/README.md` — index link to upgrade soft-path pattern.
+- `knowledge-base/frontend_playbook.md` — cross-link soft-path Account pattern (LO-0142).
+- `knowledge-base/skill-extensions/product-led-growth.md` — soft-path Account DoD (LO-0142 / LO-0143).
+- `process/gates.md` — free-tier Account assert before soft-path tickets are done (LO-0143).
+- `teams/09-…/skills/studio-tooling-maintenance.md` — toolbox TR-0011 (LO-0142/0143).
+- `teams/10-…/skills/visual-ui-design.md` — toolbox TR-0012 (LO-0142).
+- `teams/01-…/skills/design-system.md` — toolbox TR-0013 (LO-0142).
+
+### Closed
+
+- LO-0142, LO-0143 infused.
+
+## 2026-09-08 — Filament home is the resource list (LO-0141)
+
+### Changed
+
+- `knowledge-base/backend_playbook.md` — admin `homeUrl` to the primary resource index; header stats widgets must not stay lazy (LO-0141).
+
+### Closed
+
+- LO-0141 infused.
+
+## 2026-09-08 — Legal disclosure needs network assert (LO-0139 / LO-0140)
+
+### Changed
+
+- `process/gates.md` — when Privacy forbids pre-auth / anonymous font CDNs, smoke must assert network on marketing **and** anonymous share/presentation surfaces in the same sprint (LO-0139 / LO-0140).
+
+### Closed
+
+- LO-0139, LO-0140 infused.
+
+
+## 2026-09-08 — Gate uses project Prettier; first-brand chrome stays local (LO-0137–0138)
+
+### Changed
+
+- `studio-tools/run_qa_gate.py` — `npx --no-install` for Prettier, ESLint, `tsc`, and Vitest so QA cannot download a stray formatter (LO-0137).
+- `process/gates.md` — document project-local Prettier for QA levels.
+- `studio-library/library_registry.md` + `studio-library/packages/README.md` — first-brand public chrome stays in-project; reuse `--record … local` (LO-0138).
+
+### Closed
+
+- LO-0137, LO-0138 infused.
+
+## 2026-09-08 — Gate smoke unrestricted + pre-auth font DoD (LO-0132–0136)
+
+### Changed
+
+- `process/gates.md` — before `move … done`, re-run Playwright smoke outside agent sandboxes; `QUINSY_SKIP_SMOKE` is last-resort only (LO-0132 / LO-0133 / LO-0136).
+- `studio-tools/run_qa_gate.py` — skip message reminds agents to re-run smoke unrestricted.
+- `knowledge-base/frontend_playbook.md` — pre-auth self-host font DoD covers layout, specimens/iframes, and `ensureGoogleFontLink` skips (LO-0134).
+- `knowledge-base/component-creation-playbook.md` — project `ui/` cannot promote into studio-library; edit HQ library or open a studio LO (LO-0135).
+- Portability: replaced project-folder names in chrome-mv3 / figma-plugin / frontend playbook provenance lines.
+
+### Closed
+
+- LO-0132–LO-0136 infused.
+
+
 ## 2026-09-08 — Portability gate drops project-incident LOs (LO-0129, LO-0131)
 
 ### Fixed

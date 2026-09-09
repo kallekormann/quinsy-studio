@@ -28,6 +28,8 @@ This is **studio-core** (`./studio guard`), not a project-local convention.
 
 On `HITL`: stop and wait — **gate 0** (PRD / as-built), **gate 1 architecture**, **gate 2 design track** (direction, design system, stills/mocks or clickable prototype), **design-track `approve-design`**, **UI sprint review**, **tech-veto**, explicit abort, or 3× QA fail. Do not implement sprint-review **design** feedback. Reuse and sprint scope are **inform** (agent proceeds unless you override).
 
+**Sibling projects:** `./studio focus <p>` hides other `projects/*` from the agent. Never Read, copy, merge, or `git add` a sibling tree into the active project git. `CROSS_PROJECT` from guard means switch focus — do not pull the other product in.
+
 **Existing codebase:** `./studio adopt <p> --from <url-or-path>` overlays studio docs without wiping source. Execute fills `docs/as-built/` (cite paths), then HITL gate 0. Do not `init`/`bootstrap` an empty scaffold over a live tree. See [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md).
 
 On `INFORM`: do NEXT (inbox drain, reuse brief), then execute again — do not wait for a signature. **Exception:** `INFORM cost-cap` — stop stuffing files; the human raises the **named** key in `.quinsy-studio/studio.settings.local.yaml`. Architecture and design gates are **not** inform.
@@ -67,8 +69,9 @@ On `./studio move … done` → warns if registry paths changed without promotio
 |-------|------|-----|
 | Studio HQ | `.quinsy-studio/` | quinsy-studio root |
 | Project | `projects/<name>/` | **separate repo** |
+| Siblings | other `projects/*` | **opaque** after `./studio focus` |
 
-`./studio verify-worlds` — must pass before project work.
+`./studio verify-worlds` — must pass before project work. `./studio focus <p>` hides sibling trees from the agent. Never Read, copy, or commit another product into the active git. Switch products with a new `./studio focus`.
 
 ## Pre-implementation gates
 

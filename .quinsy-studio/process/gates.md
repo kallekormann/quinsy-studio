@@ -145,6 +145,8 @@ python3 .quinsy-studio/studio-tools/design_math.py --audit-tokens projects/<p>/u
 | 4.4 | Code review done | field check | recommended |
 
 > **Note:** Level 4 does **not** include build or runtime smoke. Do not mark tickets `done` at level 4.
+>
+> **LO-0137 — project-local Prettier/ESLint:** `./studio gate` must run `npx --no-install prettier` / `eslint` / `tsc` / `vitest` so QA uses the project's `node_modules` binary. Bare `npx prettier` can download a different Prettier and fail a tree that is already formatted with the project version.
 
 ---
 
@@ -155,6 +157,8 @@ python3 .quinsy-studio/studio-tools/design_math.py --audit-tokens projects/<p>/u
 ```
 
 **Enforced:** `./studio move <project> <TICKET> done` fails unless the latest gate run is level **5** and status **passed**.
+
+**LO-0145 — tests inside Compose:** `phpunit.xml` `force` env is not enough when Compose injects `DB_*` into the PHP process. The test `TestCase` must pin the isolated test database name in process env **before** the application boots / `RefreshDatabase`. Never run schema refresh against the operator tenant database.
 
 ### Checkpoints
 
@@ -171,7 +175,7 @@ python3 .quinsy-studio/studio-tools/design_math.py --audit-tokens projects/<p>/u
 
 **LO-0052 — durable Playwright browsers:** `./studio gate` sets `PLAYWRIGHT_BROWSERS_PATH` to `.quinsy-studio/.cache/playwright/<project>/` (gitignored). Do not rely on Cursor sandbox temp caches; they rotate and often mismatch mac-arm64 vs mac-x64. First gate may download Chromium once; later gate runs reuse the cache.
 
-**LO-0071 — agent sandbox Chromium SIGSEGV:** Cursor and some CI sandboxes cannot launch Playwright Chromium (SIGSEGV / kill EPERM). Agents may set `QUINSY_SKIP_SMOKE=1` **only** for gate level 5 in that environment — gate output must record the skip explicitly (`run_qa_gate.py` returns “Skipped — QUINSY_SKIP_SMOKE set”). Human local runs and sprint-review smoke must leave it unset; skipping is not a substitute for browser verification before review.
+**LO-0071 / LO-0132 — agent sandbox Chromium SIGSEGV:** Cursor and some CI sandboxes cannot launch Playwright Chromium (SIGSEGV / kill EPERM). Agents may set `QUINSY_SKIP_SMOKE=1` **only** as a last resort inside that sandbox — gate output must record the skip explicitly (`run_qa_gate.py` returns “Skipped — QUINSY_SKIP_SMOKE set”). **Before `./studio move … done`:** re-run `npm run smoke` (or `./studio gate … --level 5`) in an **unrestricted** environment so Chromium actually launches. Skipping alone is not done. Human local runs and sprint-review smoke leave `QUINSY_SKIP_SMOKE` unset.
 
 Add `projects/<p>/docs/smoke-routes.json`:
 
@@ -184,6 +188,10 @@ Add `projects/<p>/docs/smoke-routes.json`:
 ```
 
 Implement `scripts/smoke-routes.mjs` (Playwright) to visit home, redirects, and client-heavy routes (e.g. canvas). Catches runtime crashes that lint/build miss — e.g. react-konva + Next.js bundling errors.
+
+**LO-0139 / LO-0140 — legal disclosure vs network reality:** If Privacy (or equivalent) claims third-party font CDNs are **not** used pre-auth / for anonymous visitors, the same sprint’s DoD must include a **network assert** on those surfaces (marketing home **and** anonymous public share/presentation if they exist). Shipping disclosure copy alone while anonymous share still injects `fonts.googleapis.com` is not done.
+
+**LO-0143 — plan soft-path DoD:** If a ticket wires Pro/upgrade soft-path to Settings Account, DoD is not “URL changed.” Before `move … done`, assert for a **free** account (unit, UI, or smoke): Free plan label + Upgrade CTA visible on that tab, **or** upgrade dialog auto-opens from the soft-path query. Redirect-only fixes without a free-tier assert leave review gaps.
 
 ---
 

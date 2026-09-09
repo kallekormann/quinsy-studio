@@ -348,7 +348,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 4. Talk to the agent in plain language — e.g. *"Bootstrap my-project"*, *"Adopt my-project from this repo"*, *"Execute my-project"*, *"Approve gate 0 / 1 / 2"*. The agent runs `./studio` commands; you approve HITL stops.
 
-5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md).
+5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. `./studio focus <project>` hides sibling `projects/*` trees from the agent — do not copy or git another product into the active repo. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md).
 
 Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in-cursor) · [agent-context](process/agent-context.md)
 
