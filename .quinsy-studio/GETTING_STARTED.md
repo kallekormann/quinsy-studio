@@ -20,7 +20,7 @@ Two ways in — both are implemented:
 
 Open **quinsy-studio** at the repo root (not `projects/<name>/` alone). Cursor rules: [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc). Claude Code: [`CLAUDE.md`](../CLAUDE.md). Gemini CLI: [`GEMINI.md`](../GEMINI.md).
 
-**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run. They are not a sandbox. In Cursor, Claude Code, Gemini, or any other agent IDE, the model can still see other `projects/` trees (and Shell always can). If you develop more than one product at a time in that window, agents can mix concepts or git the wrong repo. Use a dedicated chat or CLI process per product, pass that `<project>` on every `./studio` command, and never copy or commit another product into the active git.
+**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run and rewrite a **local** `.cursorignore` + generated isolation rule (Read/Grep). They are not a sandbox. Shell can still see other `projects/` trees. In Cursor, Claude Code, Gemini, or any other agent IDE, parallel chats can mix concepts or git the wrong repo. Guard returns `CROSS_PROJECT` if the request names a sibling. Use a dedicated chat or CLI process per product, pass that `<project>` on every `./studio` command, and never copy or commit another product into the active git. Product git runs **inside** `projects/<name>/`. Studio HQ git never stages `projects/`.
 
 ```bash
 ./studio install                    # once after clone (Tailwind + Headless UI)
@@ -225,7 +225,7 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 
 | You want | Example message |
 |----------|-----------------|
-| Propose sprint scope | *"Plan the next sprint"* → `./studio sprint &lt;p&gt;` → agent `--approve-scope` (you may override) |
+| Propose sprint scope | *"Plan the next sprint"* → `./studio sprint &lt;p&gt;` → agent `--approve-scope` (you may override). Design-track tickets need ticket-specific `docs/design-specs/<TICKET>.md` with §2 + §2c first. |
 | Let the sprint run | *"Execute until HITL"* — agent loops tickets; open LOs train in parallel; you join at UI review |
 | Compact ticket view | *"Show the card for &lt;ID&gt;"* → `./studio ticket-card` |
 | Work a ticket | Agent follows execute: design spec if UI → `approve-design` → library pull → implement → receipt → gate 5 → done |
@@ -275,7 +275,7 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 | Cross-surface move | *"Create ia-feature-placement ticket: move X to Y surface"* |
 | Layout-only concern | Agent should ask: *"Is placement correct before we widen the dialog?"* |
 
-**Order:** placement → workflow map → atomic inventory → visual polish. Spec template: [design-spec-template.md](knowledge-base/design-spec-template.md). Playbooks: [contextual-ia](knowledge-base/contextual-ia-playbook.md) · [workflow-definition](knowledge-base/workflow-definition-playbook.md) · [design-system compliance](knowledge-base/design-system-compliance-checklist.md).
+**Order:** placement → workflow map → atomic inventory → visual polish. Spec path is **ticket-specific** (`docs/design-specs/<TICKET>.md`); lock §2 + §2c before `./studio sprint --approve-scope` for design-track types. Spec template: [design-spec-template.md](knowledge-base/design-spec-template.md). Playbooks: [contextual-ia](knowledge-base/contextual-ia-playbook.md) · [workflow-definition](knowledge-base/workflow-definition-playbook.md) · [design-system compliance](knowledge-base/design-system-compliance-checklist.md).
 
 ### Studio / process (not project code)
 
@@ -293,7 +293,7 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 - Skip architecture or design HITL (`inform --gate 1` does **not** approve architecture)
 - Implement sprint-review **design** feedback in the same cycle (must: feedback → clarify → next sprint)
 - Create tickets directly from sprint-review chat
-- Commit `projects/` to the studio repo
+- Commit `projects/` to the studio repo (product git is `git -C projects/<name>`)
 - Implement features with no backlog ticket (after gate 2)
 - Dump the whole backlog into context (use `ticket-card` / execute CARD)
 - Pull library **stubs** (`billing`, `feature-gating`) — build in-project, then promote a working generic
@@ -311,6 +311,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 |------|---------|
 | **After git clone** | `./studio install` · optional `./studio install --with-skills` |
 | Session start | `./studio verify-worlds` · `./studio verify-abstraction` · `./studio settings` · `./studio focus <p>` · **`./studio execute <p>`** |
+| Isolate siblings | `./studio isolate <p>` (also applied by `focus` / `execute` / `verify-worlds`) |
 | Checklist | `./studio resume <p>` (optional; execute is the driver) |
 | New project from PRD | `./studio bootstrap <p>` |
 | Existing codebase | `./studio adopt <p> --from <git-url-or-path> [--intent intake/<p>.md]` |
@@ -350,7 +351,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 4. Talk to the agent in plain language — e.g. *"Bootstrap my-project"*, *"Adopt my-project from this repo"*, *"Execute my-project"*, *"Approve gate 0 / 1 / 2"*. The agent runs `./studio` commands; you approve HITL stops.
 
-5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md). Focus is an assignment, not a sandbox (see [Start here](#start-here-tell-the-agent)).
+5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md). Focus is an assignment, not a sandbox (see [Start here](#start-here-tell-the-agent)). Smoke UI on the **project RUNBOOK** URL; do not hard-code another product’s host port into HQ.
 
 Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in-cursor) · [agent-context](process/agent-context.md)
 
@@ -540,6 +541,8 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 | Brownfield adopt | [process/brownfield-adopt.md](process/brownfield-adopt.md) · `./studio adopt` |
 | Scope & drift | [process/agent-context.md](process/agent-context.md) |
 | Two git worlds | [process/worlds.md](process/worlds.md) · `./studio verify-worlds` |
+| Sibling isolation | `./studio focus` / `isolate` · guard `CROSS_PROJECT` · not a sandbox |
+| Local URLs / ports | [host-port-allocation.md](knowledge-base/host-port-allocation.md) — smoke the project RUNBOOK URL |
 | Studio HQ generic docs | [process/studio-abstraction.md](process/studio-abstraction.md) · `./studio verify-abstraction` |
 | Cost / token policy | [studio.settings.yaml](studio.settings.yaml) · `./studio settings` |
 | Learning loop + infusion gate | [process/learning-loop.md](process/learning-loop.md) · [§ learnings](#learnings-harvest-when-identified) · `./studio infusion` |
@@ -615,7 +618,7 @@ Full loop: [learning-loop.md](process/learning-loop.md) · [studio-abstraction.m
 
 ## Studio-only improvements
 
-Use **LO-*** tickets in `.quinsy-studio/backlog/` — not project code. Studio docs must stay **project-agnostic** (`<project>`, not a client codename).
+Use **LO-*** tickets in `.quinsy-studio/backlog/` — not project code. Studio docs must stay **project-agnostic** (`<project>`, not a client codename). Product-only incidents belong in the project (`docs/studio-learnings-local.md`), not the HQ backlog.
 
 ```bash
 ./studio learn "..." --signal design-gap --source <project>

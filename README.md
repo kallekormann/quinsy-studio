@@ -111,7 +111,7 @@ More examples: [GETTING_STARTED — start here](.quinsy-studio/GETTING_STARTED.m
 
 ## Using in Cursor
 
-Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `./studio verify-abstraction` → `./studio settings` → `focus` → **`execute`** (loop until HITL). You approve gates; the agent runs `./studio`. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
+Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `./studio verify-abstraction` → `./studio settings` → `focus` (isolates siblings) → **`execute`** (loop until HITL). You approve gates; the agent runs `./studio`. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
 
 **Other hosts (same `./studio` loop, keys stay in that tool):** [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md). Codex already reads [`AGENTS.md`](AGENTS.md). Product Gemini keys in a project `.env` are not the coding-agent key.
 
@@ -156,10 +156,13 @@ Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/s
 ## Context & scope (agent)
 
 ```bash
-./studio focus <project>                    # scope banner
-./studio guard <project> "user request"     # in-scope / needs ticket / pre-impl
+./studio focus <project>                    # assign loop + isolate siblings
+./studio isolate <project>                   # rewrite local .cursorignore only
+./studio guard <project> "user request"     # in-scope / needs ticket / pre-impl / CROSS_PROJECT
 ./studio revise <project> --gate 1 --feedback "..."
 ```
+
+`focus` / `execute` / `verify-worlds` hide other `projects/*` from Read/Grep via a **local** `.cursorignore` and generated Cursor rule (gitignored). That is an **assignment**, not a sandbox: Shell can still see sibling trees, and parallel chats in the same window can mix products. One chat (or CLI process) per product. Product git: `git -C projects/<name> …`. Studio HQ git (this repo): never `git add projects/`.
 
 Docs: [agent-context](.quinsy-studio/process/agent-context.md) · [two worlds](.quinsy-studio/process/worlds.md)
 
@@ -172,7 +175,7 @@ quinsy-studio/
 ├── .cursor/rules/            # Cursor always-on rules
 ├── .quinsy-studio/
 │   ├── process/              # Lifecycle, gates, ticket workflow, worlds
-│   ├── teams/                # 9 teams + skills
+│   ├── teams/                # 10 teams + skills (01–09 + Team 10 design)
 │   ├── studio-library/       # Reusable UI + packages (auth, billing, …)
 │   ├── studio-tools/         # Python CLI (studio.py)
 │   ├── studio-templates/
@@ -212,6 +215,7 @@ quinsy-studio/
 | Agent context | [process/agent-context.md](.quinsy-studio/process/agent-context.md) |
 | Cost / token policy | [.quinsy-studio/studio.settings.yaml](.quinsy-studio/studio.settings.yaml) · `./studio settings` |
 | Git separation | [process/worlds.md](.quinsy-studio/process/worlds.md) |
+| Host ports / local URLs | [host-port-allocation.md](.quinsy-studio/knowledge-base/host-port-allocation.md) |
 
 ## Quality rules
 
@@ -224,16 +228,18 @@ quinsy-studio/
 7. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
 8. **Placement before layout** — Team 10 §2 Context & placement in design specs; `ia-feature-placement` for cross-surface moves
 9. **Immediate harvest** — classify + inbox + LO when a learning is identified; `./studio train` beside product execute
-10. **Two git worlds** — never commit `projects/` to this repo; studio HQ stays project-agnostic (`./studio verify-abstraction`)
-11. **Cost caps** — medium-project defaults in `studio.settings.yaml`; on `INFORM cost-cap` raise the named key (do not dump more files)
-12. **Anti-slop + ADRs + HITL** — see process docs
+10. **Two git worlds** — never commit `projects/` to this repo; product commits from `projects/<name>/`; studio HQ stays project-agnostic (`./studio verify-abstraction`). LO-* in HQ are portable process/tooling only — product incidents stay in the project.
+11. **Isolation** — `./studio focus` / `isolate`; guard `CROSS_PROJECT` for sibling names; do not treat focus as a jail
+12. **Cost caps** — medium-project defaults in `studio.settings.yaml`; on `INFORM cost-cap` raise the named key (do not dump more files)
+13. **Anti-slop + ADRs + HITL** — see process docs
 
 ## CLI overview
 
 ```bash
 ./studio --help
 ./studio install                  # after git clone
-./studio focus <project> && ./studio execute <project>   # loop until HITL
+./studio focus <project> && ./studio execute <project>   # isolate + loop until HITL
+./studio isolate <project>            # hide sibling projects/ from the agent
 ./studio settings                 # policy + estimated token usage
 ./studio note <project> "…"       # mid-execute inbox (ACK; drain after MOVE_DONE)
 ./studio train SO-001 --from mistake --topic "…"
@@ -258,4 +264,4 @@ See [CHANGELOG.md](CHANGELOG.md) · studio process: [`.quinsy-studio/CHANGELOG.m
 ---
 
 **Version:** 1.15.0  
-**Date:** 2026-09-07
+**Date:** 2026-09-12

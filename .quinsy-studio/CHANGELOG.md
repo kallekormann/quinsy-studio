@@ -1,5 +1,11 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-12 — Onboarding docs match isolation + two-git habit
+
+### Changed
+
+- Root `README.md`, `.quinsy-studio/README.md`, `GETTING_STARTED.md` — `focus`/`isolate` assignment (not a sandbox), `CROSS_PROJECT`, product git via `git -C projects/<name>`, portable HQ LOs only, Team 10 in the team list, ticket-specific design specs before sprint scope, smoke the project RUNBOOK URL.
+
 ## 2026-09-12 — Open LO harvest (0206–0230), portability split
 
 ### Changed

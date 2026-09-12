@@ -31,7 +31,7 @@ Quinsy Studio is a **file-system-based operating system for software projects**.
 It consists of:
 
 - **Process Documents** (`process/`) — Lifecycle, Gates, Anti-Slop, Ticket Workflow
-- **Teams & Skills** (`teams/`) — 9 teams, 37 internal skills + skill registry
+- **Teams & Skills** (`teams/`) — 10 teams (01–09 + Team 10 product design), internal skills + skill registry
 - **Knowledge Base** (`knowledge-base/`) — Playbooks (Design, Frontend, Backend, Compliance, AI)
 - **Studio Tools** (`studio-tools/`) — Python CLI with all commands
 - **Studio Templates** (`studio-templates/`) — PRD, Ticket, ADR, Docker base
@@ -51,7 +51,7 @@ The studio operates in **Dual-Speed mode**:
 quinsy-studio/
 ├── .quinsy-studio/                 ← THE STUDIO (everything here)
 │   ├── process/                    # Process documents (Lifecycle, Gates, Anti-Slop)
-│   ├── teams/                      # 9 teams × skills + skill-registry.md
+│   ├── teams/                      # 10 teams × skills + skill-registry.md
 │   │   ├── 01-frontend-experience/
 │   │   ├── 02-backend-systems/
 │   │   ├── 03-compliance-legal/
@@ -60,7 +60,8 @@ quinsy-studio/
 │   │   ├── 06-product-management-operating-model/
 │   │   ├── 07-ai-autonomous-systems/
 │   │   ├── 08-platform-enterprise-engineering/
-│   │   └── 09-studio-operations-evolution/
+│   │   ├── 09-studio-operations-evolution/
+│   │   └── 10-product-design-experience/
 │   ├── knowledge-base/             # Playbooks + learnings/inbox.md (immediate harvest)
 │   ├── studio-tools/               # Python CLI (studio.py + all tools)
 │   ├── studio-templates/           # PRD, Ticket, ADR, Docker base, Learning logs
@@ -320,7 +321,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 `projects/` and `intake/` are gitignored in the studio repo. Run `./studio verify-worlds` if unsure.
 
-**Several products in one IDE:** `./studio focus` / `execute <project>` assign the loop; they do not sandbox the agent. Sibling `projects/` trees stay on disk, so parallel auto-pilots in the same window (Cursor, Claude Code, Gemini, or another agent IDE) can mix concepts or commit the wrong git. Prefer one chat or CLI process per product, always pass that `<project>` to `./studio`, and never copy another product into this repo.
+**Several products in one IDE:** `./studio focus` / `execute <project>` assign the loop and rewrite a local `.cursorignore` plus generated isolation rule so Read/Grep should not see sibling `projects/` trees. They do **not** sandbox Shell or other chats in the same window. Guard returns `CROSS_PROJECT` if the request names a sibling. Prefer one chat or CLI process per product, always pass that `<project>` to `./studio`, and never copy another product into this repo. Product commits: `git -C projects/<name>`. Studio HQ commits: this repo only — never `git add projects/`.
 
 ### Agent vs. you
 
@@ -361,7 +362,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **Docker (project-specific)** | `projects/<name>/docker/` |
 | **Docker Base Template** | `.quinsy-studio/studio-templates/docker/` |
 | **Status (Phase/Gate)** | `projects/<name>/status.json` |
-| **Studio Learning Items** | `.quinsy-studio/backlog/open/LO-*.md` |
+| **Studio Learning Items** | `.quinsy-studio/backlog/open/LO-*.md` (portable HQ only; project incidents stay in the project) |
 | **Retros** | `.quinsy-studio/retros/` |
 | **Studio Library** | `.quinsy-studio/studio-library/` |
 
@@ -404,7 +405,7 @@ As products grow, **where** a capability lives matters more than dialog width. S
 4. **Human** — `./studio approve-design <project> <TICKET>` (warns if §2 missing)
 5. **Implement** — library-first + `design-system-compliance-checklist.md`
 
-Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (layout on the **right** surface). Amendment analysis must include a surface map in `04-ui-ux-concept.md`.
+Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (layout on the **right** surface). Design-track tickets get a **ticket-specific** `docs/design-specs/<TICKET>.md` with §2 + §2c before `--approve-scope`. Amendment analysis must include a surface map in `04-ui-ux-concept.md`.
 
 ---
 
@@ -419,6 +420,7 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio status <project>
 ./studio board <project>
 ./studio focus <project>
+./studio isolate <project>           # hide sibling projects/ from the agent
 ./studio resume <project>            # checklist
 ./studio execute <project> [--json]  # one next action; loop until HITL
 ./studio ticket-card <project> <id>
@@ -669,6 +671,7 @@ studio-library/
 
 **Rules:**
 - **Pull** (library → project): `./studio library pull <project> auth tokens button` — **not** stubs (`billing`, `feature-gating`)
+- **Host `packages/ui`:** product-local at reuse; do not treat it as an unpromoted studio-library path
 - **Promote design** (gate 2): `./studio approve --gate 2` or `promote-library` (greenfield)
 - **Promote code**: only if the generic asset improved — `./studio library promote <project> <path> --ticket <id>`
 - No secrets or client branding in library assets
@@ -714,6 +717,8 @@ See [library_registry.md](studio-library/library_registry.md).
 | Execute says `STUDIO_LO` | Product loop is idle — infuse the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |
 | Open LOs mid-sprint | Harvest immediately; `./studio train` beside product `IMPLEMENT` — do not wait for next sprint |
 | Mid-execute chat | `./studio note` — ACK and continue; drain after `MOVE_DONE`. Only abort preempts |
+| Sibling tree still visible | Focus is not a sandbox. Use one chat per product; do not Shell `ls`/`git` another `projects/` folder |
+| Guard says `CROSS_PROJECT` | Stay on the active project unless the human explicitly switches `./studio focus` |
 
 ---
 
