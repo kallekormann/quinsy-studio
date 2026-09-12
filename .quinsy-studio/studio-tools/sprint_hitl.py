@@ -510,7 +510,7 @@ See [plan.md](plan.md)
 > **Process:** During the sprint the agent implements autonomously. You are involved **here**, at sprint review — not ticket-by-ticket mid-sprint.
 
 ## After approval
-1. **Reuse review (mandatory):** `./studio reuse {project}` → promote / LO ticket / `--record local` → `./studio reuse {project} --approve`
+1. **Reuse review (inform):** `./studio reuse {project}` → promote / LO ticket / `--record local`. Completes when paths are resolved — no `--approve`.
 2. Clarify feedback: `./studio clarify {project} FB-001` (one item per theme — duplicates rejected)
 3. Ticket from feedback: `./studio ticket {project} "..." --from-feedback FB-001` → **backlog** (no sprint tag)
 4. Groom backlog: `./studio groom {project}` (reprioritize for next sprint)

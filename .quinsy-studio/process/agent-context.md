@@ -11,7 +11,7 @@ Run `./studio guard <project> "<verbatim user message>"` first. While implementa
 1. Read [`AGENTS.md`](../../AGENTS.md)
 2. Run `./studio bootstrap` (new PRD), `./studio adopt <p> --from …` (existing codebase), or `./studio focus <project>`
 3. Run `./studio settings` (merged policy + estimated usage). Defaults cover a **medium project**.
-4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`
+4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`. If the gold path needs an operator click (submit/start a job) and a later unblocked ticket is only notify/revalidate polish, do the click ticket first (LO-0155).
 5. If `ACTION` is `INFORM` (inbox drain / reuse brief), do NEXT and loop — do not wait for a signature. Architecture and design are HITL, not inform.
 6. If `ACTION` is `INFORM` and the reason is `cost-cap`, **stop**. Do not keep stuffing files. The human raises the **named** yaml key in `studio.settings.local.yaml`, then execute continues.
 7. If `ACTION` is `STUDIO_LO`, the product loop is idle — infuse in `.quinsy-studio/` now. Mid-sprint gaps: spawn `./studio train` and keep `IMPLEMENT`
@@ -33,17 +33,21 @@ The IDE workspace is Studio HQ, so every `projects/<name>/` tree is on disk. Aft
 - Guard returns `cross_project` if the request names a sibling folder
 - Project `pre-commit` refuses a wrong git toplevel and staged `projects/` symlinks
 
-Do not use Shell to `ls`/`cp`/`git` a sibling. Switch products with `./studio focus <other>` in a new session — never merge two product gits.
+Do not use Shell to `ls`/`cp`/`git` a sibling. Never merge two product gits.
+
+**Do not switch project scope mid-thread.** Stay on `.active-project.json` unless the human **explicitly** asks to switch (`./studio focus <other>`, “switch to …”, “focus …”, “work on … now” naming that product as the new active scope). Naming a sibling in feedback, contrast, or a mistaken label is **not** a switch — ACK, stay put, or queue a note. Do not `./studio focus` another product on your own.
 
 ## Three context layers
 
 | Layer | Scope | Examples |
 |-------|-------|----------|
 | **Studio meta** | `.quinsy-studio/` | LO-* tickets, process, tools, library |
-
-Studio HQ must stay **project-agnostic** in docs/tools — see [studio-abstraction.md](studio-abstraction.md). Run `./studio verify-abstraction` after studio edits.
 | **Project** | `projects/<name>/` | PRD, gates, tickets, code |
 | **Off-topic** | Neither | Unrelated questions |
+
+Studio HQ must stay **project-agnostic** in docs/tools — see [studio-abstraction.md](studio-abstraction.md). Run `./studio verify-abstraction` after studio edits.
+
+**Browser extension global mode:** see [chrome-mv3-vite-content-scripts.md](../knowledge-base/chrome-mv3-vite-content-scripts.md) DoD item 8 — fan-out + inject-on-miss before armed storage (LO-0157, LO-0159).
 
 ## When the user asks something
 
@@ -64,7 +68,7 @@ If the previous turn was execute-loop work, `./studio guard` is still the first 
 |---------|--------------|
 | `inbox_ack` | Note queued. ACK one line. Resume `./studio execute` (same ACTION). Do not implement the note. |
 | `abort` | Stop the current ticket. Drain. Wait. |
-| `cross_project` | Request names a sibling `projects/` folder — even mid-execute. Do not Read/copy/git it. `./studio focus` to switch. Do not queue as an inbox note. |
+| `cross_project` | Request names a sibling `projects/` folder — even mid-execute. Do not Read/copy/git it. Stay on the active project unless the human **explicitly** asks to switch focus. Do not queue as an inbox note. |
 | `in_scope` | Proceed; tie work to ticket ID if post-gate-2 |
 | `needs_ticket` | Do **not** implement — create `./studio ticket` or ask user |
 | `pre_impl` | Redirect to current gate (`./studio resume`) |
@@ -139,11 +143,13 @@ On design approval, base UI flows to studio-library (see `library_promotion.py`)
 
 Projects **consume** library via `./studio sync <project>`; they **feed** library on gate 2.
 
+**Vendored admin shells (LO-0177 / LO-0178):** Reuse the shell’s Kanban, data table, Dialog, and Empty primitives before drawing a custom grid or a three-field inline create form. **Add** a new entity → full Dialog; **inspect** existing → Sheet.
+
 ## Sprint HITL (after gate 2)
 
 **Mid-sprint:** agent implements autonomously — do not ask the human for direction between tickets.
 
-**Sprint review:** when all sprint tickets are `done`, pause for human review — never ticket sprint-review ideas directly. **Never implement review feedback in code** — only `./studio feedback` → clarify → ticket for the **next** sprint.
+**Sprint review:** when all sprint tickets are `done`, pause for human review — never ticket sprint-review ideas directly. **Never implement review feedback in code** — only `./studio feedback` → clarify → ticket for the **next** sprint. If the human reviews a **git-deployed** host, push the product branch that host tracks before HITL (LO-0167 / LO-0170).
 
 ```bash
 ./studio review <project>

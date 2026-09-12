@@ -1829,6 +1829,12 @@ class StudioOrchestrator:
                 print(f"  ⚠️  {exc}")
                 return False
             md_path, data = prepare_reuse_review(project, sprint, status)
+            ok, _reason, data = approve_reuse_review(
+                project, sprint, status, notes="inform-auto after --record",
+            )
+            if ok:
+                save_status(project, status)
+                print(f"\n  ✅ Reuse inform complete for {sprint} (paths resolved — no --approve)")
             print(format_reuse_brief(project, {**data, "ticket_count": len(data.get('items', []))}))
             print(f"\n  Report: {md_path.relative_to(STUDIO_ROOT)}")
             return True
@@ -1880,6 +1886,13 @@ class StudioOrchestrator:
             )
         if recorded:
             md_path, data = prepare_reuse_review(project, sprint, status)
+
+        ok, _reason, data = approve_reuse_review(
+            project, sprint, status, notes="inform-auto when paths resolved",
+        )
+        if ok:
+            save_status(project, status)
+            print(f"\n  ✅ Reuse inform complete for {sprint} (paths resolved — no --approve)")
 
         analysis_ticket_count = len([
             t for t in sprint_ticket_summary(project, sprint)["tickets"] if t["status"] == "done"
@@ -2040,13 +2053,15 @@ class StudioOrchestrator:
             "Code is free of AI slop",
         ]
         rationale_extra = ""
+        draft_scope = ""
+        draft_oos = ""
         if fb_item:
             acceptance = fb_item.get("draft_acceptance") or acceptance
+            draft_scope = (fb_item.get("draft_scope") or "").strip()
+            draft_oos = (fb_item.get("draft_out_of_scope") or "").strip()
             rationale_extra = (
                 f"\n\n## Source feedback\n"
                 f"- **{from_feedback.upper()}:** {fb_item.get('raw', '')}\n"
-                f"- **Scope:** {fb_item.get('draft_scope', '-')}\n"
-                f"- **Out of scope:** {fb_item.get('draft_out_of_scope', '-')}\n"
             )
         
         ticket = {
@@ -2061,14 +2076,15 @@ class StudioOrchestrator:
             "skills": skills,
             "ist_zustand": f"The feature '{title}' does not exist yet in `projects/{project}/`.",
             "soll_zustand": f"The feature '{title}' is implemented and usable.",
-            "value": f"'{title}' delivers visible progress in project {project}.",
+            "value": draft_scope or f"'{title}' delivers visible progress in project {project}.",
+            "out_of_scope": draft_oos,
             "modification_files": [f"projects/{project}/"],
             "constraints": [
                 "Do not install unnecessary external packages without an ADR",
                 "Follow the anti-slop protocol (no clichés, no god functions)",
                 "Load the assigned skill files (see `skills`)"
             ],
-            "scenarios": [{
+            "scenarios": [] if (fb_item and fb_item.get("draft_acceptance")) else [{
                 "name": "Feature is usable",
                 "given": f"A user in project {project}",
                 "when": f"They use the feature '{title}'",
@@ -2089,24 +2105,6 @@ class StudioOrchestrator:
             ticket["design_spec"] = design_spec
         
         content = render_ticket_markdown(ticket)
-        if fb_item:
-            scope_lines = ["\n## Scope\n"]
-            draft_scope = (fb_item.get("draft_scope") or "").strip()
-            if draft_scope:
-                scope_lines.append(f"**Scope:** {draft_scope}\n")
-            draft_oos = (fb_item.get("draft_out_of_scope") or "").strip()
-            if draft_oos:
-                scope_lines.append(f"\n**Out of scope:** {draft_oos}\n")
-            if len(scope_lines) > 1:
-                # Insert Scope section before ## Acceptance Criteria
-                if "## Acceptance Criteria" in content:
-                    content = content.replace(
-                        "## Acceptance Criteria",
-                        "".join(scope_lines) + "\n## Acceptance Criteria",
-                        1,
-                    )
-                else:
-                    content += "".join(scope_lines)
         if rationale_extra:
             content += rationale_extra
         ticket_file.write_text(content)

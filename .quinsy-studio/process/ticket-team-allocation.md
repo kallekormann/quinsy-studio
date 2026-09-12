@@ -31,7 +31,13 @@ Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-p
 4. Human: `./studio approve-design <project> <ticket-id>` (warns if §2 missing)
 5. `./studio move … implement` is **blocked** until `design_status: approved`
 
+**Rule (LO-0213 / LO-0218 / LO-0220 / LO-0222):** At ticket create/clarify, create `docs/design-specs/<TICKET>.md` (do not share one spec across tickets). Lock **§2 + §2c** (hi-fidelity in-context mocks in the product shell, not bare wireframes) **before** `./studio sprint --approve-scope` for design-track types. `approve-design` is still required before implement.
+
 `ui-styling` tickets skip design HITL but still require FE-001 + FE-002 + UX-006 + AI-002 on implement.
+
+**Rule (LO-0184 — do not over-classify polish as design-track):** Copy cleanup, icon-size parity, removing leftover helper cards, and checkbox chrome on existing atoms are usually `ui-styling` or `bug` with `design_status: n/a`. Mis-tagging them as `ui-composition` / `ui-new-component` blocks implement behind `approve-design` for work that already has a shipped component. At groom: set explicit `ticket_type` + `design_status: n/a` when no new composition or atom is introduced. A `files:` line that mentions `packages/ui` (or similar) does **not** by itself make the ticket design-track — infer type from the job (relabel vs new composition).
+
+**Rule (LO-0197 — split visitor-tool vs editorial “go to comparison” labels first):** When a shop/catalog **shortlist** control uses the same verb as **open an editorial comparison article**, rename the shortlist (add / already-in-set) **before** adding catalog checkboxes or other bulk-select chrome. Keep the editorial cue on article links only. Copy-only label splits stay `ui-styling` / `design_status: n/a` unless layout changes.
 
 ## Skill loads by phase
 

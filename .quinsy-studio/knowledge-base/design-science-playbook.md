@@ -27,6 +27,8 @@ Theory-backed, measurable design decisions for Team 10.
 
 Nielsen heuristics (see `design_playbook.md`): visibility, match, control, consistency, error prevention, recognition, flexibility, minimalism, error recovery, help.
 
+**Empty states that depend on a prior step (LO-0179):** Name that step in the copy and provide a control that opens it. Do not hide the next action (create/start) only because the list is empty — show the empty state plus the path to fill it; reveal the next action once the dependency exists.
+
 ## Accessibility
 
 WCAG 2.1 AA — load FE-004 + `ux-accessibility` external skill at implement.

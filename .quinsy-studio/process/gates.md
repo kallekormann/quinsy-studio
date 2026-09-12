@@ -24,6 +24,10 @@ Gate = automated check + human confirmation
 - **Human:** irreversible decisions wait for approval
 - **No bypass:** a gate cannot be skipped
 
+**Residual UI after a status-only ticket (LO-0174):** If the shipped change only flipped a flag, enum, or CSS class and a flicker/regression remains, open a **new** ticket that changes the render path (mount, effect, animation, layout). Do not treat a second status-only patch as the fix.
+
+**Prod infra regression after a “fixed” ship (LO-0176):** If realtime, websockets, or similar production plumbing fails again after a claimed fix, the next tickets are **research + instrumentation** (repro, logs, metrics, hypothesis) — not another speculative code patch.
+
 ---
 
 ## Gate 0 — Conception Gate
@@ -175,7 +179,11 @@ python3 .quinsy-studio/studio-tools/design_math.py --audit-tokens projects/<p>/u
 
 **LO-0052 — durable Playwright browsers:** `./studio gate` sets `PLAYWRIGHT_BROWSERS_PATH` to `.quinsy-studio/.cache/playwright/<project>/` (gitignored). Do not rely on Cursor sandbox temp caches; they rotate and often mismatch mac-arm64 vs mac-x64. First gate may download Chromium once; later gate runs reuse the cache.
 
+**LO-0166 — warm the cache before smoke-heavy sprints:** Before a sprint that will run level-5 smoke repeatedly (or after OS/Playwright upgrades), run the project’s `npm run smoke:install` (or equivalent) once so Chromium is already under `.quinsy-studio/.cache/playwright/<project>/`. Cold/incomplete caches surface as `smoke_routes` exit 1 with “unsupported OS / downloading fallback” noise and can falsely block tickets.
+
 **LO-0071 / LO-0132 — agent sandbox Chromium SIGSEGV:** Cursor and some CI sandboxes cannot launch Playwright Chromium (SIGSEGV / kill EPERM). Agents may set `QUINSY_SKIP_SMOKE=1` **only** as a last resort inside that sandbox — gate output must record the skip explicitly (`run_qa_gate.py` returns “Skipped — QUINSY_SKIP_SMOKE set”). **Before `./studio move … done`:** re-run `npm run smoke` (or `./studio gate … --level 5`) in an **unrestricted** environment so Chromium actually launches. Skipping alone is not done. Human local runs and sprint-review smoke leave `QUINSY_SKIP_SMOKE` unset.
+
+**LO-0165 — npm_audit is soft:** Level 5 `npm_audit` (e.g. moderate Vitest advisory) is a **warning**. `run_qa_gate.py` excludes it from RESULT. Agents must not treat a soft `npm_audit` ❌ as a hard gate failure when RESULT is True / hard checks are green. Report output labels soft fails explicitly.
 
 Add `projects/<p>/docs/smoke-routes.json`:
 

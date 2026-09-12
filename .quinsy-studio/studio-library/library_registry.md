@@ -14,6 +14,10 @@
 
 **Stubs** (`billing`, `feature-gating`) are marked `stub: true` in `manifest.json`. `./studio library pull` **refuses** them. Build the working asset in the project, then promote if it is generic.
 
+**Product-local packages (LO-0162 / LO-0164):** companion surfaces such as `packages/figma-plugin/`, `packages/extension/` (and build junk like `.DS_Store`, `dist/`) are **project-owned**. Reuse review must not propose them for studio-library promote. See `studio-tools/sprint_reuse_review.py` (`PRODUCT_LOCAL_PACKAGE_NAMES` / `is_reuse_noise_path`).
+
+**Brand / domain UI (LO-0171):** magazine chrome, kit-specific atoms, and other non-generic `packages/ui` or `ui/` files should get `./studio reuse <p> --record <path> local` **when the ticket ships**, not as a pile at retro. Reuse then auto-completes (LO-0169) instead of demanding a human `--approve`.
+
 1. **Before writing new code** → `./studio library list` / `./studio library suggest <project> <topic>`
 2. **Pull boilerplate** → `./studio library pull <project> tokens button input`
 3. **Adapt in project** — map `--color-primary-*` to brand; keep domain components local
@@ -112,4 +116,4 @@ When moving a ticket to `done`, studio compares files under registry watch paths
 - Changes under `projects/<name>/ui/` are **project-local** — no library promotion required
 - Warnings apply only if you changed `packages/` without logging promotion
 - **Reuse harvest** auto-opens an LO only for **registry generic packages** (`packages/auth`, billing, …). First-brand token kits (`theme-tokens`, `design-tokens`, `kit-*`), project `ui/`, and first-brand public chrome (`packages/ui`, magazine nav/legal layout, site types used only by that host) stay local — record `./studio reuse --record <path> local`. Do not `library promote` those paths. Do not copy client kits into `studio-library/`.
-- **LO-0150:** Host masthead, site nav, and page renderers in project `packages/ui` are the product face. Reuse records them `local`. Promoting them copies a host into HQ.
+- **LO-0150 / LO-0206:** Host masthead, site nav, page renderers, and the project `packages/ui` (or scoped `@*/ui`) package are the product face. Reuse records them `local`. The reuse scanner must not demand a promote. Promoting them copies a host into HQ.

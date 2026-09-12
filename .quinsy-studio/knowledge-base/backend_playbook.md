@@ -57,9 +57,19 @@ Every decision is documented.
 
 Agents: read project `package.json` scripts and `.env.local` before suggesting `psql` or migrate commands.
 
+**Pending migrations before API smoke (LO-0227):** A 500 on a list/inbox API after Compose up often means **pending schema**, not a product bug. Apply the project’s migrate command **inside the app container** (or documented RUNBOOK one-liner) before treating the endpoint as broken. Do not skip migrate because CLI tinker looks healthy.
+
+**Self-hosted Postgres pooler (LO-0168):** transaction poolers (often `:54332`) may require **tenant username** and **SNI / TLS server name** matching the pooler host. Do not treat a failed `psql` to that port as “migrations cannot run.” Apply DDL **inside the database container** (`docker exec … psql` / `artisan migrate` on the app that talks to the primary), not via the pooler as a naive `localhost:54332` without tenant/SNI.
+
 **Host ports:** before writing Compose published ports or local URLs, probe what is already bound. See [host-port-allocation.md](host-port-allocation.md) (LO-0066). Do not reuse another project’s 5432 / 6379 / 3000 / Supabase 54321–54323.
 
 **Laravel `artisan serve` in Docker:** `ServeCommand` strips most process env from the PHP child (Compose `DB_*`, vendor base URLs, session driver) unless you pass `--no-reload`. CLI `php artisan` in the same container still sees full env, so tinker can look healthy while HTTP 500s. Use `php artisan serve --host=0.0.0.0 --port=8000 --no-reload`, or `php -S` which inherits the container environment.
+
+**Compose recreate after queue/env/volume edits (LO-0156):** `up -d` of the HTTP process does not refresh already-running queue workers or the public app. Recreate those services so new `--queue=` flags, bind mounts, and shared secrets are live. Container-to-container calls use the Compose service hostname and internal port, not the published `localhost` port the browser uses.
+
+**Billing / paid-vendor env contract (LO-0163):** ship the **server-only secret names** and host-panel (e.g. Coolify) env contract in the **same ticket** as the checkout/webhook feature. Prefer non-`NEXT_PUBLIC_` keys for API secrets. A static public checkout URL is not a substitute when the product needs variant/API checkout. Document expected env keys in `.env.example` and the deploy runbook in that ticket’s DoD.
+
+**Host-panel env aliases (LO-0200):** PaaS UIs often paste vendor names (`NEXT_PUBLIC_*_KEY`, unprefixed `VENDOR_STORE_ID`). Application code should **read aliases for the same secret** (canonical server key first, then known aliases) so deploy does not require renaming every key in the panel. Do **not** keep API secrets as `NEXT_PUBLIC_*` long-term — accept the alias in the server resolver, then migrate the panel to the server-only name. Never commit live keys into `NEXT_PUBLIC_` client bundles as the intended contract.
 
 **PHPUnit vs operator database (LO-0112 / LO-0115 / LO-0145):** `RefreshDatabase` / `migrate:fresh` against the Compose tenant Postgres wipes live domains, kits, and seed. Feature tests that need Postgres must use a throwaway database/schema, or transactions that cannot run `migrate:fresh` on the operator volume. Do not treat a green constraint test as permission to reset the human’s local stack. **`phpunit.xml` `force` is not enough** when Compose injects `DB_*` into the PHP process — the test `TestCase` must pin the isolated test database name in process env **before** the application boots.
 
@@ -362,6 +372,8 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 2. **Fix mapper before adding providers.** If Suggested is empty on a healthy HTTP 200, suspect adapter filtering (licence slug mismatch) before blaming the primary API or adding fallbacks.
 3. **Fallback providers are last resort.** Only evaluate direct APIs (e.g. Unsplash, Pexels) when: (a) the primary adapter maps correctly, (b) the primary returns healthy responses, and (c) Suggested is still empty for product-valid queries.
 4. **Do not stack providers to mask bugs.** A second provider that “works” while the primary silently filters everything hides mapper and copy failures until review.
+
+**Board column ids (LO-0180):** When a job (or similar) machine is wired to an API, persist **native column ids** on the reused board. A UI translation layer (demo column ids mapped onto domain states) is a bootstrap only — do not keep it as the contract.
 
 ---
 

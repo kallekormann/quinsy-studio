@@ -49,6 +49,11 @@ Before marking capture/toggle tickets done:
    - the capture appears in the **web app board Inbox** after sync (cloud `POST` / API), or
    - the ticket explicitly ships Sync UX + docs that local IDB ≠ board Inbox until sync.
 7. **Cloud sync URL probe (LO-0042):** when the extension tries multiple localhost ports (stale `VITE_*` / `NEXT_PUBLIC_APP_URL`), **do not abort** on plain-text wrong-app responses such as `Server action not found.` (another Next app on `:3000`). Keep probing until the product API returns **product-shaped JSON** (`{ error }` / `{ ok, item }`) or a real auth/validation rejection. Stop only on product JSON auth/config errors — not on sibling apps’ 404 text. Align baked app URL with the live `npm run dev` port after rebuild + Load unpacked.
+8. **Inbox delete bidirectional (LO-0160):** do not call companion ↔ cloud inbox “ready” while delete is one-way (local IDB only or cloud only). Same product surface → same delete semantics, or an explicit local-only label. Pair with design_playbook dual-surface delete (LO-0158).
+9. **Global mode arm order (LO-0157, LO-0159):** for any “armed / capture on for all tabs” pattern:
+   - Fan out apply messages (and **inject the content script on miss**) **before** writing durable/session storage that other surfaces treat as “already on.”
+   - Writing storage first lets a closing popup abort mid-fan-out: UI shows armed while pages never got the overlay.
+   - Prefer **storage-last**: confirm apply (or schedule inject+retry) → then persist the armed flag. On open tabs without a listener, `scripting.executeScript` / equivalent inject-on-miss, then re-send apply.
 
 ## Related
 

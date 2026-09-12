@@ -9,6 +9,7 @@ promote / LO-ticket / project-local decisions before retro or next sprint planni
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -27,6 +28,45 @@ REUSE_APPROVED = "approved"
 
 UI_PREFIX = "ui/components/"
 PACKAGE_PREFIX = "packages/"
+
+# LO-0162 / LO-0164: product-local companions are never studio-library candidates.
+# Also skip junk / build artifacts that reuse scans pick up from ticket snapshots.
+PRODUCT_LOCAL_PACKAGE_NAMES = frozenset({
+    "figma-plugin",
+    "extension",
+    "chrome-extension",
+    "browser-extension",
+    # Host chrome / design-system package — never a studio-library promote (LO-0150 / LO-0206).
+    "ui",
+})
+REUSE_SKIP_BASENAMES = frozenset({
+    ".DS_Store",
+    "Thumbs.db",
+})
+REUSE_SKIP_PATH_FRAGMENTS = (
+    "/dist/",
+    "/node_modules/",
+    ".DS_Store",
+)
+
+
+def is_reuse_noise_path(path: str) -> bool:
+    """True when path should not appear as an unpromoted reuse warning."""
+    normalized = path.replace("\\", "/").strip()
+    base = Path(normalized).name
+    if base in REUSE_SKIP_BASENAMES:
+        return True
+    if any(frag in f"/{normalized}/" or frag in normalized for frag in REUSE_SKIP_PATH_FRAGMENTS):
+        if ".DS_Store" in normalized or "/dist/" in f"/{normalized}/" or "/node_modules/" in f"/{normalized}/":
+            return True
+    if normalized.startswith(PACKAGE_PREFIX):
+        pkg = normalized.split("/")[1] if "/" in normalized else ""
+        if pkg in PRODUCT_LOCAL_PACKAGE_NAMES:
+            return True
+    # Scoped host UI packages (e.g. @brand/ui) are product-local chrome, not HQ (LO-0206).
+    if re.search(r"@[\w-]+/ui(?:/|$)", normalized):
+        return True
+    return False
 
 
 def reuse_review_json_path(project: str, sprint: str) -> Path:
@@ -71,6 +111,12 @@ def _promoted_paths(project: str) -> set:
 
 
 def classify_reuse_path(path: str) -> Dict[str, str]:
+    if is_reuse_noise_path(path):
+        return {
+            "kind": "skip",
+            "action": "project_local",
+            "hint": "Product-local or junk path — not a studio-library promote candidate (LO-0162/0164)",
+        }
     if path.startswith(UI_PREFIX):
         return {
             "kind": "ui",
@@ -139,8 +185,12 @@ def analyze_sprint_reuse(project: str, sprint: str, status: Dict) -> Dict:
         for path in warnings:
             if path in seen_paths:
                 continue
+            if is_reuse_noise_path(path):
+                continue
             seen_paths.add(path)
             classification = classify_reuse_path(path)
+            if classification.get("action") == "project_local" and classification.get("kind") == "skip":
+                continue
             items.append({
                 "path": path,
                 "ticket_id": ticket_id,

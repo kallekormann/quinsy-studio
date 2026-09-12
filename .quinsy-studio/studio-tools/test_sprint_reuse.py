@@ -29,6 +29,14 @@ class TestClassifyReusePath(unittest.TestCase):
         result = classify_reuse_path("packages/auth/next/env.ts")
         self.assertEqual(result["action"], "promote")
 
+    def test_host_ui_package_is_project_local(self):
+        from sprint_reuse_review import is_reuse_noise_path
+
+        self.assertTrue(is_reuse_noise_path("packages/ui/src/Button.tsx"))
+        self.assertTrue(is_reuse_noise_path("apps/web/node_modules/@brand/ui/dist/index.js"))
+        self.assertEqual(classify_reuse_path("packages/ui/src/Button.tsx")["action"], "project_local")
+        self.assertEqual(classify_reuse_path("packages/auth/next/env.ts")["action"], "promote")
+
 
 class TestPathCovered(unittest.TestCase):
     def test_promoted_prefix(self):

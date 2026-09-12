@@ -129,6 +129,306 @@
       "status": "done",
       "created": "2026-09-08T13:48:12",
       "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0014",
+      "skill_id": "BE-001",
+      "topic": "Recreate queue workers and the public app after Compose env, queue flag, or volume changes",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-09T16:07:41",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0015",
+      "skill_id": "BE-004",
+      "topic": "Recreate queue workers and the public app after Compose env, queue flag, or volume changes",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-09T16:07:41",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0016",
+      "skill_id": "UX-003",
+      "topic": "Extension delete is local-only while inbox rail is cloud \u2014 same product surface,",
+      "source": "lo",
+      "observation": "LO-0158",
+      "status": "open",
+      "created": "2026-09-09T17:34:59",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0017",
+      "skill_id": "FE-002",
+      "topic": "Extension delete is local-only while inbox rail is cloud \u2014 same product surface,",
+      "source": "lo",
+      "observation": "LO-0158",
+      "status": "open",
+      "created": "2026-09-09T17:34:59",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0018",
+      "skill_id": "UX-002",
+      "topic": "When execute points at Lemon while chat is still on capture UX, confirm priority",
+      "source": "lo",
+      "observation": "LO-0161",
+      "status": "open",
+      "created": "2026-09-09T17:34:59",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0019",
+      "skill_id": "UX-004",
+      "topic": "When execute points at Lemon while chat is still on capture UX, confirm priority",
+      "source": "lo",
+      "observation": "LO-0161",
+      "status": "open",
+      "created": "2026-09-09T17:34:59",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0020",
+      "skill_id": "UX-003",
+      "topic": "Self-hosted Supabase pooler :54332 needs tenant/SNI; apply migrations via db con",
+      "source": "lo",
+      "observation": "LO-0168",
+      "status": "open",
+      "created": "2026-09-10T06:24:58",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0021",
+      "skill_id": "SO-001",
+      "topic": "Reuse gate still demanded `--approve` / path records after \u201cinform-only\u201d messagi",
+      "source": "lo",
+      "observation": "LO-0169",
+      "status": "open",
+      "created": "2026-09-10T06:24:58",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0022",
+      "skill_id": "UX-005",
+      "topic": "Prefer `--record local` early for brand-specific `ui/` atoms so reuse does not b",
+      "source": "lo",
+      "observation": "LO-0171",
+      "status": "open",
+      "created": "2026-09-10T06:24:58",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0023",
+      "skill_id": "FE-002",
+      "topic": "Prefer `--record local` early for brand-specific `ui/` atoms so reuse does not b",
+      "source": "lo",
+      "observation": "LO-0171",
+      "status": "open",
+      "created": "2026-09-10T06:24:58",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0024",
+      "skill_id": "SO-001",
+      "topic": "Reuse gate still demanded --approve / path records after inform-only messaging",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-10T10:43:24",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0025",
+      "skill_id": "UX-002",
+      "topic": "Empty states must name the previous step (Affiliate assign) when a section depen",
+      "source": "lo",
+      "observation": "LO-0179",
+      "status": "open",
+      "created": "2026-09-10T22:56:52",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0026",
+      "skill_id": "FE-004",
+      "topic": "Empty states must name the previous step (Affiliate assign) when a section depen",
+      "source": "lo",
+      "observation": "LO-0179",
+      "status": "open",
+      "created": "2026-09-10T22:56:52",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0027",
+      "skill_id": "UX-002",
+      "topic": "Empty states must name the previous step (Affiliate assign)",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-10T22:57:00",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0028",
+      "skill_id": "FE-004",
+      "topic": "Empty states must name the previous step (Affiliate assign)",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-10T22:57:00",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0029",
+      "skill_id": "UX-002",
+      "topic": "Empty states must name the previous step and link to it",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-11T08:25:16",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0030",
+      "skill_id": "FE-004",
+      "topic": "Empty states must name the previous step and link to it",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-11T08:25:16",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0031",
+      "skill_id": "BE-001",
+      "topic": "Persist native board column ids when wiring a job API",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-11T08:25:16",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0032",
+      "skill_id": "UX-003",
+      "topic": "Selected MD rail palette must drive presentation and PDF color \u2014 Figma-only fixe",
+      "source": "lo",
+      "observation": "LO-0201",
+      "status": "open",
+      "created": "2026-09-11T17:02:42",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0033",
+      "skill_id": "FE-002",
+      "topic": "Selected MD rail palette must drive presentation and PDF color \u2014 Figma-only fixe",
+      "source": "lo",
+      "observation": "LO-0201",
+      "status": "open",
+      "created": "2026-09-11T17:02:42",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0034",
+      "skill_id": "BE-001",
+      "topic": "Self-hosted deploy env contracts should accept common vendor aliases for the same secret (prefixed and unprefixed) witho",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-11T17:26:08",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0035",
+      "skill_id": "BE-004",
+      "topic": "Self-hosted deploy env contracts should accept common vendor aliases for the same secret (prefixed and unprefixed) witho",
+      "source": "mistake",
+      "observation": "",
+      "status": "open",
+      "created": "2026-09-11T17:26:08",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0036",
+      "skill_id": "BE-001",
+      "topic": "Accept Coolify env aliases in code; never put API keys in NEXT_PUBLIC",
+      "source": "lo",
+      "observation": "LO-0202",
+      "status": "open",
+      "created": "2026-09-11T17:51:33",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0037",
+      "skill_id": "BE-004",
+      "topic": "Accept Coolify env aliases in code; never put API keys in NEXT_PUBLIC",
+      "source": "lo",
+      "observation": "LO-0202",
+      "status": "open",
+      "created": "2026-09-11T17:51:33",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0038",
+      "skill_id": "UX-003",
+      "topic": "Any magazine chrome ticket must smoke `/` on Compose `:13000` with published inv",
+      "source": "lo",
+      "observation": "LO-0205",
+      "status": "open",
+      "created": "2026-09-11T17:51:33",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0039",
+      "skill_id": "FE-002",
+      "topic": "Any magazine chrome ticket must smoke `/` on Compose `:13000` with published inv",
+      "source": "lo",
+      "observation": "LO-0205",
+      "status": "open",
+      "created": "2026-09-11T17:51:33",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0040",
+      "skill_id": "SO-001",
+      "topic": "Reuse scanner still flags `@affi/ui` paths as unpromoted though they are product",
+      "source": "lo",
+      "observation": "LO-0206",
+      "status": "open",
+      "created": "2026-09-12T12:27:00",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0041",
+      "skill_id": "BE-001",
+      "topic": "Reuse scanner still flags `@affi/ui` paths as unpromoted though they are product",
+      "source": "lo",
+      "observation": "LO-0206",
+      "status": "open",
+      "created": "2026-09-12T12:27:00",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0042",
+      "skill_id": "UX-005",
+      "topic": "Add HTML sticker integrity test (style closes before body) in gate \u2014 already add",
+      "source": "lo",
+      "observation": "LO-0210",
+      "status": "open",
+      "created": "2026-09-12T12:27:00",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0043",
+      "skill_id": "FE-002",
+      "topic": "Add HTML sticker integrity test (style closes before body) in gate \u2014 already add",
+      "source": "lo",
+      "observation": "LO-0210",
+      "status": "open",
+      "created": "2026-09-12T12:27:00",
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
     }
   ]
 }

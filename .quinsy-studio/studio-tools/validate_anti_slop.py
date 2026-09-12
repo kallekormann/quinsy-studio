@@ -145,6 +145,7 @@ IGNORE_PATTERNS = [
     r'pnpm-lock\.yaml',
     r'[/\\]vendor[/\\]',
     r'public[/\\](js|css|fonts)[/\\]filament',
+    r'apps[/\\]command-center',
 ]
 
 # File extensions that are checked

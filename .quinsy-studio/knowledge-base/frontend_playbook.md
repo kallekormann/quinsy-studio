@@ -46,6 +46,10 @@ Before shipping new chrome or a lookalike panel:
 2. **Project component** — if the pattern exists in markup only, extract a reusable component under the project `ui/` (or `src/components/`) used by every surface that needs it.
 3. **Studio library** — if the pattern is generic across products, author or promote under `.quinsy-studio/studio-library/` (see `component-creation-playbook.md`).
 
+**Same organism, two rails (LO-0211 / LO-0212):** If two surfaces share a card + hover-action pattern (library grid and a detail rail, color chip and presentation, etc.), extract **one** project component before painting a second copy. Do not promote a brand-specific specimen card into HQ until a second product needs it.
+
+**Specimens (LO-0217):** Sticker / library specimens pull **studio-library or project token styles**, not a one-off export CSS fork.
+
 **Right-rail dock:** icon rail + peer detail panel (`studio-rail` / `StudioDock`) is the canonical organism for “tools beside the stage.” Do not fake it with padded cards or duplicate headers that diverge from the docked composition.
 
 See also: `process/human-in-the-loop.md` (LO-0040); SaaS archetype UX option in `process/project-archetypes.md`.
@@ -364,6 +368,10 @@ className="absolute bottom-20 right-3 top-14 z-30 flex w-[280px] ..."
 5. **Anti-slop on export paths (LO-0029)** — no bare `100`/`1000`/`86400`; no consecutive `await`/`await` lines. Use named constants and await chaining / helpers before gate 5.
 6. Review briefs for PDF tickets: numbered steps that click Download PDF / Export PDF and confirm a **non-empty** file appears.
 7. **WYSIWYG type stack (LO-0032)** — if the ticket touches an on-screen brand guide / print preview **and** a PDF (or printable HTML) of the same surface, DoD must assert **the same font-family stack** for hero/title and body on screen and in PDF. Shared CSS/tokens preferred over divergent React vs PDF HTML. Serif on screen + sans in PDF (or the reverse) is not done.
+8. **Section = page (LO-0181 / LO-0189 / LO-0192 / LO-0194)** — multi-section printable HTML must paginate with **one section per sheet**. Put page breaks on section wrappers in the print tree; verify print-preview page count equals section count before done. Plan arrays / landscape `@page` without that proof are not enough. If the app shell uses `h-dvh` / `overflow: hidden` on `body`, `#__next`, or `main`, **unlock those under `@media print`** (height auto, overflow visible) or Chromium collapses to one clipped sheet — a second “plan only” ticket is not a fix.
+9. **Selected-id exports (LO-0188 / LO-0191 / LO-0196)** — import/export of colors, tokens, or kit slices must bind to the **currently selected** candidate id (palette, type, mood). Preview strips and downstream import must share that source — never a sibling candidate, stale role map, or “first available” pool. Do **not** invent extra roles (surface / soft / FALLBACK) via role resolvers when the selected palette already supplies an exact hex list — paint styles and strip previews must match that list’s hues and count.
+10. **One print source (LO-0216)** — PDF / printable HTML must reuse the **presentation print CSS and layout**, not a second page template. Screen and file stay one tree.
+11. **HTML sticker / export integrity (LO-0210)** — generated HTML that injects CSS must **close `</style>` before `<body>`**. A style tag that never closes (or opens after body) is not done; keep a unit/gate assert on the fragment.
 
 ### Pre-auth / marketing fonts (LO-0134)
 

@@ -20,12 +20,16 @@ Create tickets:
 
 New tickets are **compact**: frontmatter is the machine record; body is Target, Scope, AC only. Boilerplate DoD (gate 5, anti-slop) lives in process docs — do not paste it on every ticket.
 
+**Rule (LO-0204):** `./studio ticket … --from-feedback` must use the clarify **draft_acceptance** lines as AC. Do not emit a generic “A user in project … uses the feature … works as described” Given/When/Then. If the draft has scope/out-of-scope, those become the ticket Scope — rewrite leftover filler before `./studio sprint`.
+
 Move during sprint:
 
 ```bash
 ./studio move <project> TICKET-NNN implement
 ./studio move <project> TICKET-NNN done
 ```
+
+**Rule (LO-0175):** When a ticket is **superseded** or **cancelled**, in the **same turn** either clear `sprint:` (and set `sprint_deferred: true` if it stays in backlog) **or** `./studio move … cancelled` so it is not in `implement/` / sprint plan. Do not leave a ghost that `review` / `execute` can still pick. Pair with LO-0060 when the sprint goal itself changes.
 
 ---
 

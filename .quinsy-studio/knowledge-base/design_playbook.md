@@ -200,6 +200,10 @@ When a marketing scroll story advances stages (copy + illustration), **do not de
 
 ---
 
+## Dual-surface delete consistency (LO-0158)
+
+When the same user objects appear in **two clients** of one product (e.g. companion capture list and cloud inbox rail), **delete must mean the same thing on both**. Local-only delete while the cloud rail keeps the row (or the reverse) fails usability review — testers experience “it came back” / “two inboxes.” Prefer bidirectional delete (or an explicit “local draft only” label) before calling the surface ready.
+
 ## Accessibility (a11y)
 
 ### WCAG 2.1 AA
@@ -243,6 +247,73 @@ Editorial **bento** or solid-fill mosaics fail review when a low-resolution sour
 ```
 
 Pair with [contextual-ia-playbook.md](contextual-ia-playbook.md) — imagery epics need presentation placement DoD, not rail-only (LO-0065).
+
+---
+
+## Scrollbar gutter on public chrome (LO-0172)
+
+When switching public sections, filters, or rubric chips, **content width must not shift** because a classic vertical scrollbar appears or disappears.
+
+- Put `scrollbar-gutter: stable` on the **scrolling root** (`html`, or the well that actually scrolls).
+- Treat reserved gutter as an AC on public layout / chrome tickets — not a follow-up nit.
+- Overlay OS scrollbars still must not shove the masthead; classic gutters always reserve the slot.
+
+```
+❌ short page vs long page moves the well sideways
+✅ same content box whether the bar is painted or not
+```
+
+---
+
+## Plugin / extension cold-open chrome (LO-0182)
+
+Signed-out first paint must show the **primary Login / connect** control — never a disabled refresh icon or empty soft button that only reveals login after click. Auth chrome and icon refresh polish belong in the **same** ticket when both ship in one review cycle (see LO-0185).
+
+```
+❌ Cold open → white/soft refresh → click → Login appears
+✅ Cold open → Login (correct button style); after auth → tabs + icon refresh
+```
+
+## Dimmed icon chrome (LO-0187 / LO-0190 / LO-0193)
+
+Toolbar / card **icon buttons** (sign-out, refresh, open-external) default to **dimmed / outline** controls that respect light and dark surfaces — not soft white (or coral-wash) discs that read as off-brand “white buttons.” Match outline/secondary chrome used for secondary actions; keep one clear primary CTA where needed. Host-plugin HTML (Figma, etc.) must use the same rule: `outline`/`ghost` + token ink/border — never `soft` accent-wash on icon-only controls.
+
+```
+❌ Soft white / wash disc icon buttons in plugin or dock chrome
+✅ Dimmed outline icon buttons in light and dark; primary reserved for the main action
+```
+
+## Moving exports between rails (LO-0186)
+
+When kit exports (brief, tokens, PDF) move from one rail to another, the **source rail must drop leftover helper cards and “go elsewhere” copy** in the same ticket. Icon-row polish on the destination rail is incomplete if the old rail still teases the moved actions.
+
+```
+❌ Destination gets icons; source still shows “Export from X…” card
+✅ Destination owns actions; source list has no orphan deep-link card or hub helper line
+```
+
+## Export chrome copy (LO-0226)
+
+Export / download tooltips and labels name the **deliverable** (filename and format: `theme.css`, `@theme`, `tokens.json`). Do not put framework names or version numbers in that chrome.
+
+## List/detail titles (LO-0229)
+
+Mail / inbox / library **list and detail titles truncate by default** (ellipsis). Do not wrap long titles onto extra rows as the default. Responsive mail (folders off-canvas, list/detail drawer under the project’s tablet breakpoint) belongs in AC when the ticket ships that chrome.
+
+## Public index smoke (LO-0205)
+
+Tickets that change public chrome (masthead, home feature, heroes, measure) must be smoked on **`/` at the RUNBOOK public host port** with published inventory — not only on an article slug. An empty index with a working inner route is a default-flow miss (LO-0203).
+
+## Selected palette drives screen and print (LO-0201)
+
+The **operator-selected** color set (token rail, brand MD, kit palette id) must be the same source for **on-canvas presentation and PDF/print**. Fixing fills only in a design-tool file (or a one-off CSS dump) is not done if the live surface still uses a default/inverted/fallback palette.
+
+```
+❌ Plugin/file colors look right; presentation + PDF still use the default kit
+✅ One selected palette id → screen tokens and print/PDF colors
+```
+
+See also frontend WYSIWYG type stack (LO-0032).
 
 ---
 

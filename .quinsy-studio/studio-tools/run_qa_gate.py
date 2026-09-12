@@ -485,9 +485,16 @@ def print_report(report: QAReport, use_json: bool = False):
     total_count = len(report.results)
     
     for result in report.results:
-        icon = "✅" if result["passed"] else "❌"
+        soft = result["check"] == "npm_audit"
+        if result["passed"]:
+            icon = "✅"
+        elif soft:
+            icon = "⚠️"
+        else:
+            icon = "❌"
         duration_str = f" ({result['duration']:.1f}s)" if result["duration"] > 0 else ""
-        print(f"\n  {icon} {result['check']}{duration_str}")
+        soft_tag = " (soft — does not fail RESULT)" if soft and not result["passed"] else ""
+        print(f"\n  {icon} {result['check']}{duration_str}{soft_tag}")
         
         if not result["passed"] and result.get("error"):
             print(f"     Error: {result['error']}")
@@ -497,16 +504,28 @@ def print_report(report: QAReport, use_json: bool = False):
                 for line in output_lines:
                     print(f"     {line}")
     
+    hard_failed = [r for r in report.results if not r["passed"] and r["check"] != "npm_audit"]
+    soft_failed = [r for r in report.results if not r["passed"] and r["check"] == "npm_audit"]
     print(f"\n  {'='*50}")
     print(f"  RESULT: {report.passed}")
     print(f"  Passed: {passed_count}/{total_count}")
+    if soft_failed and report.passed:
+        print(f"  Soft fail ignored for RESULT: {', '.join(r['check'] for r in soft_failed)}")
     print(f"  Duration: {report.total_duration:.1f}s")
     print(f"  {'='*50}")
     
     if report.passed:
-        print(f"\n  ✅ All QA checks passed. Ticket can be marked as 'done'.")
+        if soft_failed:
+            print(
+                f"\n  ✅ QA RESULT green (hard checks). "
+                f"Soft advisory still open: {', '.join(r['check'] for r in soft_failed)} — not a done-blocker."
+            )
+        else:
+            print(f"\n  ✅ All QA checks passed. Ticket can be marked as 'done'.")
     else:
         print(f"\n  ❌ QA checks failed. Ticket must go back to phase 4 (implementation).")
+        if hard_failed:
+            print(f"     Hard fails: {', '.join(r['check'] for r in hard_failed)}")
     
     print()
 

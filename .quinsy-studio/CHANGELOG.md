@@ -1,5 +1,204 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-12 — Open LO harvest (0206–0230), portability split
+
+### Changed
+
+- `studio-tools/sprint_reuse_review.py` — host `packages/ui` and scoped `@*/ui` are product-local; reuse does not demand promote (LO-0206).
+- `process/human-in-the-loop.md` — scope-proposal md/json/execute counts match (LO-0208); human-smoke AC names compose/create path (LO-0223); operator filing stays structured-first (LO-0224).
+- `process/ticket-team-allocation.md` — ticket-specific design spec + §2/§2c before sprint scope (LO-0213 / 0218 / 0220 / 0222).
+- `knowledge-base/frontend_playbook.md` — shared card organism before a second copy; specimens use library/token styles; print CSS is the PDF source; HTML sticker `</style>` before body (LO-0210 / 0211 / 0212 / 0216 / 0217).
+- `knowledge-base/design_playbook.md` — export chrome names filename/format only (LO-0226); list/detail titles truncate (LO-0229).
+- `knowledge-base/backend_playbook.md` — pending migrations before treating API 500 as a product bug (LO-0227).
+- `knowledge-base/host-port-allocation.md` — smoke on the project RUNBOOK compose URL, never a hardcoded studio port.
+
+### Closed
+
+- Infused: LO-0206, 0208, 0210–0213, 0216–0218, 0220, 0222–0224, 0226, 0227, 0229.
+- Removed from HQ backlog (project-local only): LO-0207, 0209, 0214, 0215, 0219, 0221, 0225, 0228, 0230.
+
+## 2026-09-11 — LO-0202–0205 (idle infusion + ticket generator)
+
+### Changed
+
+- `knowledge-base/backend_playbook.md` — LO-0202 closed as duplicate of LO-0200 (host-panel env aliases).
+- `process/human-in-the-loop.md` — public `/` with published inventory is the default flow for chrome tickets (LO-0203, LO-0205).
+- `knowledge-base/design_playbook.md` — smoke `/` on the RUNBOOK public host port, not only inner slugs (LO-0205).
+- `process/ticket-workflow.md` + `studio-tools/ticket_helpers.py` / `studio.py` — `--from-feedback` uses draft AC; skip generic GWT (LO-0204).
+
+### Closed
+
+- LO-0202, LO-0203, LO-0204, LO-0205 infused.
+
+
+## 2026-09-11 — LO-0200 / LO-0201 idle infusion
+
+### Changed
+
+- `knowledge-base/backend_playbook.md` — accept vendor env aliases in the server resolver; do not leave API secrets as `NEXT_PUBLIC_*` long-term (LO-0200).
+- `knowledge-base/design_playbook.md` — selected palette id must drive presentation and PDF, not design-file-only fixes (LO-0201).
+
+### Closed
+
+- LO-0200, LO-0201 infused.
+
+
+## 2026-09-11 — SPRINT-18 idle infusion (LO-0197–0199)
+
+### Changed
+
+- `process/ticket-team-allocation.md` — `files:` hitting `packages/ui` is not design-track by itself; split visitor-shortlist vs editorial comparison verbs before bulk-select (LO-0197, with LO-0184).
+- `process/human-in-the-loop.md` — one listener per published host port: Compose XOR host `npm run dev` (LO-0198, LO-0199).
+
+### Closed
+
+- LO-0197, LO-0198, LO-0199 infused.
+
+
+## 2026-09-11 — SPRINT-134 retro learnings (LO-0191–0196)
+
+### Changed
+
+- `knowledge-base/frontend_playbook.md` — print unlock for `overflow:hidden` / `h-dvh` shells; selected palette import never invents FALLBACK roles (LO-0191, LO-0192, LO-0194, LO-0196).
+- `knowledge-base/design_playbook.md` — plugin HTML icon-only = outline/dimmed, not soft wash (LO-0193).
+- `process/human-in-the-loop.md` — print overflow unlock in DoD; gitignored plugin `dist/` needs rebuild+reload for review smoke (LO-0192, LO-0194, LO-0195).
+
+### Closed
+
+- LO-0191, LO-0192, LO-0193, LO-0194, LO-0195, LO-0196 infused.
+
+
+## 2026-09-11 — SPRINT-133 retro learnings (LO-0187–0190)
+
+### Changed
+
+- `process/human-in-the-loop.md` — print DoD: section wrappers + print-preview page count; plan-only green is not done (LO-0189 / LO-0181).
+- `knowledge-base/frontend_playbook.md` — section=page print tree; selected-id bind for palette/kit import-export (LO-0188, LO-0189).
+- `knowledge-base/design_playbook.md` + `studio-library/ui/components/button/README.md` — dimmed/outline icon chrome for light+dark (LO-0187, LO-0190).
+
+### Closed
+
+- LO-0187, LO-0188, LO-0189, LO-0190 infused.
+
+
+## 2026-09-11 — SPRINT-131 retro learnings (LO-0181–0186)
+
+### Changed
+
+- `process/human-in-the-loop.md` — print/PDF receipts need page-count proof (LO-0181); prefer split sprints over 14-ticket polish dumps (LO-0183); bundle plugin shell chrome FBs (LO-0185).
+- `process/ticket-team-allocation.md` — do not over-classify chrome polish as design-track (LO-0184).
+- `knowledge-base/design_playbook.md` — plugin cold-open shows Login first (LO-0182); moving exports drops leftover helper cards (LO-0186).
+
+### Closed
+
+- LO-0181, LO-0182, LO-0183, LO-0184, LO-0185, LO-0186 infused.
+
+
+## 2026-09-11 — Sprint-16 learnings (LO-0176–0180)
+
+### Changed
+
+- `process/gates.md` — after a claimed prod-infra fix, next tickets are research + instrumentation (LO-0176).
+- `process/agent-context.md` — reuse vendored admin Kanban/table/Dialog/Empty; Add = Dialog, inspect = Sheet (LO-0177, LO-0178).
+- `knowledge-base/design-science-playbook.md` — empty states name the previous step and link to it (LO-0179).
+- `knowledge-base/backend_playbook.md` — persist native board column ids when wiring the job API (LO-0180).
+
+### Closed
+
+- LO-0176, LO-0177, LO-0178, LO-0179, LO-0180 infused.
+
+## 2026-09-10 — Clear sprint on supersede/cancel (LO-0175)
+
+### Changed
+
+- `process/ticket-workflow.md` / `process/human-in-the-loop.md` — supersede or cancel must clear `sprint:` or `move … cancelled` in the same turn so execute/review cannot pick ghosts.
+
+### Closed
+
+- LO-0175 infused.
+
+## 2026-09-10 — Anti-slop ignores vendored command-center shells
+
+### Changed
+
+- `studio-tools/validate_anti_slop.py` — ignore `apps/command-center` the same way as Filament public assets (vendored admin UI).
+
+## 2026-09-10 — Residual UI needs a render-path ticket (LO-0174)
+
+### Changed
+
+- `process/gates.md` — leftover flicker after a status-only ticket requires a follow-up that changes the render path, not another flag flip.
+
+### Closed
+
+- LO-0174 infused.
+
+## 2026-09-10 — Kit-token Dropdown (AFFI-0071)
+
+### Changed
+
+- `studio-library/ui/components/dropdown/` — Listbox paints from kit CSS variables (`--color-border`, `--color-background`, `--color-foreground`, `--color-muted`, `--color-accent`, `--font-ui`) instead of Moody class names.
+- `studio-library/ui/tokens/design-tokens.css` — aliases those kit names onto the canonical surface/text/primary tokens.
+
+## 2026-09-10 — Deployed review push; reuse inform-auto; gutter; pooler (LO-0167–0173)
+
+### Changed
+
+- `process/human-in-the-loop.md` / `process/agent-context.md` — git-deployed sprint review needs a product-repo push after MOVE_DONE (LO-0167, LO-0170); drop accidental `--help` feedback before retro (LO-0173).
+- `studio-tools/studio.py` / `sprint_hitl.py` — reuse inform completes when paths are recorded; no `--approve` (LO-0169).
+- `studio-library/library_registry.md` — `--record local` on brand UI when the ticket ships (LO-0171).
+- `knowledge-base/design_playbook.md` — `scrollbar-gutter: stable` on public chrome (LO-0172).
+- `knowledge-base/backend_playbook.md` — pooler tenant/SNI; apply DDL on the primary, not a bare pooler port (LO-0168).
+
+### Closed
+
+- LO-0167, LO-0168, LO-0169, LO-0170, LO-0171, LO-0172, LO-0173 infused.
+
+## 2026-09-09 — Soft npm_audit label; warm Playwright cache (LO-0165, LO-0166)
+
+### Changed
+
+- `studio-tools/run_qa_gate.py` — `npm_audit` soft fails show ⚠️ and “does not fail RESULT” when hard checks pass (LO-0165).
+- `process/gates.md` — warm `.quinsy-studio/.cache/playwright/<project>/` via `smoke:install` before smoke-heavy sprints (LO-0166); document npm_audit soft policy.
+
+### Closed
+
+- LO-0165, LO-0166 infused.
+
+## 2026-09-09 — Dual-surface delete; reuse skip product packages; billing env (LO-0158–0164)
+
+### Changed
+
+- `knowledge-base/design_playbook.md` / `chrome-mv3-vite-content-scripts.md` — companion ↔ cloud delete must be bidirectional before “inbox ready” (LO-0158, LO-0160).
+- `studio-tools/sprint_reuse_review.py` / `studio-library/library_registry.md` — skip figma-plugin/extension and `.DS_Store`/`dist` as promote noise (LO-0162, LO-0164).
+- `knowledge-base/backend_playbook.md` — server-only secrets + host env contract in the same billing ticket (LO-0163).
+
+### Closed
+
+- LO-0158, LO-0160, LO-0162, LO-0163, LO-0164 infused.
+
+## 2026-09-09 — Extension global-arm order; never silent focus switch (LO-0157, LO-0159, LO-0161)
+
+### Changed
+
+- `knowledge-base/chrome-mv3-vite-content-scripts.md` — global mode: fan-out + inject-on-miss before persisting armed storage (LO-0157, LO-0159).
+- `process/agent-context.md` — do not `./studio focus` another product unless the human explicitly asks to switch; chat/execute topic mismatch stays on active project (LO-0161).
+
+### Closed
+
+- LO-0157, LO-0159, LO-0161 infused.
+
+## 2026-09-09 — Operator click before job polish; recreate Compose workers (LO-0155, LO-0156)
+
+### Changed
+
+- `process/human-in-the-loop.md` / `process/agent-context.md` — a queued job is not the default flow until the operator control that enqueues it ships; implement that click before notify/revalidate polish when the human is waiting (LO-0155).
+- `knowledge-base/backend_playbook.md` — recreate queue workers and the public app after Compose queue/env/volume edits; use the service hostname for container-to-container URLs (LO-0156).
+
+### Closed
+
+- LO-0155, LO-0156 infused.
+
 ## 2026-09-09 — Public document matches operator Save (LO-0154)
 
 ### Changed

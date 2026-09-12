@@ -5,7 +5,7 @@
  */
 
 :root,
-[data-theme='light'] {
+[data-theme="light"] {
   color-scheme: light;
 
   /* Primary (blue — Tailwind default) */
@@ -46,9 +46,15 @@
   --color-border: var(--color-neutral-200);
   --color-text: var(--color-neutral-900);
   --color-text-muted: var(--color-neutral-500);
+  /* Kit aliases — Dropdown and other molecules restyle by swapping these */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-accent: var(--color-primary-500);
 
   /* Typography */
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-ui: var(--font-sans);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Radius (Tailwind scale) */
@@ -62,10 +68,11 @@
   /* Shadow */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
-[data-theme='dark'] {
+[data-theme="dark"] {
   color-scheme: dark;
 
   --color-bg: var(--color-neutral-950);
@@ -74,10 +81,14 @@
   --color-border: var(--color-neutral-700);
   --color-text: var(--color-neutral-50);
   --color-text-muted: var(--color-neutral-400);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-accent: var(--color-primary-400);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
 
     --color-bg: var(--color-neutral-950);
@@ -86,5 +97,9 @@
     --color-border: var(--color-neutral-700);
     --color-text: var(--color-neutral-50);
     --color-text-muted: var(--color-neutral-400);
+    --color-background: var(--color-bg);
+    --color-foreground: var(--color-text);
+    --color-muted: var(--color-text-muted);
+    --color-accent: var(--color-primary-400);
   }
 }

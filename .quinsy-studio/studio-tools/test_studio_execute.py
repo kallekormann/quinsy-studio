@@ -104,6 +104,26 @@ class ExtractAndCardTests(unittest.TestCase):
         self.assertNotIn("Current project state", md)
         self.assertNotIn("QA gate green", md)
         self.assertNotIn("## 4. Definition of Done", md)
+
+    def test_feedback_style_generic_gwt_is_filler(self):
+        md = render_ticket_markdown(
+            {
+                "id": "DEMO-0002",
+                "title": "Assemble start",
+                "acceptance_criteria": ["Index shows a featured teaser"],
+                "scenarios": [
+                    {
+                        "given": "A user in project affiliate-platform",
+                        "when": "They use the feature 'Assemble start'",
+                        "then": "'Assemble start' works as described and is tested",
+                    }
+                ],
+                "soll_zustand": "Start has inventory.",
+            }
+        )
+        self.assertIn("Index shows a featured teaser", md)
+        self.assertNotIn("A user in project", md)
+        self.assertNotIn("works as described and is tested", md)
         self.assertNotIn("## Skills", md)
         self.assertNotIn("Playbook:", md)
 

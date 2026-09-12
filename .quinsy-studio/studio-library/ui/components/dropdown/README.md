@@ -1,6 +1,17 @@
 # Dropdown
 
-Single-value **Listbox** dropdown for product surfaces. Popover panel matches menu language (border, shadow, soft hover) — **not** native OS `<select>` chrome.
+Single-value **Listbox** dropdown for product surfaces. **Not** native OS `<select>` chrome.
+
+Paint comes from **kit CSS variables** (any brand kit, not product class names):
+
+| Role | Variable (fallback) |
+|------|---------------------|
+| Border | `--color-border` |
+| Surface | `--color-background` → `--color-surface` |
+| Text | `--color-foreground` → `--color-text` |
+| Muted | `--color-muted` → `--color-text-muted` |
+| Accent / selected | `--color-accent` → `--color-primary-500` |
+| Type | `--font-ui` → `--font-sans` |
 
 ## Pull
 
@@ -12,17 +23,17 @@ Single-value **Listbox** dropdown for product surfaces. Popover panel matches me
 
 ```tsx
 <Dropdown
-  label="Resolution"
-  value={pixelRatio}
-  onChange={setPixelRatio}
+  label="Sortierung"
+  value={sort}
+  onChange={setSort}
   options={[
-    { value: 1, label: '1× (screen)' },
-    { value: 2, label: '2× (default)' },
+    { value: 'opened', label: 'Meist geöffnet' },
+    { value: 'newest', label: 'Neu hinzugefügt' },
   ]}
 />
 ```
 
 ## A11y
 
-- Headless UI Listbox: keyboard nav, Esc, focus management
-- Provide `label` or `aria-label`
+- Headless UI Listbox: arrows, Esc, focus management
+- Provide `label` (wired to `aria-labelledby`) or `aria-label`

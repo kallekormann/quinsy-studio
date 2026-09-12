@@ -61,6 +61,10 @@ While sprint tickets are not all `done`:
 
 **Execute loop:** `./studio execute <project>` returns one action. The agent runs `NEXT`, then execute again, until `HITL`. `INFORM` still loops. Gate failures write `sprints/SPRINT-NN/debug/<ticket>.md` and retry up to 3 times, then `blocked` + optional `gate-fail` LO **and** a train job. `move … done` requires a receipt (`./studio receipt`) plus a fresh level-5 gate.
 
+**Rule (LO-0181 / LO-0189 / LO-0192 / LO-0194 — print / multi-page export receipts):** Before `MOVE_DONE` on print or multi-page PDF tickets, the receipt must record a **page-count or print-preview proof** (e.g. “N sections → N pages” or a print-preview screenshot path). Shipping landscape CSS or a page-plan unit test alone is not done. Prefer **forced breaks on real section wrappers** in the print tree (one HTML section → one `@page`); if the human still sees a single truncated sheet, the ticket is not done — re-open or follow-up with DOM/CSS proof, not another plan-only green. When the product shell uses `overflow: hidden` / `h-dvh` on `body` or the app root, print CSS must **unlock overflow/height** for those ancestors under `@media print` or pagination cannot leave the first sheet.
+
+**Operator loop (LO-0155):** A queued job is not the default flow until the operator control that enqueues it ships. When the same sprint has both the start/submit surface and downstream polish (notify, on-demand revalidate), implement the click first if the human is waiting to run the gold path. Unblocked-ticket order is not a reason to skip the button.
+
 ### Post gate 2 — before first sprint
 
 ```
@@ -90,6 +94,8 @@ Sprint review feedback (once per theme)
 | **Ticket** | `--from-feedback` creates ticket in **product backlog** (`backlog/`) **without** `sprint:` |
 | **Sprint plan** | `./studio sprint` proposes mature tickets in `scope-proposal.md` + `scope-proposal.json`; immature stay in backlog |
 | **Scope approval** | Human runs `./studio sprint --approve-scope` after reviewing proposal (**JSON is authoritative** — rewrite both if editing scope by hand) |
+
+**Rule (LO-0185 — plugin / shell chrome FBs):** When multiple review notes touch the same host shell (auth gate, header, tabs, button styles, sign-out), **bundle into one ticket** instead of shipping a partial icon polish ahead of the cold-open auth path. Partial chrome tickets regress the first paint users see.
 | **Immature** | `planning-questions.md` — owner (design/arch/eng) fills gaps before next planning |
 
 | Step | Who | Command |
@@ -101,15 +107,25 @@ Sprint review feedback (once per theme)
 | **Status brief** | Agent prepares | `./studio review <p>` → `sprints/SPRINT-NN/review.md` |
 
 **Rule (sprint capacity / LO-0124):** Each sprint proposes **3–6** mature tickets (planner `max_tickets=6`; warn if fewer than 3). Agents must **not** manually narrow `scope-proposal.json` to 1–2 tickets unless the human explicitly asks for a hotfix / surgical sprint, **or** the sprint is an intentional **review-feedback polish** slice (2 related motion/UI tickets from the prior review). Prefer filling with related P0/P1 backlog when available; under-capacity warnings are expected and OK for those polish sprints.
+
+**Rule (LO-0208):** `scope-proposal.md` row count must match `scope-proposal.json` and what execute will pull. Tickets deferred from this sprint are listed as **deferred**, not omitted so the markdown looks smaller than the JSON.
+
+**Rule (LO-0183 — over-capacity polish):** Human-approved review dumps may exceed 6 tickets. Prefer **splitting into two sprints** (P0 chrome/bugs first, then deeper product stories) over a single 14-ticket sprint that ships incomplete polish and immediate follow-up FBs. If the human insists on one large set, call out which ACs need soak/proof and keep receipts honest.
 | **Sprint review** | **Human** tries shipped work | Read review.md — **live app** (`npm run dev` at project root) and extension `dist/` if shipped; **not** `design/prototype` after implement |
 
 **Rule (LO-0066):** Before writing Docker Compose **published host ports** or local app URLs, probe `docker ps` (and listeners). Multiple project stacks share one machine. Do not take 5432 / 6379 / 3000 / Supabase 54321–54323 if they are already bound. Pin via project env and RUNBOOK. See `knowledge-base/host-port-allocation.md`. Do not stop another project’s containers to free a default port.
+
+**Rule (LO-0198 / LO-0199 — one listener per published port):** For each RUNBOOK host port, run **either** the Compose service **or** host `npm run dev` / `next dev`, not both. Adding a service to Compose that publishes a port already used by a host process requires stopping the host listener first (SIGTERM/143 is expected). Do not keep a second Next/dev server on the same port “as a fallback” after Compose is healthy.
 
 **Rule (LO-0026):** If review hits **board/page 500** with webpack `Cannot read properties of undefined (reading 'call')` (or every route 404 while `next dev` is “Ready”), treat it as **dev cache / port collision**, not a product bug: stop listeners on the review port, `rm -rf .next`, restart `npm run dev`, hard-refresh `127.0.0.1:<port>` (prefer IP over `localhost` when duplicates confuse the browser). Only then re-smoke the ticket surface.
 
 **Rule (LO-0028):** Tickets that ship **PDF export** (board Export PDF, brand-guide Download PDF / Playwright) are not done until smoke **downloads a file** on the free path. Watch for: (1) brand-guide API 503 + “Install Chromium / `npx playwright install chromium`”, (2) Export error `Failed to load export image for watermark` with no download. Unit tests alone do not catch these.
 
-**Rule (LO-0051):** Before marking any ticket "done" whose acceptance criteria is a **visible design/UX outcome** (not just a function/type returning the right value), the agent must walk a real end-to-end user scenario through the **actual default product flow** — not a state or code path only reachable via a test harness, preview toggle, or manual override — and attach a before/after screenshot to the ticket. A feature gated behind an unconfirmed or undiscoverable app state (e.g. an unactivated setting nobody would find, or output only produced by a code path the default flow never calls) counts as **not shipped**, even if its unit tests and QA gate are green. This applies to sprint review too: "human tries shipped work" means trying it through the same flow a real user would reach, on real project data / the primary user surface — not just reading review.md's ticket list.
+**Rule (LO-0167 / LO-0170):** When sprint review is the **deployed git host** (git-backed PaaS / CDN), `MOVE_DONE` is not review-ready until the **product repo** is pushed to the branch that host tracks. Local-only commits are invisible there. Push the product remote (not studio HQ) before asking the human to try shipped UI. Local `npm run dev` / Compose review does not need that push.
+
+**Rule (LO-0051 / LO-0203):** Before marking any ticket "done" whose acceptance criteria is a **visible design/UX outcome** (not just a function/type returning the right value), the agent must walk a real end-to-end user scenario through the **actual default product flow** — not a state or code path only reachable via a test harness, preview toggle, or manual override — and attach a before/after screenshot to the ticket. A feature gated behind an unconfirmed or undiscoverable app state (e.g. an unactivated setting nobody would find, or output only produced by a code path the default flow never calls) counts as **not shipped**, even if its unit tests and QA gate are green. This applies to sprint review too: "human tries shipped work" means trying it through the same flow a real user would reach, on real project data / the primary user surface — not just reading review.md's ticket list.
+
+**Public index is the default flow (LO-0203 / LO-0205):** Chrome, tokens, heroes, and home-rail tickets are not done if `/` (the published public index on the **RUNBOOK host port**) is an empty well while inner routes (`/{slug}`, section fronts) are full. Smoke `/` with published inventory in the same ticket. Inner slugs alone are not the default reader path.
 
 **Rule (LO-0039):** Tickets that **reuse docked chrome** (`StudioPanel` / `StudioRail` / `StudioDock` / floating right rails) are not done if they only reuse **CSS class names** inside a padded content shell. Before `./studio move … done`, assert **live layout DoD**: (1) flush to the intended edge (no content-inset gutter), (2) full height of the stage (top→bottom of the chrome content area, not a mid-page card). Prefer naming the **component** (`StudioPanel`) in acceptance criteria — not `studioPanelClass` alone. Screenshot or Playwright smoke of the edge is preferred.
 
@@ -131,8 +147,8 @@ Sprint review feedback (once per theme)
 **Rule (LO-0025):** `./studio review <p> --approve` must **refuse** while any current-sprint ticket is still `open` / `implement` / not `done`. Mid-sprint approve freezes implementation incorrectly. Finish tickets → `./studio review` → human `--approve`.
 
 **Rule (LO-0144):** Review is for **this sprint’s shipped tickets**, not for work that is still only feedback (amendments, console, unwritten skills). Do not linger in review waiting for that work to become a ticket in the same close. Ticket it, then plan the next sprint.
-| **Reuse review** | **Agent** + **Human** | `./studio reuse <p>` → promote / LO ticket / `--record local` → `./studio reuse <p> --approve` |
-| **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket** |
+| **Reuse review** | **Agent** | `./studio reuse <p>` → promote / LO ticket / `--record local`. Completes when unresolved paths are 0 (LO-0169) — no `--approve` |
+| **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket**. Drop accidental CLI noise (`--help`) before retro (LO-0173) |
 | **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
 | **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
 | **Grooming** | **Human** + agent | `./studio groom <p>` — reprioritize backlog for next sprint |
@@ -155,7 +171,7 @@ Sprint review feedback (once per theme)
 3. **Speed heuristics must not skip named HITL surfaces** — e.g. “&lt;5s to canvas” must not remove a required naming / consent step the human expects to see in review.
 Clarify drafts and design specs for `marketing-page` / monetization UI must spell out these three fields before `implement`.
 
-**Rule (LO-0022):** Figma / plugin / host-network tickets are **not done** on unit tests + `npm run build` alone. Before `./studio move … done`, the agent must **smoke in the real plugin host** (e.g. Figma desktop → Load plugin → Login / fetch boards) and confirm **CORS / `origin: null` paths** work via the **plugin main thread** (or documented CORS headers). UI-iframe-only `fetch` to localhost that fails preflight is a process failure if marked done.
+**Rule (LO-0022 / LO-0195):** Figma / plugin / host-network tickets are **not done** on unit tests + `npm run build` alone. Before `./studio move … done`, the agent must **smoke in the real plugin host** (e.g. Figma desktop → Load plugin → Login / fetch boards) and confirm **CORS / `origin: null` paths** work via the **plugin main thread** (or documented CORS headers). UI-iframe-only `fetch` to localhost that fails preflight is a process failure if marked done. When plugin `dist/` is gitignored, review smoke requires a **local rebuild + host reload** after each chrome/palette change — committed `src/` alone does not update the running plugin.
 
 **Rule (LO-0043):** Figma **stickersheet / kit placement** tickets are **not done** when only section headlines (Atoms / Molecules / Organisms) appear. Before `./studio move … done`, assert **inventory children exist on the canvas** (buttons, inputs, cards, etc. — count or screenshot). Empty scaffold frames with blurbs only = process failure. Prefer an automated node-count / name-prefix check in plugin tests or a human smoke step that fails if sections have title+blurb only. See `knowledge-base/figma-plugin-host-networking.md`.
 
@@ -166,6 +182,10 @@ Clarify drafts and design specs for `marketing-page` / monetization UI must spel
 **Rule (LO-0042):** Extension cloud-inbox sync that probes multiple local ports must **continue** past plain-text wrong-app 404s (e.g. `Server action not found.` from another Next app) until the product API returns JSON shaped like `{ error }` / `{ ok, item }`, or a real auth/validation rejection. Do not treat sibling-app HTML/text as a fatal product error. Keep baked `VITE_*` / `NEXT_PUBLIC_APP_URL` aligned with the live app port. See `knowledge-base/chrome-mv3-vite-content-scripts.md`.
 
 **Rule (LO-0023):** QA / fidelity / motion / delight tickets must ship **numbered human smoke steps** in `sprints/SPRINT-NN/review.md` (auto-generated under “Per-ticket smoke”). Agent may also add a `## Review smoke` section on the ticket. Vague “see motion” / “check responsive” without click-paths fails review readiness.
+
+**Rule (LO-0223):** When that smoke is a **create/compose** flow, AC must name the **compose/create path** (where the operator files or builds the thing), not only the later read/list path.
+
+**Rule (LO-0224):** Operator filing for structured programs (content calendars, briefs, similar) stays **structured-first** (fields the product already has). Agent-written briefs keep distinct What / Why / How — do not collapse them into one paste blob.
 
 **Rule (LO-0034):** Auto-generated review smoke steps must **match the ticket surface**. Do not emit Figma plugin / OAuth steps for webapp Brand kit / board tickets that only mention Figma as future/out-of-scope. Prefer live board / Brand kit routes unless the ticket is clearly a `figma-plugin` / plugin-OAuth ticket (or has an explicit `## Review smoke` section).
 
@@ -180,6 +200,8 @@ Clarify drafts and design specs for `marketing-page` / monetization UI must spel
 **Rule (LO-0057 / LO-0059):** Before scoping UI tickets from an **amendment surface map** (or kit / brand-guide IA), confirm the **live product home surface** with a short HITL check when product direction may have moved. Amendment IA is a draft — shipping against the wrong home (e.g. kit slots vs narrative/presentation rail) wastes foundation work. Prefer `./studio feedback` → clarify → ticket that names the real home, then defer superseded tickets.
 
 **Rule (LO-0060):** When feedback **rewrites the sprint goal mid-flight**, in the **same turn**: update `sprints/SPRINT-NN/plan.md` (goal + ticket table), set `sprint_deferred: true` (or remove `sprint:`) on superseded tickets, and tag the replacement ticket into the current sprint. Do not leave plan.md and deferred tickets for a later cleanup.
+
+**Rule (LO-0175):** Any supersede or cancel — even without a goal rewrite — must clear `sprint:` or move the ticket to `cancelled/` in that same turn (`ticket-workflow.md`). Ghosts in the current sprint break execute/review.
 
 **Rule (LO-0058):** Tickets **pulled into the current sprint** from feedback skip normal scope-proposal maturity checks and often flag `IMMATURE_TICKET` at groom. Before `implement`, fill mature AC (≥2 BDD) + Scope, and run design-approve when the ticket is design-track. Mid-sprint pull is allowed; immature body is not.
 

@@ -143,7 +143,14 @@ def _yaml_list(items) -> str:
 def _is_filler_scenario(sc: Dict) -> bool:
     given = str(sc.get("given", "")).lower()
     when = str(sc.get("when", "")).lower()
-    return "current project state" in given or "the ticket is implemented" in when
+    then = str(sc.get("then", "")).lower()
+    if "current project state" in given or "the ticket is implemented" in when:
+        return True
+    if "a user in project" in given and "they use the feature" in when:
+        return True
+    if "works as described and is tested" in then:
+        return True
+    return False
 
 
 def _compact_ac_lines(ticket: Dict) -> List[str]:

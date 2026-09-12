@@ -33,6 +33,7 @@ Pick host ports that do not appear. Prefer a **project offset** (for example 15x
 2. Compose maps `${POSTGRES_HOST_PORT}:5432` (container port stays standard; host port moves).
 3. List the chosen host ports in project `RUNBOOK.md` (Postgres, Redis, HTTP apps, Supabase API/DB/Studio if used).
 4. App env (`DATABASE_URL`, `REDIS_URL`, `NEXT_PUBLIC_*`) must use those host ports on the host, and internal Compose DNS on the overlay network.
+5. Human smoke for UI tickets uses the **RUNBOOK compose URL**, not a guessed port. Do not hard-code another product’s host port into studio HQ.
 
 Do not stop or rebind another project’s containers to free a default port.
 
