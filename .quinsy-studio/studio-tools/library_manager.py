@@ -324,7 +324,22 @@ def pull_assets(project: str, names: List[str], force: bool = False) -> Dict[str
 
     usage_file.parent.mkdir(parents=True, exist_ok=True)
     usage_file.write_text(json.dumps(usage, indent=2) + "\n")
-    return {"project": project, "pulled": pulled}
+    ui_pulled = any(
+        str(item.get("kind", "")).startswith("ui-") and item.get("status") == "ok"
+        for item in pulled
+    )
+    kit_updated: List[str] = []
+    if ui_pulled:
+        from ui_kit_peers import ensure_project_kit_peers, format_kit_peer_hint, write_ui_kit_setup
+
+        write_ui_kit_setup(project_dir)
+        kit_updated = [str(p.relative_to(project_dir)) for p in ensure_project_kit_peers(project_dir)]
+    return {
+        "project": project,
+        "pulled": pulled,
+        "kit_peer_hint": format_kit_peer_hint() if ui_pulled else None,
+        "kit_package_json_updated": kit_updated,
+    }
 
 
 def _update_manifest_entry(

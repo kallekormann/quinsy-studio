@@ -2,6 +2,14 @@
 
 Brad Frost hierarchy mapped to Quinsy studio-library.
 
+## Always
+
+**Do:** Inventory every control in the spec (primitive → page). Pull before inventing. New generic atoms go in studio-library first.
+
+**Don’t:** Skip levels (organism made of raw HTML with no atoms). One-off project components that duplicate a library slug.
+
+**Fail:** Atomic inventory empty on a `ui-new-component` / `ui-composition` spec. “New? yes” with no library ticket/path.
+
 ## Levels
 
 | Level | Library path | Project path | Owner |

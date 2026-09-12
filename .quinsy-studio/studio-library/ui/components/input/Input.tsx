@@ -1,42 +1,23 @@
 /**
- * Moody Bloom — generic text input with optional label, hint, and error.
+ * Studio Library — themable shadcn-style component.
+ * Remap CSS variables in ui/tokens/design-tokens.css ( --primary, --background, … ).
+ * Adapted from Command Center / shadcn; no product brand.
  */
-import type { ComponentProps } from 'react';
-import { Input as BaseInput } from '../atoms/Input';
-import {
-  fieldErrorClassName,
-  fieldHintClassName,
-  fieldLabelClassName,
-} from '../atoms/field-styles';
+import * as React from "react"
+import { cn } from '../../utils/cn'
 
-export interface InputProps extends ComponentProps<'input'> {
-  label?: string;
-  hint?: string;
-  error?: string;
-}
-
-export function Input({
-  label,
-  hint,
-  error,
-  className = '',
-  id,
-  'aria-invalid': ariaInvalid,
-  ...props
-}: InputProps) {
-  const inputId = id || 'input';
-  const invalid = ariaInvalid ?? (error ? true : undefined);
-
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
-    <div className="w-full">
-      {label ? (
-        <label htmlFor={inputId} className={fieldLabelClassName}>
-          {label}
-        </label>
-      ) : null}
-      <BaseInput id={inputId} aria-invalid={invalid} className={className} {...props} />
-      {error ? <span className={fieldErrorClassName}>{error}</span> : null}
-      {!error && hint ? <span className={fieldHintClassName}>{hint}</span> : null}
-    </div>
-  );
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
+      {...props}
+    />
+  )
 }
+
+export { Input }

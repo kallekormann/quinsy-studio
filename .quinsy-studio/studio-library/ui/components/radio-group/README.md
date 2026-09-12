@@ -1,3 +1,9 @@
-# RadioGroup
+# radio-group
 
-Styled Headless UI radio group. Pull: `./studio library pull <project> radio-group`
+**Atomic level:** Molecule (`ui-molecule`)
+
+Themable shadcn-style control. Classes use semantic tokens (`bg-primary`, `text-muted-foreground`, `border-input`, …) mapped in `ui/tokens/design-tokens.css`.
+
+**Peers:** `radix-ui`
+
+Pull: `./studio library pull <project> radio-group`

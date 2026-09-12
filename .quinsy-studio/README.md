@@ -31,7 +31,7 @@ Quinsy Studio is a **file-system-based operating system for software projects**.
 It consists of:
 
 - **Process Documents** (`process/`) — Lifecycle, Gates, Anti-Slop, Ticket Workflow
-- **Teams & Skills** (`teams/`) — 10 teams (01–09 + Team 10 product design), internal skills + skill registry
+- **Teams & Skills** (`teams/`) — 11 teams (01–09 + Team 10 product design + Team 11 growth design), internal skills + skill registry
 - **Knowledge Base** (`knowledge-base/`) — Playbooks (Design, Frontend, Backend, Compliance, AI)
 - **Studio Tools** (`studio-tools/`) — Python CLI with all commands
 - **Studio Templates** (`studio-templates/`) — PRD, Ticket, ADR, Docker base
@@ -61,7 +61,8 @@ quinsy-studio/
 │   │   ├── 07-ai-autonomous-systems/
 │   │   ├── 08-platform-enterprise-engineering/
 │   │   ├── 09-studio-operations-evolution/
-│   │   └── 10-product-design-experience/
+│   │   ├── 10-product-design-experience/
+│   │   └── 11-growth-design/
 │   ├── knowledge-base/             # Playbooks + learnings/inbox.md (immediate harvest)
 │   ├── studio-tools/               # Python CLI (studio.py + all tools)
 │   ├── studio-templates/           # PRD, Ticket, ADR, Docker base, Learning logs
@@ -117,6 +118,10 @@ Pick one path. [GETTING_STARTED.md](GETTING_STARTED.md) is canonical.
 Optional intent: copy [adopt_intent.md](studio-templates/adopt_intent.md) → `intake/<slug>.md` and pass `--intent`. Process: [brownfield-adopt.md](process/brownfield-adopt.md).
 
 `./studio resume my-project` prints a checklist. **`execute` is the driver** — see [The execute loop](#the-execute-loop). Start-of-project HITL: **gate 0 PRD → gate 1 architecture → gate 2 design track**. Open LOs spawn `./studio train` beside product work; `STUDIO_LO` only when idle.
+
+Greenfield scaffold includes UI kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`). See `docs/setup/ui-kit.md`. Pending schema is agent-applied when the DB is reachable.
+
+### Step 1: Place a PRD **or** point at an existing repo
 
 ### Step 1: Place a PRD **or** point at an existing repo
 
@@ -182,6 +187,7 @@ Adopted repo: agent fills `docs/as-built/`, synthesizes `docs/intake/prd.md`, th
 ```bash
 ./studio library suggest my-project "auth button"
 ./studio library pull my-project auth tokens button   # not stubs (billing, feature-gating)
+# kit peers must already be in the app package.json (docs/setup/ui-kit.md)
 ./studio sprint my-project
 ./studio sprint my-project --approve-scope            # agent-owned; you may override
 ./studio groom my-project --approve
@@ -258,7 +264,7 @@ focus → execute → do NEXT → execute again → … until HITL
 | `MOVE_DONE` | Receipt + gate 5 → `move … done`, then execute again |
 | `INFORM` | Reuse brief / inbox drain — loop; **not** architecture or design. **`cost-cap`:** stop and raise the named yaml key |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT — classified path on the CARD |
-| `HITL` | **You:** gates 0–2, `approve-design`, UI sprint review, tech-veto, abort |
+| `HITL` | **You:** gates 0–2, design-track `approve-design`, UI sprint review, tech-veto, abort |
 
 **Priority:** HITL gates 0–2 → finish in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). `STUDIO_LO` only when idle. Learnings are harvested when identified (see [§9](#9-optimizing-the-process) and [GETTING_STARTED — learnings](GETTING_STARTED.md#learnings-harvest-when-identified)).
 
@@ -309,7 +315,7 @@ Agent: blueprint + ADRs (as-is on adopt) → waits for gate 1
 You:  Approve gate 1. Design core views only.   — or —  Map the existing UI.
 Agent: design --scope core-views  (adopt: surface map, no fake prototype)
 You:  Approve gate 2.
-Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → agent-owned sprint scope → execute loop until HITL (UI sprint-review, approve-design)
+Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → agent-owned sprint scope → execute loop until HITL (design-track approve-design, then UI sprint-review)
 ```
 
 ### Two git worlds in Cursor
@@ -327,7 +333,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 | You (human) | Agent |
 |-------------|-------|
-| Approve gates **0–2**, `approve-design`, UI sprint review, tech-veto | Fill artifacts; **execute loop** mid-sprint (owns scope/groom; you may override) |
+| Approve gates **0–2**, design-track `approve-design`, UI sprint review, tech-veto | Fill artifacts; **execute loop** on non-design tickets (no ticket ACK) |
 | Mid-sprint notes (`./studio note`) | ACK and continue; drain after `MOVE_DONE` |
 | Review PRs / mocks / shipped UI | Library pull before coding (not stubs); compact cards; receipts + gate 5 before `done` |
 | Final product decisions | `./studio train` beside product work when LOs are open |
@@ -382,7 +388,7 @@ Same gate sequence. **CORE** starts from a PRD. **ADOPT** (`./studio adopt`) rec
 | **3b. Milestones** | Version roadmap, M0/M1 outlines | `docs/phases/` | **HUMAN** (`--milestones`) |
 | **3c. Amendments** | Strategic direction → revised roadmap + tickets | `docs/amendments/AM-NNN/` | **HUMAN** (`--amendment`) |
 | **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Agent-owned (you may override) |
-| **5. Implementation** | Execute loop until HITL | Code + receipts + gate 5; train LOs in parallel | UI review + `approve-design` |
+| **5. Implementation** | Execute loop until HITL | Code + receipts + gate 5 | Design-track `approve-design`; then UI review |
 | **6. QA** | Anti-slop, tests | QA report | Gate 5 (QA level) |
 | **7. Learning** | Harvest when identified (not a later batch) | Inbox + LO-* → train sidecar | `./studio train` / idle `STUDIO_LO` |
 
@@ -401,9 +407,8 @@ As products grow, **where** a capability lives matters more than dialog width. S
 
 1. **Context & placement** — `knowledge-base/contextual-ia-playbook.md` (UX-003)
 2. **Workflow map** — `workflow-definition-playbook.md` (multi-surface features)
-3. **Design spec** — `design-spec-template.md` with mandatory **§2 Context & placement**
-4. **Human** — `./studio approve-design <project> <TICKET>` (warns if §2 missing)
-5. **Implement** — library-first + `design-system-compliance-checklist.md`
+3. **Design spec** — write `docs/design-specs/<TICKET>.md` from `design-spec-template.md` (**§2 + §2c**). Mocks in `docs/design-specs/mocks/<TICKET>/` must use **project CSS tokens**, sit in the **real product view**, and show **all states**. Do not ask for `approve-design` until those files exist.
+4. **Implement** — library-first + `design-system-compliance-checklist.md` (only after HITL approve-design on design-track)
 
 Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (layout on the **right** surface). Design-track tickets get a **ticket-specific** `docs/design-specs/<TICKET>.md` with §2 + §2c before `--approve-scope`. Amendment analysis must include a surface map in `04-ui-ux-concept.md`.
 
@@ -437,7 +442,7 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio blueprint <project>
 ./studio design <project> --scope journey|core-views|as-built
 ./studio approve <project> --gate 0|1|2
-./studio approve-design <project> <TICKET-ID>   # Team 10 spec before UI implement
+./studio approve-design <project> <TICKET-ID>   # HITL for design-track before implement
 ./studio approve <project> --milestones
 ./studio revise <project> --gate <n> --feedback "..."
 
@@ -609,7 +614,7 @@ Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`,
 - `knowledge-base/contextual-ia-playbook.md` — Feature placement (UX-003)
 - `knowledge-base/workflow-definition-playbook.md` — End-to-end flows before UI specs
 - `knowledge-base/design-system-compliance-checklist.md` — Library-only UI
-- `knowledge-base/design-spec-template.md` — Team 10 spec (§2 Context & placement required)
+- `knowledge-base/design-spec-template.md` — Team 10 spec; file + all-state in-context token mocks required before `approve-design`
 - `knowledge-base/` — Playbooks
 
 ---
@@ -671,6 +676,7 @@ studio-library/
 
 **Rules:**
 - **Pull** (library → project): `./studio library pull <project> auth tokens button` — **not** stubs (`billing`, `feature-gating`)
+- **UI kit peers** (product app, on setup): `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (+ `@headlessui/react`) — `docs/setup/ui-kit.md`
 - **Host `packages/ui`:** product-local at reuse; do not treat it as an unpromoted studio-library path
 - **Promote design** (gate 2): `./studio approve --gate 2` or `promote-library` (greenfield)
 - **Promote code**: only if the generic asset improved — `./studio library promote <project> <path> --ticket <id>`
@@ -713,7 +719,7 @@ See [library_registry.md](studio-library/library_registry.md).
 | Studio files lost | **Git backup!** Check `.gitignore` (external skills are regenerable) |
 | Agent asks “should I continue?” mid-sprint | Tell it to `./studio execute` until `HITL` — do not approve ticket-by-ticket |
 | `move … done` refused | Need gate **level 5** passed **and** a filled `sprints/SPRINT-NN/receipts/<ID>.md` |
-| Execute says `HITL` | That is correct — you must approve (gate 0–2, `approve-design`, UI sprint review, or tech-veto) |
+| Execute says `HITL` | Gate 0–2, design-track `approve-design`, UI sprint review, or tech-veto — not a feature-ticket ACK |
 | Execute says `STUDIO_LO` | Product loop is idle — infuse the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |
 | Open LOs mid-sprint | Harvest immediately; `./studio train` beside product `IMPLEMENT` — do not wait for next sprint |
 | Mid-execute chat | `./studio note` — ACK and continue; drain after `MOVE_DONE`. Only abort preempts |

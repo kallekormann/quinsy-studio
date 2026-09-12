@@ -264,6 +264,7 @@ def overlay_studio(root: Path, slug: str, archetype: str = "saas-application") -
         init_project_gitignore,
         seed_definitions,
     )
+    from ui_kit_peers import ensure_project_kit_peers, write_ui_kit_setup
 
     notes: List[str] = []
     for rel in OVERLAY_DIRS:
@@ -271,6 +272,10 @@ def overlay_studio(root: Path, slug: str, archetype: str = "saas-application") -
 
     seed_definitions(root)
     create_phases_scaffold(root)
+    write_ui_kit_setup(root)
+    notes.append("docs/setup/ui-kit.md")
+    for pkg in ensure_project_kit_peers(root):
+        notes.append(f"kit peers merged → {pkg.relative_to(root)}")
     created_as_built = _copy_as_built_templates(root)
 
     surface_map = root / "docs" / "ia" / "surface-map.md"

@@ -11,12 +11,12 @@
     },
     {
       "name": "dialog",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/dialog/",
-      "version": "1.0.0",
+      "kind": "ui-molecule",
+      "path": "ui/components/dialog/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI Dialog primitive",
+      "title": "dialog (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
@@ -35,12 +35,12 @@
     },
     {
       "name": "popover",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/popover/",
-      "version": "1.0.0",
+      "kind": "ui-molecule",
+      "path": "ui/components/popover/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI Popover primitive",
+      "title": "popover (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
@@ -59,12 +59,12 @@
     },
     {
       "name": "combobox",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/combobox/",
-      "version": "1.0.0",
+      "kind": "ui-molecule",
+      "path": "ui/components/combobox/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI Combobox primitive",
+      "title": "combobox (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
@@ -83,12 +83,12 @@
     },
     {
       "name": "tabs",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/tabs/",
-      "version": "1.0.0",
+      "kind": "ui-molecule",
+      "path": "ui/components/tabs/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI Tabs primitive",
+      "title": "tabs (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
@@ -97,28 +97,28 @@
       "name": "button",
       "kind": "ui-atom",
       "path": "ui/components/button/",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-20",
-      "title": "Generic Button"
+      "title": "button (shadcn themable)"
     },
     {
       "name": "input",
       "kind": "ui-atom",
       "path": "ui/components/input/",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-20",
-      "title": "Generic Input"
+      "title": "input (shadcn themable)"
     },
     {
       "name": "badge",
       "kind": "ui-atom",
       "path": "ui/components/badge/",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-20",
-      "title": "Generic Badge"
+      "title": "badge (shadcn themable)"
     },
     {
       "name": "icon",
@@ -359,48 +359,48 @@
     },
     {
       "name": "checkbox",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/checkbox/",
-      "version": "1.0.0",
+      "kind": "ui-atom",
+      "path": "ui/components/checkbox/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI checkbox",
+      "title": "checkbox (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
     },
     {
       "name": "switch",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/switch/",
-      "version": "1.0.0",
+      "kind": "ui-atom",
+      "path": "ui/components/switch/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI switch",
+      "title": "switch (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
     },
     {
       "name": "radio-group",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/radio-group/",
-      "version": "1.0.0",
+      "kind": "ui-molecule",
+      "path": "ui/components/radio-group/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI radio-group",
+      "title": "radio-group (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
     },
     {
       "name": "field",
-      "kind": "ui-primitive",
-      "path": "ui/primitives/headless/field/",
-      "version": "1.0.0",
+      "kind": "ui-molecule",
+      "path": "ui/components/field/",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Headless UI field",
+      "title": "field (shadcn themable)",
       "peer_dependencies": [
         "@headlessui/react"
       ]
@@ -431,21 +431,21 @@
     },
     {
       "name": "card",
-      "kind": "ui-atom",
+      "kind": "ui-molecule",
       "path": "ui/components/card/",
-      "version": "1.0.0",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Card surface container"
+      "title": "card (shadcn themable)"
     },
     {
       "name": "dropdown-menu",
       "kind": "ui-molecule",
       "path": "ui/components/dropdown-menu/",
-      "version": "1.0.0",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-23",
-      "title": "Dropdown menu (Headless Menu)"
+      "title": "dropdown-menu (shadcn themable)"
     },
     {
       "name": "segmented-toggle",
@@ -463,10 +463,10 @@
       "name": "tooltip",
       "kind": "ui-molecule",
       "path": "ui/components/tooltip/",
-      "version": "1.0.0",
+      "version": "3.0.0",
       "source_project": "studio",
       "promoted": "2026-08-31",
-      "title": "Tooltip — position-aware label / compact popover"
+      "title": "tooltip (shadcn themable)"
     },
     {
       "name": "celebration",
@@ -501,13 +501,17 @@
       "name": "separator",
       "kind": "ui-atom",
       "path": "ui/components/separator/",
-      "version": "0.1.0"
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "separator (shadcn themable)"
     },
     {
       "name": "progress",
       "kind": "ui-atom",
       "path": "ui/components/progress/",
-      "version": "0.1.0"
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "progress (shadcn themable)"
     },
     {
       "name": "capture-types",
@@ -536,6 +540,555 @@
       "promoted_at": "2026-09-01T16:04:21.031094",
       "title": "design-md-repo (promoted from moody)",
       "ticket_id": "MOOD-0256"
+    },
+    {
+      "name": "accordion",
+      "kind": "ui-molecule",
+      "path": "ui/components/accordion/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "accordion (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "alert-dialog",
+      "kind": "ui-molecule",
+      "path": "ui/components/alert-dialog/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "alert-dialog (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "alert",
+      "kind": "ui-molecule",
+      "path": "ui/components/alert/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "alert (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "aspect-ratio",
+      "kind": "ui-atom",
+      "path": "ui/components/aspect-ratio/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "aspect-ratio (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "attachment",
+      "kind": "ui-molecule",
+      "path": "ui/components/attachment/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "attachment (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "avatar",
+      "kind": "ui-atom",
+      "path": "ui/components/avatar/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "avatar (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "breadcrumb",
+      "kind": "ui-molecule",
+      "path": "ui/components/breadcrumb/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "breadcrumb (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "bubble",
+      "kind": "ui-molecule",
+      "path": "ui/components/bubble/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "bubble (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "button-group",
+      "kind": "ui-molecule",
+      "path": "ui/components/button-group/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "button-group (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "calendar",
+      "kind": "ui-organism",
+      "path": "ui/components/calendar/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "calendar (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "carousel",
+      "kind": "ui-organism",
+      "path": "ui/components/carousel/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "carousel (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "chart",
+      "kind": "ui-organism",
+      "path": "ui/components/chart/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "chart (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "collapsible",
+      "kind": "ui-molecule",
+      "path": "ui/components/collapsible/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "collapsible (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "command",
+      "kind": "ui-organism",
+      "path": "ui/components/command/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "command (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "context-menu",
+      "kind": "ui-organism",
+      "path": "ui/components/context-menu/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "context-menu (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "direction",
+      "kind": "ui-molecule",
+      "path": "ui/components/direction/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "direction (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "drawer",
+      "kind": "ui-molecule",
+      "path": "ui/components/drawer/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "drawer (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "empty",
+      "kind": "ui-molecule",
+      "path": "ui/components/empty/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "empty (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "hover-card",
+      "kind": "ui-molecule",
+      "path": "ui/components/hover-card/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "hover-card (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "input-group",
+      "kind": "ui-molecule",
+      "path": "ui/components/input-group/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "input-group (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "input-otp",
+      "kind": "ui-molecule",
+      "path": "ui/components/input-otp/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "input-otp (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "item",
+      "kind": "ui-molecule",
+      "path": "ui/components/item/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "item (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "kbd",
+      "kind": "ui-atom",
+      "path": "ui/components/kbd/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "kbd (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "label",
+      "kind": "ui-atom",
+      "path": "ui/components/label/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "label (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "marker",
+      "kind": "ui-molecule",
+      "path": "ui/components/marker/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "marker (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "menubar",
+      "kind": "ui-organism",
+      "path": "ui/components/menubar/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "menubar (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "message",
+      "kind": "ui-molecule",
+      "path": "ui/components/message/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "message (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "native-select",
+      "kind": "ui-atom",
+      "path": "ui/components/native-select/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "native-select (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "navigation-menu",
+      "kind": "ui-organism",
+      "path": "ui/components/navigation-menu/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "navigation-menu (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "pagination",
+      "kind": "ui-molecule",
+      "path": "ui/components/pagination/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "pagination (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "resizable",
+      "kind": "ui-organism",
+      "path": "ui/components/resizable/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "resizable (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "scroll-area",
+      "kind": "ui-organism",
+      "path": "ui/components/scroll-area/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "scroll-area (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "select",
+      "kind": "ui-molecule",
+      "path": "ui/components/select/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "select (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "sheet",
+      "kind": "ui-molecule",
+      "path": "ui/components/sheet/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "sheet (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "sidebar",
+      "kind": "ui-organism",
+      "path": "ui/components/sidebar/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "sidebar (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "skeleton",
+      "kind": "ui-atom",
+      "path": "ui/components/skeleton/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "skeleton (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "slider",
+      "kind": "ui-atom",
+      "path": "ui/components/slider/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "slider (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "sonner",
+      "kind": "ui-molecule",
+      "path": "ui/components/sonner/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "sonner (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "spinner",
+      "kind": "ui-atom",
+      "path": "ui/components/spinner/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "spinner (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "table",
+      "kind": "ui-organism",
+      "path": "ui/components/table/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "table (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "textarea",
+      "kind": "ui-atom",
+      "path": "ui/components/textarea/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "textarea (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "toggle-group",
+      "kind": "ui-molecule",
+      "path": "ui/components/toggle-group/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "toggle-group (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "toggle",
+      "kind": "ui-atom",
+      "path": "ui/components/toggle/",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "title": "toggle (shadcn themable)",
+      "promoted": "2026-09-12"
+    },
+    {
+      "name": "cn",
+      "kind": "ui-hook",
+      "path": "ui/utils/cn.ts",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "promoted": "2026-09-12",
+      "title": "cn class merge (clsx + tailwind-merge)"
+    },
+    {
+      "name": "use-mobile",
+      "kind": "ui-hook",
+      "path": "ui/hooks/use-mobile.ts",
+      "version": "3.0.0",
+      "source_project": "studio",
+      "promoted": "2026-09-12",
+      "title": "useIsMobile viewport hook"
+    },
+    {
+      "name": "headless-dialog",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/dialog/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI dialog primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-popover",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/popover/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI popover primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-combobox",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/combobox/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI combobox primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-tabs",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/tabs/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI tabs primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-checkbox",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/checkbox/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI checkbox primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-switch",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/switch/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI switch primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-radio-group",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/radio-group/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI radio-group primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-field",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/field/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI field primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-select",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/select/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI select primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-input",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/input/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI input primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-textarea",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/textarea/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI textarea primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
+    },
+    {
+      "name": "headless-button",
+      "kind": "ui-primitive",
+      "path": "ui/primitives/headless/button/",
+      "version": "1.0.0",
+      "source_project": "studio",
+      "promoted": "2026-08-23",
+      "title": "Headless UI button primitive",
+      "peer_dependencies": [
+        "@headlessui/react"
+      ]
     }
   ],
   "last_promotion": {

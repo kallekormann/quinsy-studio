@@ -152,6 +152,14 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
         "homepage", "landing page", "marketing page", "storyboard", "workflow diagram",
         "explainer", "hero section", "pricing page", "narrative"
     ]},
+    "GD-001": {"name": "Hypothesis & experiment design", "triggers": [
+        "a/b", "ab test", "hypothesis", "experiment", "conversion", "cro",
+        "variant", "split test",
+    ]},
+    "GD-002": {"name": "Commercial surface mechanics", "triggers": [
+        "landing", "pricing page", "pricing table", "checkout", "cart",
+        "pdp", "product detail", "product listing", "plp", "catalog",
+    ]},
 }
 
 TEAM_MAPPING = {
@@ -165,6 +173,7 @@ TEAM_MAPPING = {
     "PE": "08-platform-enterprise-engineering",
     "SO": "09-studio-operations-evolution",
     "UX": "10-product-design-experience",
+    "GD": "11-growth-design",
 }
 
 EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
@@ -189,6 +198,11 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
     ],
     "UX-006": ["design-agent/brandkit", "design-agent/design-brand-guardian"],
     "UX-007": ["design-agent/design-visual-storyteller", "marketing_aeo/skills/copywriting", "knowledge-base/skill-extensions/email-design.md"],
+    "GD-001": [
+        "marketing_aeo/skills/ab-testing",
+        "marketing_aeo/skills/cro",
+    ],
+    "GD-002": ["marketing_aeo/skills/cro"],
     "BE-001": [
         "all_domains/api-and-integration/api-design",
         "all_domains/api-and-integration/oauth-2-0-setup",
@@ -267,11 +281,19 @@ def match_skills(text: str, max_skills: int = 5) -> List[str]:
 
 
 def team_for_skills(skills: List[str]) -> str:
-    """Determine team folder from skill IDs."""
+    """Determine team folder from skill IDs.
+
+    GD-* is a pairing skill: commercial tickets stay on Team 10 unless another
+    non-GD prefix wins first.
+    """
     for skill in skills:
         prefix = skill.split("-")[0]
+        if prefix == "GD":
+            continue
         if prefix in TEAM_MAPPING:
             return TEAM_MAPPING[prefix]
+    if any(str(s).startswith("GD-") for s in skills or []):
+        return "10-product-design-experience"
     return "01-frontend-experience"
 
 

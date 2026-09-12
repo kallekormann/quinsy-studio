@@ -37,7 +37,7 @@ Project (execution level)  ──▶  executed by the studio, local loop
 │     └─▶ sprint scope within current milestone                          │
 │                                                                         │
 │  Phase 5: Autonomous Sprint Execution                                  │
-│     └─▶ write code, test locally in the docker container               │
+│     └─▶ write code, test locally; agent runs migrate if DB reachable   │
 │                                                                         │
 │  Phase 6: Comprehensive QA & Compliance Gate                           │
 │     └─▶ validate_anti_slop.py + run_qa_gate.py                         │
@@ -217,8 +217,8 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 
 1. Intake & understanding
 2. Decomposition & dependencies
-3. Conception/design — **UI design-track:** Team 10 writes `docs/design-specs/<TICKET>.md`; human `./studio approve-design`
-4. Implementation (clean code, TDD) — blocked until design approved for design-track types
+3. Conception/design — **design-track:** Team 10 spec; human `./studio approve-design`. **Else:** stay on gate-2 design system
+4. Implementation (clean code, TDD) — blocked until `approve-design` for design-track types
 5. Self-check (tests, lint, review)
 6. QA gate (`./studio gate <project>`)
 7. Docs & ADR sync
@@ -234,6 +234,8 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 - **Clean code / SOLID**
 - **Follow anti-slop**
 - **Docker container for local testing**
+- **UI kit peers** in the product React `package.json` from scaffold (`docs/setup/ui-kit.md`)
+- **Agent applies pending migrations** when the DB is reachable (local or VPS), then informs the human. Do not ask the operator to migrate. Destructive reset is HITL.
 
 ---
 

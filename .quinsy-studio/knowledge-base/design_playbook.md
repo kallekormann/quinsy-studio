@@ -10,6 +10,17 @@ Design is how it works.
 — Steve Jobs
 ```
 
+## Spec and mocks are mandatory (before HITL)
+
+Do not ask a human to `./studio approve-design` until:
+
+1. `projects/<p>/docs/design-specs/<TICKET>.md` **exists and is filled** (a ticket stub is not enough)
+2. HTML mocks live in `docs/design-specs/mocks/<TICKET>/` and **import this project's CSS tokens**
+3. The mock is **in the product view** the work ships in (chrome/nav/neighbors — not an orphan artboard)
+4. **Every state** is shown: rest/up, hover, pressed/down, disabled/inactive, focus; plus open/closed for menus; empty/loading/error for surfaces
+
+Missing a state means implement will hallucinate it. The CLI rejects incomplete packets.
+
 ---
 
 ## UX heuristics (Nielsen/Norman)

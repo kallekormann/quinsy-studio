@@ -20,6 +20,8 @@ Create tickets:
 
 New tickets are **compact**: frontmatter is the machine record; body is Target, Scope, AC only. Boilerplate DoD (gate 5, anti-slop) lives in process docs — do not paste it on every ticket.
 
+**Groom for execution:** tickets a small/fast model will implement must expand to the contract in [ticket-authoring-playbook.md](../knowledge-base/ticket-authoring-playbook.md) (verbatim artifacts, literal Verify, Do not touch, Stop and ask if). Frontmatter `executable_by: composer|opus|human`. Never groom **XL** into a sprint.
+
 **Rule (LO-0204):** `./studio ticket … --from-feedback` must use the clarify **draft_acceptance** lines as AC. Do not emit a generic “A user in project … uses the feature … works as described” Given/When/Then. If the draft has scope/out-of-scope, those become the ticket Scope — rewrite leftover filler before `./studio sprint`.
 
 Move during sprint:
@@ -184,8 +186,11 @@ Why is this ticket important?
 - ✅ Specific error handling
 - ✅ No AI slop
 - ✅ Documentation
+- ✅ UI kit peers already in the product app (`docs/setup/ui-kit.md`) before composing kit components
+- ✅ Schema: agent runs migrate when the DB is reachable; INFORM. Do not ask the human.
 - ❌ No code without a ticket
 - ❌ No commit without green tests
+- ❌ Do not dump migrate commands for the operator to run instead of you
 
 ---
 
@@ -273,7 +278,9 @@ pnpm build
 
 **Checklist:**
 - [ ] Checked `./studio library list` / `suggest` before coding
-- [ ] Pulled relevant stubs (auth, billing, UI atoms)
+- [ ] Product app has UI kit peers (`docs/setup/ui-kit.md`) before pulling styled components
+- [ ] Pulled relevant library assets (not stubs: `billing`, `feature-gating`)
+- [ ] If this ticket needs schema and the DB is reachable: agent ran migrate and INFORM’d — did not ask the human
 - [ ] Is the **final** solution useful for other projects?
 - [ ] Promoted with `--ticket` if yes; documented in ticket if no
 

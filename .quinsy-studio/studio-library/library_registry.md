@@ -20,8 +20,9 @@
 
 1. **Before writing new code** → `./studio library list` / `./studio library suggest <project> <topic>`
 2. **Pull boilerplate** → `./studio library pull <project> tokens button input`
-3. **Adapt in project** — map `--color-primary-*` to brand; keep domain components local
-4. **Improve generics** → edit `.quinsy-studio/studio-library/` via **LO-* studio ticket** (not project promotion)
+3. **Kit peers** must already be in the product app (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) — scaffold / adopt / UI pull merge them
+4. **Adapt in project** — map `--color-primary-*` to brand; keep domain components local
+5. **Improve generics** → edit `.quinsy-studio/studio-library/` via **LO-* studio ticket** (not project promotion)
 
 ---
 
@@ -80,10 +81,12 @@ Generic library UI/tokens are edited in `.quinsy-studio/studio-library/` directl
 ## Pull into project
 
 ```bash
-./studio library pull nudge tokens button input dialog menu pageshell
+./studio library pull <project> tokens button input dialog menu pageshell
 ```
 
-**Peer dependency:** Headless UI primitives require `@headlessui/react` in the project.
+**Peers:** styled kit needs `radix-ui` + `class-variance-authority` + `clsx` + `tailwind-merge` + `lucide-react`. Headless primitives (`headless-dialog`, `menu`, …) need `@headlessui/react`.
+
+`button` / `dialog` / `input` pull the **shadcn-style** folders. Headless copies are `headless-dialog`, `headless-input`, …
 
 - Copies **library → project** (never overwrites without `--force`)
 - Logs to `projects/<p>/docs/library-usage.json`

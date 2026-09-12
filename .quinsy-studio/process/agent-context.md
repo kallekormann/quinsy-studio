@@ -4,7 +4,7 @@
 
 ## Every turn (before session start)
 
-Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit gate / design / review approval.
+Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit **gate / design-track approve-design / sprint-review** when execute already says `STOP`. Mid-sprint “looks good” on a **feature** ticket is not HITL.
 
 ## Session start
 
@@ -21,6 +21,10 @@ Run `./studio guard <project> "<verbatim user message>"` first. While implementa
 Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog.
 
 **Docker / local URLs:** before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
+
+**Schema migrate:** if you can reach the database, **you run** the project migrate command (sprint work). INFORM the human. Do not HITL “please run migrate.” See [backend_playbook.md](../knowledge-base/backend_playbook.md).
+
+**Greenfield UI kit:** `./studio init` / `design` / `adopt` write `docs/setup/ui-kit.md` and put kit peers in the app `package.json`.
 
 Active project is stored in `.quinsy-studio/.active-project.json`.
 
@@ -99,7 +103,8 @@ Before implementing, verify **team + skills** match ticket type — auto-match f
 
 See [ticket-team-allocation.md](ticket-team-allocation.md) for the mapping table.
 
-- **UI design-track tickets:** Team `10-product-design-experience` + UX skills + [aesthetic preset](.quinsy-studio/knowledge-base/aesthetic-presets/README.md); **§2 Context & placement** required ([contextual-ia-playbook.md](.quinsy-studio/knowledge-base/contextual-ia-playbook.md)); human `./studio approve-design` before implement
+- **UI design-track tickets:** Team `10-product-design-experience` + UX skills + [aesthetic preset](.quinsy-studio/knowledge-base/aesthetic-presets/README.md); **write** `docs/design-specs/<TICKET>.md` + in-context token mocks (all states) **before** asking for `./studio approve-design`. A missing file is not HITL.
+- **UI implement (non-design):** `01-frontend-experience` + `FE-001`, `FE-002` — stay on gate-2 tokens + library; missing primitives → design-track ticket
 - **UI implement:** `01-frontend-experience` + `FE-001`, `FE-002` (and `FE-004` for contrast/a11y)
 - **API / email / integrations:** `02-backend-systems` + relevant `BE-*` skills
 - At groom: human or agent corrects wrong auto-assignment (e.g. email → backend, not AI)

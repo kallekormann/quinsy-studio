@@ -1,13 +1,13 @@
 # Team 05 — Growth, Marketing & Content
 
-> Responsible for SEO, AEO, content strategy, marketing, branding and growth hacking.
+SEO, AEO, and content strategy. **Does not own** pricing-table layout, checkout patterns, or A/B variant design — that is [Team 11](../11-growth-design/README.md) + Team 10.
 
 ## Director-level roles
 
 | Role | Level | Responsibilities |
 |------|-------|------------------|
 | **Marketing, SEO/AEO & Affiliate Specialists** | Director | pSEO architecture, link-rot prevention, network integrations, fact-based copywriting |
-| **Growth Manager & Data Analysts** | Director | AARRR funnel, Redis event buffering, cost of experimentation, the ghost of experiments past |
+| **Growth Manager & Data Analysts** | Director | Funnel narrative after experiments; cost of experimentation. **Hypothesis + commercial UI mechanics: Team 11.** |
 
 ---
 

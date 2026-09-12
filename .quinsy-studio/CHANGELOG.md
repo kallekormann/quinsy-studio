@@ -1,5 +1,85 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-12 — Delight as a layer (no UX-009)
+
+### Changed
+
+- New `knowledge-base/delight-playbook.md` — Norman visceral/behavioral/reflective, Kano (basics first), NN/g deep vs surface, peak–end, IA orientation, buying as service truth. **No new skill ID** (would skip most tickets).
+- CARD: UX-002 and GD-002 load the delight playbook. Spec §6b + Growth peak–end row.
+- Rewrote `skill-extensions/delight-micro-interactions.md` so it cannot recommend joke loaders or confetti-on-save (anti-slop wins).
+
+## 2026-09-12 — Agentic loop: store + delta merge (LO-0231)
+
+### Changed
+
+- New: `knowledge-base/agentic-loop-playbook.md` — loop closes on a versioned store; ACE Generator/Reflector/Curator; merge is deterministic; LO infusion is a confirmed delta.
+- `process/learning-loop.md` cross-references the playbook.
+
+## 2026-09-12 — Ticket contract for small-model execution (LO-0230)
+
+### Changed
+
+- New: `knowledge-base/ticket-authoring-playbook.md` — six failure modes (invention, wrong path, unverified done, scope drift, context loss, silent assumption) each with a ticket-level antidote; required sections; sizing (no XL); `executable_by: composer|opus|human`.
+- Groom checklist (`process/ticket-team-allocation.md`) and `ticket-workflow.md` point at the playbook.
+- Provenance: derived from scoping a 66-ticket programme for small-model execution (`source: affiliate-platform` on LO-0230 only).
+
+## 2026-09-12 — Team 10 desk-canon playbooks (Do / Don’t / fail)
+
+### Changed
+
+- New: `product-ux-playbook.md` (Garrett planes, Cooper goals/posture), `interaction-ux-playbook.md` (Nielsen fail table, Wroblewski forms, Cooper IxD, Krug/HIG grammar), `ux-research-playbook.md` (Indi Young).
+- Deepened: design-science (visual hierarchy fail lines), contextual-ia (labeling/wayfinding), visual-storytelling, atomic, workflow, brand-guardian.
+- CARD: extras per UX skill; compact card lists up to 6 playbooks.
+
+## 2026-09-12 — Team 11 Growth Design + design canon ledger
+
+### Changed
+
+- New **Team 11** (`GD-001` hypothesis/experiments, `GD-002` commercial surfaces). Ticket `team` stays Team 10; GD skills append on landing, pricing, checkout, PLP, PDP.
+- Knowledge: `design-team-canon-ledger.md` (10 / 11 / 05 split; books + public sources as distill-not-reprint). `growth-mechanics-playbook.md` for commercial Do/Don’t/fail lines.
+- Spec template §6 Growth intent; `approve-design` fails on marketing-page / commercial ticket blob without it.
+- CARD playbooks include `growth-mechanics-playbook.md` when GD or UX-007 is loaded.
+
+## 2026-09-12 — UI kit peers on scaffold; agent-run migrations
+
+### Changed
+
+- Every project setup (`init` / `bootstrap` / `design` / `adopt`) writes `docs/setup/ui-kit.md`. Design-prototype `package.json` includes `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, and `@headlessui/react`. Adopt and UI `library pull` merge the same peers into existing app `package.json`s.
+- Schema apply is **agent work** when the agent can reach the DB (local Compose, `.env` DSN, documented VPS). Inform the human. Do not ask them to run migrate as sprint work. Destructive reset remains HITL.
+- Docs: AGENTS, GETTING_STARTED, READMEs, HITL, backend playbook, brownfield-adopt, lifecycle, ticket-workflow.
+
+## 2026-09-12 — Design-track: write spec+mocks before approve-design
+
+### Changed
+
+- Agents must **write** `docs/design-specs/<TICKET>.md` and `docs/design-specs/mocks/<TICKET>/` HTML before anyone is asked to review. Execute returns IMPLEMENT (write) when the packet is missing — not HITL. `approve-design` **fails** on missing/stub spec, mocks that skip project CSS tokens, orphan artboards, or incomplete states (rest/hover/pressed/disabled/focus; open/closed; empty/loading/error).
+- Ticket create drops a spec stub (still not approvable). Docs: design-spec-template, HITL, GETTING_STARTED, AGENTS, README, Team 10.
+
+## 2026-09-12 — Studio-library shadcn kit (themable)
+
+### Changed
+
+- Styled `ui/components/*` kit is shadcn/Radix + CVA, themed via CSS variables (`--primary`, `--background`, …) aliased from studio tokens. Bloom-hardcoded Button/Input/Badge/Checkbox/etc. lost the “generic + themable” comparison vs Command Center.
+- Headless UI primitives stay under `ui/primitives/headless/`. Headless molecules (`dialog-shell`, `search-command`, Listbox `dropdown`, `segmented-toggle`) remain.
+- Not vendored (need `@shadcn/react`): Questionnaire, Message Scroller. Product CC files (inspector-sheet, host-scope) were not copied.
+- Inventory: `studio-library/ui/docs/shadcn-coverage.md`.
+
+## 2026-09-12 — Design-track HITL; other tickets stay on the system
+
+### Changed
+
+- `approve-design` is HITL again **only** for design-track tickets (major UX/UI/IA). `move … implement` blocks until `design_status: approved`. Feature/styling/bug tickets do **not** wait for ticket ACK.
+- Missing component/token/pattern: file a design-track ticket and work it in a **design sprint** — do not invent primitives in a feature ticket (`human-in-the-loop.md`, `design-system-compliance-checklist.md`).
+- Execute CARD / guard: still no feature-ticket ACK; `HITL design-approve` restored for design-track.
+
+## 2026-09-12 — Sprint HITL is review only after start
+
+### Changed
+
+- After a sprint has started, execute/guard no longer HITL on per-ticket `approve-design` or “looks good” ticket ACK. Human stop is **UI sprint review** (plus tech-veto, 3× gate fail, abort, `INFORM cost-cap`).
+- Design specs stay agent DoD (`design_status: agent-owned`, §2 + §2c). `./studio move … implement` is not blocked on `approve-design`.
+- Docs: `human-in-the-loop.md`, `AGENTS.md`, GETTING_STARTED, READMEs, Cursor rules, ticket-team-allocation.
+
 ## 2026-09-12 — Onboarding docs match isolation + two-git habit
 
 ### Changed

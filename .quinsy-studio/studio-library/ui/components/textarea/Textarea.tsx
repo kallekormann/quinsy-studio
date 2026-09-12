@@ -1,50 +1,22 @@
 /**
- * Moody Bloom — styled textarea (Headless UI + tokens).
+ * Studio Library — themable shadcn-style component.
+ * Remap CSS variables in ui/tokens/design-tokens.css ( --primary, --background, … ).
+ * Adapted from Command Center / shadcn; no product brand.
  */
-'use client';
+import * as React from "react"
+import { cn } from '../../utils/cn'
 
-import type { ComponentProps } from 'react';
-import { Textarea as HeadlessTextarea } from '@ui/primitives/headless/textarea';
-import {
-  fieldClassName,
-  fieldErrorClassName,
-  fieldHintClassName,
-  fieldLabelClassName,
-} from '../atoms/field-styles';
-
-export interface TextareaProps extends ComponentProps<typeof HeadlessTextarea> {
-  label?: string;
-  hint?: string;
-  error?: string;
-}
-
-export function Textarea({
-  label,
-  hint,
-  error,
-  className = '',
-  id,
-  'aria-invalid': ariaInvalid,
-  ...props
-}: TextareaProps) {
-  const inputId = id || 'textarea';
-  const invalid = ariaInvalid ?? (error ? true : undefined);
-
+function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
-    <div className="w-full">
-      {label ? (
-        <label htmlFor={inputId} className={fieldLabelClassName}>
-          {label}
-        </label>
-      ) : null}
-      <HeadlessTextarea
-        id={inputId}
-        aria-invalid={invalid}
-        className={`${fieldClassName} min-h-[72px] resize-y leading-snug ${className}`}
-        {...props}
-      />
-      {error ? <span className={fieldErrorClassName}>{error}</span> : null}
-      {!error && hint ? <span className={fieldHintClassName}>{hint}</span> : null}
-    </div>
-  );
+    <textarea
+      data-slot="textarea"
+      className={cn(
+        "flex field-sizing-content min-h-16 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
+      {...props}
+    />
+  )
 }
+
+export { Textarea }

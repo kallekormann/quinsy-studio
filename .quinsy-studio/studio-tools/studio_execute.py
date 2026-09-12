@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Optional, Set
 
 from backlog_paths import find_ticket, read_ticket_meta
 from design_ticket_helpers import (
+    design_deliverables_status,
     design_implement_blocked_message,
     parse_design_fields,
     tickets_are_backend_only,
@@ -271,7 +272,7 @@ def compact_card(path: Path) -> Dict[str, Any]:
         "files": files[:8],
         "deps": deps,
         "skills": skills[:8],
-        "playbooks": playbooks[:4],
+        "playbooks": playbooks[:6],
         "path": rel,
     }
 
@@ -657,6 +658,7 @@ def decide_from_state(
     log: Optional[Dict[str, Any]] = None,
     receipts_ok: Optional[Dict[str, bool]] = None,
     design_block: Optional[str] = None,
+    design_write: Optional[str] = None,
     amendment_actions: Optional[List[str]] = None,
     prd_exists: bool = True,
     as_built_ready: bool = True,
@@ -890,6 +892,22 @@ def decide_from_state(
                 pending_veto[:160],
                 ticket_id=tid,
             )
+        if design_write:
+            spec_hint = f"docs/design-specs/{tid}.md"
+            return ExecuteStep(
+                kind="IMPLEMENT",
+                ticket_id=tid,
+                reason="design-track deliverables missing — write spec and all-state mocks first",
+                command=(
+                    f"Write {spec_hint} and docs/design-specs/mocks/{tid}/*.html "
+                    f"(project tokens, in-context shell, all states). "
+                    f"Do not ./studio approve-design {project} {tid} until those files exist."
+                ),
+                card=card,
+                read=read_path,
+                loop=True,
+                inform=(design_write or "")[:400],
+            )
         if design_block:
             return _hitl(
                 "design-approve",
@@ -994,6 +1012,7 @@ def decide_next_action(project: str) -> ExecuteStep:
     log: Dict[str, Any] = {"entries": []}
     receipts_ok: Dict[str, bool] = {}
     design_block = None
+    design_write = None
     if sprint:
         tickets = _enrich_sprint_tickets(project, list_sprint_tickets(project, sprint))
         log = load_execution_log(project, sprint)
@@ -1006,7 +1025,13 @@ def decide_next_action(project: str) -> ExecuteStep:
         current = pick_next_ticket(tickets, done_ids, scope_order=scope_order)
         if current and current.get("status") in ("backlog", "open") and current.get("path"):
             content = Path(current["path"]).read_text(encoding="utf-8", errors="ignore")
-            design_block = design_implement_blocked_message(current["id"], content)
+            d_status, d_msg = design_deliverables_status(
+                project_dir, current["id"], content
+            )
+            if d_status == "write":
+                design_write = d_msg
+            elif d_status == "approve":
+                design_block = design_implement_blocked_message(current["id"], content)
 
     inbox = open_notes(project, sprint)
     veto = status.get("tech_veto") or {}
@@ -1033,6 +1058,7 @@ def decide_next_action(project: str) -> ExecuteStep:
         log=log,
         receipts_ok=receipts_ok,
         design_block=design_block,
+        design_write=design_write,
         amendment_actions=resume_amendment_actions(project),
         prd_exists=prd.exists(),
         as_built_ready=as_built_is_ready(project) if adopt else True,
@@ -1110,6 +1136,19 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
         lines.append("  Then loop: ./studio execute <project>")
     else:
         lines.append("  Loop: do NEXT, then ./studio execute again. Do not ask to continue.")
+        if step.kind in ("IMPLEMENT", "VERIFY", "GATE", "DEBUG", "MOVE_DONE"):
+            if "design-track deliverables missing" in (step.reason or ""):
+                lines.append(
+                    "  DESIGN: write the spec and mocks NOW. Do not ask the human to "
+                    "approve-design — there is nothing to review until the files exist."
+                )
+            else:
+                lines.append(
+                    "  SPRINT: do not wait for ticket ACK — loop until HITL "
+                    "(sprint-review, or approve-design on a design-track ticket "
+                    "whose spec+mocks already exist). "
+                    "If you can reach the DB, apply pending migrations yourself and INFORM."
+                )
     card = step.card
     if card:
         lines.append("")

@@ -108,6 +108,7 @@ def list_sprint_tickets(project: str, sprint: str) -> List[Dict]:
             "status": folder_status,
             "priority": meta.get("priority", "?"),
             "ticket_type": meta.get("ticket_type", ""),
+            "design_status": meta.get("design_status", ""),
             "file": str(path.relative_to(root)),
         })
     return sorted(tickets, key=lambda t: t["id"])
@@ -331,8 +332,8 @@ def is_sprint_closed(status: Dict, project: str) -> bool:
 
 def is_autonomous_sprint_execution(status: Dict, project: str) -> bool:
     """
-    Agent implements sprint tickets without human checkpoints until every sprint ticket is done.
-    Scope/groom are agent-owned (human may override). UI sprint review is still HITL.
+    Agent implements non-design sprint tickets without ticket ACK.
+    Design-track tickets still HITL via approve-design. UI sprint review is HITL.
     """
     sprint = status.get("current_sprint")
     if not sprint or is_sprint_closed(status, project):

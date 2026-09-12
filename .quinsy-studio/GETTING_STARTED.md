@@ -42,6 +42,8 @@ cp .quinsy-studio/studio-templates/prd_template.md intake/my-project.md
 ./studio execute my-project         # HITL at gate 0 when definitions are ready
 ```
 
+Bootstrap / `init` / `design` install **UI kit peers** in the prototype `package.json` (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `@headlessui/react`) and write `docs/setup/ui-kit.md`. Do not wait until a component import fails.
+
 ### Track B — Existing codebase (adopt)
 
 Do **not** run `./studio bootstrap` / `init` on a live tree — that scaffolds an empty app. Hand over:
@@ -56,7 +58,7 @@ Do **not** run `./studio bootstrap` / `init` on a live tree — that scaffolds a
 ./studio execute my-project   # fill as-built → synthesize PRD → HITL gate 0
 ```
 
-The agent reconstructs **implementation state in depth** (`docs/as-built/`, cite file paths). Then: as-is architecture (gate 1) → design of what exists (gate 2, **no fake prototype**) → milestone plan from the gap matrix → execute loop.
+The agent reconstructs **implementation state in depth** (`docs/as-built/`, cite file paths). Overlay also writes `docs/setup/ui-kit.md` and merges kit peers into existing app `package.json`s. Then: as-is architecture (gate 1) → design of what exists (gate 2, **no fake prototype**) → milestone plan from the gap matrix → execute loop.
 
 Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
@@ -77,7 +79,7 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
 **Sprint feedback** = small, concrete ideas. **Amendments** = strategic direction (vision brief → milestone + ticket breakdown). See [Amendment intake](#amendment-intake-strategic-direction) below.
 
-**No product IMPLEMENT until gates 0–2 are approved.** After PRD, you approve architecture, then iterate on the design track (direction, design system, stills/mocks or clickable prototype) until gate 2. During later sprints, design-track tickets still need `./studio approve-design`.
+**No product IMPLEMENT until gates 0–2 are approved.** After PRD, you approve architecture, then the design system (gate 2). **Design-track** tickets need a **written** spec + all-state in-context token mocks, then `./studio approve-design`, then implement. Other tickets compose that system with no ticket ACK. Missing components → design ticket in a **design sprint**.
 
 ---
 
@@ -100,14 +102,14 @@ Do **not** ask “should I continue?” between tickets. `resume` is optional ba
 
 | ACTION | Meaning | Who |
 |--------|---------|-----|
-| `IMPLEMENT` / `IMPLEMENT <id>` | Adopt: fill `docs/as-built/`. Pre-impl: `./studio blueprint` or `./studio design`. Sprint: next unblocked ticket — read the **CARD** (and that one `.md` only) | Agent |
+| `IMPLEMENT` / `IMPLEMENT <id>` | Adopt: fill `docs/as-built/`. Pre-impl: `./studio blueprint` or `./studio design`. Sprint: next unblocked ticket — **or write missing design spec+mocks**. Read the **CARD** (and that one `.md` only) | Agent |
 | `VERIFY` | Adopt: synthesize `docs/intake/prd.md`. Sprint: fill the **execution receipt** (`./studio receipt`) | Agent |
 | `GATE` | Run `./studio gate <p> --level 5` (build + smoke + tests). Must be **fresh** after this ticket’s implement | Agent |
 | `DEBUG` | Gate went red. Write hypotheses in `sprints/SPRINT-NN/debug/<id>.md`, fix, re-gate (max 3 tries) | Agent |
 | `MOVE_DONE` | Receipt + gate 5 green → `move … done`, then execute again | Agent |
 | `STUDIO_LO <id>` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT. Mid-sprint: TRAIN sidecar instead | Agent |
 | `INFORM` | Reuse brief / inbox drain — do NEXT, loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key | Agent or **you** |
-| `HITL` | **Stop.** Gate 0, gate 1 architecture, gate 2 design track, design-approve, UI sprint review, tech-veto, abort, or retries exhausted | **You** |
+| `HITL` | **Stop.** Gates 0–2, **design-track `approve-design`** (only when spec+mocks exist), UI sprint review, tech-veto, abort. Not a feature-ticket ACK. | **You** |
 
 **What execute picks (in order):**
 
@@ -116,7 +118,7 @@ Do **not** ask “should I continue?” between tickets. `resume` is optional ba
 3. **Architecture (gate 1)** — `IMPLEMENT` `./studio blueprint` until artifacts are ready, then **HITL** `./studio approve --gate 1`
 4. **Design track (gate 2)** — after architecture, `IMPLEMENT` `./studio design` (direction, design system, stills/mocks or clickable prototype), then **HITL** `./studio approve --gate 2`. Iterate with `./studio revise --gate 2`
 5. **Finish in-progress** — a ticket already in `implement` still runs VERIFY → GATE → DEBUG → MOVE_DONE (inbox notes wait)
-6. **`IMPLEMENT`** — next unblocked sprint ticket. Design-track tickets still need `approve-design`. Open LOs → `TRAIN` sidecar, not `STUDIO_LO`
+6. **`IMPLEMENT`** — next unblocked sprint ticket. Design-track: **write spec+mocks** first (execute stays IMPLEMENT until files exist); then HITL `approve-design`. Feature tickets stay on the design system. Open LOs → `TRAIN` sidecar
 7. **`STUDIO_LO`** — only when idle (no ready product ticket)
 
 ```bash
@@ -226,9 +228,9 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 | You want | Example message |
 |----------|-----------------|
 | Propose sprint scope | *"Plan the next sprint"* → `./studio sprint &lt;p&gt;` → agent `--approve-scope` (you may override). Design-track tickets need ticket-specific `docs/design-specs/<TICKET>.md` with §2 + §2c first. |
-| Let the sprint run | *"Execute until HITL"* — agent loops tickets; open LOs train in parallel; you join at UI review |
+| Let the sprint run | *"Execute until HITL"* — feature tickets loop; you stop for design-track `approve-design` and UI review |
 | Compact ticket view | *"Show the card for &lt;ID&gt;"* → `./studio ticket-card` |
-| Work a ticket | Agent follows execute: design spec if UI → `approve-design` → library pull → implement → receipt → gate 5 → done |
+| Work a ticket | Design-track: **write spec+mocks** → `approve-design` → implement. Else: library + tokens → implement (agent migrates if DB reachable) → receipt → gate 5 → done → execute again (no ticket ACK) |
 | Finish ticket | Receipt + `./studio gate --level 5` must be green; then `move … done` |
 | Off-sprint idea | *"Can we add X?"* → agent should **not** code silently; uses guard → feedback or ticket |
 
@@ -272,10 +274,11 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 |----------|-----------------|
 | Design spec for UI ticket | *"Write design spec for &lt;TICKET&gt; — include context and placement"* |
 | Approve design (HITL) | *"Approve design for &lt;TICKET&gt;"* → `./studio approve-design <p> <TICKET>` |
+| Missing component | *"File a ui-new-component ticket — do not invent it in the feature ticket"* |
 | Cross-surface move | *"Create ia-feature-placement ticket: move X to Y surface"* |
 | Layout-only concern | Agent should ask: *"Is placement correct before we widen the dialog?"* |
 
-**Order:** placement → workflow map → atomic inventory → visual polish. Spec path is **ticket-specific** (`docs/design-specs/<TICKET>.md`); lock §2 + §2c before `./studio sprint --approve-scope` for design-track types. Spec template: [design-spec-template.md](knowledge-base/design-spec-template.md). Playbooks: [contextual-ia](knowledge-base/contextual-ia-playbook.md) · [workflow-definition](knowledge-base/workflow-definition-playbook.md) · [design-system compliance](knowledge-base/design-system-compliance-checklist.md).
+**Order:** placement → workflow map → atomic inventory → visual polish. Commercial surfaces (landing, pricing, checkout, PLP, PDP) also load **Team 11** growth intent. Spec path is **ticket-specific** (`docs/design-specs/<TICKET>.md`). The agent **writes** that file and `docs/design-specs/mocks/<TICKET>/` HTML (project tokens, real product chrome, **all states**) before anyone runs `./studio approve-design`. A stub or a path with no file is not reviewable. Lock filled §2 + §2c before `./studio sprint --approve-scope` for design-track types. Spec template: [design-spec-template.md](knowledge-base/design-spec-template.md). Playbooks: [contextual-ia](knowledge-base/contextual-ia-playbook.md) · [workflow-definition](knowledge-base/workflow-definition-playbook.md) · [growth-mechanics](knowledge-base/growth-mechanics-playbook.md) · [canon ledger](knowledge-base/design-team-canon-ledger.md) · [design-system compliance](knowledge-base/design-system-compliance-checklist.md).
 
 ### Studio / process (not project code)
 
@@ -299,6 +302,10 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 - Pull library **stubs** (`billing`, `feature-gating`) — build in-project, then promote a working generic
 - Leave open LO-* piled for a later human `learn` prompt — harvest immediately; `./studio train` in parallel
 - Treat a mid-execute chat message as a new assignment. Run `./studio guard <p> "<verbatim>"` first. On `INBOX_ACK`, resume the current ACTION. `FEEDBACK_ONLY` / `NEEDS_TICKET` must not preempt an in-flight ticket.
+- Wait for a feature-ticket ACK / “looks good” after `MOVE_DONE` — loop `./studio execute` until HITL (sprint-review or design-track `approve-design` **after spec+mocks exist**)
+- Ask the human to `approve-design` when `docs/design-specs/<TICKET>.md` or all-state token mocks are missing — write them first (execute will say IMPLEMENT, not HITL)
+- Ask the human to run schema migrate when you can reach the database (local Compose, `.env`, documented VPS). Apply it yourself, then INFORM. Destructive `migrate:fresh` / drop is HITL.
+- Skip UI kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) on scaffold — they belong in the product app `package.json` from day one (`docs/setup/ui-kit.md`)
 - Keep stuffing files after `INFORM cost-cap` — wait for the named key to be raised in `studio.settings.local.yaml`
 
 ---
@@ -313,10 +320,10 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Session start | `./studio verify-worlds` · `./studio verify-abstraction` · `./studio settings` · `./studio focus <p>` · **`./studio execute <p>`** |
 | Isolate siblings | `./studio isolate <p>` (also applied by `focus` / `execute` / `verify-worlds`) |
 | Checklist | `./studio resume <p>` (optional; execute is the driver) |
-| New project from PRD | `./studio bootstrap <p>` |
-| Existing codebase | `./studio adopt <p> --from <git-url-or-path> [--intent intake/<p>.md]` |
+| New project from PRD | `./studio bootstrap <p>` (writes `docs/setup/ui-kit.md`; prototype `package.json` has kit peers) |
+| Existing codebase | `./studio adopt <p> --from <git-url-or-path> [--intent intake/<p>.md]` (same ui-kit note; merge peers into live `package.json` if present) |
 | Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` · `./studio revise <p> --gate N --feedback "..."` |
-| UI design HITL | `./studio approve-design <p> <TICKET-ID>` (after Team 10 spec with §2 placement) |
+| UI design HITL | `./studio approve-design <p> <TICKET-ID>` after the spec **file** and all-state in-context token mocks exist — design-track only |
 | Milestones | `./studio approve <p> --milestones` (after `docs/phases/` drafted) |
 | Architecture | `./studio blueprint <p>` |
 | Design | `./studio design <p> --scope journey\|core-views` |
@@ -324,7 +331,8 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Sprint | `./studio sprint <p>` · `--approve-scope` (agent-owned) · `./studio execute <p>` (loop) · `./studio move <p> <ID> implement\|done` |
 | Ticket card / receipt | `./studio ticket-card <p> <ID>` · `./studio receipt <p> <ID>` |
 | Mid-execute chat | `./studio guard <p> "…"` → `INBOX_ACK` (queued). Drain: `./studio note <p> --drain` |
-| Library-first | `./studio library suggest <p> "auth button"` · `./studio library pull <p> auth tokens button` (not stubs) |
+| Library-first | `./studio library suggest <p> "auth button"` · `./studio library pull <p> auth tokens button` (not stubs). Kit peers must already be in the app. |
+| Schema migrate | Agent runs the project migrate command when DB is reachable; INFORM. Not HITL. |
 | Sprint review | `./studio review <p>` · `./studio review <p> --approve` |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
 | Amendment intake | `./studio amend <p> intake/amendments/<p>/amendment_NN.md` · `./studio amendments <p>` · `./studio approve <p> --amendment AM-001` |
@@ -392,10 +400,10 @@ When complexity grows, avoid "layout-first" tickets that polish the wrong surfac
 |------|----------------|
 | 1. Where does this live? | [contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) — surface map, `ia-feature-placement` |
 | 2. End-to-end flow | [workflow-definition-playbook.md](knowledge-base/workflow-definition-playbook.md) |
-| 3. Design spec | [design-spec-template.md](knowledge-base/design-spec-template.md) — **§2 Context & placement** required |
+| 3. Design spec | [design-spec-template.md](knowledge-base/design-spec-template.md) — **write the file**; §2 + §2c + **all-state, in-context, project-token mocks** |
 | 4. Library + tokens | [design-system-compliance-checklist.md](knowledge-base/design-system-compliance-checklist.md) |
-| 5. Human gate | `./studio approve-design <p> <TICKET>` |
-| 6. Implement | `./studio library pull` → `./studio move … implement` |
+| 5. Implement (on-system) | `./studio library pull` → `./studio move … implement` |
+| 6. Human taste | `approve-design` only when the CLI gate would pass; `./studio review` after the sprint |
 
 Project IA artifact (3+ surfaces): `projects/<p>/docs/ia/surface-map.md`
 
@@ -423,7 +431,7 @@ These are the **core start-of-project decisions**. Execute produces the artifact
 | **1** | Architecture + ADRs after PRD (as-is on adopt; no stack swap unless you asked) | `./studio blueprint` then `./studio approve <p> --gate 1` |
 | **2** | Design track after architecture: direction, design system, stills/mocks **or** clickable prototype (adopt: design of what exists — no fake prototype) | `./studio design` then `./studio approve <p> --gate 2`. Iterate: `./studio revise --gate 2` |
 
-Gate 2 promotes design artifacts to [studio-library](studio-library/library_registry.md) on **greenfield** only. Adopted UI stays in the project; gaps become LOs. **No product IMPLEMENT until gates 0–2 are approved.** During later sprints, new UI tickets still need `./studio approve-design`.
+Gate 2 promotes design artifacts to [studio-library](studio-library/library_registry.md) on **greenfield** only. Adopted UI stays in the project; gaps become LOs. **No product IMPLEMENT until gates 0–2 are approved.** After a sprint starts, new UI tickets get an agent spec then implement; human taste is sprint review.
 
 Tickets for the **active milestone** are written after you approve the roadmap (`./studio approve <p> --milestones`).
 
@@ -501,8 +509,10 @@ Logged in `projects/<p>/docs/phases/revisions.md`.
 | Promote code | `./studio library promote <p> packages/auth [--force] [--ticket ID]` only if the **generic** asset improved |
 | Promote design | `./studio promote-library <p> [--force]` |
 
-On `./studio move <p> <ID> implement` → library hint.  
+On `./studio move <p> <ID> implement` → library hint. Kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) are **setup**, not an afterthought — see `docs/setup/ui-kit.md`.
 On `./studio move … done` → requires gate level 5 **and** a filled execution receipt; warns if registry paths changed without promotion.
+
+**Migrations:** if Compose / `.env` / VPS access exists, the agent applies pending migrations as sprint work and tells you it ran. You are not the migrate operator.
 
 ## Project artifacts (all under `projects/<p>/`)
 
@@ -514,6 +524,7 @@ On `./studio move … done` → requires gate level 5 **and** a filled execution
 | Architecture | `docs/architecture/` |
 | ADRs | `docs/adr/` |
 | Design spec (per ticket) | `docs/design-specs/<TICKET>.md` |
+| Design mocks (per ticket) | `docs/design-specs/mocks/<TICKET>/*.html` (project tokens, in-context, all states) |
 | IA surface map | `docs/ia/surface-map.md` |
 | Design blueprint | `design/DESIGN.md` |
 | Mock scope | `design/DESIGN-SCOPE.md` |
@@ -529,6 +540,7 @@ On `./studio move … done` → requires gate level 5 **and** a filled execution
 | Execution log | `sprints/SPRINT-NN/execution-log.json` |
 | Ticket receipts | `sprints/SPRINT-NN/receipts/<TICKET>.md` |
 | Gate-fail debug | `sprints/SPRINT-NN/debug/<TICKET>.md` |
+| UI kit peers | `docs/setup/ui-kit.md` |
 | Library pull log | `docs/library-usage.json` |
 | Library promote log | `docs/library-promotions.json` |
 
@@ -549,7 +561,10 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 | Feature placement (IA) | [knowledge-base/contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) |
 | Off-sprint work | `./studio guard <p> "request"` |
 | Ticket workflow | [process/ticket-workflow.md](process/ticket-workflow.md) |
+| UI kit on setup | [installation.md](studio-library/ui/docs/getting-started/installation.md) · `docs/setup/ui-kit.md` |
+| Agent-run migrations | [backend_playbook.md](knowledge-base/backend_playbook.md) · HITL table “Schema migrate” |
 | Team 10 allocation | [process/ticket-team-allocation.md](process/ticket-team-allocation.md) |
+| Team 10 canon playbooks | [design-team-canon-ledger.md](knowledge-base/design-team-canon-ledger.md) · interaction / product-ux / IA / research |
 
 ## External skills (optional)
 
@@ -567,12 +582,12 @@ On `./studio move … done` → requires gate 5 + receipt; warns if registry pat
 
 ## Sprint cadence (human in the loop)
 
-After gates **0–2** (PRD, architecture, design track) and the milestone roadmap, the **agent runs each sprint autonomously**; you join at **UI sprint review**, per-ticket `approve-design`, and rare tech-vetoes. Ideas do **not** become tickets blindly.
+After gates **0–2** and the milestone roadmap, the agent runs **feature** tickets autonomously (no ticket ACK; stay on the design system). You join for **design-track `approve-design`**, **UI sprint review**, and rare tech-vetoes. Missing UI primitives go to a **design sprint**. Ideas do **not** become tickets blindly.
 
 | Phase | Who | What |
 |-------|-----|------|
 | Sprint scope | **Agent** (you may override) | `./studio sprint <p> --approve-scope` |
-| Mid-sprint | Agent | `./studio execute` until HITL — implements tickets; open LOs train in parallel |
+| Mid-sprint | Agent | `./studio execute` until HITL — implements tickets; runs migrate when DB is reachable; open LOs train in parallel |
 | UI sprint review | **You** | Try shipped UI → `./studio review <p> --approve` |
 | After review | **You** + agent | Feedback → clarify → ticket; reuse inform; retro → train / idle `STUDIO_LO` |
 | Milestone done | **You** | Approve milestone complete before next milestone backlog |

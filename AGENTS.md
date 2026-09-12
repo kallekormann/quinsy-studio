@@ -10,7 +10,7 @@ A new chat bubble is **not** a new assignment while work is in flight.
 ./studio guard <p> "<verbatim user message>"
 ```
 
-On `INBOX_ACK`: the note is already queued — one-line ACK, resume the same ACTION. Do not implement the note until after `MOVE_DONE` + drain. Only abort preempts. HITL replies (gate approve, `approve-design`, sprint review, “approved”, “looks good”, “back on track”) are not queued.
+On `INBOX_ACK`: the note is already queued — one-line ACK, resume the same ACTION. Do not implement the note until after `MOVE_DONE` + drain. Only abort preempts. HITL replies when execute already says `STOP` (gates, **design-track `approve-design`**, sprint review, “back on track”). Mid-sprint “looks good” on a **non-design** ticket is **not** HITL.
 
 This is **studio-core** (`./studio guard`), not a project-local convention.
 
@@ -26,7 +26,7 @@ This is **studio-core** (`./studio guard`), not a project-local convention.
 
 `./studio resume <project>` still prints a checklist. Prefer **execute**: one machine-readable step (`IMPLEMENT` / `GATE` / `VERIFY` / `MOVE_DONE` / `INFORM` / `STUDIO_LO` / `HITL`). Read the compact CARD (including **skills + playbooks**), and the full ticket `.md` only when the action is `IMPLEMENT`. Never dump the backlog into context.
 
-On `HITL`: stop and wait — **gate 0** (PRD / as-built), **gate 1 architecture**, **gate 2 design track** (direction, design system, stills/mocks or clickable prototype), **design-track `approve-design`**, **UI sprint review**, **tech-veto**, explicit abort, or 3× QA fail. Do not implement sprint-review **design** feedback. Reuse and sprint scope are **inform** (agent proceeds unless you override).
+On `HITL`: stop and wait — **gate 0**, **gate 1 architecture**, **gate 2 design system**, **design-track `approve-design`** (major UX/UI/IA only), **UI sprint review**, **tech-veto**, abort, or 3× QA fail. Do **not** wait for a ticket ACK on feature/styling work. Stay inside the defined design system; missing components become design-track tickets in a design sprint. Do not implement sprint-review **design** feedback. Reuse and sprint scope are **inform**.
 
 **Sibling projects:** `./studio focus <p>` hides other `projects/*` from the agent. Never Read, copy, merge, or `git add` a sibling tree into the active project git. `CROSS_PROJECT` from guard means switch focus — do not pull the other product in.
 
@@ -55,13 +55,18 @@ After the ticket is done, promote **only if the generic asset improved** (no cli
 ./studio library promote <project> packages/billing --ticket <ID> [--force]
 ```
 
-On `./studio move <project> <ID> implement` you get a library hint.  
-**UI tickets:** design-track types require Team 10 design spec + human `./studio approve-design <p> <ID>` before implement. **All UI/FE tickets:** Tailwind CSS + studio-library ([ui/docs/README.md](.quinsy-studio/studio-library/ui/docs/README.md)) — no hand-rolled modals or unstyled form controls.
+On `./studio move <project> <ID> implement` you get a library hint.
+**UI tickets:** design-track (new component, composition, marketing, workflow, IA) require Team 10 to **write** the spec file and in-context, project-token, all-state mocks, then human `./studio approve-design` before implement. Commercial surfaces (landing, pricing, checkout, PLP, PDP) also load **Team 11** (`GD-001`/`GD-002`) and spec Growth intent. Do not HITL approve-design until those files exist. **All other UI/FE tickets** stay on the gate-2 design system (tokens + library) — no ticket ACK. If a primitive is missing, file a design-track ticket and run a **design sprint** (HITL) first. Tailwind + studio-library — no hand-rolled modals.
+
+**Project UI kit (setup, not later):** every product app that uses studio-library must have `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react` (plus `@headlessui/react` for Headless primitives). `./studio init` / `design` / `adopt` write `docs/setup/ui-kit.md`; the design prototype `package.json` includes them. Merge on `library pull`. Do not wait for a missing-module crash.
+
+**Database migrations:** if you can reach the database (local Compose, project `.env`, documented VPS), **you run** the project migrate command as sprint work. Inform the human that it ran. Do not ask them to migrate. Destructive reset is HITL. See [backend_playbook.md](.quinsy-studio/knowledge-base/backend_playbook.md).
+
 On `./studio move … done` → warns if registry paths changed without promotion; **requires `./studio gate <project> --level 5` green** and a filled **execution receipt** (`./studio receipt`) with Plan, AC coverage, and default-flow (LO-0051). Level 2 lint-only is not enough.
 
 **Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally. **New components** go in studio-library first ([component-creation-playbook.md](.quinsy-studio/knowledge-base/component-creation-playbook.md)); Headless UI primitives live under `ui/primitives/headless/`.
 
-**Sprint HITL:** Never ticket sprint-review **design** ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **Autonomous mid-sprint:** agent implements sprint tickets without human checkpoints (scope/groom are agent-owned). **Human joins at UI sprint review** when shipped work is user-visible. Backend-only sprints inform and continue to retro. **During review:** capture feedback only — never implement design feedback in project code until the next sprint. **Milestones:** agent drafts `docs/phases/` → human may approve; backend tickets need not wait on whole-product gate 2. **Product backlog** lives in `projects/<p>/backlog/*.md` (not `open/`). **Sprint planning:** `./studio sprint` proposes scope → agent `--approve-scope` (human may override) → groom → execute.
+**Sprint HITL:** Never ticket sprint-review **design** ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback`. **After sprint start:** no per-ticket ACK on feature work. **Human stops:** design-track `approve-design`, then **UI sprint review**. Backend-only sprints inform and continue to retro. Stay on the defined design system; gaps → design sprint. **During review:** capture feedback only. **Milestones:** agent drafts `docs/phases/` → human may approve. **Sprint planning:** `./studio sprint` → `--approve-scope` → groom → execute.
 
 ## Two worlds — never mix
 
@@ -85,7 +90,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 
 ```bash
 ./studio approve <p> --gate 2    # validates design + refreshes library catalog (no project → library merge)
-./studio approve-design <p> <TICKET>   # HITL after Team 10 design spec (UI tickets)
+./studio approve-design <p> <TICKET>   # HITL for design-track (major UX/UI/IA) before implement
 ./studio approve <p> --milestones   # approve milestone roadmap (after docs/phases/ drafted)
 ./studio library promote-design <p> [--force]
 ```
@@ -101,7 +106,7 @@ After `--milestones`, agent writes tickets for the active milestone only, then s
 
 ## Sprint HITL (after gate 2)
 
-**Mid-sprint:** agent implements autonomously — human does not approve ticket-by-ticket.
+**Mid-sprint:** agent implements autonomously — human does not approve ticket-by-ticket. Do not wait for “looks good” after `MOVE_DONE`.
 
 **Sprint review:** when all sprint tickets are `done`, human reviews shipped work; feedback becomes tickets only after clarification.
 

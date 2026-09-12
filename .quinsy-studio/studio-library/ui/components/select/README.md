@@ -1,11 +1,9 @@
-# Select → use Dropdown
+# select
 
-**Deprecated:** This package previously wrapped native `<select>` (OS chrome).
+**Atomic level:** Molecule (`ui-molecule`)
 
-Use **`@ui/components/dropdown`** (Headless Listbox) instead — same popover language as UserMenu.
+Themable shadcn-style control. Classes use semantic tokens (`bg-primary`, `text-muted-foreground`, `border-input`, …) mapped in `ui/tokens/design-tokens.css`.
 
-```tsx
-import { Dropdown } from '@ui/components/dropdown';
-```
+**Peers:** `radix-ui`, `lucide-react`
 
-`Select` re-exports `Dropdown` for temporary compatibility.
+Pull: `./studio library pull <project> select`

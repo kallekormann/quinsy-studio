@@ -25,21 +25,26 @@ Agent: "Implemented."
 | **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`). Iterate: `./studio revise --gate 1` |
 | **Design track (gate 2)** | direction, design system, stills/mocks or clickable prototype | **Yes** (`./studio approve --gate 2`). Starts after architecture. Iterate: `./studio revise --gate 2` |
 | **Release** | production release | **Yes** |
-| **UI sprint review** | shipped user-visible UI | **Yes** (`./studio review`) |
+| **UI sprint review** | shipped user-visible UI | **Yes** (`./studio review`) after the sprint is done |
 | **Backend-only sprint** | API / data work with no UI | **Inform** — continue to retro |
 | **Reuse** | what was pulled / promoted / now in registry | **Inform brief** — no `--approve` |
 | **Sprint scope / groom** | which tickets this sprint | **Agent-owned** (human may override) |
-| **UI design spec** | new component / marketing / workflow / IA | **Yes** (`./studio approve-design`) — requires §2 placement **and** §2c **in-context mocks** (AM-007) |
+| **Design-track ticket** | major UX / UI / IA (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, `ia-navigation`, `ia-feature-placement`) | **Yes** (`./studio approve-design`) **only after** Team 10 has written the spec file + in-context, token-based, all-state mocks — then implement. Asking to approve a missing file is forbidden. |
+| **Design-system gap** | missing component, token, or pattern vs gate-2 system | **Do not invent in a feature ticket.** Open a design-track ticket; work it in a **design sprint**; HITL `approve-design` before anyone composes it |
+| **Other UI / feature / styling** | assemble approved library + project tokens | **No** ticket ACK — stay inside the defined design system |
+| **Ticket done** | receipt + gate 5 + `MOVE_DONE` | **No** — never ask the human to ACK a non-design ticket |
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |
+| **Schema migrate (apply)** | Pending migrations on a DB the agent can reach (local Compose, `.env` DSN, documented VPS) | **No** — agent runs the project migrate command, then **informs** the human it happened |
+| **Destructive DB reset** | `migrate:fresh`, drop database, wipe production | **Yes** |
 | **Mid-execute chat** | thoughts while IMPLEMENT is in flight | **Queue** (`./studio guard` → `INBOX_ACK`) — auto-queued, do not preempt. Drain after MOVE_DONE. Only “stop this ticket” aborts |
 
 ---
 
 ## Sprint cadence HITL (after gates 0–2)
 
-Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, system, mocks/prototype). All three are HITL; you iterate with architecture and Team 10 until you approve. **During sprints**, the agent executes autonomously; the human joins at **UI sprint review** and per-ticket `approve-design`. Scope and groom are agent-owned (you may override). Reuse is an inform brief.
+Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, **design system**, stills/mocks or clickable prototype). All three are HITL. **After the sprint has started**, the human does **not** ACK every ticket. HITL during a sprint is: **`approve-design` on design-track tickets** (major UX/UI/IA), then **sprint review** when the sprint is done. Feature / styling / bug tickets compose the **approved design system** (studio-library + project tokens) with no ticket ACK. Scope and groom are agent-owned. Safety valves stay: tech-veto, 3× gate fail, abort, `INFORM cost-cap`.
 
 See [milestone-planning.md](milestone-planning.md) for roadmap ceremony.
 
@@ -49,8 +54,10 @@ While sprint tickets are not all `done`:
 
 | Do | Don't |
 |----|-------|
-| Agent implements every sprint ticket in order | Ask the human "should I continue?" between tickets |
-| Agent moves tickets `implement` → `done` without pausing | Let a new chat message become a new assignment — **queue it** (`./studio note`) |
+| Agent implements non-design sprint tickets in order | Ask “looks good?” after a feature/styling ticket |
+| Agent applies pending migrations when it can reach the DB, then INFORM | Ask the human to run migrate as sprint work |
+| Agent waits for `./studio approve-design` **after spec+mocks exist** | Invent a new component or token in a feature ticket; ask the human to approve a spec that was never written |
+| Stay inside gate-2 design system + library pulls | One-off CSS / hallucinated atoms because “the sprint needs it” |
 | Agent **ACK-queues** a mid-execute chat bubble (`./studio note`) and resumes the same ACTION | Treat that bubble as a new assignment, run `guard` on it, or change files for it before MOVE_DONE |
 | Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
 | Open LOs spawn `./studio train` in parallel | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
@@ -64,6 +71,19 @@ While sprint tickets are not all `done`:
 **Rule (LO-0181 / LO-0189 / LO-0192 / LO-0194 — print / multi-page export receipts):** Before `MOVE_DONE` on print or multi-page PDF tickets, the receipt must record a **page-count or print-preview proof** (e.g. “N sections → N pages” or a print-preview screenshot path). Shipping landscape CSS or a page-plan unit test alone is not done. Prefer **forced breaks on real section wrappers** in the print tree (one HTML section → one `@page`); if the human still sees a single truncated sheet, the ticket is not done — re-open or follow-up with DOM/CSS proof, not another plan-only green. When the product shell uses `overflow: hidden` / `h-dvh` on `body` or the app root, print CSS must **unlock overflow/height** for those ancestors under `@media print` or pagination cannot leave the first sheet.
 
 **Operator loop (LO-0155):** A queued job is not the default flow until the operator control that enqueues it ships. When the same sprint has both the start/submit surface and downstream polish (notify, on-demand revalidate), implement the click first if the human is waiting to run the gold path. Unblocked-ticket order is not a reason to skip the button.
+
+### Stay on the defined design system
+
+Gate 2 approved the **design system** (tokens, sticker sheet, library components). Non-design tickets **must** use that system: project `ui/tokens`, studio-library / Headless UI primitives, existing project organisms. No one-off hex, new atom, or new interaction pattern inside a feature/bug/`ui-styling` ticket.
+
+If something is **missing** (no matching component, token, or IA surface):
+
+1. Stop composing a fake control in the feature ticket
+2. File a design-track ticket (`ui-new-component`, `ia-feature-placement`, …) with `docs/design-specs/<TICKET>.md` **written** (not only a frontmatter path)
+3. Put it in a **design sprint** (or the design slice of scope) — Team 10 spec §2 + §2c, **project-token HTML mocks in the real view, all states**
+4. Human: `./studio approve-design` — **then** implement / pull into the product sprint
+
+Do not ship a new primitive “so this ticket can finish.” That is a process fail, not a library-first shortcut.
 
 ### Post gate 2 — before first sprint
 
@@ -203,7 +223,7 @@ Clarify drafts and design specs for `marketing-page` / monetization UI must spel
 
 **Rule (LO-0175):** Any supersede or cancel — even without a goal rewrite — must clear `sprint:` or move the ticket to `cancelled/` in that same turn (`ticket-workflow.md`). Ghosts in the current sprint break execute/review.
 
-**Rule (LO-0058):** Tickets **pulled into the current sprint** from feedback skip normal scope-proposal maturity checks and often flag `IMMATURE_TICKET` at groom. Before `implement`, fill mature AC (≥2 BDD) + Scope, and run design-approve when the ticket is design-track. Mid-sprint pull is allowed; immature body is not.
+**Rule (LO-0058):** Tickets **pulled into the current sprint** from feedback skip normal scope-proposal maturity checks and often flag `IMMATURE_TICKET` at groom. Before `implement`, fill mature AC (≥2 BDD) + Scope, and a design spec (§2 + §2c) when the ticket is design-track. Mid-sprint pull is allowed; immature body is not.
 
 **Rule (LO-0054):** Marketing / stylescape / product-still tickets that depict an **infinite canvas or board chrome** must **mount the real product canvas component** (or shared fixtures with public-safe URLs such as `shareInlineUrl`) — never invent parallel DOM frame chrome that only looks similar. Product token/CSS changes must auto-apply on marketing. Screenshot DoD: marketing still vs live product surface.
 

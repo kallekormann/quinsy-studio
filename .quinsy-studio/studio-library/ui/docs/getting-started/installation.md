@@ -47,13 +47,28 @@ Wire `ui/tokens/tailwind.preset.ts` into your Tailwind config so `primary-*`, `s
 
 ## 2. Headless UI (projects)
 
-Required when pulling primitives or molecules that compose them (`dialog`, `search-command`, `dropdown-menu`, etc.):
+Required when pulling **primitives** or Headless molecules (`dialog-shell`, `search-command`, `dropdown` Listbox, `segmented-toggle`):
 
 ```bash
 npm install @headlessui/react
 ```
 
 Peer dependency documented on every primitive README.
+
+## 2b. shadcn-style kit (mandatory on project setup)
+
+Every new project (`./studio init` / `bootstrap` / `design`) and every **adopt** overlay gets `docs/setup/ui-kit.md`. The design-prototype `package.json` already lists these. On `./studio library pull` of UI, they are merged into the live app `package.json` if missing.
+
+**Do not wait until a component import fails.** Install in the React app:
+
+```bash
+npm install radix-ui class-variance-authority clsx tailwind-merge lucide-react
+npm install @headlessui/react
+```
+
+Optional, per component README: `cmdk`, `vaul`, `@base-ui/react`, `input-otp`, `react-day-picker`, `recharts`, `embla-carousel-react`, `react-resizable-panels`, `sonner`.
+
+Theme: import pulled `ui/tokens/design-tokens.css` (includes `--primary` / `--background` aliases). See [shadcn-coverage.md](../shadcn-coverage.md).
 
 ## 3. Pull components
 

@@ -14,6 +14,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from ui_kit_peers import merge_kit_peers, write_ui_kit_setup
+
+STUDIO_ROOT = Path(__file__).parent.parent.parent
+
 STUDIO_ROOT = Path(__file__).parent.parent.parent
 PROJECTS_DIR = STUDIO_ROOT / "projects"
 TEMPLATES_DIR = Path(__file__).parent.parent / "studio-templates"
@@ -251,6 +255,7 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
     """Scaffold design docs + Next.js prototype structure. scope: journey | core-views"""
     root = project_dir(project)
     ensure_pre_impl_dirs(root)
+    write_ui_kit_setup(root)
     created: List[Path] = []
 
     if scope not in ("journey", "core-views"):
@@ -308,6 +313,8 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
             "```bash\n"
             "cd design/prototype && npm install && npm run dev\n"
             "```\n\n"
+            "UI kit peers are already in this `package.json` "
+            "(`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `@headlessui/react`).\n\n"
             "## Routes\n\n"
             "- `/sticker-sheet` — tokens + all component states\n"
             "- `/mocks/*` — screen mocks (journey or core views per DESIGN-SCOPE.md)\n"
@@ -328,11 +335,13 @@ def _scaffold_next_prototype(root: Path, project: str, scope: str) -> List[Path]
                 "name": f"{project}-design-prototype",
                 "private": True,
                 "scripts": {"dev": "next dev", "build": "next build", "start": "next start"},
-                "dependencies": {
-                    "next": "^14.2.0",
-                    "react": "^18.3.0",
-                    "react-dom": "^18.3.0",
-                },
+                "dependencies": merge_kit_peers(
+                    {
+                        "next": "^14.2.0",
+                        "react": "^18.3.0",
+                        "react-dom": "^18.3.0",
+                    }
+                ),
                 "devDependencies": {
                     "@types/node": "^20.0.0",
                     "@types/react": "^18.3.0",

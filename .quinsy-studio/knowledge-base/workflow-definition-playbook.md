@@ -5,7 +5,15 @@
 
 ## Purpose
 
-Define **end-to-end workflows** before atoms, molecules, or layout specs. Prevents polished UI on broken journeys.
+Define **end-to-end workflows** before atoms, molecules, or layout specs. Prevents polished UI on broken journeys. Product goals: [product-ux-playbook.md](product-ux-playbook.md).
+
+## Always
+
+**Do:** Actor, trigger, success, steps with **surfaces**, edge cases, out of scope — before visual spec.
+
+**Don’t:** Draw the last screen first. Skip recovery (expired link, empty, permission denied).
+
+**Fail:** Multi-surface ticket with no §2b / workflow file. Steps that name components but not surfaces.
 
 ---
 

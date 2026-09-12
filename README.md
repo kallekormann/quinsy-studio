@@ -64,7 +64,9 @@ Full loop: [GETTING_STARTED — execute loop](.quinsy-studio/GETTING_STARTED.md#
 | 2 | Design direction + system + stills/mocks or clickable prototype (adopt: design of what exists) | Library promotion (greenfield only) → milestones |
 | Milestones | Version roadmap (`docs/phases/`) | Tickets for **active milestone** → sprints |
 
-You also approve **UI design specs** (`approve-design`) and **UI sprint review**. Sprint scope/groom are agent-owned (you may override). Mid-sprint, the agent loops tickets on its own. Open LOs train in parallel — they do not replace `IMPLEMENT`.
+You also approve **design-track specs** (`approve-design`) and **UI sprint review**. Non-design tickets stay on the defined design system — no ticket ACK. Sprint scope/groom are agent-owned.
+
+Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `package.json`. Adopt merges them into the live app. Schema migrate is agent work when the DB is reachable — you get an INFORM, not a “please run migrate.”
 
 ```bash
 ./studio approve my-project --gate 0
@@ -72,7 +74,7 @@ You also approve **UI design specs** (`approve-design`) and **UI sprint review**
 ./studio design my-project --scope core-views && ./studio approve my-project --gate 2
 ./studio approve my-project --milestones    # after agent drafts docs/phases/
 ./studio sprint my-project --approve-scope  # agent-owned; you may override
-./studio execute my-project                 # until HITL (UI sprint-review, design-approve, …)
+./studio execute my-project                 # until HITL (UI sprint-review, …)
 ```
 
 ### Execute actions
@@ -83,7 +85,7 @@ You also approve **UI design specs** (`approve-design`) and **UI sprint review**
 | `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Adopt: synthesize PRD. Sprint: receipt + fresh QA level 5, then mark done |
 | `INFORM` | Reuse brief / inbox drain — loop. **`cost-cap`:** stop; raise the named key in `studio.settings.local.yaml` |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT |
-| `HITL` | **You:** gate 0, gate 1 architecture, gate 2 design track, `approve-design`, UI sprint review, tech-veto, abort |
+| `HITL` | **You:** gates 0–2, **design-track `approve-design`**, UI sprint review, tech-veto, abort. Not a feature-ticket ACK |
 
 Priority: adopt as-built (if needed) → HITL gates 0–2 → finish an in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
 
@@ -137,6 +139,8 @@ Before writing new code, pull from the studio library:
 ./studio library pull my-project auth tokens button
 ```
 
+Product apps that use the kit **must** have `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react` (plus `@headlessui/react`). These are baked into `./studio init` / `design` / `adopt` (`docs/setup/ui-kit.md`). Do not wait for a missing-module crash.
+
 **Stubs** (`billing`, `feature-gating`) are **not pullable** — build in-project, then promote a working generic.
 
 After a ticket is done, promote **only if the generic asset improved**:
@@ -149,7 +153,7 @@ Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/s
 
 **Team 10 aesthetic presets:** [`.quinsy-studio/knowledge-base/aesthetic-presets/README.md`](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) — required in UI design specs (stripe-like, apple-like, soft-ui, …).
 
-**Design discipline (placement before layout):** UI specs require **§2 Context & placement** before polish. See [contextual-ia-playbook](.quinsy-studio/knowledge-base/contextual-ia-playbook.md) · [design-spec-template](.quinsy-studio/knowledge-base/design-spec-template.md) · `./studio approve-design` (warns if missing).
+**Design discipline (placement before layout):** The agent **writes** `docs/design-specs/<TICKET>.md` and in-context HTML mocks that use **project CSS tokens** and show **all states**. Do not ask a human to approve a spec that is not on disk. See [design-spec-template](.quinsy-studio/knowledge-base/design-spec-template.md).
 
 **Studio skill extensions:** [`.quinsy-studio/knowledge-base/skill-extensions/README.md`](.quinsy-studio/knowledge-base/skill-extensions/README.md) — deep playbooks for compliance, PLG, delight UX, security audits (extend CL/GM/UX/PE skills, no new ticket IDs).
 
@@ -223,10 +227,10 @@ quinsy-studio/
 2. **No code without a ticket** (after gate 2)
 3. **Three human gates** — PRD, architecture, design track. No product IMPLEMENT before gate 2. Existing apps: `./studio adopt` (never empty-init)
 4. **Execute loop** — `./studio execute` until HITL; compact cards (skills + playbooks); receipt + gate 5 before `done`; train LOs in parallel (idle `STUDIO_LO` only)
-5. **Sprint HITL** — UI review + per-ticket `approve-design`; scope/groom/reuse are inform (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
+5. **Sprint HITL** — no feature-ticket ACK; write spec+mocks **then** `approve-design` on design-track; then UI review. Stay on the defined design system (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
 6. **Milestones** — roadmap after gate 2; milestone review before next version backlog
 7. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
-8. **Placement before layout** — Team 10 §2 Context & placement in design specs; `ia-feature-placement` for cross-surface moves
+8. **Placement before layout** — Team 10 writes the spec file (§2 + §2c); mocks use project tokens, sit in the real view, and cover all states; `ia-feature-placement` for cross-surface moves
 9. **Immediate harvest** — classify + inbox + LO when a learning is identified; `./studio train` beside product execute
 10. **Two git worlds** — never commit `projects/` to this repo; product commits from `projects/<name>/`; studio HQ stays project-agnostic (`./studio verify-abstraction`). LO-* in HQ are portable process/tooling only — product incidents stay in the project.
 11. **Isolation** — `./studio focus` / `isolate`; guard `CROSS_PROJECT` for sibling names; do not treat focus as a jail

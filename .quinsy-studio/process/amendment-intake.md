@@ -221,7 +221,7 @@ On approve, agent:
 2. Apply `03-milestone-roadmap.md` → `docs/phases/` (new M* docs, README, dependency chain)
 3. Append `docs/phases/revisions.md`
 4. Update `docs/amendments/README.md` → `approved`
-5. Design-track tickets: Team 10 spec with §2 Context & placement → `./studio approve-design` before implement
+5. Design-track tickets: Team 10 **writes** spec + in-context token mocks (all states) → `./studio approve-design` before implement. Feature tickets stay on the design system.
 
 Then: `./studio sprint <project>` → scope from revised backlog.
 
@@ -240,7 +240,7 @@ Full catalogs: [ticket-team-allocation.md](ticket-team-allocation.md), [skill-re
 
 | Amendment theme | Typical teams |
 |-----------------|---------------|
-| New UI surface | 10 → approve-design → 01 |
+| New UI surface | 10 spec → `approve-design` → 01 implement |
 | API / billing / email | 02 |
 | Cross-cutting (collab, export) | 02 + 01; 10 if UX changes |
 | Go-to-market / positioning | 05 + 10 (UX-007) |

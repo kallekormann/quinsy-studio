@@ -440,18 +440,62 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "IMPLEMENT")
         self.assertIn("design", step.command)
 
-    def test_decide_design_track_still_hitl(self):
+    def test_decide_design_track_write_before_hitl(self):
         step = decide_from_state(
             "demo",
             _approved_status(),
             [{"id": "DEMO-0001", "status": "backlog", "deps": [], "ticket_type": "ui-composition"}],
-            design_block="Design approval required before implement",
+            design_write="spec missing",
+            design_block="Design HITL required before implement",
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertIn("Do not ./studio approve-design", step.command)
+        text = format_execute_step("demo", step)
+        self.assertIn("nothing to review", text)
+
+    def test_decide_design_track_is_hitl(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "ticket_type": "ui-composition"}],
+            design_block="Design HITL required before implement",
             open_los=[],
             amendment_actions=[],
             prd_exists=True,
         )
         self.assertEqual(step.kind, "HITL")
         self.assertIn("design-approve", step.reason)
+
+    def test_decide_feature_ticket_is_not_design_hitl(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "ticket_type": "feature", "title": "API rate limit"}],
+            design_block=None,
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertNotIn("design-approve", step.reason)
+
+    def test_format_move_done_forbids_ticket_ack(self):
+        step = ExecuteStep(
+            kind="MOVE_DONE",
+            ticket_id="DEMO-0001",
+            reason="receipt + fresh gate 5 — mark done and continue",
+            command="./studio move demo DEMO-0001 done",
+            loop=True,
+        )
+        text = format_execute_step("demo", step)
+        self.assertIn("SPRINT:", text)
+        self.assertIn("do not wait for ticket ACK", text)
+        self.assertIn("apply pending migrations yourself", text)
+        self.assertIn("Do not ask to continue", text)
+        self.assertIn("approve-design", text)
 
     def test_decide_backend_sprint_skips_review_hitl(self):
         step = decide_from_state(

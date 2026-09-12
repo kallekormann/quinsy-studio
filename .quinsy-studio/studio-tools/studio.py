@@ -106,14 +106,16 @@ from ticket_ids import allocate_ticket_id
 from skill_matcher import match_skills, team_for_skills
 from design_ticket_helpers import (
     default_design_spec_path,
+    design_deliverables_status,
     design_implement_blocked_message,
-    design_spec_in_context_mocks_error,
+    design_spec_completeness_error,
     design_mocks_emoji_icon_warning,
-    design_spec_placement_warning,
     enrich_design_skills,
     infer_ticket_type,
+    parse_design_fields,
     requires_design_approval,
     set_design_approved,
+    write_design_spec_stub,
 )
 from init_project_env import init_project
 from pre_impl_workflow import (
@@ -1093,6 +1095,10 @@ class StudioOrchestrator:
                 extra = f" — {item.get('reason')}" if item.get("reason") else f" ({item.get('kind', '')})"
                 print(f"  {st}: {item.get('name')}{extra}")
             print(f"\n  Log: projects/{project}/docs/library-usage.json")
+            if result.get("kit_peer_hint"):
+                print(f"\n  {result['kit_peer_hint']}")
+                for rel in result.get("kit_package_json_updated") or []:
+                    print(f"  merged kit peers → {rel} (run npm install in that app)")
             return True
 
         if subcommand == "promote" and len(args) >= 2:
@@ -1352,6 +1358,7 @@ class StudioOrchestrator:
 
         print(f"\n  Mock scope: {scope}")
         print(f"  Prototype:  cd projects/{project}/design/prototype && npm install && npm run dev")
+        print(f"  UI kit:     radix-ui class-variance-authority clsx tailwind-merge lucide-react @headlessui/react (in prototype package.json)")
         print(f"  Human:      ./studio approve {project} --gate 2 when mocks + sticker sheet ready")
         return True
 
@@ -2037,7 +2044,7 @@ class StudioOrchestrator:
             "ia-navigation",
             "ia-feature-placement",
         ):
-            skills = enrich_design_skills(skills, ticket_type)
+            skills = enrich_design_skills(skills, ticket_type, infer_blob)
             team = team_for_skills(skills)
         else:
             team = team_for_skills(skills)
@@ -2121,8 +2128,11 @@ class StudioOrchestrator:
         print(f"  Team: {team}")
         print(f"  Skills: {', '.join(skills) if skills else '(auto-match)'}")
         if design_status == "pending":
+            spec_file = write_design_spec_stub(
+                PROJECTS_DIR / project, ticket_id, design_spec
+            )
             print(f"  Ticket type: {ticket_type}")
-            print(f"  Design spec: {design_spec} (Team 10 → ./studio approve-design)")
+            print(f"  Design spec stub: {spec_file} — fill it (do not approve-design until filled + mocks)")
         print(f"  Status: open")
         print(f"  Project: {project}")
         print(f"\n  Next step:")
@@ -2175,16 +2185,15 @@ class StudioOrchestrator:
             if blocked:
                 print(blocked)
                 return False
-            hitl = get_sprint_hitl(status_pre)
-            sprint = status_pre.get("current_sprint")
             content_pre = ticket_file.read_text()
-            sprint_match = re.search(r"^sprint:\s*(\S+)", content_pre, re.MULTILINE)
-            ticket_sprint = sprint_match.group(1) if sprint_match else None
-            if sprint and ticket_sprint == sprint:
-                pass  # scope/groom are agent-owned; design-track still gated below
-            design_block = design_implement_blocked_message(ticket_id, content_pre)
-            if design_block:
-                print(design_block)
+            d_status, d_msg = design_deliverables_status(
+                PROJECTS_DIR / project, ticket_id, content_pre
+            )
+            if d_status == "write":
+                print(d_msg)
+                return False
+            if d_status == "approve":
+                print(design_implement_blocked_message(ticket_id, content_pre))
                 return False
         
         # Determine new directory (within project)
@@ -2272,7 +2281,7 @@ class StudioOrchestrator:
         return True
 
     def cmd_approve_design(self, project: str, ticket_id: str, notes: str = ""):
-        """Human HITL: approve Team 10 design spec before FE implement."""
+        """HITL: approve Team 10 spec for design-track (major UX/UI/IA) before FE implement."""
         ticket_file, _status = find_project_ticket(project, ticket_id)
         if not ticket_file:
             print(f"  Ticket {ticket_id} not found in project {project}")
@@ -2284,17 +2293,21 @@ class StudioOrchestrator:
         spec_match = re.search(r"^design_spec:\s*(.+)$", content, re.MULTILINE)
         spec_rel = spec_match.group(1).strip() if spec_match else default_design_spec_path(ticket_id)
         spec_path = PROJECTS_DIR / project / spec_rel
-        if not spec_path.exists():
-            print(f"\n  ⚠️  Design spec not found: {spec_path}")
-            print(f"    Team 10 must write spec using knowledge-base/design-spec-template.md")
-            return False
-        placement_warn = design_spec_placement_warning(spec_path)
-        if placement_warn:
-            print(f"\n  ⚠️  {placement_warn}")
-        mocks_err = design_spec_in_context_mocks_error(spec_path)
-        if mocks_err:
-            print(f"\n  ❌ {mocks_err}")
-            print(f"    Fill §2c in {spec_rel} then re-run approve-design.")
+        fields = parse_design_fields(content)
+        complete_err = design_spec_completeness_error(
+            spec_path,
+            PROJECTS_DIR / project,
+            ticket_id,
+            fields.get("ticket_type", ""),
+            ticket_blob=content,
+        )
+        if complete_err:
+            print(f"\n  ❌ Cannot approve-design — deliverables incomplete.")
+            print(f"    {complete_err}")
+            print(
+                "    There is nothing to review until the spec and in-context, "
+                "token-based, all-state mocks exist."
+            )
             return False
         emoji_warn = design_mocks_emoji_icon_warning(PROJECTS_DIR / project, ticket_id)
         if emoji_warn:

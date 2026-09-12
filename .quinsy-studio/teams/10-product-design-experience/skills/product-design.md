@@ -9,6 +9,8 @@ phases: [3, 4, 5]
 
 End-to-end flows, jobs-to-be-done, Cooper goal-directed design. Load for feature-level UX before implementation.
 
+**Playbook:** [product-ux-playbook.md](../../../knowledge-base/product-ux-playbook.md) · [workflow-definition-playbook.md](../../../knowledge-base/workflow-definition-playbook.md)
+
 **External:** `ux-design-process`, `ux-knowledge-work`, `ux-desktop-app`, `ux-web-app`
 
-**Deliverables:** user flow diagram, success metrics, platform constraints in design spec.
+**Deliverables:** user flow / goal in spec §1, success metric, platform posture, workflow map if multi-surface.

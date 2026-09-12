@@ -14,9 +14,9 @@
 
 | Extension | Extends (internal) | Team | Use when |
 |-----------|-------------------|------|----------|
-| [delight-micro-interactions.md](delight-micro-interactions.md) | **UX-002**, FE-001, FE-003 | 10, 01 | Empty states, loading, milestones, micro-animations, microcopy |
+| [delight-micro-interactions.md](delight-micro-interactions.md) | **UX-002**, FE-001 | 10, 01 | Audit empty/wait/peak-end only; rules in `delight-playbook.md` |
 | [email-design.md](email-design.md) | **GM-003**, UX-007, BE-005 | 05, 10, 02 | Transactional/newsletter HTML, CTR copy, Outlook-safe tables |
-| [product-led-growth.md](product-led-growth.md) | **GM-003**, **PS-001**, PM-002 | 05, 04, 06 | Viral loops, watermarks, share CTAs, usage-based paywalls, PQL events |
+| [product-led-growth.md](product-led-growth.md) | **GM-003**, **PS-001**, **GD-001**, PM-002 | 05, 04, 11, 06 | Viral loops, watermarks, share CTAs, usage-based paywalls, PQL events |
 | [affiliate-compliance.md](affiliate-compliance.md) | **GM-001** | 05 | Affiliate links, `rel=sponsored`, disclosures (content/affiliate sites) |
 | [privacy-legal-compliance.md](privacy-legal-compliance.md) | **CL-001** | 03 | GDPR/CCPA audit, click-wrap, consent logging, deletion, PII |
 | [cookie-compliance.md](cookie-compliance.md) | **CL-002** | 03 | Cookie banner, CMP, script hydration, dark-pattern checks |

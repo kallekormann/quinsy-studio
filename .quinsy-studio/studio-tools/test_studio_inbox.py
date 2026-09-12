@@ -35,6 +35,8 @@ class ClassifyTests(unittest.TestCase):
         self.assertFalse(should_queue_as_note("./studio approve demo --gate 0"))
         self.assertFalse(should_queue_as_note("approved"))
         self.assertFalse(should_queue_as_note("approved the review"))
+        self.assertFalse(should_queue_as_note("looks good"))
+        self.assertTrue(should_queue_as_note("looks good", named_hitl_waiting=False))
         self.assertFalse(should_queue_as_note(""))
 
 

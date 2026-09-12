@@ -55,7 +55,9 @@ Every decision is documented.
 | Supabase CLI (local) | `npm run db:migrate:supabase` in **project** repo | API ~54321, DB ~54322 — not legacy port 54320 |
 | Local-first canvas | See [local-first-sync-playbook.md](local-first-sync-playbook.md) | Continuous sync, not one-time migration |
 
-Agents: read project `package.json` scripts and `.env.local` before suggesting `psql` or migrate commands.
+Agents: read project `package.json` scripts and `.env.local` before running migrate. **You run the migrate command** when you can reach the database (local Docker/Compose, documented SSH/VPS, credentials already in project `.env`). That is sprint work. Tell the human it ran (one INFORM line). Do **not** paste migrate steps for the operator to execute instead of you.
+
+**No access** (no DSN, no container, production without deploy credentials) → say so once and stop; that is HITL / tech-veto, not a fake “please run migrate.”
 
 **Pending migrations before API smoke (LO-0227):** A 500 on a list/inbox API after Compose up often means **pending schema**, not a product bug. Apply the project’s migrate command **inside the app container** (or documented RUNBOOK one-liner) before treating the endpoint as broken. Do not skip migrate because CLI tinker looks healthy.
 

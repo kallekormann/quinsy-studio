@@ -28,7 +28,8 @@ Before any new UI markup:
 2. `./studio library suggest <project> "<feature>"` → `./studio library pull`
 3. Use **Tailwind utility classes** ([docs](https://tailwindcss.com/docs/)) — no ad-hoc CSS files for components
 4. Use **Headless UI primitives** via studio-library — never hand-roll modals, menus, or focus traps
-5. Styled controls: `button`, `input`, `card`, `dropdown-menu`, `checkbox`, `switch`, `select`, `textarea`
+5. Confirm kit peers in the product `package.json`: `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (`docs/setup/ui-kit.md`)
+6. Styled controls: `button`, `input`, `card`, `dropdown-menu`, `checkbox`, `switch`, `select`, `textarea`
 
 
 ```markdown

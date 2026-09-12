@@ -1,6 +1,14 @@
 # Brand Guardian checklist (UX-006)
 
-Run at design spec review and before `./studio move … done` on UI tickets.
+Run at design spec review and before `./studio move … done` on UI tickets. Visual numbers: [design-science-playbook.md](design-science-playbook.md). Voice: [anti-slop-design-ux.md](anti-slop-design-ux.md). Original logo **mark** is human HITL.
+
+## Always
+
+**Do:** Project tokens, declared aesthetic preset (or `project-brand-only`), one voice table for UI chrome.
+
+**Don’t:** Parallel palette in mocks. Preset hex overriding brand tokens with no mapping. Motivational UI copy.
+
+**Fail:** Contrast table skipped. Two CTA verbs for the same action. Logo lockup invented in a ticket.
 
 ## Tokens
 

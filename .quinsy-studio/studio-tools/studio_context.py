@@ -131,7 +131,10 @@ def build_focus_report(project: str, status: Dict) -> str:
         elif is_sprint_closed(status, project):
             lines.append("⏸ SPRINT CLOSED — reuse review → retro → groom → ./studio sprint")
         elif is_autonomous_sprint_execution(status, project):
-            lines.append("🤖 AUTONOMOUS SPRINT — agent implements all tickets; human joins at sprint review only")
+            lines.append(
+                "🤖 AUTONOMOUS SPRINT — feature tickets loop without ACK; "
+                "HITL on design-track approve-design, then sprint review"
+            )
 
     if sprint:
         sprint_tickets = _load_sprint_tickets(project, sprint)
@@ -157,6 +160,39 @@ def build_focus_report(project: str, status: Dict) -> str:
         "Drift recovery: ./studio resume {p}  |  ./studio focus {p}".format(p=project),
     ])
     return "\n".join(lines)
+
+
+def named_hitl_waiting(status: Dict, project: str = "") -> bool:
+    """True when execute would STOP for a named human gate (not a ticket ACK)."""
+    from sprint_hitl import needs_sprint_review
+
+    hg = status.get("human_gates") or {}
+    if hg.get("2", {}).get("status") != "approved":
+        return True
+    if needs_sprint_review(status) and not status.get("active_ticket"):
+        return True
+    veto = status.get("tech_veto") or {}
+    if veto.get("status") == "open" and veto.get("decision"):
+        return True
+    if project and not status.get("active_ticket"):
+        sprint = status.get("current_sprint") or ""
+        if sprint:
+            from design_ticket_helpers import DESIGN_TRACK_TYPES
+
+            try:
+                tickets = list_sprint_tickets(project, sprint)
+            except (OSError, TypeError, ValueError):
+                tickets = []
+            for ticket in tickets:
+                if ticket.get("status") not in ("backlog", "open"):
+                    continue
+                tt = str(ticket.get("ticket_type") or "").strip()
+                if tt not in DESIGN_TRACK_TYPES:
+                    continue
+                ds = str(ticket.get("design_status") or "pending").strip()
+                if ds not in ("approved", "n/a"):
+                    return True
+    return False
 
 
 def implementation_in_flight(project: str, status: Dict) -> bool:
@@ -210,13 +246,14 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     verdict: inbox_ack | abort | cross_project | in_scope | needs_ticket | pre_impl | sprint_review |
              sprint_closed | autonomous_sprint | feedback_only | studio_meta | unclear
     """
-    from studio_human_inbox import ABORT_RE, should_queue_as_note
+    from studio_human_inbox import ABORT_RE, SHORT_HITL_RE, should_queue_as_note
 
     req_tokens = _tokenize(request)
     if not req_tokens:
         return "unclear", "Could not parse request."
 
     in_flight = implementation_in_flight(project, status)
+    hitl_live = named_hitl_waiting(status, project)
     if in_flight and ABORT_RE.match(request or ""):
         return _ack_inbox(project, status, request, abort=True)
 
@@ -231,7 +268,16 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
             f"Switch with ./studio focus {sibling} in a separate session.",
         )
 
-    if in_flight and should_queue_as_note(request):
+    if in_flight and SHORT_HITL_RE.match(request or "") and not hitl_live:
+        return (
+            "in_scope",
+            "Ticket ACK is not required. Resume ./studio execute until HITL "
+            "Ticket ACK is not required. Resume ./studio execute until HITL "
+            "(sprint-review, or approve-design once the design-track spec and mocks exist). "
+            "Do not wait for looks good.",
+        )
+
+    if in_flight and should_queue_as_note(request, named_hitl_waiting=hitl_live):
         return _ack_inbox(project, status, request, abort=False)
 
     impl_signals = {
@@ -294,8 +340,9 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     if is_autonomous_sprint_execution(status, project):
         if req_tokens & direction_signals:
             return "autonomous_sprint", (
-                f"Sprint {status.get('current_sprint')} is in autonomous execution — "
-                "agent finishes all sprint tickets without human checkpoints. "
+                f"Sprint {status.get('current_sprint')} is in autonomous execution for "
+                "non-design tickets (stay on the design system; no ticket ACK). "
+                "Design-track tickets: write spec+mocks first, then ./studio approve-design. "
                 f"Direction changes wait for ./studio review {project} when the sprint is done."
             )
 

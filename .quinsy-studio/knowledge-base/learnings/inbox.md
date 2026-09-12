@@ -1707,3 +1707,53 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Document compose smoke on `localhost:13100` with migration check after schema tickets.
 - **Status:** closed — project-local (not studio HQ)
 
+## LO-0236 — The approval→brief seam was never closed in this sprint — 19 inbox rows vs 5 bri
+- **When:** 2026-09-12T21:38:42
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** The approval→brief seam was never closed in this sprint — 19 inbox rows vs 5 briefs remained at sprint end. AM-007 correctly prioritises AFFI-0117 as the keystone for sprint 29.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0237 — Design specs for console surfaces must start in sprint 31 (one sprint ahead of s
+- **When:** 2026-09-12T21:38:42
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** design
+- **Infuse into:** `knowledge-base/design_playbook.md`
+- **Playbook:** `knowledge-base/design_playbook.md`
+- **Signal:** design-gap
+- **Observation:** Design specs for console surfaces must start in sprint 31 (one sprint ahead of sprint 33 implement).
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0238 — Every ticket must follow the composer-executable contract (06-ticket-contract.md
+- **When:** 2026-09-12T21:38:42
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Every ticket must follow the composer-executable contract (06-ticket-contract.md) before entering a sprint.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0239 — UI tickets marked done must be committed and pushed to the Coolify-tracked branch before asking for prod sprint review.
+- **When:** 2026-09-12T23:45:45
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** UI tickets marked done must be committed and pushed to the Coolify-tracked branch before asking for prod sprint review.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0240 — Push `main` when a UI ticket is `done` if Coolify auto-deploys from GitHub — oth
+- **When:** 2026-09-12T23:45:45
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Push `main` when a UI ticket is `done` if Coolify auto-deploys from GitHub — otherwise sprint review sees stale prod.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+

@@ -37,15 +37,21 @@ SHORT_HITL_RE = re.compile(
 )
 
 
-def should_queue_as_note(text: str) -> bool:
-    """True when a chat bubble must be ./studio note'd and the current ACTION resumed."""
+def should_queue_as_note(text: str, *, named_hitl_waiting: bool = True) -> bool:
+    """True when a chat bubble must be ./studio note'd and the current ACTION resumed.
+
+    Bare “looks good” / “approved” is a HITL reply only when execute is already STOP
+    (gates, sprint review). Mid-sprint ticket ACK is queued/ignored, not a stop.
+    """
     t = (text or "").strip()
     if not t:
         return False
     if ABORT_RE.match(t):
         return True
-    if HITL_REPLY_RE.search(t) or SHORT_HITL_RE.match(t):
+    if HITL_REPLY_RE.search(t):
         return False
+    if SHORT_HITL_RE.match(t):
+        return not named_hitl_waiting
     return True
 
 

@@ -17,7 +17,8 @@ A new chat bubble is **not** a new assignment while work is in flight on **any**
 
 - `INBOX_ACK` — note is already queued. One-line ACK, then `./studio execute` (same ACTION). Do not implement the note.
 - `ABORT` — stop the current ticket.
-- Gate / design / review approval, “approved”, “looks good”, or “back on track” — handle that HITL; do not queue.
+- Gate / **design-track `approve-design`** / review approval, “back on track” — handle that HITL; do not queue.
+- Mid-sprint “looks good” on a **non-design** ticket is not HITL — resume `./studio execute`.
 
 This is core studio behavior, not a per-project rule. Sprint-review `FEEDBACK_ONLY` must not win while a ticket is still `implement`.
 
@@ -60,9 +61,13 @@ Active project: `.quinsy-studio/.active-project.json`
 
 Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gating`). After ticket done, promote only if the generic asset improved.
 
+**UI kit (project setup):** `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` in the product app from `init` / `design` / `adopt` — not after the first failed import.
+
+**Migrations:** if you can reach the DB (local or VPS), you apply them as sprint work and INFORM. Do not ask the human to migrate. Destructive reset is HITL.
+
 ## Sprint HITL
 
-Autonomous mid-sprint. Human at **gate 0**, **gate 1 architecture**, **gate 2 design track**, **design-track approve-design**, **UI sprint review**, rare **tech-veto**. Scope/groom/reuse are inform (agent-owned; human may override). Chat mid-execute: `./studio note` — ACK, do not preempt. Open LOs → `./studio train` in parallel; do not block IMPLEMENT. Ideas: `./studio feedback` → `clarify` → `ticket --from-feedback`. **Never implement design feedback during review.**
+Autonomous mid-sprint for **non-design** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2**, **design-track `approve-design`**, **UI sprint review**, rare **tech-veto**. Missing components → design-track ticket in a **design sprint**, then HITL. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.**
 
 ## Drift recovery
 
@@ -72,6 +77,6 @@ User: "back on track" / "resume project" → `./studio focus <p>` then `./studio
 
 Design approval promotes base UI to `studio-library/` (tokens, components, sticker sheet). Project styling stays in project tokens.
 
-## UI design HITL (post gate 2)
+## UI design (post gate 2)
 
-Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`): Team 10 spec with **in-context mocks** (§2c) → `./studio approve-design <p> <ID>` → Team 01 implement. New components in studio-library first (`component-creation-playbook.md`).
+Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, IA): Team 10 **writes** `docs/design-specs/<TICKET>.md` and **in-context HTML mocks** (`docs/design-specs/mocks/<TICKET>/`) using **project CSS tokens**, in the **real product view**, with **all states** (rest/hover/pressed/disabled/focus; open/closed for menus; empty/loading/error for surfaces). Only then `./studio approve-design`. Do not ask to review a file that does not exist. Other tickets use gate-2 tokens + library only. If a component is missing, write a design ticket and run it in a design sprint — do not invent it in a feature ticket. New components in studio-library first (`component-creation-playbook.md`).

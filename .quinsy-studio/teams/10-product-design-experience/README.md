@@ -1,6 +1,6 @@
 # Team 10 — Product Design & Experience
 
-Owns **what** and **why** for UI/UX. Team 01 (Frontend) implements after design HITL.
+Owns **what** and **why** for UI/UX. Team 01 implements after design-track HITL (`approve-design`).
 
 ## Director roles
 
@@ -37,10 +37,12 @@ See [knowledge-base/skill-extensions/README.md](../../knowledge-base/skill-exten
 
 ## Workflow
 
-1. `./studio ticket` → design-track tickets get `design_status: pending`
-2. Team 10 writes spec → `docs/design-specs/<TICKET>.md` (see `knowledge-base/design-spec-template.md`)
-3. Human → `./studio approve-design <project> <ticket-id>`
+1. `./studio ticket` → design-track tickets get `design_status: pending` and a **stub** at `docs/design-specs/<TICKET>.md`
+2. Team 10 **fills** that spec (remove the stub banner) and writes HTML mocks under `docs/design-specs/mocks/<TICKET>/` using **project tokens**, in the **real product view**, **all states** (see `knowledge-base/design-spec-template.md`)
+3. Human → `./studio approve-design <project> <ticket-id>` — **fails** if the spec is missing, still a stub, or mocks omit tokens/states/context
 4. Team 01 → `./studio move … implement` (library-first, Atomic Design)
+
+Never paste “please approve `docs/design-specs/…`” unless that file is filled and the mock folder exists.
 
 ## Agents
 
@@ -48,9 +50,16 @@ See `agents/` — Brand Guardian, Visual Storyteller, UX Researcher.
 
 ## Playbooks
 
+- `knowledge-base/design-team-canon-ledger.md` — Teams 10 / 11 / 05 split
+- `knowledge-base/growth-mechanics-playbook.md` — commercial surfaces (pair Team 11)
 - `knowledge-base/anti-slop-design-ux.md`
-- `knowledge-base/atomic-design-playbook.md`
+- `knowledge-base/product-ux-playbook.md` — Garrett / Cooper goals (UX-001)
+- `knowledge-base/interaction-ux-playbook.md` — Nielsen / Wroblewski / Cooper IxD (UX-002)
+- `knowledge-base/contextual-ia-playbook.md` — placement + labeling (UX-003)
+- `knowledge-base/ux-research-playbook.md` — mental models (UX-004)
 - `knowledge-base/design-science-playbook.md`
+- `knowledge-base/atomic-design-playbook.md`
 - `knowledge-base/visual-storytelling-playbook.md`
+- `knowledge-base/delight-playbook.md` — visceral / behavioral / reflective; **no new skill**
 - `knowledge-base/brand-guardian-checklist.md`
 - `knowledge-base/aesthetic-presets/README.md`

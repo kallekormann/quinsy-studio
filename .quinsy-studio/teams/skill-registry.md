@@ -18,7 +18,8 @@
 | 08 Platform & Enterprise Engineering | 4 Skills | Platform Architect |
 | 09 Studio Operations & Evolution | 4 Skills | Studio Automation Engineer, Process Guard, Agile Coach |
 | 10 Product Design & Experience | 7 Skills | Product Designer, UX Designer, Brand Guardian, Visual Storyteller |
-| **Total** | **43 Skills** | |
+| 11 Growth Design | 2 Skills | Growth Designer |
+| **Total** | **46 Skills** | |
 
 ---
 
@@ -52,7 +53,7 @@
 | `ai-seo` (marketing_aeo) | **GM-002 AEO** — be cited in AI Search/LLM responses |
 | `seo-audit`, `schema`, `programmatic-seo`, `site-architecture` (marketing_aeo) | GM-001 SEO (pSEO, Schema.org, Link Rot) |
 | `competitors`, `comparison` (marketing_aeo/geo_visibility) | GM-002 AEO — comparison/alternative pages |
-| `cro`, `ab-testing`, `analytics`, `pricing` (marketing_aeo) | GM-003 Growth — Cost of Experimentation, Ghost of Experiments Past |
+| `cro`, `ab-testing`, `analytics`, `pricing` (marketing_aeo) | **GD-001 / GD-002** (hypothesis + commercial mechanics); GM-003 only for copy volume |
 | `product-marketing`, `customer-research` (marketing_aeo) | PM-001 User Research, GM-003 Content |
 | `cookiecomply` (compliance_cookies) | CL-002 Cookie Banner, Consent Management |
 | `llms.txt`, `JSON-LD`, `AI-Visibility-Audit` (geo_visibility) | GM-002 AEO, GM-001 SEO |
@@ -117,6 +118,15 @@ Human drafts: `intake/skills/` (gitignored) → promote to `knowledge-base/skill
 | Typography, color, layout, visual hierarchy | Visual UI Design | UX-005 |
 | Brand, voice, tone, consistency | Brand Guardian | UX-006 |
 | Homepage, landing, storytelling, workflow diagram | Visual Storyteller | UX-007 |
+
+#### Growth Design (Team 11)
+
+| Trigger Words | Skill | ID |
+|---------------|-------|----|
+| A/B, hypothesis, experiment, conversion, CRO, variant | Hypothesis & experiment design | GD-001 |
+| Landing, pricing table/page, checkout, cart, PDP, PLP, catalog | Commercial surface mechanics | GD-002 |
+
+Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](../knowledge-base/design-team-canon-ledger.md).
 
 **External (reference, not duplicated):** `.quinsy-studio/external-skills/design-agent/` → `ux-*`, `taste-skill`, `brandkit`
 
@@ -340,5 +350,10 @@ Human drafts: `intake/skills/` (gitignored) → promote to `knowledge-base/skill
 │       ├── aesthetic-presets.md
 │       ├── brand-guardian.md
 │       └── visual-storyteller.md
+├── 11-growth-design/
+│   ├── README.md
+│   └── skills/
+│       ├── hypothesis-experiment-design.md
+│       └── commercial-surface-mechanics.md
 └── skill-registry.md  ← THIS FILE
 ```

@@ -58,6 +58,35 @@ class GuardInboxAckTests(unittest.TestCase):
         ack.assert_not_called()
         self.assertNotEqual(verdict, "inbox_ack")
 
+    def test_looks_good_mid_sprint_is_not_hitl(self):
+        status = {
+            "human_gates": {
+                "0": {"status": "approved"},
+                "1": {"status": "approved"},
+                "2": {"status": "approved"},
+            },
+            "current_sprint": "SPRINT-01",
+            "active_ticket": "DEMO-0001",
+            "sprint_hitl": {
+                "scope_status": "approved",
+                "groom_status": "approved",
+            },
+            "phase": "5",
+            "gate": "5",
+        }
+        with patch("studio_context._ack_inbox") as ack:
+            verdict, msg = guard_request("demo", "looks good", status)
+        ack.assert_not_called()
+        self.assertEqual(verdict, "in_scope")
+        self.assertIn("Ticket ACK is not required", msg)
+
+    def test_looks_good_at_sprint_review_is_not_queued(self):
+        status = _review_pending_status(active_ticket=None)
+        with patch("studio_context.implementation_in_flight", return_value=False):
+            verdict, _msg = guard_request("demo", "looks good", status)
+        self.assertNotEqual(verdict, "inbox_ack")
+        self.assertNotEqual(verdict, "in_scope")
+
     def test_idle_review_still_feedback_only(self):
         status = _review_pending_status(active_ticket=None)
         with patch("studio_context.implementation_in_flight", return_value=False):

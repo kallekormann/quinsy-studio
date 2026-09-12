@@ -82,6 +82,13 @@ TEST_TICKETS = [
         "expect_internal": ["UX-003"],
         "expect_external": ["design-agent/ux-information-architecture"],
     },
+    {
+        "id": "NUDG-1010",
+        "title": "Checkout flow conversion experiment",
+        "text": "Design checkout: hypothesis for guest vs account, conversion CRO, one variant.",
+        "expect_internal": ["GD-001", "GD-002"],
+        "expect_external": ["marketing_aeo/skills/cro"],
+    },
 ]
 
 

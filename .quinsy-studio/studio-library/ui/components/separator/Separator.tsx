@@ -1,26 +1,32 @@
-import type { ReactNode } from 'react';
+/**
+ * Studio Library — themable shadcn-style component.
+ * Remap CSS variables in ui/tokens/design-tokens.css ( --primary, --background, … ).
+ * Adapted from Command Center / shadcn; no product brand.
+ */
+"use client"
 
-export type SeparatorProps = {
-  /** Labeled divider — text centered between hairlines (Bloom 07). */
-  label?: ReactNode;
-  className?: string;
-};
+import * as React from "react"
+import { cn } from '../../utils/cn'
+import { Separator as SeparatorPrimitive } from "radix-ui"
 
-export function Separator({ label, className = '' }: SeparatorProps) {
-  if (label) {
-    return (
-      <div
-        className={`my-4 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wide text-muted ${className}`}
-        role="separator"
-      >
-        <span className="h-px flex-1 bg-[color:var(--line)]" aria-hidden />
-        <span>{label}</span>
-        <span className="h-px flex-1 bg-[color:var(--line)]" aria-hidden />
-      </div>
-    );
-  }
-
+function Separator({
+  className,
+  orientation = "horizontal",
+  decorative = true,
+  ...props
+}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
   return (
-    <hr role="separator" className={`my-4 h-px border-0 bg-[color:var(--line)] ${className}`} />
-  );
+    <SeparatorPrimitive.Root
+      data-slot="separator"
+      decorative={decorative}
+      orientation={orientation}
+      className={cn(
+        "shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch",
+        className
+      )}
+      {...props}
+    />
+  )
 }
+
+export { Separator }

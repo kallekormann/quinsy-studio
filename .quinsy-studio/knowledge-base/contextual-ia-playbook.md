@@ -10,6 +10,8 @@
 
 Layout polish (width, spacing, tokens) comes **after** placement is decided.
 
+**IA delight** is orientation — “I knew where to go.” Cute names and surprise nav are not delight. See [delight-playbook.md](delight-playbook.md) § Information architecture.
+
 ---
 
 ## Context-of-use matrix
@@ -53,6 +55,26 @@ For milestones with 3+ primary surfaces, maintain:
 
 Update when amendments or new surfaces land.
 
+## Organization, labeling, wayfinding (Rosenfeld / Morville)
+
+**Do**
+
+- One **home** per capability (see matrix above). Labels in the user’s words, not the schema.
+- Wayfinding on every view: where am I, what’s here, where can I go next (title, selected nav, breadcrumbs if depth >2).
+- Search or filter when lists exceed a scanable page — don’t hide the only find path in an overflow.
+
+**Don’t**
+
+- Duplicate the same object under two equally loud names.
+- Top-level nav as a dumping ground (>7 items, or mixed tasks + marketing + admin with no grouping).
+- Nested drawers that require a map to return.
+
+**Spec / mock fail**
+
+- §2 with empty Home surface / Why not elsewhere.
+- Nav mock with no current-item state.
+- Two entry points for the same destructive action.
+
 ---
 
 ## Anti-patterns
@@ -65,7 +87,7 @@ Update when amendments or new surfaces land.
 | **Nav-only IA** | UX-003 only audits top nav | Run contextual placement for feature tickets |
 | **Spec inherits wrong placement** | Remediation copies old wireframes | Placement section must justify surface, not inherit |
 | **Amendment IA over live product** (LO-0057 / LO-0059) | Sprint scopes UI to kit / guide slots while users already edit the capability on another surface | Confirm live home with HITL; update surface map; defer wrong-home tickets |
-| **Mid-sprint pull without maturity** (LO-0058) | Feedback ticket enters current sprint and flags `IMMATURE_TICKET` | Fill ≥2 BDD AC + Scope (and design-approve if design-track) before `implement` — pull is OK; immature body is not |
+| **Mid-sprint pull without maturity** (LO-0058) | Feedback ticket enters current sprint and flags `IMMATURE_TICKET` | Fill ≥2 BDD AC + Scope (and design spec if design-track) before `implement` — pull is OK; immature body is not |
 | **Picker without presentation DoD** (LO-0063 / LO-0065) | Rail selection ships; presentation keeps a flat mid-page image list | Same epic (or paired ticket) must place imagery on the presentation surface with editorial layout quality before review |
 | **Selection-order placement** (LO-0070) | First picked image lands in the lead mosaic cell regardless of resolution | Placement algorithm must be **resolution-aware** — see design playbook per-cell pixel budgets; pick order is for curation, not layout |
 
@@ -105,7 +127,7 @@ When **navigation** changes:
 
 Every design spec **must** include **§2 Context & placement** (see `design-spec-template.md`).
 
-`./studio approve-design` warns if the section is missing or empty.
+`./studio approve-design` **fails** if the spec file is missing, still a stub, or §2 is empty. Do not ask the human to review until the file is filled.
 
 ---
 

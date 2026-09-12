@@ -9,6 +9,14 @@ Fast. Offline-capable. Accessible.
 No compromise on performance.
 ```
 
+## UI kit peers (project setup)
+
+Styled studio-library components need these in the **product** React app (not only Studio HQ):
+
+`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` — plus `@headlessui/react` for Headless primitives.
+
+`./studio init` / `design` / `adopt` write `docs/setup/ui-kit.md` and merge them into `package.json`. Install before composing UI. See `studio-library/ui/docs/getting-started/installation.md`.
+
 ---
 
 ## Upgrade soft-path → Account (LO-0142)

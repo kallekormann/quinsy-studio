@@ -1,6 +1,30 @@
 # Design science playbook
 
-Theory-backed, measurable design decisions for Team 10.
+Theory-backed, **calculable** visual decisions for Team 10 (UX-005). Interaction/forms: [interaction-ux-playbook.md](interaction-ux-playbook.md). Product layers: [product-ux-playbook.md](product-ux-playbook.md).
+
+## Visual hierarchy and layout (Do / Don’t / fail)
+
+**Do**
+
+- One dominant element per view (60–30–10: dominant surface, secondary chrome, accent for the one action).
+- Type scale from a stated base × ratio (φ or modular) — write the steps in spec §4.
+- Contrast: body text ≥4.5:1, large UI / large type ≥3:1 (WCAG). Fill the contrast table before `approve-design`.
+- Line length ~45–75 characters for reading blocks. Touch/click ≥44×44px.
+- Gestalt: proximity for related controls; same action = same button variant; figure vs ground (canvas vs chrome).
+
+**Don’t**
+
+- Equal-weight headings, cards, and CTAs (no hierarchy).
+- Hardcoded hex in components when project tokens exist (UX-006).
+- Decorative type smaller than the WCAG large-text cutoff used as body copy.
+
+**Spec / mock fail**
+
+- Contrast table empty or “pass” with no ratio.
+- Marketing F-pattern claim with a centered wall of equal type.
+- Accent color used on five competing actions.
+
+---
 
 ## Gestalt (perception)
 

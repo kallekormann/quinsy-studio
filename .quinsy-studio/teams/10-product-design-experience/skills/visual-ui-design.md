@@ -12,7 +12,7 @@ Typography, color, layout, Gestalt, golden ratio. All values calculable in desig
 
 **External:** `ux-visual-design`, `ux-typography`, `ux-color-theory`, `taste-skill`
 
-**Playbook:** `knowledge-base/design-science-playbook.md`
+**Playbook:** `knowledge-base/design-science-playbook.md` · `knowledge-base/atomic-design-playbook.md` · visceral motion in `knowledge-base/delight-playbook.md` (never instead of contrast/hierarchy).
 
 ---
 

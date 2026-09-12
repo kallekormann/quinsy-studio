@@ -50,6 +50,8 @@ Rules:
   - No breaking changes in existing migrations
   - Data migrations separate from schema migrations
   - Always test: migrate → rollback → migrate
+  - **The agent applies pending migrations** when it has DB access (local or VPS). Inform the human. Do not ask the human to run migrate as sprint work.
+  - Destructive reset (`migrate:fresh`, drop) is HITL — never on the operator volume without explicit ask
 
 Naming:
   20260820_create_users_table

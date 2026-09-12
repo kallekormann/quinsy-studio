@@ -73,6 +73,8 @@ SKILL_ROLE_MAP = {
     "UX-005": "UI/Visual Designer (Director)",
     "UX-006": "Brand Guardian (Director)",
     "UX-007": "Visual Storyteller (Director)",
+    "GD-001": "Growth Designer (Director)",
+    "GD-002": "Growth Designer (Director)",
 }
 
 # Mandatory playbook reference per team (in the constraints block)
@@ -87,6 +89,7 @@ TEAM_PLAYBOOK_MAP = {
     "08-platform-enterprise-engineering": "knowledge-base/backend_playbook.md",
     "09-studio-operations-evolution": "process/learning-loop.md",
     "10-product-design-experience": "knowledge-base/design-science-playbook.md",
+    "11-growth-design": "knowledge-base/growth-mechanics-playbook.md",
 }
 
 # =============================================================================
@@ -112,6 +115,7 @@ SKILL_PREFIX_TEAM = {
     "PE": "08-platform-enterprise-engineering",
     "SO": "09-studio-operations-evolution",
     "UX": "10-product-design-experience",
+    "GD": "11-growth-design",
 }
 
 
@@ -120,17 +124,43 @@ def playbook_for_team(team: str) -> str:
     return TEAM_PLAYBOOK_MAP.get(team, "knowledge-base/anti_ai_slop_protocol.md")
 
 
+SKILL_EXTRA_PLAYBOOKS = {
+    "GD-001": ["knowledge-base/growth-mechanics-playbook.md"],
+    "GD-002": [
+        "knowledge-base/growth-mechanics-playbook.md",
+        "knowledge-base/delight-playbook.md",
+    ],
+    "UX-001": [
+        "knowledge-base/product-ux-playbook.md",
+        "knowledge-base/workflow-definition-playbook.md",
+    ],
+    "UX-002": [
+        "knowledge-base/interaction-ux-playbook.md",
+        "knowledge-base/delight-playbook.md",
+    ],
+    "UX-003": ["knowledge-base/contextual-ia-playbook.md"],
+    "UX-004": ["knowledge-base/ux-research-playbook.md"],
+    "UX-005": ["knowledge-base/atomic-design-playbook.md"],
+    "UX-007": [
+        "knowledge-base/visual-storytelling-playbook.md",
+        "knowledge-base/growth-mechanics-playbook.md",
+    ],
+}
+
+
 def playbooks_for_skills(skills: List[str]) -> List[str]:
     """Playbook paths the implementer must read for these skill IDs."""
     seen: List[str] = []
     for skill in skills or []:
         prefix = str(skill).split("-")[0]
         team = SKILL_PREFIX_TEAM.get(prefix)
-        if not team:
-            continue
-        path = playbook_for_team(team)
-        if path not in seen:
-            seen.append(path)
+        if team:
+            path = playbook_for_team(team)
+            if path not in seen:
+                seen.append(path)
+        for extra in SKILL_EXTRA_PLAYBOOKS.get(str(skill), []):
+            if extra not in seen:
+                seen.append(extra)
     return seen
 
 

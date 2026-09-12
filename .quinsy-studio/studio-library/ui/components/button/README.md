@@ -1,12 +1,9 @@
-# Button
+# button
 
-Generic token-based button. Uses `primary-*` and `neutral-*` Tailwind classes mapped to studio CSS variables.
+**Atomic level:** Atom (`ui-atom`)
 
-Variants: `primary` | `secondary` | `outline` | `ghost` | `link` | `destructive`  
-Sizes: `sm` | `md` | `lg`
+Themable shadcn-style control. Classes use semantic tokens (`bg-primary`, `text-muted-foreground`, `border-input`, …) mapped in `ui/tokens/design-tokens.css`.
 
-Projects remap brand by overriding `--color-primary-*` in local `ui/tokens/design-tokens.css`.
+**Peers:** `radix-ui`, `class-variance-authority`
 
-## Icon-only chrome (LO-0187 / LO-0190)
-
-Icon-only toolbar controls should use **outline / ghost / secondary (dimmed)** variants that follow light/dark tokens — not a bright soft wash or solid white disc. Reserve `primary` for the main call-to-action on the surface.
+Pull: `./studio library pull <project> button`

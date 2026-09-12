@@ -157,7 +157,7 @@ def ensure_backlog_layout(project: str) -> None:
 def read_ticket_meta(path: Path) -> Dict:
     text = path.read_text(encoding="utf-8")
     meta: Dict = {"path": path, "body": text, "file": path}
-    for key in ("id", "title", "priority", "phase", "estimate", "sprint", "status", "files", "dependencies", "team", "skills"):
+    for key in ("id", "title", "priority", "phase", "estimate", "sprint", "status", "files", "dependencies", "team", "skills", "ticket_type", "design_status"):
         # [ \t]* only — \s would swallow the newline after empty `sprint:` fields
         match = re.search(rf"^{key}:[ \t]*([^\n]*)$", text, re.MULTILINE)
         if match:

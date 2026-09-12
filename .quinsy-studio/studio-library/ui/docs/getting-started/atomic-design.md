@@ -13,4 +13,6 @@ ui/
 
 Projects mirror atoms/molecules/organisms under `ui/components/atoms|molecules|organisms/` after pull.
 
+Styled kit slugs (button, dialog, sidebar, …) are shadcn-style. Atomic `kind` is in `manifest.json`. See [shadcn-coverage.md](../shadcn-coverage.md).
+
 See [atomic-design-playbook.md](../../../../knowledge-base/atomic-design-playbook.md).

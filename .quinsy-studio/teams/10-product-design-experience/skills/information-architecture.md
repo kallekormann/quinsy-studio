@@ -60,7 +60,7 @@ Run **placement before** width/spacing/tokens.
 
 ## Approve-design gate
 
-`./studio approve-design` checks design spec for **§2 Context & placement**. Missing section → warning; human may still approve with notes.
+`./studio approve-design` **fails** if the spec file is missing or **§2 Context & placement** is empty. Human approval is not a skip for an unwritten spec.
 
 ---
 

@@ -11,3 +11,5 @@ Honor the COST line on execute. On `INFORM cost-cap`, stop stuffing files — te
 Keys stay in Claude Code / Anthropic login. Never write API keys into studio settings.
 
 Product LLM keys (if a project uses Gemini, etc.) live in that project's `.env`, not here.
+
+UI kit peers and agent-run migrations: see `AGENTS.md`.

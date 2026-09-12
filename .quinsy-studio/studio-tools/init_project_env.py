@@ -12,6 +12,7 @@ import json
 import subprocess
 from pathlib import Path
 from datetime import datetime
+from ui_kit_peers import write_ui_kit_setup
 
 # =============================================================================
 # CONFIGURATION
@@ -55,8 +56,9 @@ def init_project(project: str, archetype: str = 'saas-application'):
     print(f"\n  \033[92m✓ Project initialized: {project_dir}\033[0m")
     print(f"  Next steps:")
     print(f"    1. Create PRD: {project_dir}/docs/intake/prd.md")
-    print(f"    2. Start Docker: ./studio env {project} up")
-    print(f"    3. GitHub repo: ./studio repo {project} create")
+    print(f"    2. UI kit peers (mandatory in the React app): see docs/setup/ui-kit.md")
+    print(f"    3. Start Docker: ./studio env {project} up")
+    print(f"    4. GitHub repo: ./studio repo {project} create")
 
 def create_directories(project_dir: Path):
     """Create project directory structure."""
@@ -90,6 +92,8 @@ def create_directories(project_dir: Path):
         (project_dir / d).mkdir(parents=True, exist_ok=True)
     
     seed_definitions(project_dir)
+    write_ui_kit_setup(project_dir)
+    print(f"  ✓ docs/setup/ui-kit.md (radix-ui + CVA + clsx + tailwind-merge + lucide-react)")
     
     print(f"  ✓ Directory structure created")
 
@@ -195,6 +199,8 @@ You run the project `{project}` autonomously through the Quinsy Studio operating
 ## Non-negotiable
 - No tickets or production implementation before gate 2.
 - Mocks live in `design/prototype/` using the target stack (e.g. Next.js).
+- UI kit peers are mandatory in the React app: `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (+ `@headlessui/react`). See `docs/setup/ui-kit.md`.
+- Schema migrations: if you can reach the database (local Compose or documented VPS), **you run them**. Inform the human; do not ask them to migrate as sprint work.
 - Sticker sheet: `design/prototype/app/sticker-sheet/` (tokens + components).
 - `.quinsy-studio/process/` is the binding reference (lifecycle, gates, ADR, anti-slop, iteration).
 - Role skills live in `.quinsy-studio/teams/` — activate the right role per phase.
@@ -235,6 +241,7 @@ Autonomous flow from intake to gate 7. The agent works through this document.
 ## Phase 3 — Design (HUMAN GATE 2)
 1. User chooses: `./studio design {project} --scope journey` OR `--scope core-views`
 2. Build Next.js prototype in `design/prototype/`, tokens, atomic components, sticker sheet
+   - First `npm install` in that app **must** include UI kit peers (`docs/setup/ui-kit.md`)
 3. User approves: `./studio approve {project} --gate 2` → library promotion
 
 ## Execution planning — Milestones (HITL)
@@ -269,6 +276,8 @@ Roles: Platform Architect, Growth Manager.
 
 ## Rules (always)
 - Every change/decision → ADR + update of the affected definitions file.
+- UI kit peers stay in the React app package.json (`docs/setup/ui-kit.md`).
+- If the agent can reach the DB (local or VPS), **the agent applies migrations** and informs the human. Do not dump migrate commands for the operator to run as sprint work. Destructive reset (`migrate:fresh`, drop) is HITL.
 - No gate without complete exit criteria (`.quinsy-studio/process/gates.md`).
 - No ticket without acceptance criteria and definition of done.
 - No sprint without `summary.md` (Process Guard).

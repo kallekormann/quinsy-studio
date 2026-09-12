@@ -2,6 +2,8 @@
 
 > The studio learns from its mistakes. Every mistake is analyzed and turned into improvements.
 
+**Loop closes on a store (LO-0231):** infusion is a confirmed **delta** into a named playbook (`infusion_path`), merged without an LLM rewrite. See [agentic-loop-playbook.md](../knowledge-base/agentic-loop-playbook.md).
+
 ## Core principle
 
 ```
@@ -59,7 +61,7 @@ Each portable harvest:
 2. **Appends** `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; `--source` is provenance only)
 3. **Opens** a compact LO-* with `infusion_kind`, `infusion_path`, and `train_skills`
 
-Then `./studio execute <project>` **continues product IMPLEMENT**. Open LOs with `train_skills` queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, UI sprint-review, and design-approve still win.
+Then `./studio execute <project>` **continues product IMPLEMENT**. Open LOs with `train_skills` queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, design-track `approve-design`, and UI sprint-review still win.
 
 Do **not** copy project UI/tokens into `studio-library/`. Promote reusable assets via `./studio library promote` — learnings are principles/skills, not product dumps.
 
@@ -222,7 +224,7 @@ Reusable **UI and code** flow from projects into `.quinsy-studio/studio-library/
 
 | When | Command |
 |------|---------|
-| Before coding | `./studio library pull <project> auth billing …` |
+| Before coding | `./studio library pull <project> tokens button …` (not stubs). Kit peers in the app first. |
 | Gate 2 (design) | `./studio approve --gate 2` → `promote-library` |
 | After ticket (generic code) | `./studio library promote <project> <path> --ticket <id>` |
 

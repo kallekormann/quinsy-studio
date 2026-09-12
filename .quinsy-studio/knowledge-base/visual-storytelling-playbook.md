@@ -1,6 +1,14 @@
 # Visual storytelling playbook (UX-007)
 
-For homepage, landing, pricing, and in-app workflow explainers.
+For homepage, landing, pricing, and in-app workflow explainers. Scan/readability: Krug. Conversion mechanics: [growth-mechanics-playbook.md](growth-mechanics-playbook.md) + Team 11. First-success / peak–end: [delight-playbook.md](delight-playbook.md).
+
+## Always
+
+**Do:** First screen states who it is for, what you get, what to do next. One narrative arc. One primary CTA. Literal headlines (anti-slop). Numbered workflow steps ≤7.
+
+**Don’t:** Metaphor heroes, overlapping badge clouds, autoplay noise, or a storyboard that doesn’t match the live product chrome (LO-0054).
+
+**Fail:** Hero with no next step. Workflow explainer with unlabeled steps. Marketing still that fakes product UI.
 
 ## Narrative arc
 
