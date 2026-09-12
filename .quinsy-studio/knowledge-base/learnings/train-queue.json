@@ -469,16 +469,6 @@
       "status": "open",
       "created": "2026-09-12T21:34:51",
       "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
-    },
-    {
-      "id": "TR-0048",
-      "skill_id": "UX-005",
-      "topic": "Design specs for console surfaces must start in sprint 31 (one sprint ahead of s",
-      "source": "lo",
-      "observation": "LO-0237",
-      "status": "open",
-      "created": "2026-09-12T21:48:08",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
     }
   ]
 }

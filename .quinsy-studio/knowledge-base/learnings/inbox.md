@@ -1715,7 +1715,7 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Playbook:** `process/learning-loop.md`
 - **Signal:** process-gap
 - **Observation:** The approval→brief seam was never closed in this sprint — 19 inbox rows vs 5 briefs remained at sprint end. AM-007 correctly prioritises AFFI-0117 as the keystone for sprint 29.
-- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+- **Status:** closed — project-local (not studio HQ)
 
 ## LO-0237 — Design specs for console surfaces must start in sprint 31 (one sprint ahead of s
 - **When:** 2026-09-12T21:38:42
@@ -1725,7 +1725,7 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Playbook:** `knowledge-base/design_playbook.md`
 - **Signal:** design-gap
 - **Observation:** Design specs for console surfaces must start in sprint 31 (one sprint ahead of sprint 33 implement).
-- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+- **Status:** closed — project-local (not studio HQ)
 
 ## LO-0238 — Every ticket must follow the composer-executable contract (06-ticket-contract.md
 - **When:** 2026-09-12T21:38:42
