@@ -126,6 +126,19 @@ def propose_sprint_scope(
             )
             continue
 
+        # XL and epics are parent records — never groom into a sprint (ticket-authoring-playbook).
+        estimate = str(meta.get("estimate") or "").upper()
+        ticket_type = str(meta.get("ticket_type") or meta.get("type") or "").lower()
+        if estimate == "XL" or ticket_type == "epic":
+            deferred_capacity.append(
+                {
+                    "id": tid,
+                    "title": meta.get("title", path.stem),
+                    "reason": "epic/XL — split into S/M composer tickets first",
+                },
+            )
+            continue
+
         if not mature:
             deferred_immature.append(
                 {

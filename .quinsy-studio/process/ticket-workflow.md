@@ -361,3 +361,23 @@ When a ticket is blocked:
 - `.quinsy-studio/process/iterative-delivery.md` — sprint/board/grooming
 - `./studio ticket <project> "<title>"` — create a ticket
 - `./studio move <project> <id> <status>` — change status
+
+## Composer-executable contract is mandatory (LO-0238)
+
+- **PB-20260914-001** helpful=0 harmful=0 :: Every ticket must satisfy the composer-executable contract **before entering a sprint** — sprint scope approval is the enforcement point, not implement time. Required fields (see `knowledge-base/ticket-authoring-playbook.md`): verbatim target artifacts (`files:`), a literal runnable **Verify** block, **Do not touch**, and **Stop and ask if**; frontmatter `executable_by: composer|opus|human`. A ticket that cannot be executed by a small model without further conversation is not groomed — expand it or split it. Never groom XL into a sprint.
+
+## Done means deployed for review (LO-0239, LO-0240)
+
+- **PB-20260914-002** helpful=0 harmful=0 :: A UI ticket is not `done` until its work is **committed and pushed to the deploy-tracked branch** the human will review against. If the hosting platform auto-deploys from the main branch, push main when the ticket is done — otherwise sprint review sees stale production and feedback lands on the wrong version. Verify the review URL actually shows the ticket's change before requesting sprint review.
+
+## Externally rendered output needs a manual pass (LO-0241)
+
+- **PB-20260914-003** helpful=0 harmful=0 :: When a ticket's output renders in an external tool the QA gate cannot see (design-tool plugins, third-party canvases, emails, PDFs), automated checks are insufficient: a **manual pass in the target tool** is part of the ticket's Verify, and the receipt must record it. Do not mark such tickets done on gate-green alone.
+
+## Shared model before parallel consumers (LO-0242)
+
+- **PB-20260914-004** helpful=0 harmful=0 :: When two consumers render the same domain object (e.g. an HTML export and an external placer/plugin), extract the **shared model first** — one source of truth for structure and naming — before implementing either consumer. Duplicated ad-hoc models drift immediately and double every subsequent change.
+
+## Refactors sweep their assertions; verify blocks are literal (LO-0249, LO-0250)
+
+- **PB-20260914-005** helpful=0 harmful=0 :: When a refactor changes class names, tokens, or user-facing copy, sweep **test assertions in the same ticket** — stale assertions silently break the suite for the next ticket. Rename tickets are only done when the ticket's literal Verify command (e.g. `rg -c "<old names>"`) actually returns CLEAN; run the Verify block verbatim before claiming completion — partial renames (models done, services/jobs/tests not) are the common failure.

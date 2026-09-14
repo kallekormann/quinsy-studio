@@ -109,6 +109,8 @@ Sprint review feedback (once per theme)
   → ./studio groom --approve → implement
 ```
 
+**Sprint planning checklist (LO-0234):** design specs for next sprint's UI must be approved **this** sprint — any sprint containing UI implementation requires its design-track specs approved in the previous sprint (multi-surface design blocks start two sprints early). See `knowledge-base/design_playbook.md` § Design runs one sprint ahead.
+
 | Step | What happens |
 |------|----------------|
 | **Feedback** | One FB item per theme; similar text merges to existing FB-NNN |

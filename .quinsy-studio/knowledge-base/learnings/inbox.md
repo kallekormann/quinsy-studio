@@ -1807,3 +1807,53 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Batch design-track specs earlier when IA tickets (0784, 0779) share the same sprint as feature work.
 - **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
 
+## LO-0246 — Tickets sat in `backlog` state long after their code shipped — the sprint was "r
+- **When:** 2026-09-14T11:30:20
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/gates.md`
+- **Signal:** tooling-gap
+- **Observation:** Tickets sat in `backlog` state long after their code shipped — the sprint was "review-claimed done" while the studio state machine still showed 6 open tickets. Receipts and gates were skipped at the time of implementation, so this session had to reconstruct verification.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0247 — Root symlink layout (root `middleware.ts` → apps/web) broke tsc when `proxy.ts`
+- **When:** 2026-09-14T11:30:20
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** layout
+- **Infuse into:** `knowledge-base/design_playbook.md`
+- **Playbook:** `knowledge-base/design_playbook.md`
+- **Signal:** design-gap
+- **Observation:** Root symlink layout (root `middleware.ts` → apps/web) broke tsc when `proxy.ts` was added without its matching root symlink.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0248 — Close tickets (receipt + gate + move done) in the same session the code lands
+- **When:** 2026-09-14T11:30:20
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/gates.md`
+- **Signal:** tooling-gap
+- **Observation:** Close tickets (receipt + gate + move done) in the same session the code lands — never let implementation run ahead of ticket state (matches plan-of-record rule R4).
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0249 — When a design/system refactor changes class names or copy, sweep test assertions
+- **When:** 2026-09-14T11:30:20
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** When a design/system refactor changes class names or copy, sweep test assertions in the same ticket.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0250 — Renames are only done when the ticket's verify command (`rg -c ...`) is actually
+- **When:** 2026-09-14T11:30:20
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Renames are only done when the ticket's verify command (`rg -c ...`) is actually CLEAN — run the verify block before claiming completion.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+

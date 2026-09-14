@@ -333,3 +333,26 @@ See also frontend WYSIWYG type stack (LO-0032).
 - `.quinsy-studio/process/lifecycle.md` — phase 2 (design blueprinting)
 - `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — UI slop rules
 - `.quinsy-studio/studio-library/ui/tokens/` — design tokens
+
+## Design runs one sprint ahead (LO-0234)
+
+- **PB-20260914-001** helpful=0 harmful=0 :: **Lead-time rule:** any sprint containing UI implementation requires its design specs approved in the **previous** sprint. Design blocks are scheduled sprint items, not preambles inside implement tickets. A multi-surface design block starts **two** sprints early.
+
+**Reject rubric before design starts:** agree automatic-reject triggers with the human up front — cheaper to reject at spec review than at sprint review. Rubric template:
+
+- Mock not in-context (not embedded in the real product view)
+- Lorem ipsum / fake data
+- Hand-rolled control where a primitive exists
+- Rate shown without sample size
+- No empty state — at early product stages the empty state IS the primary state
+- No loading/error state
+- Surface displays data the backend cannot supply
+- Off-token-scale type/spacing
+- Contrast or target-size failure
+- Two metaphors for one concept
+
+Complements the §2/§2c lock rule (LO-0213/0218/0220/0222): this adds the scheduling rule and the pre-agreed rubric.
+
+## Symlinked file layouts must stay complete (LO-0247)
+
+- **PB-20260914-002** helpful=0 harmful=0 :: When a repo mirrors files via symlinks (e.g. root config/entry files pointing into an app subtree), any file **referenced by** a symlinked file must also be reachable from the symlink's location. Adding a sibling module without its matching symlink breaks type-checking/builds at the root while the subtree stays green. Rule: when adding a file next to a symlink target, add the mirror symlink in the same change — or better, remove the mirror layout.

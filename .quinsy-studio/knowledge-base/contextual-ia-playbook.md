@@ -136,3 +136,7 @@ Every design spec **must** include **§2 Context & placement** (see `design-spec
 - [workflow-definition-playbook.md](workflow-definition-playbook.md)
 - [design-spec-template.md](design-spec-template.md)
 - [ticket-team-allocation.md](../process/ticket-team-allocation.md)
+
+## Batch IA specs ahead of shared-sprint feature work (LO-0245)
+
+- **PB-20260914-001** helpful=0 harmful=0 :: When IA/design-track tickets share a sprint with feature work that depends on them, batch and approve the IA specs **at sprint start (or the prior sprint)** rather than interleaving. Feature tickets blocked on unapproved IA stall mid-sprint and invite improvised structure that the later spec then contradicts.

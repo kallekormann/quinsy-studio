@@ -291,3 +291,7 @@ The gate history is logged in the project's `status.json`:
 - `.quinsy-studio/process/anti-slop.md` — anti-slop audit in detail
 - `.quinsy-studio/process/lifecycle.md` — overview of all phases
 - `./studio gate <project>` — run the gate
+
+## Ticket state parity (LO-0246, LO-0248)
+
+- **PB-20260914-001** helpful=0 harmful=0 :: The studio state machine is the single source of truth for sprint progress. Code landing without its ticket moving is drift: close every ticket **in the same session the code lands** — receipt filled, gate 5 green, `move done` — never let implementation run ahead of ticket state. A sprint is not "review-claimed done"; it is done when `./studio execute` reaches the review/retro step with zero open sprint tickets. If a sprint is found with shipped code but open tickets, reconstruct verification ticket-by-ticket (run each Verify block) before moving anything to done.

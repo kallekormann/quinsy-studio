@@ -935,3 +935,16 @@
 - `process/human-in-the-loop.md` — sprints target **3–6** tickets; agents must not narrow proposals to 1–2 unless human asks for hotfix
 - `studio-tools/sprint_backlog_validate.py` — `UNDER_CAPACITY` warning when sprint has fewer than 3 tickets
 
+- 2026-09-14: LO-0232 infused — T0 edit-diff capture section added to knowledge-base/agentic-loop-playbook.md (edit distance as headline zero-traffic learning metric). Source: affiliate-platform.
+- 2026-09-14: LO-0233 infused — Quality ratchet section (error-analysis-first, judge discipline) added to knowledge-base/agentic-loop-playbook.md. Source: affiliate-platform.
+- 2026-09-14: LO-0234 infused — design lead-time rule + reject rubric added to knowledge-base/design_playbook.md; sprint-planning checklist updated in process/human-in-the-loop.md. Source: affiliate-platform.
+- 2026-09-14: LO-0238 infused — composer-executable contract made a sprint-entry requirement in process/ticket-workflow.md. Source: affiliate-platform.
+- 2026-09-14: LO-0239 infused — UI done requires commit+push to deploy-tracked branch (process/ticket-workflow.md). Source: affiliate-platform.
+- 2026-09-14: LO-0240 infused — push main on done when auto-deploy tracks it (same section). Source: affiliate-platform.
+- 2026-09-14: LO-0241 infused — manual pass in external render targets required before done (process/ticket-workflow.md). Source: moody.
+- 2026-09-14: LO-0242 infused — shared model before parallel consumers (process/ticket-workflow.md). Source: moody.
+- 2026-09-14: LO-0245 infused — batch IA design-track specs ahead of dependent feature work (knowledge-base/contextual-ia-playbook.md). Source: moody.
+- 2026-09-14: LO-0246+LO-0248 infused — ticket state parity rule (process/gates.md); close receipt+gate+done in-session. Source: affiliate-platform.
+- 2026-09-14: LO-0249+LO-0250 infused — assertion sweep + literal verify rules (process/ticket-workflow.md). Source: affiliate-platform.
+- 2026-09-14: LO-0247 infused — symlinked layouts stay complete (knowledge-base/design_playbook.md). Source: affiliate-platform.
+- 2026-09-14: LO-0235 infused — sprint-planning-playbook.md authored (proof surface, truth before polish, disjoint file lists). Source: affiliate-platform.
