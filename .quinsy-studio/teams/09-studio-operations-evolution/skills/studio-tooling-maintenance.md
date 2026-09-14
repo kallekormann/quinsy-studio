@@ -95,6 +95,11 @@ Distilled principles from parallel train jobs (Openverse imagery sprint). Full d
 - Treat published third-party admin panel assets (`public/js|css|fonts/<panel>/`) and Composer `vendor/` like `node_modules`: do not scan minified vendor JS for magic numbers or type assertions.
 - `validate_anti_slop.py` `IGNORE_PATTERNS` is the allowlist of generated trees; extend it when a PHP/JS admin kit publishes into `public/`, not by rewriting vendor files.
 
+### Generated session usage vs Prettier (LO-0254)
+
+- Product `.studio-session-usage.json` is a studio-written estimate ledger, not source. QA Prettier must not fail tickets on it.
+- `ensure_prettierignore_cost_lines` (and `.gitignore`) keep the file out of `--check .`. Do not format it as a ticket fix.
+
 ### Reuse harvest (LO-0100)
 
 - Auto-open an LO only for **registry generic packages** (`packages/auth`, billing, …). First-brand token kits and project `ui/` stay local (`./studio reuse --record <path> local`).

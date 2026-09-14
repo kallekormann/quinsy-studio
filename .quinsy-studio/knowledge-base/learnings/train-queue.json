@@ -583,6 +583,28 @@
       "created": "2026-09-14T11:30:20",
       "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0052. Product execute stays IMPLEMENT.",
       "closed": "2026-09-14T12:09:16"
+    },
+    {
+      "id": "TR-0053",
+      "skill_id": "SO-001",
+      "topic": "Gate 5 once failed on `.studio-session-usage.json` prettier, unrelated to ticket",
+      "source": "lo",
+      "observation": "LO-0254",
+      "status": "done",
+      "created": "2026-09-14T13:09:17",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0053. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-14T13:13:29"
+    },
+    {
+      "id": "TR-0054",
+      "skill_id": "UX-003",
+      "topic": "Pin `QUEUE_CONNECTION=sync` in the PHPUnit TestCase env force map on any Laravel",
+      "source": "lo",
+      "observation": "LO-0255",
+      "status": "done",
+      "created": "2026-09-14T13:09:17",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0054. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-14T13:13:29"
     }
   ]
 }

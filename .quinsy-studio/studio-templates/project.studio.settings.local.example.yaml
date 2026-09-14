@@ -1,0 +1,12 @@
+# Copy to docs/studio.settings.local.yaml (gitignored).
+# This file is the product burn cap (session + steps). No API keys.
+# Studio HQ train/infusion uses .quinsy-studio/studio.settings.yaml instead.
+
+runtime: cursor
+cost:
+  profile: standard             # economy | standard | premium
+  model_hint: ""
+  # session_token_budget: 800000
+  # steps:
+  #   implement:
+  #     context: 60000

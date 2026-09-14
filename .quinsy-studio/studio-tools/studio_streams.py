@@ -21,20 +21,22 @@ ARCH_TITLE = re.compile(
 )
 
 
-def production_ready_min() -> int:
+def production_ready_min(project: str = "") -> int:
     try:
         from studio_settings import load_settings
 
-        return max(1, int((load_settings().get("cost") or {}).get("production_ready_min") or DEFAULT_READY_MIN))
+        settings = load_settings(project=project, ledger="project" if project else "hq")
+        return max(1, int((settings.get("cost") or {}).get("production_ready_min") or DEFAULT_READY_MIN))
     except Exception:
         return DEFAULT_READY_MIN
 
 
-def human_review_every_sprints() -> int:
+def human_review_every_sprints(project: str = "") -> int:
     try:
         from studio_settings import load_settings
 
-        return max(1, int((load_settings().get("cost") or {}).get("human_review_every_sprints") or DEFAULT_REVIEW_EVERY))
+        settings = load_settings(project=project, ledger="project" if project else "hq")
+        return max(1, int((settings.get("cost") or {}).get("human_review_every_sprints") or DEFAULT_REVIEW_EVERY))
     except Exception:
         return DEFAULT_REVIEW_EVERY
 
@@ -78,7 +80,7 @@ def count_production_backlog(project: str) -> int:
 def pipeline_starved(project: str) -> bool:
     if count_production_backlog(project) <= 0:
         return False
-    return count_ready_backlog(project) < production_ready_min()
+    return count_ready_backlog(project) < production_ready_min(project)
 
 
 def next_production_ticket(project: str) -> Optional[Dict]:

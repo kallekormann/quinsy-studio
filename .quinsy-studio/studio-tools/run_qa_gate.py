@@ -103,7 +103,10 @@ def get_checks_for_level(level: int) -> List[QACheck]:
             ),
             QACheck(
                 name="prettier",
-                command="npx --no-install prettier --check .",
+                command=(
+                    "npx --no-install prettier --check . "
+                    "--ignore-path .prettierignore"
+                ),
                 description="Prettier formatting",
                 timeout=30
             ),
@@ -554,7 +557,12 @@ def main():
         sys.exit(1)
     
     print(f"\n  Starting QA gate level {level} for {project}...")
-    
+
+    if level >= 2:
+        from studio_settings import ensure_prettierignore_cost_lines
+
+        ensure_prettierignore_cost_lines(project_dir)
+
     # Get checks for level
     checks = get_checks_for_level(level)
     

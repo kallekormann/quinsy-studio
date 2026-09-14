@@ -84,7 +84,7 @@ Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `pa
 | `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Sprint: next **ready** ticket (CARD lists skills + playbooks) |
 | `PRODUCTION` | Write unsigned packets (spec + all-state mocks, or `docs/architecture/<TICKET>.md`) — same loop, not a sidecar |
 | `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Receipt + QA 5, then `move … done` (product git commit). Cadence: `ship --to dev`. `main` is HITL |
-| `INFORM` | Reuse brief / inbox drain — loop. **`cost-cap`:** stop; raise the named key in `studio.settings.local.yaml` |
+| `INFORM` | Reuse brief / inbox drain — loop. **`cost-cap`:** stop; raise the named key in the **product** or **HQ** local yaml (see COST `ledger=`) |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT |
 | `HITL` | **You:** gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort. Not a feature-ticket ACK |
 
@@ -131,17 +131,25 @@ Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.
 
 **Other hosts (same `./studio` loop, keys stay in that tool):** [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md). Codex already reads [`AGENTS.md`](AGENTS.md). Product Gemini keys in a project `.env` are not the coding-agent key.
 
-## Cost & token policy
+## Cost & token policy (studio load, not Cursor billing)
 
-Committed defaults in [`.quinsy-studio/studio.settings.yaml`](.quinsy-studio/studio.settings.yaml) are sized for a **medium project** (PRD → architecture → design → one sprint) so you should not need to tune them to start. Intake, architecture, and design have higher per-step budgets than implement / reuse / retro.
+Studio does **not** meter Cursor spend. It estimates how much CARD + files `./studio execute` loaded (`characters ÷ 4`) and stops stuffing files at a cap.
+
+| Ledger | Who it is for | You look at |
+|--------|----------------|-------------|
+| **HQ** | Train / infusion / `STUDIO_LO` | `./studio settings` |
+| **Each product** | That product’s execute loop | `./studio settings <project>` |
+
+Committed baseline is **M**: session **400k**, implement context **28k**. Size **S / L / XL** and how to estimate a turn: [GETTING_STARTED — Studio settings](.quinsy-studio/GETTING_STARTED.md#studio-settings-cost--tokens). Existing trees: `./studio settings <project> --init`.
 
 ```bash
-./studio settings                 # merged policy + estimated usage
+./studio settings                 # HQ
+./studio settings my-project   # product
 ```
 
-Override locally (gitignored, **no API keys**): copy [studio.settings.local.example.yaml](.quinsy-studio/studio-templates/studio.settings.local.example.yaml) → `.quinsy-studio/studio.settings.local.yaml`. Set `cost.profile` (`economy` / `standard` / `premium`) or raise a single step (`cost.steps.design.context`). Estimates are `chars/4` of CARD + listed files — not Cursor/Anthropic/Google billing. `model_hint` is the biggest dollar lever (the host must honor it).
+Override in gitignored **local** yaml (HQ or `docs/studio.settings.local.yaml`). `cost.profile`: `economy` / `standard` / `premium` multiplies that file. `INFORM cost-cap` prints `ledger=project` or `ledger=hq` — raise the **named** key there. No API keys. `model_hint` is the host-model lever.
 
-When execute says `INFORM cost-cap`, it names the yaml key. Raise **that** key, then execute again. Do not keep stuffing files.
+Session must be **≥** the step budgets you will burn in one focus, or session fires first.
 
 ## Library-first (UI + code)
 

@@ -20,3 +20,5 @@ out/
 
 # Studio-local counters (regenerable)
 .ticket_counter
+docs/studio.settings.local.yaml
+.studio-session-usage.json

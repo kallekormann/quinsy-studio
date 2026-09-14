@@ -36,6 +36,7 @@ You do **not** write a full PRD first.
 - Does **not** copy the studio Docker template if the project already has Docker/Compose/a documented run command
 - Does **not** merge project UI/tokens into `studio-library/`
 - Writes `docs/setup/ui-kit.md` and **merges** kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `@headlessui/react`) into existing app `package.json`s if present
+- Writes `docs/studio.settings.yaml` (product execute ledger; `./studio settings <slug> --init` on older trees)
 - Application source (`src/`, `app/`, `packages/`, etc.) is left untouched
 
 ---

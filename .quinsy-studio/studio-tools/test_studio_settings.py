@@ -52,7 +52,7 @@ class YamlAndMergeTests(unittest.TestCase):
         settings = load_settings(committed=Path("nonexistent.yaml"), local=Path("nonexistent-local.yaml"))
         self.assertEqual(settings["cost"]["steps"]["design"]["context"], 40000)
         self.assertEqual(settings["cost"]["steps"]["implement"]["context"], 28000)
-        self.assertEqual(settings["cost"]["session_token_budget"], 1_500_000)
+        self.assertEqual(settings["cost"]["session_token_budget"], 400_000)
 
 
 class StepAndCapTests(unittest.TestCase):
@@ -125,6 +125,65 @@ class StepAndCapTests(unittest.TestCase):
             self.assertEqual(out.kind, "IMPLEMENT")
             self.assertGreater(ss.load_usage(usage)["session"], 0)
             self.assertIn("implement", ss.load_usage(usage)["steps"])
+
+
+class ProjectLedgerTests(unittest.TestCase):
+    def test_project_overlay_wins_session(self):
+        import studio_settings as ss
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp) / "demo"
+            docs = root / "docs"
+            docs.mkdir(parents=True)
+            (docs / "studio.settings.yaml").write_text(
+                "cost:\n  session_token_budget: 111000\n",
+                encoding="utf-8",
+            )
+            orig = ss.PROJECTS_DIR
+            ss.PROJECTS_DIR = Path(tmp)
+            try:
+                settings = ss.load_settings(project="demo", ledger="project")
+                self.assertEqual(settings["cost"]["session_token_budget"], 111000)
+                self.assertEqual(settings["cost"]["_ledger"], "project")
+            finally:
+                ss.PROJECTS_DIR = orig
+
+    def test_studio_lo_uses_hq_usage_file(self):
+        from studio_execute import ExecuteStep
+        import studio_settings as ss
+
+        with TemporaryDirectory() as tmp:
+            hq_usage = Path(tmp) / "hq.json"
+            proj = Path(tmp) / "demo"
+            proj.mkdir()
+            orig = ss.PROJECTS_DIR
+            ss.PROJECTS_DIR = Path(tmp)
+            try:
+                reset_usage("demo", hq_usage)
+                step = ExecuteStep(
+                    kind="STUDIO_LO",
+                    reason="idle infusion",
+                    command="./studio infusion",
+                    loop=True,
+                    card={"id": "LO", "title": "small", "files": []},
+                )
+                out = apply_cost_policy("demo", step, usage_path=hq_usage)
+                self.assertEqual(out.kind, "STUDIO_LO")
+                self.assertEqual(out.cost.get("ledger"), "hq")
+            finally:
+                ss.PROJECTS_DIR = orig
+
+    def test_init_writes_settings(self):
+        import studio_settings as ss
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp) / "demo"
+            root.mkdir()
+            written = ss.init_project_settings("demo", project_dir=root)
+            self.assertTrue((root / "docs" / "studio.settings.yaml").exists())
+            self.assertIn("docs/studio.settings.yaml", written)
+            git = (root / ".gitignore").read_text(encoding="utf-8")
+            self.assertIn("studio.settings.local.yaml", git)
 
 
 if __name__ == "__main__":

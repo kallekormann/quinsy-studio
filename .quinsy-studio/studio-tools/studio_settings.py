@@ -1,4 +1,4 @@
-"""Studio policy file: runtime hint + per-step estimated token budgets.
+"""Studio policy: HQ train ledger vs per-product execute ledger.
 
 Tokens are chars/4 of what execute/CARD tells the agent to load — not host billing.
 No API keys. Local yaml overlays committed defaults.
@@ -15,10 +15,26 @@ from typing import Any, Dict, List, Optional, Tuple
 
 TOOLS_DIR = Path(__file__).parent
 QUINSY_STUDIO = TOOLS_DIR.parent
+STUDIO_ROOT = QUINSY_STUDIO.parent
+PROJECTS_DIR = STUDIO_ROOT / "projects"
 SETTINGS_PATH = QUINSY_STUDIO / "studio.settings.yaml"
 LOCAL_SETTINGS_PATH = QUINSY_STUDIO / "studio.settings.local.yaml"
 USAGE_PATH = QUINSY_STUDIO / ".session-usage.json"
 EXAMPLE_LOCAL = QUINSY_STUDIO / "studio-templates" / "studio.settings.local.example.yaml"
+TEMPLATES_DIR = QUINSY_STUDIO / "studio-templates"
+PROJECT_SETTINGS_REL = Path("docs") / "studio.settings.yaml"
+PROJECT_LOCAL_REL = Path("docs") / "studio.settings.local.yaml"
+PROJECT_LOCAL_EXAMPLE_REL = Path("docs") / "studio.settings.local.example.yaml"
+PROJECT_USAGE_NAME = ".studio-session-usage.json"
+PROJECT_SETTINGS_TEMPLATE = TEMPLATES_DIR / "project.studio.settings.yaml"
+PROJECT_LOCAL_EXAMPLE = TEMPLATES_DIR / "project.studio.settings.local.example.yaml"
+GITIGNORE_COST_LINES = (
+    "docs/studio.settings.local.yaml",
+    ".studio-session-usage.json",
+)
+PRETTIER_IGNORE_COST_LINES = (
+    ".studio-session-usage.json",
+)
 
 STEP_NAMES = (
     "intake",
@@ -47,7 +63,7 @@ STANDARD_STEPS = {
 }
 
 PROFILE_MULTIPLIER = {"economy": 0.5, "standard": 1.0, "premium": 2.0}
-DEFAULT_SESSION_BUDGET = 1_500_000
+DEFAULT_SESSION_BUDGET = 400_000
 DEFAULT_WARN_PCT = 80
 
 SECRET_KEY_RE = re.compile(
@@ -182,15 +198,14 @@ def _load_yaml_file(path: Path) -> Dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
-def load_settings(
+def merge_settings_files(
+    committed: Path,
+    local: Path,
     *,
-    committed: Optional[Path] = None,
-    local: Optional[Path] = None,
+    base: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Merge builtin → committed yaml → profile scale → local yaml (explicit keys win)."""
-    committed = committed or SETTINGS_PATH
-    local = local or LOCAL_SETTINGS_PATH
-    base = builtin_defaults()
+    base = deepcopy(base or builtin_defaults())
     committed_data = _load_yaml_file(committed)
     merged = deep_merge(base, committed_data)
     local_data = _load_yaml_file(local)
@@ -222,6 +237,127 @@ def load_settings(
             if multiplier != 1.0 and name not in ((local_data.get("cost") or {}).get("steps") or {}):
                 steps[name] = _scale_steps({name: STANDARD_STEPS[name]}, multiplier)[name]
     return merged
+
+
+def project_settings_paths(project: str) -> Tuple[Path, Path]:
+    root = PROJECTS_DIR / project
+    return root / PROJECT_SETTINGS_REL, root / PROJECT_LOCAL_REL
+
+
+def usage_path_for(ledger: str, project: str = "") -> Path:
+    if ledger == "project" and project:
+        return PROJECTS_DIR / project / PROJECT_USAGE_NAME
+    return USAGE_PATH
+
+
+def is_hq_ledger(kind: str = "", command: str = "", reason: str = "", read: str = "") -> bool:
+    blob = f"{kind} {command} {reason} {read}".lower()
+    if kind == "STUDIO_LO":
+        return True
+    return resolve_cost_step(kind, command, reason, read) == "learning"
+
+
+def load_settings(
+    *,
+    project: str = "",
+    ledger: str = "hq",
+    committed: Optional[Path] = None,
+    local: Optional[Path] = None,
+) -> Dict[str, Any]:
+    """HQ yaml for train; project yaml for product execute. Tests may pass explicit paths."""
+    if committed is not None or local is not None:
+        merged = merge_settings_files(
+            committed or Path("nonexistent-committed.yaml"),
+            local or Path("nonexistent-local.yaml"),
+        )
+        cost = merged.setdefault("cost", {})
+        cost["_ledger"] = ledger
+        cost["_local_file"] = str(local or LOCAL_SETTINGS_PATH)
+        return merged
+
+    hq = merge_settings_files(SETTINGS_PATH, LOCAL_SETTINGS_PATH)
+    use_project = ledger == "project" and bool(project)
+    if use_project:
+        p_committed, p_local = project_settings_paths(project)
+        if p_committed.exists() or p_local.exists():
+            prod = merge_settings_files(p_committed, p_local)
+            hq_cost = hq.get("cost") or {}
+            prod_cost = prod.setdefault("cost", {})
+            for key in ("production_ready_min", "human_review_every_sprints"):
+                if prod_cost.get(key) in (None, ""):
+                    prod_cost[key] = hq_cost.get(key)
+            prod_cost["_ledger"] = "project"
+            prod_cost["_local_file"] = str(p_local)
+            prod_cost["_committed_file"] = str(p_committed)
+            prod_cost["_usage_file"] = str(usage_path_for("project", project))
+            return prod
+        hq["cost"]["_fallback"] = "no-project-settings"
+
+    hq.setdefault("cost", {})
+    hq["cost"]["_ledger"] = "hq"
+    hq["cost"]["_local_file"] = str(LOCAL_SETTINGS_PATH)
+    hq["cost"]["_usage_file"] = str(USAGE_PATH)
+    return hq
+
+
+def ensure_gitignore_cost_lines(project_dir: Path) -> bool:
+    dest = project_dir / ".gitignore"
+    block = (
+        "\n# Studio load estimate (not host billing)\n"
+        + "\n".join(GITIGNORE_COST_LINES)
+        + "\n"
+    )
+    if dest.exists():
+        text = dest.read_text(encoding="utf-8")
+        missing = [line for line in GITIGNORE_COST_LINES if line not in text]
+        if not missing:
+            return False
+        dest.write_text(text.rstrip() + "\n" + block, encoding="utf-8")
+        return True
+    dest.write_text(block.lstrip(), encoding="utf-8")
+    return True
+
+
+def ensure_prettierignore_cost_lines(project_dir: Path) -> bool:
+    """Generated session usage JSON must not fail QA prettier (LO-0254)."""
+    dest = project_dir / ".prettierignore"
+    block = "\n".join(PRETTIER_IGNORE_COST_LINES) + "\n"
+    if dest.exists():
+        text = dest.read_text(encoding="utf-8")
+        missing = [line for line in PRETTIER_IGNORE_COST_LINES if line not in text]
+        if not missing:
+            return False
+        dest.write_text(text.rstrip() + "\n" + block, encoding="utf-8")
+        return True
+    dest.write_text(block, encoding="utf-8")
+    return True
+
+
+def init_project_settings(
+    project: str = "",
+    project_dir: Optional[Path] = None,
+    *,
+    overwrite: bool = False,
+) -> List[str]:
+    """Write product settings template + gitignore lines. Does not overwrite edited yaml."""
+    root = project_dir or (PROJECTS_DIR / project)
+    if not root.is_dir():
+        raise FileNotFoundError(f"project {project or root} not found")
+    written: List[str] = []
+    dest = root / PROJECT_SETTINGS_REL
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if overwrite or not dest.exists():
+        dest.write_text(PROJECT_SETTINGS_TEMPLATE.read_text(encoding="utf-8"), encoding="utf-8")
+        written.append(str(PROJECT_SETTINGS_REL))
+    example = root / PROJECT_LOCAL_EXAMPLE_REL
+    if overwrite or not example.exists():
+        example.write_text(PROJECT_LOCAL_EXAMPLE.read_text(encoding="utf-8"), encoding="utf-8")
+        written.append(str(PROJECT_LOCAL_EXAMPLE_REL))
+    if ensure_gitignore_cost_lines(root):
+        written.append(".gitignore")
+    if ensure_prettierignore_cost_lines(root):
+        written.append(".prettierignore")
+    return written
 
 
 def step_limits(settings: Optional[Dict[str, Any]], step: str) -> Dict[str, int]:
@@ -389,6 +525,7 @@ def cost_snapshot(
         "warn_detail": "; ".join(hints),
         "model_hint": (settings.get("cost") or {}).get("model_hint") or "",
         "runtime": settings.get("runtime") or "cursor",
+        "ledger": (settings.get("cost") or {}).get("_ledger") or "hq",
     }
 
 
@@ -409,6 +546,9 @@ def format_cost_line(snap: Dict[str, Any]) -> str:
     hint = snap.get("model_hint")
     if hint:
         line += f"  model_hint={hint}"
+    ledger = snap.get("ledger")
+    if ledger:
+        line += f"  ledger={ledger}"
     return line
 
 
@@ -447,18 +587,19 @@ def cost_cap_hit(
     return None
 
 
-def cost_cap_inform_message(hit: Dict[str, Any]) -> str:
+def cost_cap_inform_message(hit: Dict[str, Any], settings: Optional[Dict[str, Any]] = None) -> str:
     key = hit["hit"]
     used = hit["used"]
     limit = hit["limit"]
-    example = EXAMPLE_LOCAL.relative_to(QUINSY_STUDIO.parent)
-    local = LOCAL_SETTINGS_PATH.relative_to(QUINSY_STUDIO.parent)
+    cost = (settings or {}).get("cost") or {}
+    local = cost.get("_local_file") or str(LOCAL_SETTINGS_PATH)
     suggested = max(limit + 1, int(limit * 1.5))
+    ledger = cost.get("_ledger") or "hq"
+    where = "product docs/studio.settings.local.yaml" if ledger == "project" else "HQ studio.settings.local.yaml"
     return (
-        f"cost-cap: estimated {used} tokens > {limit} on {key}. "
-        f"Copy {example} → {local} and raise {key} "
-        f"(e.g. {limit} → {suggested}), then ./studio execute. "
-        "Do not keep stuffing files."
+        f"cost-cap: estimated {used} tokens > {limit} on {key} ({ledger} ledger). "
+        f"Raise {key} in {local} ({where}, e.g. {limit} → {suggested}), then ./studio execute. "
+        "This is studio load estimate, not Cursor billing. Do not keep stuffing files."
     )
 
 
@@ -470,9 +611,12 @@ def apply_cost_policy(
     usage_path: Optional[Path] = None,
 ) -> Any:
     """Attach COST to an ExecuteStep. INFORM (loop=False) when a named cap is hit."""
-    settings = settings or load_settings()
-    usage = load_usage(usage_path)
     cost_step = resolve_cost_step(step.kind, step.command or "", step.reason or "", step.read or "")
+    ledger = "hq" if is_hq_ledger(step.kind, step.command or "", step.reason or "", step.read or "") else "project"
+    settings = settings or load_settings(project=project, ledger=ledger)
+    if usage_path is None:
+        usage_path = usage_path_for(ledger, project)
+    usage = load_usage(usage_path)
     turn = estimate_turn_tokens(project, step.card, step.read)
 
     if step.kind == "HITL":
@@ -482,12 +626,13 @@ def apply_cost_policy(
 
     hit = cost_cap_hit(step=cost_step, turn=turn, usage=usage, settings=settings)
     if hit:
-        msg = cost_cap_inform_message(hit)
+        msg = cost_cap_inform_message(hit, settings)
         snap = cost_snapshot(step=cost_step, turn=turn, usage=usage, settings=settings)
         snap["cap"] = hit
         step.kind = "INFORM"
         step.reason = msg
-        step.command = f"./studio settings  # raise {hit['hit']}, then ./studio execute {project}"
+        local = (settings.get("cost") or {}).get("_local_file") or "studio.settings.local.yaml"
+        step.command = f"./studio settings {project}  # raise {hit['hit']} in {local}, then ./studio execute {project}"
         step.inform = msg
         step.loop = False
         step.cost = snap
@@ -498,21 +643,34 @@ def apply_cost_policy(
     return step
 
 
-def format_settings_report(settings: Optional[Dict[str, Any]] = None, usage: Optional[Dict[str, Any]] = None) -> str:
+def format_settings_report(
+    settings: Optional[Dict[str, Any]] = None,
+    usage: Optional[Dict[str, Any]] = None,
+) -> str:
     settings = settings or load_settings()
     usage = usage if usage is not None else load_usage()
     cost = settings.get("cost") or {}
+    ledger = cost.get("_ledger") or "hq"
     lines = [
+        f"ledger:      {ledger}  (hq = train/STUDIO_LO; project = product execute)",
         f"runtime:     {settings.get('runtime') or 'cursor'}",
         f"profile:     {cost.get('profile')}",
         f"model_hint:  {cost.get('model_hint') or '(host default)'}",
-        f"estimate:    {cost.get('estimate')}  (not host billing)",
+        f"estimate:    {cost.get('estimate')}  (studio load, not host billing)",
         f"warn_at:     {cost.get('warn_at_pct')}%",
         f"session:     {int(usage.get('session') or 0)} / {session_budget(settings)}"
         + (f"  project={usage.get('project')}" if usage.get("project") else ""),
-        "",
-        "steps:                context    budget     used",
     ]
+    if cost.get("_fallback"):
+        lines.append("note:        no docs/studio.settings.yaml — using HQ defaults. ./studio settings <p> --init")
+    if cost.get("_local_file"):
+        lines.append(f"override:    {cost.get('_local_file')}  (gitignored)")
+    lines.extend(
+        [
+            "",
+            "steps:                context    budget     used",
+        ]
+    )
     used_steps = usage.get("steps") or {}
     for name in STEP_NAMES:
         lim = step_limits(settings, name)
@@ -521,8 +679,13 @@ def format_settings_report(settings: Optional[Dict[str, Any]] = None, usage: Opt
             f"  {name:<16} {lim['context']:>8}  {lim['budget']:>8}  {used:>8}"
         )
     lines.append("")
-    lines.append("Override: copy studio-templates/studio.settings.local.example.yaml")
-    lines.append("       →  .quinsy-studio/studio.settings.local.yaml  (no API keys)")
+    if ledger == "project":
+        lines.append("Product: raise named keys in docs/studio.settings.local.yaml")
+        lines.append("HQ train:  .quinsy-studio/studio.settings.local.yaml")
+    else:
+        lines.append("HQ override: copy studio-templates/studio.settings.local.example.yaml")
+        lines.append("          →  .quinsy-studio/studio.settings.local.yaml")
+        lines.append("Product:  ./studio settings <project> --init")
     lines.append("Hosts: Cursor (default), Claude Code (CLAUDE.md), Gemini CLI (GEMINI.md).")
     lines.append("Product LLM keys stay in the project .env — not this file.")
     return "\n".join(lines)

@@ -238,7 +238,8 @@ No separate plugin — the repo *is* the integration.
 ./studio install                 # once after git clone
 ./studio verify-worlds
 ./studio verify-abstraction
-./studio settings                # estimated token policy
+./studio settings                # HQ train ledger
+./studio settings <project>     # product execute ledger
 ./studio focus <project>
 ./studio execute <project>          # loop: do NEXT until ACTION is HITL
 ./studio ship <project> --to dev   # before cadence review (never auto main)
@@ -264,7 +265,7 @@ focus → execute → do NEXT → execute again → … until HITL
 | `GATE` | `./studio gate --level 5` (fresh after this ticket’s implement) |
 | `DEBUG` | Gate red → `sprints/SPRINT-NN/debug/<id>.md`, retry up to 3 times |
 | `MOVE_DONE` | Receipt + gate 5 → `move … done` **and a product git commit**. Then execute again (**agent**, not HITL) |
-| `INFORM` | Reuse brief / inbox drain — loop; **not** architecture or design. **`cost-cap`:** stop and raise the named yaml key |
+| `INFORM` | Reuse brief / inbox drain — loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key (`ledger=` HQ vs product) |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT — classified path on the CARD |
 | `HITL` | **You:** gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort |
 
@@ -478,7 +479,8 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio ship <project> --to main --approve    # production — HITL
 ./studio groom <project>
 ./studio execute <project>           # loop until HITL; train LOs in parallel
-./studio settings [--reset-usage]    # token policy + estimated usage (no API keys)
+./studio settings [--reset-usage]              # HQ train ledger
+./studio settings <project> [--init] [--reset-usage]
 
 # Quality & decisions
 ./studio gate <project> [--level N]
@@ -726,7 +728,7 @@ See [library_registry.md](studio-library/library_registry.md).
 | Studio files lost | **Git backup!** Check `.gitignore` (external skills are regenerable) |
 | Agent asks “should I continue?” mid-sprint | Tell it to `./studio execute` until `HITL` — do not approve ticket-by-ticket |
 | `move … done` refused | Need gate **level 5** passed **and** a filled `sprints/SPRINT-NN/receipts/<ID>.md` |
-| Product git | `MOVE_DONE` commits `projects/<p>/`. Review: `./studio ship --to dev`. `main` needs `--approve` |
+| `INFORM cost-cap` | Raise the **named** key in product `docs/studio.settings.local.yaml` or HQ local yaml (`ledger=` on COST). Size S–XL: [GETTING_STARTED](GETTING_STARTED.md#studio-settings-cost--tokens) |
 | Execute says `HITL` | Gate 0–2, `approve-design` / `approve-arch`, cadence review, or tech-veto — not a feature-ticket ACK |
 | Cursor asks to Allow `./studio move … done` | IDE Auto-review, not studio HITL — see [GETTING_STARTED — Cursor Auto-run](GETTING_STARTED.md#cursor-auto-run-vs-studio-hitl) |
 | Execute says `STUDIO_LO` | Product loop is idle — infuse the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |
@@ -739,7 +741,7 @@ See [library_registry.md](studio-library/library_registry.md).
 
 ## Further Documentation
 
-- `GETTING_STARTED.md` — Execute loop, **learnings / harvest**, prompts, session ritual
+- `GETTING_STARTED.md` — Execute loop, **learnings / harvest**, **studio load caps (S–XL)**, prompts, session ritual
 - `process/lifecycle.md` — 7-phase lifecycle
 - `process/agent-context.md` — Session start + execute until HITL
 - `process/gates.md` — Gate definitions

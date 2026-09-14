@@ -87,6 +87,10 @@ Agents: read project `package.json` scripts and `.env.local` before running migr
 
 **PHPUnit vs operator database (LO-0112 / LO-0115 / LO-0145):** `RefreshDatabase` / `migrate:fresh` against the Compose tenant Postgres wipes live domains, kits, and seed. Feature tests that need Postgres must use a throwaway database/schema, or transactions that cannot run `migrate:fresh` on the operator volume. Do not treat a green constraint test as permission to reset the human’s local stack. **`phpunit.xml` `force` is not enough** when Compose injects `DB_*` into the PHP process — the test `TestCase` must pin the isolated test database name in process env **before** the application boots.
 
+**PHPUnit vs Compose queue (LO-0255):** The same leak applies to `QUEUE_CONNECTION`. Compose often injects `redis`/`database`; phpunit.xml `sync` without `force="true"` plus a TestCase env pin means `ShouldQueue` jobs are pushed to Redis and never run. Pin `QUEUE_CONNECTION=sync` in the test bootstrap the same way as `DB_DATABASE`.
+
+**Graph mentions need persisted ids (LO-0256):** Derived knowledge-graph `mentions` (document → entity) must use stable foreign keys already stored on content blocks. Do not mint entities from display names. If payloads have no id, ship coverage/`covers` and assert mention count `0` rather than inventing rows.
+
 **Filament operator home (LO-0141):** set panel `homeUrl` to the primary resource **index** (the list of existing records), not an empty dashboard. Header `StatsOverviewWidget`s are lazy by default — set `protected static bool $isLazy = false` so counts render on first paint, not after `x-intersect`.
 
 **Operator idea queues (LO-0146):** If operators must feed a writer or synthesis loop, the idea queue is a **product admin surface**, not IDE chat. Markdown briefing files can seed a first corpus; they are not the ongoing operator inbox.
@@ -396,3 +400,8 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 - `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — backend slop rules
 - `.quinsy-studio/teams/02-backend-systems/` — backend team
 - `.quinsy-studio/teams/08-platform-enterprise-engineering/` — infrastructure team
+
+## Deltas
+
+- **PB-20260914-002** helpful=0 harmful=0 :: Derived graph mentions use persisted entity foreign keys on content blocks; if ids are absent, mention count stays 0 — do not mint entities from display names.
+- **PB-20260914-001** helpful=0 harmful=0 :: PHPUnit TestCase must pin QUEUE_CONNECTION=sync when Compose injects redis/database; phpunit.xml without force is not enough (same class of leak as DB_DATABASE).

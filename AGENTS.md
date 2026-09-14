@@ -19,7 +19,8 @@ This is **studio-core** (`./studio guard`), not a project-local convention.
 ```bash
 ./studio install                  # once after git clone (skip if node_modules exists)
 ./studio verify-worlds
-./studio settings                 # estimated token policy (raise named keys on INFORM cost-cap)
+./studio settings                 # HQ train ledger
+./studio settings <project>     # product execute ledger (raise named keys on INFORM cost-cap)
 ./studio focus <project>          # or: ./studio adopt <p> --from <url-or-path> when the tree already has source
 ./studio execute <project>        # do NEXT; loop until ACTION is HITL — do not ask to continue
 ```
@@ -32,7 +33,7 @@ On `HITL`: stop and wait — **gate 0**, **gate 1 architecture**, **gate 2 desig
 
 **Existing codebase:** `./studio adopt <p> --from <url-or-path>` overlays studio docs without wiping source. Execute fills `docs/as-built/` (cite paths), then HITL gate 0. Do not `init`/`bootstrap` an empty scaffold over a live tree. See [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md).
 
-On `INFORM`: do NEXT (inbox drain, reuse brief), then execute again — do not wait for a signature. **Exception:** `INFORM cost-cap` — stop stuffing files; the human raises the **named** key in `.quinsy-studio/studio.settings.local.yaml`. Architecture and design gates are **not** inform.
+On `INFORM`: do NEXT (inbox drain, reuse brief), then execute again — do not wait for a signature. **Exception:** `INFORM cost-cap` — stop stuffing files; raise the **named** key in `projects/<p>/docs/studio.settings.local.yaml` (product execute) or `.quinsy-studio/studio.settings.local.yaml` (train / STUDIO_LO).
 
 On `STUDIO_LO`: only when the product loop is **idle**. Mid-sprint, harvest immediately and spawn `./studio train` **in parallel**; keep `IMPLEMENT`. Infuse with `./studio infusion-delta` (no full-file rewrite), then `./studio train --done TR-NNNN`. Cite playbook bullets on the receipt (`./studio cite` / MOVE_DONE counters). Always pass `--lo LO-NNNN` when queueing train. Move LO to `backlog/done/`.
 

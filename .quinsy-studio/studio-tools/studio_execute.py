@@ -1231,7 +1231,10 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
 
         lines.append(f"  {format_cost_line(step.cost)}")
         if step.cost.get("warn") and step.kind != "INFORM":
-            lines.append(f"  WARN:    {step.cost.get('warn_detail')} — raise the named key in studio.settings.local.yaml if this step grows")
+            lines.append(
+                f"  WARN:    {step.cost.get('warn_detail')} — raise the named key "
+                f"({'docs/studio.settings.local.yaml' if (step.cost or {}).get('ledger') == 'project' else '.quinsy-studio/studio.settings.local.yaml'})"
+            )
         if step.cost.get("cap"):
             lines.append(f"  HIT:     {step.cost['cap'].get('hit')}  used={step.cost['cap'].get('used')}  limit={step.cost['cap'].get('limit')}")
     if step.inform and step.kind != "INFORM":
@@ -1246,7 +1249,7 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
         lines.append("  STOP. Wait for the human. Do not implement past this gate.")
     elif step.kind == "INFORM":
         if step.loop is False:
-            lines.append("  STOP. Raise the named cost key in studio.settings.local.yaml, then execute again.")
+            lines.append("  STOP. Raise the named cost key (product docs/studio.settings.local.yaml or HQ local yaml), then execute again.")
             lines.append("  Do not keep stuffing files past this cap.")
         else:
             lines.append("  Inform only — do NEXT, then execute again. Do not wait for a signature.")
@@ -1345,11 +1348,12 @@ def health_report(project: str) -> List[Dict[str, str]]:
             load_usage,
             session_budget,
             step_limits,
+            usage_path_for,
             warn_at_pct,
         )
 
-        settings = load_settings()
-        usage = load_usage()
+        settings = load_settings(project=project, ledger="project")
+        usage = load_usage(usage_path_for("project", project))
         warn = warn_at_pct(settings)
         sess_lim = session_budget(settings)
         sess_used = int(usage.get("session") or 0)
@@ -1359,7 +1363,7 @@ def health_report(project: str) -> List[Dict[str, str]]:
                     "level": "warn" if sess_used <= sess_lim else "error",
                     "code": "cost-session",
                     "message": f"session tokens ≈{sess_used}/{sess_lim}",
-                    "fix": "raise cost.session_token_budget in studio.settings.local.yaml",
+                    "fix": "raise cost.session_token_budget in docs/studio.settings.local.yaml (product) or HQ local yaml (train)",
                 }
             )
         for name, used in (usage.get("steps") or {}).items():
@@ -1381,7 +1385,7 @@ def health_report(project: str) -> List[Dict[str, str]]:
                                 "session_budget": sess_lim,
                             }
                         ),
-                        "fix": f"raise cost.steps.{name}.budget in studio.settings.local.yaml",
+                        "fix": f"raise cost.steps.{name}.budget in docs/studio.settings.local.yaml",
                     }
                 )
     except Exception:

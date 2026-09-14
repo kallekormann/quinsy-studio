@@ -1877,3 +1877,33 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Keep `sprint_deferred: true` on parent epics before the first scope proposal.
 - **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
 
+## LO-0254 — Gate 5 once failed on `.studio-session-usage.json` prettier, unrelated to ticket
+- **When:** 2026-09-14T13:09:17
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** tooling
+- **Infuse into:** `studio-tools/`
+- **Playbook:** `process/gates.md`
+- **Signal:** tooling-gap
+- **Observation:** Gate 5 once failed on `.studio-session-usage.json` prettier, unrelated to ticket files.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0255 — Pin `QUEUE_CONNECTION=sync` in the PHPUnit TestCase env force map on any Laravel
+- **When:** 2026-09-14T13:09:17
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** ia
+- **Infuse into:** `knowledge-base/contextual-ia-playbook.md`
+- **Playbook:** `knowledge-base/contextual-ia-playbook.md`
+- **Signal:** design-gap
+- **Observation:** Pin `QUEUE_CONNECTION=sync` in the PHPUnit TestCase env force map on any Laravel app that Compose queues via redis.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0256 — Carry `product_id` on involved-products blocks when the graph should mention ent
+- **When:** 2026-09-14T13:09:17
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Carry `product_id` on involved-products blocks when the graph should mention entities; do not invent entities from names.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+

@@ -94,6 +94,7 @@ class OverlaySafetyTests(unittest.TestCase):
             _write_source_tree(dest)
             with patch.object(studio_adopt, "PROJECTS_DIR", projects):
                 overlay_studio(dest, "live")
+                self.assertTrue((dest / "docs" / "studio.settings.yaml").exists())
                 self.assertTrue((dest / "src" / "app.py").exists())
                 self.assertEqual((dest / ".git" / "HEAD").read_text(encoding="utf-8"), GIT_MARKER)
                 self.assertFalse((dest / ".git" / "config").exists())  # no git init

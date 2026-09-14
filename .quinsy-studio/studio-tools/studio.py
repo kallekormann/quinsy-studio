@@ -18,7 +18,8 @@ Commands:
   ./studio execute <project> [--json]            One next action; loop until HITL
   ./studio ship <project> --to dev               Push product git to origin/dev (before review)
   ./studio ship <project> --to main --approve    Production push — HITL only
-  ./studio settings [--reset-usage]              Policy + estimated token usage (no API keys)
+  ./studio settings [--reset-usage]              HQ train ledger (not Cursor billing)
+  ./studio settings <project> [--init] [--reset-usage]  Product execute ledger
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
   ./studio veto <project> --decision ADR-…
@@ -799,15 +800,36 @@ class StudioOrchestrator:
         print(format_health(project, health_report(project)))
         return True
 
-    def cmd_settings(self, reset_usage_flag: bool = False):
-        """Show merged studio policy + estimated token usage."""
-        from studio_settings import format_settings_report, load_settings, load_usage, reset_usage
+    def cmd_settings(self, project: str = "", reset_usage_flag: bool = False, init_flag: bool = False):
+        """Show HQ or product studio-load policy + estimated usage."""
+        from studio_settings import (
+            format_settings_report,
+            init_project_settings,
+            load_settings,
+            load_usage,
+            reset_usage,
+            usage_path_for,
+        )
 
-        print_header("STUDIO SETTINGS")
+        print_header("STUDIO SETTINGS" + (f" — {project}" if project else " — HQ"))
+        if init_flag:
+            if not project:
+                print("  Need ./studio settings <project> --init")
+                return False
+            written = init_project_settings(project)
+            if written:
+                print("  Wrote:")
+                for path in written:
+                    print(f"    {path}")
+            else:
+                print("  Already present (no overwrite).")
+            print()
+        ledger = "project" if project else "hq"
+        usage_path = usage_path_for(ledger, project)
         if reset_usage_flag:
-            reset_usage()
+            reset_usage(project, usage_path)
             print("  Usage reset.\n")
-        print(format_settings_report(load_settings(), load_usage()))
+        print(format_settings_report(load_settings(project=project, ledger=ledger), load_usage(usage_path)))
         return True
 
     def cmd_note(self, project: str, text: str = "", drain: bool = False):
@@ -989,9 +1011,9 @@ class StudioOrchestrator:
             return False
         status = load_status(project)
         set_active_project(project, status)
-        from studio_settings import reset_usage
+        from studio_settings import reset_usage, usage_path_for
 
-        reset_usage(project)
+        reset_usage(project, usage_path_for("project", project))
         from studio_isolation import apply_project_isolation
 
         siblings, _ignore, _rule = apply_project_isolation(project)
@@ -1716,10 +1738,10 @@ class StudioOrchestrator:
             if kind == "implementation":
                 from studio_streams import count_production_backlog, count_ready_backlog, production_ready_min
 
-                if count_production_backlog(project) and count_ready_backlog(project) < production_ready_min():
+                if count_production_backlog(project) and count_ready_backlog(project) < production_ready_min(project):
                     print(
                         f"\n  ❌ Implementation scope blocked — ready pipeline "
-                        f"{count_ready_backlog(project)}/{production_ready_min()}. "
+                        f"{count_ready_backlog(project)}/{production_ready_min(project)}. "
                         "Finish PRODUCTION packets (approve-design / approve-arch) first."
                     )
                     return False
@@ -3335,7 +3357,8 @@ Commands:
   ./studio execute <project> [--json]            One next action; loop until HITL
   ./studio ship <project> --to dev               Push product git to origin/dev (before review)
   ./studio ship <project> --to main --approve    Production push — HITL only
-  ./studio settings [--reset-usage]              Policy + estimated token usage (no API keys)
+  ./studio settings [--reset-usage]              HQ train ledger (not Cursor billing)
+  ./studio settings <project> [--init] [--reset-usage]  Product execute ledger
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
   ./studio veto <project> --decision ADR-…
@@ -3493,7 +3516,13 @@ def main():
         orchestrator.cmd_execute(args[0], as_json=as_json)
 
     elif command == "settings":
-        orchestrator.cmd_settings(reset_usage_flag="--reset-usage" in args)
+        positional = [a for a in args if not a.startswith("--")]
+        project = positional[0] if positional else ""
+        orchestrator.cmd_settings(
+            project,
+            reset_usage_flag="--reset-usage" in args,
+            init_flag="--init" in args,
+        )
 
     elif command == "note" and len(args) >= 1:
         drain = "--drain" in args

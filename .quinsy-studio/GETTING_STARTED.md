@@ -141,22 +141,75 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 ./studio ticket-card <project> <ID>  # compact card only (~AC, files, deps)
 ./studio receipt <project> <ID>      # scaffold receipt before done
 ./studio health <project>            # state-graph: open LOs, missing receipts, deps
-./studio settings                    # token policy + estimated usage
+./studio settings                    # HQ train ledger
+./studio settings <project>        # product execute ledger
 ```
 
 ## Studio settings (cost / tokens)
 
-Defaults in [studio.settings.yaml](studio.settings.yaml) are for a **medium project**. You should finish PRD → architecture → design → a normal sprint without hitting a cap. Intake, architecture, and design allow more estimated tokens than implement, reuse, or retro.
+These numbers are **not Cursor / Claude / Gemini invoices**. They are a **studio load estimate**: roughly `characters ÷ 4` of the CARD plus the files execute listed for that turn. They stop the agent from stuffing more files (`INFORM cost-cap`). They do **not** make the model smarter.
+
+Think of an agency: HQ has a budget for internal training; each client has its own engagement cap. There is still **no money total** — only a **session** counter (resets on `focus` for the product, or `./studio settings --reset-usage` for HQ).
+
+### Two ledgers
+
+| Ledger | Command | Committed file | You override here (gitignored) | Pays for |
+|--------|---------|----------------|----------------------------------|----------|
+| **HQ** | `./studio settings` | `.quinsy-studio/studio.settings.yaml` | `.quinsy-studio/studio.settings.local.yaml` | Train, infusion, `STUDIO_LO` |
+| **Product** | `./studio settings <p>` | `projects/<p>/docs/studio.settings.yaml` | `docs/studio.settings.local.yaml` | That product’s execute loop |
+
+Existing products that predate this split: `./studio settings <p> --init` (does not overwrite a yaml you already edited). New `init` / `adopt` write the product file. **No API keys** in any of these files.
+
+`./studio focus <p>` resets **that product’s** `.studio-session-usage.json`. HQ usage stays until `./studio settings --reset-usage`.
+
+When execute prints `COST … ledger=project` or `ledger=hq`, raise the named key in **that** local yaml.
+
+### What each number means
+
+| Knob | Limits | If you hit it |
+|------|--------|----------------|
+| `steps.<step>.context` | **This one** execute turn (CARD + listed files) | This ticket’s files are too fat for one load. Raise `context`, or list fewer/smaller files on the ticket. |
+| `steps.<step>.budget` | **All** turns of that kind in this session (every implement ticket shares `implement.budget`) | Many execute loops since last focus. Raise that step’s `budget`, or `focus` again to reset usage. |
+| `session_token_budget` | **All** steps added together until reset | Session is the real ceiling. Set it **at least as high** as the step budgets you expect to use in one focus (gates + a sprint without re-focusing). |
+
+`cost.profile` (`economy` ≈ 0.5×, `standard` = 1×, `premium` ≈ 2×) multiplies **that file’s** table. Editing the numbers **and** choosing a profile both matter. Put day-to-day tweaks in the **local** yaml so clones keep the medium baseline.
+
+### How to estimate (so you can size the baseline)
+
+Execute counts text it told the agent to load, not every tool call in Cursor.
+
+- **1 estimated token ≈ 4 characters** of CARD + files (`chars_div_4`).
+- One implement turn may include up to **12 files** (first 80k characters each) plus an optional `READ` file (up to 120k characters). A theoretical fat turn is on the order of **~250k** estimated tokens — so `implement.context: 28000` will fire on large tickets even if the session is huge.
+- A **typical** turn with a small CARD and a few modest files is a few thousand estimated tokens.
+- **Session used** ≈ (turns since last reset) × (those estimates). A sprint of ~8 tickets × ~8 execute loops × ~5–15k ≈ **300k–1M**. Watch `./studio settings <p>` after a real sprint.
+
+**Do not** set session below the step budgets you intend to consume in one focus. Example: `design.budget` 400k + `implement.budget` 400k in one focus needs `session_token_budget` **≥ ~800k**, or you will hit session first and the step numbers never matter.
+
+### Size the baseline (committed yaml = **M**)
+
+Committed product + HQ defaults are **M (medium)**: session **400k**, implement context **28k** / budget **400k**, design context **40k** / budget **400k**. That is meant to cover PRD → architecture → design → **one** medium sprint **if you re-focus between phases**, or a short sprint in one focus. HQ’s 400k session is for several train/infusion jobs, not product implement.
+
+| Size | Typical product | `session_token_budget` | `implement.context` | `implement.budget` | How to apply |
+|------|-----------------|------------------------|---------------------|--------------------|--------------|
+| **S** | Small greenfield, few files per ticket | 200000 | 16000 | 200000 | `cost.profile: economy` on **M**, or lower the three keys in local yaml |
+| **M** | Default (committed files) | 400000 | 28000 | 400000 | Leave `profile: standard` |
+| **L** | Brownfield / many packages, fat tickets | 800000–1200000 | 60000–100000 | 800000–1500000 | Local yaml, or `profile: premium` on **M** (≈ 800k session, 56k implement context) |
+| **XL** | Large monorepo; you never want a mid-sprint cap | 1500000–2500000 | 100000 | 1500000 | Set the keys in **product** local yaml. Keep HQ at M unless train also caps. |
+
+**HQ vs product:** raise **product** when `ledger=project` (normal sprint). Raise **HQ** `steps.learning` / HQ `session_token_budget` only when train / `STUDIO_LO` cap. Four products → four product files; they do not share a burn cap.
+
+**After `INFORM cost-cap`:** raise **only the named key** (e.g. `cost.steps.implement.context`) about 1.5×, then execute again. If session fires while step budgets still have headroom, raise `session_token_budget` first.
+
+### What this does not do
+
+Higher budgets do not improve design or code quality. They only delay the stop. `model_hint` is the lever that can change host model cost (the IDE must honor it). Product LLM keys stay in `projects/<p>/.env`.
 
 ```bash
-./studio settings
+./studio settings                         # HQ used vs cap
+./studio settings <project>            # product used vs cap
+./studio settings <project> --init       # write product yaml on an older tree
+./studio settings <project> --reset-usage
 ```
-
-Copy [studio-templates/studio.settings.local.example.yaml](studio-templates/studio.settings.local.example.yaml) → `.quinsy-studio/studio.settings.local.yaml` (gitignored). Set `cost.profile` (`economy` ~0.5×, `standard`, `premium` ~2×) or raise one step, e.g. `cost.steps.design.context`. **No API keys** in that file.
-
-Estimates are `chars/4` of the CARD and listed files — not the host invoice. `model_hint` is the main dollar control (Cursor / Claude / Gemini must honor it). Product Gemini keys in a project `.env` are not the coding agent.
-
-If execute returns `INFORM cost-cap`, it names the yaml key (`cost.steps.design.context`, `cost.steps.implement.budget`, or `cost.session_token_budget`). Raise **that** key and execute again. At 80% the CARD warns and work continues.
 
 **Tickets stay Markdown** in git (no SQL). Tokens are saved by **layered load**: execute shows a short card; the agent opens the full ticket file only on `IMPLEMENT`.
 
@@ -208,6 +261,7 @@ Use natural language. The agent maps your intent to `./studio` commands.
 | Recover from drift | *"Back on track"* / *"Focus and execute — only until HITL"* |
 | Health of the loop | *"Studio health for &lt;project&gt;"* → `./studio health` |
 | Project status | *"What's the status of &lt;project&gt;?"* → `./studio status` + `./studio board` |
+| See / raise load caps | *"Show studio settings for &lt;project&gt;"* / *"Init product settings"* — [size S–XL](#studio-settings-cost--tokens) |
 
 ### Human gates (you must approve)
 
@@ -321,7 +375,7 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 - Ask the human to `approve-design` when `docs/design-specs/<TICKET>.md` or all-state token mocks are missing — write them first (execute will say IMPLEMENT, not HITL)
 - Ask the human to run schema migrate when you can reach the database (local Compose, `.env`, documented VPS). Apply it yourself, then INFORM. Destructive `migrate:fresh` / drop is HITL.
 - Skip UI kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) on scaffold — they belong in the product app `package.json` from day one (`docs/setup/ui-kit.md`)
-- Keep stuffing files after `INFORM cost-cap` — wait for the named key to be raised in `studio.settings.local.yaml`
+- Keep stuffing files after `INFORM cost-cap` — wait for the named key in the **product** or HQ local yaml (`ledger=` on COST)
 
 ---
 
@@ -353,7 +407,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Amendment intake | `./studio amend <p> intake/amendments/<p>/amendment_NN.md` · `./studio amendments <p>` · `./studio approve <p> --amendment AM-001` |
 | Groom / retro / train | `./studio groom <p>` · `./studio retro <p> --complete` (auto-harvest) · `./studio train SO-001 --from mistake --topic "…"` · `./studio infusion` |
 | Studio learnings | `./studio learn "..." --signal <s>` (harvests immediately) · `./studio learn-list` · then train beside execute |
-| Cost / tokens | `./studio settings` · `./studio settings --reset-usage` · local override `studio.settings.local.yaml` |
+| Cost / tokens | `./studio settings` (HQ) · `./studio settings <p> [--init] [--reset-usage]` · product `docs/studio.settings.local.yaml` |
 | Scope check | `./studio guard <p> "your request text"` |
 
 ---
@@ -586,7 +640,7 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 | Sibling isolation | `./studio focus` / `isolate` · guard `CROSS_PROJECT` · not a sandbox |
 | Local URLs / ports | [host-port-allocation.md](knowledge-base/host-port-allocation.md) — smoke the project RUNBOOK URL |
 | Studio HQ generic docs | [process/studio-abstraction.md](process/studio-abstraction.md) · `./studio verify-abstraction` |
-| Cost / token policy | [studio.settings.yaml](studio.settings.yaml) · `./studio settings` |
+| Cost / token policy | [Studio settings](#studio-settings-cost--tokens) — HQ vs product, how to estimate, size S–XL |
 | Learning loop + infusion gate | [process/learning-loop.md](process/learning-loop.md) · [§ learnings](#learnings-harvest-when-identified) · `./studio infusion` |
 | Feature placement (IA) | [knowledge-base/contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) |
 | Off-sprint work | `./studio guard <p> "request"` |

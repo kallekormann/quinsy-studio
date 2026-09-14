@@ -1,0 +1,58 @@
+# Product studio-load policy (not Cursor/Anthropic billing).
+# Estimates are chars/4 of CARD + listed files this execute turn.
+# Size S / M / L / XL and how to estimate: .quinsy-studio/GETTING_STARTED.md
+#   (section “Studio settings (cost / tokens)”).
+# Override locally: copy docs/studio.settings.local.example.yaml
+# → docs/studio.settings.local.yaml (gitignored; never put API keys here).
+#
+# This committed file is size M. Raise keys in the local yaml — do not
+# treat session_token_budget as Cursor spend.
+#
+# cost.profile: economy (~0.5×) | standard | premium (~2×)
+# Raise a named key when execute INFORM cost-cap names it.
+
+runtime: cursor
+
+cost:
+  profile: standard
+  model_hint: ""
+  estimate: chars_div_4
+  warn_at_pct: 80
+  session_token_budget: 400000
+  max_files_open_on_implement: 12
+  never_dump_backlog: true
+  load_full_ticket_only_on: IMPLEMENT
+  max_qa_retries: 3
+  production_ready_min: 2
+  human_review_every_sprints: 2
+  steps:
+    intake:
+      context: 24000
+      budget: 200000
+    architecture:
+      context: 32000
+      budget: 250000
+    design:
+      context: 40000
+      budget: 400000
+    planning:
+      context: 16000
+      budget: 80000
+    scoping:
+      context: 12000
+      budget: 60000
+    implement:
+      context: 28000
+      budget: 400000
+    review:
+      context: 16000
+      budget: 80000
+    reuse:
+      context: 12000
+      budget: 40000
+    learning:
+      context: 12000
+      budget: 60000
+    retro:
+      context: 12000
+      budget: 40000

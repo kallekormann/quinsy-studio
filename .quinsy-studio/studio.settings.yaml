@@ -1,9 +1,11 @@
-# Quinsy Studio — committed defaults (medium project).
-# Override locally: copy studio-templates/studio.settings.local.example.yaml
-# → .quinsy-studio/studio.settings.local.yaml  (gitignored; never put API keys here).
+# Studio HQ — train / infusion / STUDIO_LO only.
+# Product execute uses projects/<name>/docs/studio.settings.yaml.
+# How to size S–XL: GETTING_STARTED.md § Studio settings (cost / tokens).
+# Override: studio-templates/studio.settings.local.example.yaml
+# → .quinsy-studio/studio.settings.local.yaml (gitignored; no API keys).
 #
-# Tokens are estimates (chars/4 of CARD + listed files), not Cursor/Anthropic/Google billing.
-# model_hint is a hint for the host IDE. Keys stay in Cursor / Claude Code / Gemini CLI.
+# Estimates are chars/4 of CARD + listed files, not host billing.
+# Committed table is size M (session 400k).
 
 runtime: cursor
 
@@ -12,7 +14,7 @@ cost:
   model_hint: ""
   estimate: chars_div_4
   warn_at_pct: 80
-  session_token_budget: 1500000
+  session_token_budget: 400000
   max_files_open_on_implement: 12
   never_dump_backlog: true
   load_full_ticket_only_on: IMPLEMENT
@@ -23,32 +25,32 @@ cost:
   human_review_every_sprints: 2
   steps:
     intake:
-      context: 100000
-      budget: 1000000
+      context: 24000
+      budget: 200000
     architecture:
-      context: 100000
-      budget: 1000000
-    design:
-      context: 100000
-      budget: 1000000
-    planning:
       context: 32000
-      budget: 100000
+      budget: 250000
+    design:
+      context: 40000
+      budget: 400000
+    planning:
+      context: 16000
+      budget: 80000
     scoping:
       context: 12000
       budget: 60000
     implement:
-      context: 100000
-      budget: 1500000
+      context: 28000
+      budget: 400000
     review:
-      context: 32000
+      context: 16000
       budget: 80000
     reuse:
-      context: 80000
-      budget: 800000
+      context: 12000
+      budget: 40000
     learning:
-      context: 80000
-      budget: 800000
+      context: 16000
+      budget: 120000
     retro:
-      context: 32000
-      budget: 80000
+      context: 12000
+      budget: 40000

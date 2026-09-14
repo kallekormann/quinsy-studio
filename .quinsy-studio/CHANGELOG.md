@@ -1,5 +1,35 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-14 — QA prettier vs session usage JSON (LO-0254)
+
+### Changed
+
+- Gate Prettier ignores generated product `.studio-session-usage.json`. `ensure_prettierignore_cost_lines` keeps it in `.prettierignore` the same way gitignore lists it.
+- Do not treat an unformatted estimate ledger as a ticket prettier fail.
+
+## 2026-09-14 — PHPUnit queue pin + graph mention ids (LO-0255, LO-0256)
+
+### Changed
+
+- Laravel tests must pin `QUEUE_CONNECTION=sync` in TestCase env when Compose injects redis (same leak class as `DB_DATABASE`).
+- Derived graph mentions use persisted entity foreign keys; missing ids → mention count 0, never mint entities from display names.
+- Routed LO-0255 into `backend_playbook.md` (queue isolation is BE, not IA).
+
+## 2026-09-14 — Guides: HQ vs product load caps and how to size S–XL
+
+### Changed
+
+- Root `README.md` and `GETTING_STARTED.md` explain HQ vs product ledgers, what `context` / step `budget` / `session_token_budget` mean, how to estimate (`chars/4`), and S–XL baselines.
+
+## 2026-09-14 — HQ vs product studio-load ledgers (LO-0253)
+
+### Changed
+
+- HQ `studio.settings.yaml` caps **train / STUDIO_LO** only. Product execute uses `projects/<p>/docs/studio.settings.yaml`.
+- `./studio settings <p> --init` writes the product file on existing trees. Adopt/init write it automatically.
+- Usage: HQ `.session-usage.json`; product `.studio-session-usage.json` (gitignored). `focus` resets the product counter only.
+- `INFORM cost-cap` names the ledger and which local yaml to raise. Estimates are still not host billing.
+
 ## 2026-09-14 — Product git: commit per ticket, push `dev` for review (LO-0246)
 
 ### Changed

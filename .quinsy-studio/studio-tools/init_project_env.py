@@ -52,6 +52,10 @@ def init_project(project: str, archetype: str = 'saas-application'):
     # 6. Initialize Git (project-local repo — never studio HQ)
     init_git(project_dir)
     init_project_gitignore(project_dir)
+    from studio_settings import init_project_settings
+
+    init_project_settings(project, project_dir=project_dir)
+    print(f"  ✓ docs/studio.settings.yaml (product execute ledger)")
     
     print(f"\n  \033[92m✓ Project initialized: {project_dir}\033[0m")
     print(f"  Next steps:")

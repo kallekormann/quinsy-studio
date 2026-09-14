@@ -367,6 +367,10 @@ def overlay_studio(root: Path, slug: str, archetype: str = "saas-application") -
         notes.append("RUNBOOK.md")
 
     init_project_gitignore(root)
+    from studio_settings import init_project_settings
+
+    for rel in init_project_settings(slug, project_dir=root):
+        notes.append(rel)
 
     if not has_runnable_env(root):
         notes.append("no docker/compose found — document how to run in as-built 06-quality.md (do not assume a studio docker template)")

@@ -286,7 +286,7 @@ def maybe_flag_sprint_review(project: str, status: Dict) -> bool:
         return False
     from studio_streams import human_review_every_sprints
 
-    n = human_review_every_sprints()
+    n = human_review_every_sprints(project)
     done_count = int(hitl.get("implementation_sprints_since_review") or 0) + 1
     hitl["implementation_sprints_since_review"] = done_count
     if done_count < n:
