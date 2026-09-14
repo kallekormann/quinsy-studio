@@ -48,6 +48,7 @@ HITL_KINDS = (
     "design-approve",
     "arch-approve",
     "sprint-review",
+    "ship-prod",
     "tech-veto",
     "human-abort",
     "blocked-retries",
@@ -849,6 +850,18 @@ def decide_from_state(
 
     ui_review = needs_sprint_review(status) and not backend_only
     if ui_review:
+        try:
+            from studio_product_git import needs_dev_push
+
+            if needs_dev_push(project):
+                return ExecuteStep(
+                    kind="VERIFY",
+                    reason="push product commits to origin/dev before cadence HITL (not main)",
+                    command=f"./studio ship {project} --to dev",
+                    loop=True,
+                )
+        except Exception:
+            pass
         return _hitl(
             "sprint-review",
             project,
@@ -1084,6 +1097,7 @@ def decide_from_state(
         ticket_id=tid,
         reason="receipt + fresh gate 5 — mark done and continue",
         command=f'./studio move {project} {tid} done --reason "DoD met"',
+        inform="Then git commit on the product repo happens in move done. Do not push main. Cadence review pushes origin/dev.",
         card=card,
         read=read_path,
         loop=True,

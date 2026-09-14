@@ -1,5 +1,12 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-14 — Product git: commit per ticket, push `dev` for review (LO-0246)
+
+### Changed
+
+- `MOVE_DONE` commits the **product** repo (`git -C projects/<p>`). Fine-grained revert.
+- Before cadence HITL, execute runs `./studio ship <p> --to dev` when `origin` is ahead of `origin/dev`. Never auto-push `main` / production (`./studio ship --to main --approve` is HITL).
+
 ## 2026-09-14 — Guides + Cursor Auto-run for MOVE_DONE
 
 ### Changed
@@ -948,3 +955,5 @@
 - 2026-09-14: LO-0249+LO-0250 infused — assertion sweep + literal verify rules (process/ticket-workflow.md). Source: affiliate-platform.
 - 2026-09-14: LO-0247 infused — symlinked layouts stay complete (knowledge-base/design_playbook.md). Source: affiliate-platform.
 - 2026-09-14: LO-0235 infused — sprint-planning-playbook.md authored (proof surface, truth before polish, disjoint file lists). Source: affiliate-platform.
+- 2026-09-14: LO-0251 infused — approve-scope reads scope-proposal.json; refresh after splitting an epic. Source: affiliate-platform.
+- 2026-09-14: LO-0252 infused — park parent epics with sprint_deferred before first scope proposal. Source: affiliate-platform.

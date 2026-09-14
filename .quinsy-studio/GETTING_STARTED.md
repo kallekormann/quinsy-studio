@@ -98,6 +98,17 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
 Do **not** ask “should I continue?” between tickets. `resume` is optional background; **execute** is the driver.
 
+### Product git
+
+Each product is its own git repo under `projects/<name>/`. Studio HQ git never stages `projects/`.
+
+| When | Agent does |
+|------|-----------|
+| `MOVE_DONE` | **Commit** that ticket on the product repo (`git revert` works per ticket). Does **not** push `main`. |
+| Cadence review | If `origin` exists, execute may `NEXT` `./studio ship <p> --to dev` so a git-tracked **dev** host can see the work. |
+| No remote | Commits stay local. Local Docker / Compose HITL uses the RUNBOOK URL. |
+| Production / `main` | **You:** `./studio ship <p> --to main --approve` (or refuse). The agent may propose and must wait. |
+
 ### What `./studio execute` can return
 
 | ACTION | Meaning | Who |
@@ -106,7 +117,8 @@ Do **not** ask “should I continue?” between tickets. `resume` is optional ba
 | `VERIFY` | Adopt: synthesize `docs/intake/prd.md`. Sprint: fill the **execution receipt** (`./studio receipt`) | Agent |
 | `GATE` | Run `./studio gate <p> --level 5` (build + smoke + tests). Must be **fresh** after this ticket’s implement | Agent |
 | `DEBUG` | Gate went red. Write hypotheses in `sprints/SPRINT-NN/debug/<id>.md`, fix, re-gate (max 3 tries) | Agent |
-| `MOVE_DONE` | Receipt + gate 5 green → `move … done`, then execute again | Agent |
+| `MOVE_DONE` | Receipt + gate 5 → `move … done` (product git commit). Then execute again | Agent |
+| `VERIFY` (ship) | Before cadence HITL: `./studio ship <p> --to dev` when origin is behind `dev` | Agent |
 | `STUDIO_LO <id>` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT. Mid-sprint: TRAIN sidecar instead | Agent |
 | `INFORM` | Reuse brief / inbox drain — do NEXT, loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key | Agent or **you** |
 | `HITL` | **Stop.** Gates 0–2, **`approve-design` / `approve-arch`** (only when packets exist), cadence review, tech-veto, abort. Not a feature-ticket ACK. | **You** |
@@ -233,7 +245,7 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 | Let the sprint run | *"Execute until HITL"* — ready tickets loop; you stop for `approve-design` / `approve-arch` and cadence review |
 | Compact ticket view | *"Show the card for &lt;ID&gt;"* → `./studio ticket-card` |
 | Work a ticket | Design-track: **write spec+mocks** → `approve-design` → implement. Else: library + tokens → implement (agent migrates if DB reachable) → receipt → gate 5 → done → execute again (no ticket ACK) |
-| Finish ticket | Receipt + `./studio gate --level 5` green → agent `./studio move … done` (not HITL; if Cursor asks Allow, that is Auto-run) |
+| Finish ticket | Receipt + gate 5 → `move … done` (commits product git). Cadence HITL: `./studio ship --to dev` first. `main` is HITL `--approve` |
 | Off-sprint idea | *"Can we add X?"* → agent should **not** code silently; uses guard → feedback or ticket |
 
 ### Sprint review & feedback (human in the loop)
@@ -331,12 +343,12 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Architecture | `./studio blueprint <p>` |
 | Design | `./studio design <p> --scope journey\|core-views` |
 | Status / board / health | `./studio status <p>` · `./studio board <p>` · `./studio health <p>` |
-| Sprint | `./studio sprint <p>` · `--kind hygiene` · `--approve-scope` (blocked if pipeline starved) · `./studio execute <p>` · `./studio move <p> <ID> implement\|done` |
+| Sprint | `./studio sprint <p>` · `--kind hygiene` · `--approve-scope` · `./studio execute <p>` · `./studio move <p> <ID> implement\|done` · `./studio ship <p> --to dev` |
 | Ticket card / receipt | `./studio ticket-card <p> <ID>` · `./studio receipt <p> <ID>` |
 | Mid-execute chat | `./studio guard <p> "…"` → `INBOX_ACK` (queued). Drain: `./studio note <p> --drain` |
 | Library-first | `./studio library suggest <p> "auth button"` · `./studio library pull <p> auth tokens button` (not stubs). Kit peers must already be in the app. |
 | Schema migrate | Agent runs the project migrate command when DB is reachable; INFORM. Not HITL. |
-| Sprint review | `./studio review <p>` · `./studio review <p> --approve` (every N implementation sprints) |
+| Product git / production | `./studio ship <p> --to dev` · `./studio ship <p> --to main --approve` (HITL) |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
 | Amendment intake | `./studio amend <p> intake/amendments/<p>/amendment_NN.md` · `./studio amendments <p>` · `./studio approve <p> --amendment AM-001` |
 | Groom / retro / train | `./studio groom <p>` · `./studio retro <p> --complete` (auto-harvest) · `./studio train SO-001 --from mistake --topic "…"` · `./studio infusion` |
@@ -377,7 +389,7 @@ If Cursor shows **Allow** when the agent runs `./studio move <project> <ID> done
 
 Reload the window after changing allowlists. [permissions.json](https://cursor.com/docs/reference/permissions) · [Run modes](https://cursor.com/docs/agent/security/run-modes)
 
-5. **Two repos in one workspace:** studio commits from root; project code commits from `projects/<name>/` (separate `.git`). Never `git add projects/` from the studio root. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md). Focus is an assignment, not a sandbox (see [Start here](#start-here-tell-the-agent)). Smoke UI on the **project RUNBOOK** URL; do not hard-code another product’s host port into HQ.
+5. **Two repos in one workspace:** studio commits from root; product code commits from `projects/<name>/` **on each `MOVE_DONE`**. Cadence may `./studio ship --to dev`. Production/`main` is HITL. Never `git add projects/` from the studio root. Studio docs use `<project>` placeholders — see [studio-abstraction.md](process/studio-abstraction.md). Focus is an assignment, not a sandbox (see [Start here](#start-here-tell-the-agent)). Smoke UI on the **project RUNBOOK** URL; do not hard-code another product’s host port into HQ.
 
 Details: [Operations manual — Using Cursor](README.md#4-using-quinsy-studio-in-cursor) · [agent-context](process/agent-context.md)
 
@@ -596,7 +608,7 @@ Subscribe to best-in-class skill packages (design, marketing, gamedev, complianc
 
 To **add** a new source: edit `skill-dependencies.json` → `./studio update-skills <name>` → register in `teams/skill-registry.md`. Full guide: [Managing Skills](README.md#8-managing-skills).
 
-On `./studio move … done` → requires gate 5 + receipt; warns if registry paths changed without promotion.
+On `./studio move … done` → requires gate 5 + receipt; **commits the product repo**; warns if registry paths changed without promotion. Push `origin/dev` at cadence review (`./studio ship --to dev`). `main` is HITL.
 
 ## Sprint cadence (human in the loop)
 
@@ -605,8 +617,8 @@ After gates **0–2** and the milestone roadmap, the agent runs **ready** ticket
 | Phase | Who | What |
 |-------|-----|------|
 | Sprint scope | **Agent** (you may override) | `./studio sprint <p> --approve-scope` (blocked if production packets starve the ready pipeline) |
-| Mid-sprint | Agent | `./studio execute` until HITL — `IMPLEMENT` / `PRODUCTION`; `MOVE_DONE` without a ticket ACK; migrate when DB is reachable; train LOs in parallel |
-| Cadence review | **You** | Every N implementation sprints: try shipped UI → `./studio review <p> --approve` |
+| Mid-sprint | Agent | `./studio execute` until HITL — `IMPLEMENT` / `PRODUCTION`; `MOVE_DONE` commits product git (no ticket ACK); migrate when DB is reachable; train LOs in parallel |
+| Cadence review | **You** | After `ship --to dev` if needed: try shipped UI → `./studio review <p> --approve` |
 | After review | **You** + agent | Feedback → clarify → ticket (production stream until packets signed); reuse inform; retro → train |
 | Milestone done | **You** | Approve milestone complete before next milestone backlog |
 
@@ -615,6 +627,8 @@ After gates **0–2** and the milestone roadmap, the agent runs **ready** ticket
 | Propose scope | `./studio sprint <p>` |
 | Approve scope | `./studio sprint <p> --approve-scope` (agent-owned) |
 | Run the sprint | `./studio execute <p>` (loop until HITL) |
+| Push `dev` before review | `./studio ship <p> --to dev` |
+| Production / `main` | `./studio ship <p> --to main --approve` (**HITL**) |
 | Status brief | `./studio review <p>` |
 | Your feedback | `./studio feedback <p> "..."`  or  `./studio note <p> "..."` mid-sprint |
 | Clarify → ticket | `./studio clarify <p> FB-001 ... --approve` → `./studio ticket <p> "..." --from-feedback FB-001` |

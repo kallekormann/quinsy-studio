@@ -241,6 +241,7 @@ No separate plugin — the repo *is* the integration.
 ./studio settings                # estimated token policy
 ./studio focus <project>
 ./studio execute <project>          # loop: do NEXT until ACTION is HITL
+./studio ship <project> --to dev   # before cadence review (never auto main)
 ```
 
 `resume` prints a **checklist**. **`execute` is the driver** — one action at a time. Do not ask “should I continue?” mid-sprint. Stop only on `HITL`. Harvest LOs immediately and `./studio train` in parallel; `STUDIO_LO` only when the product loop is idle.
@@ -262,7 +263,7 @@ focus → execute → do NEXT → execute again → … until HITL
 | `VERIFY` | Fill `./studio receipt` (plan, AC coverage, default user flow, skill QA headings) |
 | `GATE` | `./studio gate --level 5` (fresh after this ticket’s implement) |
 | `DEBUG` | Gate red → `sprints/SPRINT-NN/debug/<id>.md`, retry up to 3 times |
-| `MOVE_DONE` | Receipt + gate 5 → `./studio move … done`, then execute again (**agent**, not HITL) |
+| `MOVE_DONE` | Receipt + gate 5 → `move … done` **and a product git commit**. Then execute again (**agent**, not HITL) |
 | `INFORM` | Reuse brief / inbox drain — loop; **not** architecture or design. **`cost-cap`:** stop and raise the named yaml key |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT — classified path on the CARD |
 | `HITL` | **You:** gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort |
@@ -276,7 +277,7 @@ focus → execute → do NEXT → execute again → … until HITL
 ./studio health <project>
 ```
 
-Tickets stay **Markdown**. Compact cards save tokens; there is no SQL ticket database. `move … done` requires a receipt **and** QA level 5.
+Tickets stay **Markdown**. Compact cards save tokens; there is no SQL ticket database. `move … done` requires a receipt **and** QA level 5, then **commits** `projects/<p>/`. Before cadence HITL, `./studio ship <p> --to dev`. Never auto-push `main` (`--approve` HITL).
 
 ### What you say in chat
 
@@ -334,7 +335,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 | You (human) | Agent |
 |-------------|-------|
-| Approve gates **0–2**, `approve-design` / `approve-arch`, cadence review, tech-veto | Fill artifacts; **execute loop** on ready tickets (no ticket ACK). `MOVE_DONE` is agent work |
+| Approve gates **0–2**, `approve-design` / `approve-arch`, cadence review, tech-veto, **`ship --to main --approve`** | Fill artifacts; **execute loop** on ready tickets. `MOVE_DONE` commits product git; `ship --to dev` before git-host review |
 | Mid-sprint notes (`./studio note`) | ACK and continue; drain after `MOVE_DONE` |
 | Review PRs / mocks / shipped UI | Library pull before coding (not stubs); compact cards; receipts + gate 5 before `done` |
 | Final product decisions | `./studio train` beside product work when LOs are open |
@@ -473,6 +474,8 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio feedback-list <project>
 ./studio ticket <project> "title" [--from-feedback FB-001]
 ./studio move <project> <id> <status> [--reason "..."]
+./studio ship <project> --to dev               # before cadence review
+./studio ship <project> --to main --approve    # production — HITL
 ./studio groom <project>
 ./studio execute <project>           # loop until HITL; train LOs in parallel
 ./studio settings [--reset-usage]    # token policy + estimated usage (no API keys)
@@ -723,6 +726,7 @@ See [library_registry.md](studio-library/library_registry.md).
 | Studio files lost | **Git backup!** Check `.gitignore` (external skills are regenerable) |
 | Agent asks “should I continue?” mid-sprint | Tell it to `./studio execute` until `HITL` — do not approve ticket-by-ticket |
 | `move … done` refused | Need gate **level 5** passed **and** a filled `sprints/SPRINT-NN/receipts/<ID>.md` |
+| Product git | `MOVE_DONE` commits `projects/<p>/`. Review: `./studio ship --to dev`. `main` needs `--approve` |
 | Execute says `HITL` | Gate 0–2, `approve-design` / `approve-arch`, cadence review, or tech-veto — not a feature-ticket ACK |
 | Cursor asks to Allow `./studio move … done` | IDE Auto-review, not studio HITL — see [GETTING_STARTED — Cursor Auto-run](GETTING_STARTED.md#cursor-auto-run-vs-studio-hitl) |
 | Execute says `STUDIO_LO` | Product loop is idle — infuse the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |

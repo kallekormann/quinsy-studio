@@ -33,7 +33,9 @@ Agent: "Implemented."
 | **Design-track ticket** | major UX / UI / IA (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, `ia-navigation`, `ia-feature-placement`) | **Yes** (`./studio approve-design`) **only after** Team 10 has written the spec file + in-context, token-based, all-state mocks — then implement. Asking to approve a missing file is forbidden. |
 | **Design-system gap** | missing component, token, or pattern vs gate-2 system | **Do not invent in a feature ticket.** Open a design-track ticket; work it in a **design sprint**; HITL `approve-design` before anyone composes it |
 | **Other UI / feature / styling** | assemble approved library + project tokens | **No** ticket ACK — stay inside the defined design system |
-| **Ticket done** | receipt + gate 5 + `MOVE_DONE` | **No** — never ask the human to ACK a non-design ticket |
+| **Ticket done** | receipt + gate 5 + `MOVE_DONE` | **No** — product **git commit** on that ticket; never ACK in chat |
+| **Push `dev`** | before cadence review, if `origin` exists | **Agent** (`./studio ship <p> --to dev`) — not `main` |
+| **Push `main` / production** | deploy production | **Yes** (`./studio ship <p> --to main --approve`) |
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |
@@ -144,7 +146,7 @@ Sprint review feedback (once per theme)
 
 **Rule (LO-0028):** Tickets that ship **PDF export** (board Export PDF, brand-guide Download PDF / Playwright) are not done until smoke **downloads a file** on the free path. Watch for: (1) brand-guide API 503 + “Install Chromium / `npx playwright install chromium`”, (2) Export error `Failed to load export image for watermark` with no download. Unit tests alone do not catch these.
 
-**Rule (LO-0167 / LO-0170):** When sprint review is the **deployed git host** (git-backed PaaS / CDN), `MOVE_DONE` is not review-ready until the **product repo** is pushed to the branch that host tracks. Local-only commits are invisible there. Push the product remote (not studio HQ) before asking the human to try shipped UI. Local `npm run dev` / Compose review does not need that push.
+**Rule (LO-0167 / LO-0170):** Cadence review on a **git-deployed host** (PaaS / VPS tracking git) needs the **product** repo pushed to **`origin/dev`** (`./studio ship <p> --to dev`) before HITL. Never auto-push `main` / production. Local Compose / `npm run dev` review uses the RUNBOOK URL and does not require a remote. If there is no `origin`, commit locally and skip push.
 
 **Rule (LO-0051 / LO-0203):** Before marking any ticket "done" whose acceptance criteria is a **visible design/UX outcome** (not just a function/type returning the right value), the agent must walk a real end-to-end user scenario through the **actual default product flow** — not a state or code path only reachable via a test harness, preview toggle, or manual override — and attach a before/after screenshot to the ticket. A feature gated behind an unconfirmed or undiscoverable app state (e.g. an unactivated setting nobody would find, or output only produced by a code path the default flow never calls) counts as **not shipped**, even if its unit tests and QA gate are green. This applies to sprint review too: "human tries shipped work" means trying it through the same flow a real user would reach, on real project data / the primary user surface — not just reading review.md's ticket list.
 

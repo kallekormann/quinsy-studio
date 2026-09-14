@@ -75,7 +75,7 @@ Move during sprint:
 | 6 | **QA gate** | `./studio gate <project>` must be green |
 | 7 | **Docs & ADR sync** | update documentation, create/update ADRs |
 | 8 | **Reuse review** | reusable? → `./studio promote` + docs |
-| 9 | **Completion** | status `done`, update status.json |
+| 9 | **Completion** | `./studio move … done` (receipt + gate 5). Product git: **one commit per ticket**. Push `origin/dev` only before cadence review. `main` is HITL. |
 
 **Rule:** no step is skipped. Every step is documented.
 
@@ -381,3 +381,11 @@ When a ticket is blocked:
 ## Refactors sweep their assertions; verify blocks are literal (LO-0249, LO-0250)
 
 - **PB-20260914-005** helpful=0 harmful=0 :: When a refactor changes class names, tokens, or user-facing copy, sweep **test assertions in the same ticket** — stale assertions silently break the suite for the next ticket. Rename tickets are only done when the ticket's literal Verify command (e.g. `rg -c "<old names>"`) actually returns CLEAN; run the Verify block verbatim before claiming completion — partial renames (models done, services/jobs/tests not) are the common failure.
+
+## Scope JSON is the approve source (LO-0251)
+
+- **PB-20260914-006** helpful=0 harmful=0 :: `--approve-scope` tags tickets from `sprints/<sprint>/scope-proposal.json`, not the markdown proposal. After splitting an epic or editing the intended sprint list, re-run `./studio sprint` (or rewrite the JSON to match) **before** approve-scope. Approving a stale JSON recreates the parent epic as the sprint.
+
+## Park parent epics before the first proposal (LO-0252)
+
+- **PB-20260914-007** helpful=0 harmful=0 :: Set `sprint_deferred: true` on parent epics (XL / `ticket_type: epic`) **before** the first `./studio sprint` of a cycle. Children that are S/M and composer-executable are what get proposed. An un-deferred epic is a P0 magnet.

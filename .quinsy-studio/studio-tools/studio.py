@@ -16,6 +16,8 @@ Commands:
   ./studio bootstrap [project] [intake-file]     AI entry: init→intake→concept→sprint
   ./studio resume <project>                      Next actions from status.json
   ./studio execute <project> [--json]            One next action; loop until HITL
+  ./studio ship <project> --to dev               Push product git to origin/dev (before review)
+  ./studio ship <project> --to main --approve    Production push — HITL only
   ./studio settings [--reset-usage]              Policy + estimated token usage (no API keys)
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
@@ -1654,10 +1656,48 @@ class StudioOrchestrator:
             print(f"\n  ⏸ {len(pending)} pending — complete analysis + human approve before next milestone")
         return True
     
-    # -------------------------------------------------------------------------
-    # PHASE 3: SPRINT MANAGEMENT
-    # -------------------------------------------------------------------------
-    
+    def cmd_ship(self, project: str, to: str = "dev", approve_prod: bool = False):
+        """Push product git to origin/dev (review). main/production is HITL."""
+        from studio_product_git import (
+            DEV_BRANCH,
+            commit_ticket,
+            push_dev,
+            refuse_prod_push,
+            working_tree_dirty,
+        )
+        import subprocess
+
+        print_header(f"SHIP — {project}")
+        dest = (to or DEV_BRANCH).strip().lower() or DEV_BRANCH
+        if refuse_prod_push(dest) and not approve_prod:
+            print("  HITL: never auto-push main/production.")
+            print(f"  Review uses origin/{DEV_BRANCH}. Production: ./studio ship {project} --to {dest} --approve")
+            return False
+        if working_tree_dirty(project):
+            ok, msg = commit_ticket(project, "SHIP", "leftover before ship")
+            print(f"  {msg}" if ok else f"  ⚠️  {msg}")
+            if not ok:
+                return False
+        if dest == DEV_BRANCH or dest == "develop":
+            ok, msg = push_dev(project)
+            print(f"  {msg}")
+            return ok
+        if refuse_prod_push(dest) and approve_prod:
+            from studio_product_git import product_git_dir
+
+            r = subprocess.run(
+                ["git", "-C", str(product_git_dir(project)), "push", "-u", "origin", f"HEAD:{dest}"],
+                capture_output=True,
+                text=True,
+            )
+            if r.returncode != 0:
+                print(f"  ⚠️  {(r.stderr or r.stdout or 'push failed').strip()}")
+                return False
+            print(f"  Pushed HEAD → origin/{dest} (HITL approved)")
+            return True
+        print(f"  ⚠️  Unknown branch {dest} — use --to dev or --to main --approve")
+        return False
+
     def cmd_sprint(self, project: str, approve_scope: bool = False, kind: str = ""):
         """Propose or approve sprint scope from product backlog."""
         
@@ -2372,6 +2412,15 @@ class StudioOrchestrator:
             if sprint_done:
                 append_execution_event(project, sprint_done, "done", ticket_id, reason or "done")
                 rec = receipt_path(project, sprint_done, ticket_id)
+                if rec.exists():
+                    print(f"  Receipt: {rec.relative_to(PROJECTS_DIR / project)}")
+                from studio_product_git import commit_ticket
+
+                ok_git, git_msg = commit_ticket(project, ticket_id, ticket_title)
+                if ok_git:
+                    print(f"  Product git: {git_msg} (no push to main; review uses origin/dev)")
+                else:
+                    print(f"  ⚠️  Product git commit skipped: {git_msg}")
                 if rec.exists():
                     try:
                         from studio_cite import apply_receipt_citations
@@ -3284,6 +3333,8 @@ Commands:
   ./studio bootstrap [project] [intake-file]     AI entry: init→intake→concept→sprint
   ./studio resume <project>                      Next actions from status.json
   ./studio execute <project> [--json]            One next action; loop until HITL
+  ./studio ship <project> --to dev               Push product git to origin/dev (before review)
+  ./studio ship <project> --to main --approve    Production push — HITL only
   ./studio settings [--reset-usage]              Policy + estimated token usage (no API keys)
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
@@ -3655,6 +3706,14 @@ def main():
     elif command == "amendments" and len(args) >= 1:
         orchestrator.cmd_amendments(args[0])
     
+    elif command == "ship" and len(args) >= 1:
+        to = "dev"
+        approve_prod = "--approve" in args
+        for i, arg in enumerate(args):
+            if arg == "--to" and i + 1 < len(args):
+                to = args[i + 1]
+        orchestrator.cmd_ship(args[0], to=to, approve_prod=approve_prod)
+
     elif command == "sprint" and len(args) >= 1:
         approve_scope = "--approve-scope" in args
         kind = ""

@@ -83,7 +83,7 @@ Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `pa
 |--------|---------|
 | `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Sprint: next **ready** ticket (CARD lists skills + playbooks) |
 | `PRODUCTION` | Write unsigned packets (spec + all-state mocks, or `docs/architecture/<TICKET>.md`) — same loop, not a sidecar |
-| `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Receipt + fresh QA level 5, then `./studio move … done` (agent; **not** HITL) |
+| `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Receipt + QA 5, then `move … done` (product git commit). Cadence: `ship --to dev`. `main` is HITL |
 | `INFORM` | Reuse brief / inbox drain — loop. **`cost-cap`:** stop; raise the named key in `studio.settings.local.yaml` |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT |
 | `HITL` | **You:** gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort. Not a feature-ticket ACK |
@@ -91,6 +91,17 @@ Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `pa
 Priority: adopt as-built (if needed) → HITL gates 0–2 → `PRODUCTION` if the ready pipeline is starved → finish an in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
 
 If Cursor asks you to **Allow** `./studio move … done`, that is the IDE Auto-review prompt — not studio HITL. See [GETTING_STARTED — Cursor Auto-run](.quinsy-studio/GETTING_STARTED.md#cursor-auto-run-vs-studio-hitl).
+
+### Product git (every product has its own repo)
+
+Work lives in `projects/<name>/` (separate `.git`). Studio HQ never `git add projects/`.
+
+| When | What |
+|------|------|
+| Each `MOVE_DONE` | One **commit** on the product repo (ticket-sized; `git revert` that ticket) |
+| Before cadence review | If `origin` exists: `./studio ship <p> --to dev` (never auto-push `main`) |
+| Local Docker / Compose review | RUNBOOK URL; `dev` push is optional backup if a remote exists |
+| Production / `main` | **HITL:** `./studio ship <p> --to main --approve` |
 
 Full guide: [`.quinsy-studio/GETTING_STARTED.md`](.quinsy-studio/GETTING_STARTED.md) · Agent contract: [`AGENTS.md`](AGENTS.md)
 
@@ -235,7 +246,7 @@ quinsy-studio/
 7. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
 8. **Placement before layout** — Team 10 writes the spec file (§2 + §2c); mocks use project tokens, sit in the real view, and cover all states; `ia-feature-placement` for cross-surface moves
 9. **Immediate harvest** — classify + inbox + LO when a learning is identified; `./studio train` beside product execute
-10. **Two git worlds** — never commit `projects/` to this repo; product commits from `projects/<name>/`; studio HQ stays project-agnostic (`./studio verify-abstraction`). LO-* in HQ are portable process/tooling only — product incidents stay in the project.
+10. **Two git worlds** — never commit `projects/` to this repo; product commits from `projects/<name>/` on each `MOVE_DONE`. Cadence review may push **`origin/dev`**. `main` / production is HITL `./studio ship --to main --approve`. Studio HQ stays project-agnostic (`./studio verify-abstraction`).
 11. **Isolation** — `./studio focus` / `isolate`; guard `CROSS_PROJECT` for sibling names; do not treat focus as a jail
 12. **Cost caps** — medium-project defaults in `studio.settings.yaml`; on `INFORM cost-cap` raise the named key (do not dump more files)
 13. **Anti-slop + ADRs + HITL** — see process docs
@@ -262,7 +273,8 @@ quinsy-studio/
 ./studio approve-design <p> <TICKET>
 ./studio approve-arch <p> <TICKET>
 ./studio train --purge-empty
-./studio sprint <p> --kind hygiene
+./studio ship <p> --to dev
+./studio ship <p> --to main --approve
 ./studio review <project>
 ./studio feedback <project> "..."
 ./studio board <project>

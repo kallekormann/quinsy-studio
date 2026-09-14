@@ -67,7 +67,7 @@ Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gat
 
 ## Sprint HITL
 
-Autonomous mid-sprint for **ready** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2**, **`approve-design` / `approve-arch`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.**
+Autonomous mid-sprint for **ready** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2**, **`approve-design` / `approve-arch`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.**
 
 ## Drift recovery
 

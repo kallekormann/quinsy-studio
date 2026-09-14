@@ -356,6 +356,26 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "HITL")
         self.assertIn("sprint-review", step.reason)
 
+    def test_decide_ship_dev_before_cadence_review(self):
+        with patch("studio_product_git.needs_dev_push", return_value=True):
+            step = decide_from_state(
+                "demo",
+                _approved_status(
+                    sprint_hitl={
+                        "review_status": "pending",
+                        "scope_status": "approved",
+                        "groom_status": "approved",
+                    }
+                ),
+                [{"id": "DEMO-0001", "status": "done", "deps": []}],
+                open_los=[],
+                amendment_actions=[],
+                prd_exists=True,
+            )
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertIn("ship", step.command)
+        self.assertIn("--to dev", step.command)
+
     def test_decide_all_done_without_cadence_review_goes_retro(self):
         step = decide_from_state(
             "demo",

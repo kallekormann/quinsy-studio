@@ -22,7 +22,7 @@ Project (execution level)  ──▶  executed by the studio, local loop
 | **Gate 2** | Design direction + system + mocks/prototype | `./studio approve --gate 2` |
 | **Milestones** | Version plan `docs/phases/` | `./studio approve --milestones` |
 | Sprint setup | Scope + groom; implementation `--approve-scope` blocked if ready pipeline starved | `./studio sprint` → `--approve-scope` → `groom` |
-| **Sprint execute** | Autonomous ready tickets; `PRODUCTION` writes packets | `./studio execute` until HITL |
+| **Sprint execute** | Autonomous ready tickets; `PRODUCTION` writes packets; `MOVE_DONE` commits product git | `./studio execute` until HITL |
 | Design / arch packets | Spec + mocks / architecture note, then human | `./studio approve-design` / `approve-arch` |
 | **QA level 5** | Lint/tests/build/smoke + receipt skill QA (not a human phase gate) | `./studio gate --level 5` before `move … done` |
 | **Cadence review** | Every N implementation sprints (default 2) | `./studio review` → `--approve` |

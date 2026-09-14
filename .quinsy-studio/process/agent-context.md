@@ -154,7 +154,7 @@ Projects **consume** library via `./studio sync <project>`; they **feed** librar
 
 **Mid-sprint:** agent implements autonomously — do not ask the human for direction between tickets.
 
-**Cadence review:** when `implementation_sprints_since_review` reaches `cost.human_review_every_sprints` (default 2), pause for human review. Off-cadence, receipts + gate 5 are enough. Never ticket review ideas directly. **Never implement review feedback in code** — only `./studio feedback` → clarify → ticket (production stream until packets signed). If the human reviews a **git-deployed** host, push the product branch that host tracks before HITL (LO-0167 / LO-0170).
+**Cadence review:** when `implementation_sprints_since_review` reaches `cost.human_review_every_sprints` (default 2), push **`origin/dev`** if a remote exists (`./studio ship --to dev`), then pause for human review. Off-cadence, receipts + gate 5 + per-ticket **commits** are enough. Never ticket review ideas directly. **Never implement review feedback in code**. Production/`main` push is HITL only.
 
 ```bash
 ./studio review <project>
