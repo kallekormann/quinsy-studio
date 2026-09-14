@@ -502,9 +502,10 @@
       "topic": "Error analysis before evals; deterministic checks decide and LLM judges only adv",
       "source": "lo",
       "observation": "LO-0233",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T21:34:51",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T12:09:16"
     },
     {
       "id": "TR-0046",
@@ -512,9 +513,10 @@
       "topic": "Error analysis before evals; deterministic checks decide and LLM judges only adv",
       "source": "lo",
       "observation": "LO-0233",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T21:34:51",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T12:09:16"
     },
     {
       "id": "TR-0047",
@@ -522,9 +524,10 @@
       "topic": "Every sprint ships a proof surface; truth before polish when surfaces display in",
       "source": "lo",
       "observation": "LO-0235",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T21:34:51",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T12:09:16"
     },
     {
       "id": "TR-0048",
@@ -532,9 +535,10 @@
       "topic": "Batch design-track specs earlier when IA tickets (0784, 0779) share the same spr",
       "source": "lo",
       "observation": "LO-0245",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-13T14:14:55",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0048. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0048. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-14T12:09:16"
     },
     {
       "id": "TR-0049",
@@ -542,9 +546,10 @@
       "topic": "Tickets sat in `backlog` state long after their code shipped \u2014 the sprint was \"r",
       "source": "lo",
       "observation": "LO-0246",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-14T11:30:20",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0049. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0049. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-14T12:09:16"
     },
     {
       "id": "TR-0050",
@@ -552,9 +557,10 @@
       "topic": "Root symlink layout (root `middleware.ts` \u2192 apps/web) broke tsc when `proxy.ts`",
       "source": "lo",
       "observation": "LO-0247",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-14T11:30:20",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0050. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0050. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-14T12:09:16"
     },
     {
       "id": "TR-0051",
@@ -562,9 +568,10 @@
       "topic": "Root symlink layout (root `middleware.ts` \u2192 apps/web) broke tsc when `proxy.ts`",
       "source": "lo",
       "observation": "LO-0247",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-14T11:30:20",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0051. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0051. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-14T12:09:16"
     },
     {
       "id": "TR-0052",
@@ -572,9 +579,10 @@
       "topic": "Close tickets (receipt + gate + move done) in the same session the code lands",
       "source": "lo",
       "observation": "LO-0248",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-14T11:30:20",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0052. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0052. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-14T12:09:16"
     }
   ]
 }

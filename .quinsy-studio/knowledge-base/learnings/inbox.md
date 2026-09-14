@@ -1857,3 +1857,23 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Renames are only done when the ticket's verify command (`rg -c ...`) is actually CLEAN — run the verify block before claiming completion.
 - **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
 
+## LO-0251 — Refresh `scope-proposal.json` (re-run `./studio sprint`) after splitting an epic
+- **When:** 2026-09-14T12:10:46
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Refresh `scope-proposal.json` (re-run `./studio sprint`) after splitting an epic — never approve the old JSON.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0252 — Keep `sprint_deferred: true` on parent epics before the first scope proposal
+- **When:** 2026-09-14T12:10:46
+- **Source:** `affiliate-platform` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Keep `sprint_deferred: true` on parent epics before the first scope proposal.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
