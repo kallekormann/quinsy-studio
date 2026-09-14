@@ -8,7 +8,7 @@ Quinsy Studio uses **two separate gate systems**. Do not conflate them.
 
 | System | CLI | Purpose | Docs |
 |--------|-----|---------|------|
-| **Phase Gates** | `./studio approve --gate N` | Human checkpoints in the 7-phase lifecycle | This file (Phase Gate 0–6) |
+| **Phase Gates** | `./studio approve --gate N` | Human checkpoints (gate 0 PRD, 1 architecture, 2 design) | This file (Phase Gate 0–2 + milestones) |
 | **QA Levels** | `./studio gate --level N` | Automated tooling checks (lint, types, tests, build) | `run_qa_gate.py` |
 
 - **Phase Gate 1** = human approval after concept/design blueprint (`./studio approve --gate 1`)

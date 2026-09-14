@@ -385,6 +385,14 @@ def harvest_identified_learning(
             "observation": observation[:600],
         }
     )
+    if train_skills:
+        try:
+            from studio_train import enqueue_train
+
+            for skill in train_skills[:2]:
+                enqueue_train(str(skill), title, source="lo", observation=lo_id)
+        except Exception:
+            pass
     return {
         "created": True,
         "dropped": False,

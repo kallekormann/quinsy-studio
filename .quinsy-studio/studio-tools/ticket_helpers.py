@@ -21,7 +21,7 @@ from typing import Dict, List, Optional
 SKILL_ROLE_MAP = {
     # Team 01 — Frontend & Experience
     "FE-001": "Frontend Engineer (Lead)",
-    "FE-002": "UI/Interaction Designer (Director)",
+    "FE-002": "Frontend Engineer (Lead)",
     "FE-003": "Frontend Architect (Director)",
     "FE-004": "QA Specialist (Director)",
     "FE-005": "Frontend Architect (Director)",
@@ -125,6 +125,20 @@ def playbook_for_team(team: str) -> str:
 
 
 SKILL_EXTRA_PLAYBOOKS = {
+    "FE-001": [
+        "knowledge-base/frontend_playbook.md",
+        "knowledge-base/atomic-design-playbook.md",
+    ],
+    "FE-002": ["knowledge-base/frontend_playbook.md"],
+    "FE-003": ["knowledge-base/frontend_playbook.md"],
+    "FE-004": ["knowledge-base/frontend_playbook.md", "knowledge-base/qa-gate-playbook.md"],
+    "FE-005": ["knowledge-base/frontend_playbook.md"],
+    "FE-006": ["knowledge-base/qa-gate-playbook.md"],
+    "BE-001": ["knowledge-base/backend_playbook.md"],
+    "BE-002": ["knowledge-base/backend_playbook.md"],
+    "BE-003": ["knowledge-base/backend_playbook.md"],
+    "BE-004": ["knowledge-base/backend_playbook.md"],
+    "BE-005": ["knowledge-base/backend_playbook.md"],
     "GD-001": ["knowledge-base/growth-mechanics-playbook.md"],
     "GD-002": [
         "knowledge-base/growth-mechanics-playbook.md",
@@ -259,6 +273,16 @@ def render_ticket_markdown(ticket: Dict) -> str:
         lines.insert(-1, f"design_status: {ticket['design_status']}")
     if ticket.get("design_spec"):
         lines.insert(-1, f"design_spec: {ticket['design_spec']}")
+    if ticket.get("epic"):
+        lines.insert(-1, f"epic: {ticket['epic']}")
+    if ticket.get("needs_design") is not None:
+        lines.insert(-1, f"needs_design: {str(ticket['needs_design']).lower()}")
+    if ticket.get("needs_architecture") is not None:
+        lines.insert(-1, f"needs_architecture: {str(ticket['needs_architecture']).lower()}")
+    if ticket.get("architecture_status"):
+        lines.insert(-1, f"architecture_status: {ticket['architecture_status']}")
+    if ticket.get("stream"):
+        lines.insert(-1, f"stream: {ticket['stream']}")
     if ticket.get("signal"):
         lines.insert(-1, f"signal: {ticket['signal']}")
     if ticket.get("source"):

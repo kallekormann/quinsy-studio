@@ -35,6 +35,23 @@ HITL_REPLY_RE = re.compile(
 SHORT_HITL_RE = re.compile(
     r"(?i)^\s*(approved|looks good|lgtm|shipped looks good)\s*[.!]?\s*$"
 )
+# Studio HQ / LO / HQ-T — never a product-sprint inbox note (LO-0243).
+STUDIO_HQ_RE = re.compile(
+    r"(?i)("
+    r"\bHQ-T\d+\b|"
+    r"\bLO-\d{3,}\b|"
+    r"\.quinsy-studio\b|"
+    r"\bstudio[- ]hq\b|"
+    r"\bstudio-meta\b|"
+    r"\bback to (?:the )?quinsy[- ]studio process\b|"
+    r"\bquinsy[- ]studio\b"
+    r")"
+)
+
+
+def is_studio_hq_request(text: str) -> bool:
+    """True when the bubble is studio process, not a product-sprint note."""
+    return bool(STUDIO_HQ_RE.search(text or ""))
 
 
 def should_queue_as_note(text: str, *, named_hitl_waiting: bool = True) -> bool:
@@ -49,6 +66,8 @@ def should_queue_as_note(text: str, *, named_hitl_waiting: bool = True) -> bool:
     if ABORT_RE.match(t):
         return True
     if HITL_REPLY_RE.search(t):
+        return False
+    if is_studio_hq_request(t):
         return False
     if SHORT_HITL_RE.match(t):
         return not named_hitl_waiting

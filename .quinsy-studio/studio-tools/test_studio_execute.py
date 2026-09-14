@@ -165,13 +165,15 @@ class PickAndReceiptTests(unittest.TestCase):
         ]
         self.assertEqual(pick_next_ticket(tickets)["id"], "A-0002")
 
-    def test_receipt_requires_three_sections(self):
+    def test_receipt_requires_four_sections(self):
         self.assertEqual(receipt_issues(""), ["receipt empty"])
-        stub = "# R\n## Plan\n- ...\n## AC coverage\n- ...\n## Default flow\n- ...\n"
+        stub = "# R\n## Plan\n- ...\n## AC coverage\n- ...\n## Default flow\n- ...\n## Playbook citations\n- ...\n"
         self.assertTrue(receipt_issues(stub))
         good = (
             "# R\n## Plan\n- pull library button\n"
             "## AC coverage\n- board export\n## Default flow\n- /board/:id export\n"
+            "## Playbook citations\n- playbook: knowledge-base/frontend_playbook.md\n- helpful: none\n- harmful: none\n"
+            "## Skill QA\n- gate 5 green\n## Design skill\n- n/a\n## Architecture skill\n- n/a\n"
         )
         self.assertEqual(receipt_issues(good), [])
 
@@ -354,6 +356,40 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "HITL")
         self.assertIn("sprint-review", step.reason)
 
+    def test_decide_all_done_without_cadence_review_goes_retro(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(
+                sprint_hitl={
+                    "review_status": None,
+                    "scope_status": "approved",
+                    "groom_status": "approved",
+                }
+            ),
+            [{"id": "DEMO-0001", "status": "done", "deps": [], "ticket_type": "ui-styling"}],
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertIn("retro", step.command)
+
+    def test_decide_production_when_pipeline_starved(self):
+        with patch("studio_streams.pipeline_starved", return_value=True), patch(
+            "studio_streams.next_production_ticket",
+            return_value={"id": "DEMO-0099", "design_status": "pending", "path": "backlog/DEMO-0099.md"},
+        ), patch("studio_streams.production_write_kind", return_value="write-design"):
+            step = decide_from_state(
+                "demo",
+                _approved_status(),
+                [{"id": "DEMO-0001", "status": "backlog", "deps": [], "card": {"id": "DEMO-0001"}}],
+                open_los=[],
+                amendment_actions=[],
+                prd_exists=True,
+            )
+        self.assertEqual(step.kind, "PRODUCTION")
+        self.assertEqual(step.ticket_id, "DEMO-0099")
+
     def test_decide_studio_lo_when_project_ticket_blocked_on_deps(self):
         step = decide_from_state(
             "demo",
@@ -496,6 +532,21 @@ class DecideTests(unittest.TestCase):
         self.assertIn("apply pending migrations yourself", text)
         self.assertIn("Do not ask to continue", text)
         self.assertIn("approve-design", text)
+
+    def test_format_implement_strips_inbox_read(self):
+        step = ExecuteStep(
+            kind="IMPLEMENT",
+            ticket_id="DEMO-0001",
+            reason="next unblocked sprint ticket",
+            command="./studio move demo DEMO-0001 implement",
+            read="knowledge-base/learnings/inbox.md",
+            card={"id": "DEMO-0001", "title": "UI", "playbooks": ["knowledge-base/frontend_playbook.md"]},
+            loop=True,
+        )
+        text = format_execute_step("demo", step)
+        self.assertIn("not learnings/inbox.md", text)
+        self.assertIn("READ only these playbooks", text)
+        self.assertNotIn("READ:    knowledge-base/learnings/inbox.md", text)
 
     def test_decide_backend_sprint_skips_review_hitl(self):
         step = decide_from_state(

@@ -282,6 +282,15 @@ def maybe_flag_sprint_review(project: str, status: Dict) -> bool:
         hitl["review_status"] = "informed"
         hitl["review_pending_since"] = datetime.now().isoformat()
         return False
+    if (status.get("sprint_kind") or "implementation") == "hygiene":
+        return False
+    from studio_streams import human_review_every_sprints
+
+    n = human_review_every_sprints()
+    done_count = int(hitl.get("implementation_sprints_since_review") or 0) + 1
+    hitl["implementation_sprints_since_review"] = done_count
+    if done_count < n:
+        return False
     hitl["review_status"] = REVIEW_PENDING
     hitl["review_pending_since"] = datetime.now().isoformat()
     return True
@@ -520,18 +529,13 @@ See [plan.md](plan.md)
 {fb_section}
 """
     review_file.write_text(content, encoding="utf-8")
-
-    hitl = get_sprint_hitl(status)
-    if summary["all_done"] and hitl.get("review_status") != REVIEW_APPROVED:
-        hitl["review_status"] = REVIEW_PENDING
-        hitl["review_pending_since"] = hitl.get("review_pending_since") or datetime.now().isoformat()
-
     return review_file
 
 
 def approve_review(project: str, sprint: str, status: Dict, notes: str = "") -> None:
     hitl = get_sprint_hitl(status)
     hitl["review_status"] = REVIEW_APPROVED
+    hitl["implementation_sprints_since_review"] = 0
     hitl["last_review_at"] = datetime.now().isoformat()
     hitl["last_review_notes"] = notes.strip() or None
     hitl["retro_status"] = RETRO_PENDING

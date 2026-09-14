@@ -1,6 +1,6 @@
 # Team 07 — AI & Autonomous Systems
 
-> Responsible for AI integration, machine learning, automation, anti-slop audit and agent systems.
+> Owns the **agentic loop** (train drain, infusion-delta, anti-slop) — not Nielsen or commercial growth.
 
 ## Director-level roles
 

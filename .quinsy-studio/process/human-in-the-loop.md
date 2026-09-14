@@ -25,7 +25,8 @@ Agent: "Implemented."
 | **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`). Iterate: `./studio revise --gate 1` |
 | **Design track (gate 2)** | direction, design system, stills/mocks or clickable prototype | **Yes** (`./studio approve --gate 2`). Starts after architecture. Iterate: `./studio revise --gate 2` |
 | **Release** | production release | **Yes** |
-| **UI sprint review** | shipped user-visible UI | **Yes** (`./studio review`) after the sprint is done |
+| **Cadence review** | shipped UI / product after **N implementation sprints** (default 2) | **Yes** (`./studio review`) — feedback goes into **production** tickets, not a silent next implement |
+| **Architecture packet** | ticket-level approach note | **Yes** (`./studio approve-arch`) after `docs/architecture/<TICKET>.md` exists |
 | **Backend-only sprint** | API / data work with no UI | **Inform** — continue to retro |
 | **Reuse** | what was pulled / promoted / now in registry | **Inform brief** — no `--approve` |
 | **Sprint scope / groom** | which tickets this sprint | **Agent-owned** (human may override) |
@@ -44,7 +45,7 @@ Agent: "Implemented."
 
 ## Sprint cadence HITL (after gates 0–2)
 
-Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, **design system**, stills/mocks or clickable prototype). All three are HITL. **After the sprint has started**, the human does **not** ACK every ticket. HITL during a sprint is: **`approve-design` on design-track tickets** (major UX/UI/IA), then **sprint review** when the sprint is done. Feature / styling / bug tickets compose the **approved design system** (studio-library + project tokens) with no ticket ACK. Scope and groom are agent-owned. Safety valves stay: tech-veto, 3× gate fail, abort, `INFORM cost-cap`.
+Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, **design system**, stills/mocks or clickable prototype). All three are HITL. **After the sprint has started**, the human does **not** ACK every ticket. Packet sign-off is **`approve-design` / `approve-arch`** (execute `ACTION: PRODUCTION` writes the files first). Cadence **`./studio review`** runs every `cost.human_review_every_sprints` **implementation** sprints (default 2), not after every batch. Tickets `done` via **skill QA on the receipt** (QA / Design skill / Architecture skill), not a human ACK. Hygiene is `./studio sprint --kind hygiene`. Safety valves stay: tech-veto, 3× gate fail, abort, `INFORM cost-cap`.
 
 See [milestone-planning.md](milestone-planning.md) for roadmap ceremony.
 
@@ -58,11 +59,11 @@ While sprint tickets are not all `done`:
 | Agent applies pending migrations when it can reach the DB, then INFORM | Ask the human to run migrate as sprint work |
 | Agent waits for `./studio approve-design` **after spec+mocks exist** | Invent a new component or token in a feature ticket; ask the human to approve a spec that was never written |
 | Stay inside gate-2 design system + library pulls | One-off CSS / hallucinated atoms because “the sprint needs it” |
-| Agent **ACK-queues** a mid-execute chat bubble (`./studio note`) and resumes the same ACTION | Treat that bubble as a new assignment, run `guard` on it, or change files for it before MOVE_DONE |
+| Agent **ACK-queues** a **product** mid-execute chat (`./studio note`) and resumes ACTION. `HQ-T*`, `LO-NNNN`, `.quinsy-studio`, and “quinsy-studio process” are `studio_meta` (not the product inbox) | Queue studio HQ on the product sprint inbox, or keep product `IMPLEMENT` for an HQ ask |
 | Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
 | Open LOs spawn `./studio train` in parallel | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
 
-**Enforced by CLI:** `./studio move … implement` is blocked when **UI** sprint review is pending or the sprint is closed pending retro. Scope/groom `--approve` is not required. When the last sprint ticket is `done`, execute returns **HITL sprint-review immediately** — do not start the next milestone until review → reuse → retro have run.
+**Enforced by CLI:** `./studio move … implement` is blocked when cadence review is pending or the sprint is closed pending retro. Implementation `--approve-scope` is blocked when production tickets exist and ready backlog is below `cost.production_ready_min`. When the last sprint ticket is `done` and cadence is not due, execute continues to retro — not HITL.
 
 **Rule (LO-0144):** Close **this** sprint as soon as its tickets are `done` (UI review or backend inform → reuse → retro). Do not keep review open because a later amendment, operator console, or unwritten skill is still only feedback. Capture that work with `./studio feedback` → clarify → ticket for a later sprint.
 
@@ -248,7 +249,7 @@ Smoke both a **healthy provider response** and a **forced 502** (or stub) before
 
 **Rule (LO-0063 / LO-0065):** Imagery **selection** tickets that feed a presentation must include **presentation layout DoD** in the same epic (or a paired ticket before review): placement (e.g. bottom band) + composition quality (e.g. bento / editorial mosaic) — not only the rail picker. A uniform mid-page image list that does not communicate mood fails review for the imagery capability.
 
-**Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, **reuse review is approved**, retro is **complete** (`--complete`), **studio infusion gate** is clear (no open LO-* tickets), and (for the first sprint) the **milestone roadmap** is approved.
+**Rule:** `./studio sprint` is blocked until the current sprint is done, review is **approved**, **reuse review is approved**, retro is **complete** (`--complete`), and (for the first sprint) the **milestone roadmap** is approved. Open LO-* tickets **do not** block the next product sprint — train/infuse in parallel (`./studio infusion` is status, not a gate).
 
 **Rule:** `./studio retro` and `./studio sprint --approve-scope` are blocked until `./studio reuse --approve` completes for the closed sprint.
 

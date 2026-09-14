@@ -9,6 +9,18 @@ Secure. Scalable. Maintainable.
 Every decision is documented.
 ```
 
+## Implementer rules (Do / Don’t / fail)
+
+| Topic | Do | Don’t | Implement-fail |
+|-------|----|-------|----------------|
+| API (BE-001) | Resource nouns, explicit error envelope, version at the boundary | Hide breaking changes in a 200 HTML page | Client cannot tell 4xx vs 5xx |
+| DB (BE-002) | Agent runs migrate when the DB is reachable; INFORM | Ask the human to migrate as sprint work | `migrate:fresh` on operator data |
+| Auth (BE-003) | Server checks authorization on every mutating route | Trust a client role flag | Unauthenticated write |
+| Errors (BE-004) | Typed errors; no swallowed catch | Empty `catch {}` | User sees a blank 500 with no log |
+| Integrations (BE-005) | Timeouts, retries with bound, secrets in `.env` not `NEXT_PUBLIC_` | Vendor SDK on the hot path without a circuit | Paid-vendor key in the client bundle |
+
+**Evidence bullets** below are studio scars (Compose, Laravel, Filament). They do not replace the spine.
+
 ---
 
 ## Architecture

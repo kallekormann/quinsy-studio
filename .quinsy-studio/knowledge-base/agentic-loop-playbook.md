@@ -46,4 +46,17 @@ Treat procedural memory as **code**: versioned, diffable, human-gated promotion.
 
 ## Studio HQ (this repo)
 
-Studio LO infusion is the same loop: a confirmed **delta into a named playbook**, not a rewrite of one. See `process/learning-loop.md`.
+Team **07** owns loop integrity; Team 09 owns harvest process.
+
+```
+./studio learn "…" --signal … --source <project>
+  → portable? LO + inbox : docs/studio-learnings-local.md
+./studio train <skill> --topic "…" --lo LO-NNNN   # sidecar; observation required for --from lo
+./studio infusion-delta --path knowledge-base/….md --op add --section Deltas --body "…"
+./studio train --done TR-NNNN           # or --lo LO-NNNN; auto-sync when LO is in backlog/done/
+./studio cite knowledge-base/….md --helpful PB-YYYYMMDD-001 [--harmful PB-…]
+Receipt ## Playbook citations (helpful/harmful) bump ACE counters on MOVE_DONE.
+CARD injects ≤6 ranked playbooks. Do not Read learnings/inbox.md on IMPLEMENT.
+```
+
+`STUDIO_LO` only when the product loop is idle. Open LOs never block `./studio sprint`. See `process/learning-loop.md`.

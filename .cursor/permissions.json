@@ -1,0 +1,8 @@
+{
+  "autoRun": {
+    "allow_instructions": [
+      "Allow the repo-root ./studio CLI, including execute, guard, gate, receipt, ticket-card, train, and ./studio move <project> <ticket-id> done. Closing a ticket after a filled receipt and gate 5 is expected sprint work, not a human HITL stop.",
+      "Allow python3 running .quinsy-studio/studio-tools (the studio wrapper invoked by ./studio)."
+    ]
+  }
+}

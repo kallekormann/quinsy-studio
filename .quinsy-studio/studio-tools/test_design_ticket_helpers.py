@@ -253,3 +253,12 @@ def test_playbooks_include_interaction_for_ux002():
     assert any("interaction-ux-playbook" in p for p in paths)
     assert any("atomic-design-playbook" in p for p in paths)
     assert any("design-science" in p for p in paths)
+
+
+def test_playbooks_fe001_not_team10_canon():
+    from ticket_helpers import playbooks_for_skills
+    paths = playbooks_for_skills(["FE-001"])
+    blob = " ".join(paths)
+    assert "frontend_playbook" in blob
+    assert "product-ux-playbook" not in blob
+    assert "design-science-playbook" not in blob

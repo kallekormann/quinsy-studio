@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Studio learning infusion gate — open LO tickets block project sprint until closed."""
+"""Studio learning infusion status — open LOs do not block product IMPLEMENT or sprint."""
 
 from __future__ import annotations
 
@@ -67,9 +67,9 @@ def infusion_gate_message(open_items: Optional[List[Dict[str, str]]] = None) -> 
     if not items:
         return None
     lines = [
-        f"{len(items)} open studio learning item(s) (LO-*). Train in parallel — product IMPLEMENT is not blocked.",
-        "Harvest is immediate (inbox + LO) **only when portable**. Spawn ./studio train for skill gaps only.",
-        "Studio learnings → skills / process / tooling / studio-library — not project code.",
+        f"{len(items)} open studio learning item(s) (LO-*). Product IMPLEMENT is not blocked.",
+        "Idle product loop → STUDIO_LO. Mid-sprint: ./studio train (then ./studio train --done when infused).",
+        "Harvest is immediate (inbox + LO) **only when portable**. Skill gaps enqueue train; playbook-only LOs skip the queue.",
         "",
         "Open items:",
     ]

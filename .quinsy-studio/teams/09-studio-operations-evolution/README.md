@@ -41,7 +41,7 @@ LOCAL LOOP (project world)            GLOBAL LOOP (studio world)
 • Niche insights                      • Python tooling updates
 • Workarounds                         • Anti-slop rule updates
 • Storage: projects/[name]/           • Storage: .quinsy-studio/
-  docs/local_learnings.md              knowledge-base/
+  docs/studio-learnings-local.md       knowledge-base/
 
 ⚠️ Does NOT affect other             ✅ Applies to ALL future
    projects                              projects

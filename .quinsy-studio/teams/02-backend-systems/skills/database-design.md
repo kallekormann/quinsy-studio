@@ -1,6 +1,8 @@
 # Skill: Database Design
 
-> Schema design, migrations, normalization, indexing, query optimization
+> PostgreSQL, JSONb, EAV, GIN indexes, migrations
+
+**Playbook:** [backend_playbook.md](../../../knowledge-base/backend_playbook.md) (DB / migrate). Agent runs migrate when reachable.
 
 ## Metadata
 

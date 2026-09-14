@@ -52,7 +52,7 @@ A five-word incident is **not** a principle. Retro bullets that name a ticket, s
 raw observation → generalize title → portable?
   ├─ no  → projects/<p>/docs/studio-learnings-local.md
   ├─ yes, playbook-only → LO (train_skills: [])
-  └─ yes, skill gap → LO + ./studio train <skill-id> --topic "<principle>"
+  └─ yes, skill gap → LO + ./studio train <skill-id> --from lo --topic "<principle>" --lo LO-NNNN
 ```
 
 Each portable harvest:
@@ -61,14 +61,14 @@ Each portable harvest:
 2. **Appends** `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; `--source` is provenance only)
 3. **Opens** a compact LO-* with `infusion_kind`, `infusion_path`, and `train_skills`
 
-Then `./studio execute <project>` **continues product IMPLEMENT**. Open LOs with `train_skills` queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, design-track `approve-design`, and UI sprint-review still win.
+Then `./studio execute <project>` **continues product IMPLEMENT** (or `PRODUCTION` if the ready pipeline is starved). Open LOs with `train_skills` queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, `approve-design` / `approve-arch`, and cadence review still win. `./studio train --purge-empty` closes jobs written without an LO observation.
 
 Do **not** copy project UI/tokens into `studio-library/`. Promote reusable assets via `./studio library promote` — learnings are principles/skills, not product dumps.
 
 ```bash
 ./studio learn "<portable principle>" --signal <signal> --source <project>
 ./studio execute <project>   # ACTION IMPLEMENT (train sidecar only if train_skills set)
-./studio train BE-001 --from mistake --topic "<portable principle>"
+./studio train BE-001 --from lo --topic "<portable principle>" --lo LO-NNNN
 ```
 
 ### Signals
@@ -145,7 +145,8 @@ Project sprint planning is **not** blocked by open LO-* tickets. Harvest is imme
 Project work identifies a learning
     → harvest (inbox + classified LO) in the same session
     → ./studio execute  → ACTION IMPLEMENT  (TRAIN sidecar)
-    → train agent infuses in .quinsy-studio/ (or STUDIO_LO when idle)
+    → ./studio infusion-delta --op add …   (never rewrite the whole playbook)
+    → ./studio train --done TR-NNNN
     → continue project tickets / next sprint
 ```
 

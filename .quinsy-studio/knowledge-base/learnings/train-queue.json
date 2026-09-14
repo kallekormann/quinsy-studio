@@ -6,9 +6,10 @@
       "topic": "Guard still queued HITL \u201capproved\u201d as inbox notes (N-008/N-009) even though revi",
       "source": "lo",
       "observation": "LO-0129",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-08T11:12:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0002",
@@ -16,9 +17,10 @@
       "topic": "Guard still queued HITL \u201capproved\u201d as inbox notes (N-008/N-009) even though revi",
       "source": "lo",
       "observation": "LO-0129",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-08T11:12:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0003",
@@ -26,9 +28,10 @@
       "topic": "Keep magazine CSS `@source` in the public host DoD so chrome cannot ship unstyle",
       "source": "lo",
       "observation": "LO-0132",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-08T11:12:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0004",
@@ -36,59 +39,69 @@
       "topic": "Keep magazine CSS `@source` in the public host DoD so chrome cannot ship unstyle",
       "source": "lo",
       "observation": "LO-0132",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-08T11:12:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0005",
       "skill_id": "BE-001",
       "topic": "Guard still queued HITL approved as inbox notes even though review/gate/design approval is not queued",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0129",
+      "status": "done",
       "created": "2026-09-08T11:24:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0006",
       "skill_id": "BE-004",
       "topic": "Guard still queued HITL approved as inbox notes even though review/gate/design approval is not queued",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0129",
+      "status": "done",
       "created": "2026-09-08T11:24:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0007",
       "skill_id": "UX-003",
       "topic": "Keep magazine CSS @source in the public host DoD so chrome cannot ship unstyled",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0132",
+      "status": "done",
       "created": "2026-09-08T11:24:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0008",
       "skill_id": "FE-002",
       "topic": "Keep magazine CSS @source in the public host DoD so chrome cannot ship unstyled",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0132",
+      "status": "done",
       "created": "2026-09-08T11:24:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0009",
       "skill_id": "SO-001",
       "topic": "Gate smoke needs unrestricted Playwright; Google Font DoD must cover specimens + ensureGoogleFontLink",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0132",
+      "status": "done",
       "created": "2026-09-08T12:00:09",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24"
     },
     {
       "id": "TR-0010",
@@ -96,9 +109,11 @@
       "topic": "QA gate must use npx --no-install prettier so it cannot download a stray formatter",
       "source": "mistake",
       "observation": "",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-08T12:25:49",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T10:48:34",
+      "closed_reason": "empty-observation-invalid"
     },
     {
       "id": "TR-0011",
@@ -136,9 +151,11 @@
       "topic": "Recreate queue workers and the public app after Compose env, queue flag, or volume changes",
       "source": "mistake",
       "observation": "",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-09T16:07:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T10:48:34",
+      "closed_reason": "empty-observation-invalid"
     },
     {
       "id": "TR-0015",
@@ -146,9 +163,11 @@
       "topic": "Recreate queue workers and the public app after Compose env, queue flag, or volume changes",
       "source": "mistake",
       "observation": "",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-09T16:07:41",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T10:48:34",
+      "closed_reason": "empty-observation-invalid"
     },
     {
       "id": "TR-0016",
@@ -156,9 +175,10 @@
       "topic": "Extension delete is local-only while inbox rail is cloud \u2014 same product surface,",
       "source": "lo",
       "observation": "LO-0158",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-09T17:34:59",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0017",
@@ -166,9 +186,10 @@
       "topic": "Extension delete is local-only while inbox rail is cloud \u2014 same product surface,",
       "source": "lo",
       "observation": "LO-0158",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-09T17:34:59",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0018",
@@ -176,9 +197,10 @@
       "topic": "When execute points at Lemon while chat is still on capture UX, confirm priority",
       "source": "lo",
       "observation": "LO-0161",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-09T17:34:59",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0019",
@@ -186,9 +208,10 @@
       "topic": "When execute points at Lemon while chat is still on capture UX, confirm priority",
       "source": "lo",
       "observation": "LO-0161",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-09T17:34:59",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0020",
@@ -196,9 +219,10 @@
       "topic": "Self-hosted Supabase pooler :54332 needs tenant/SNI; apply migrations via db con",
       "source": "lo",
       "observation": "LO-0168",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-10T06:24:58",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0021",
@@ -206,9 +230,10 @@
       "topic": "Reuse gate still demanded `--approve` / path records after \u201cinform-only\u201d messagi",
       "source": "lo",
       "observation": "LO-0169",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-10T06:24:58",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0022",
@@ -216,9 +241,10 @@
       "topic": "Prefer `--record local` early for brand-specific `ui/` atoms so reuse does not b",
       "source": "lo",
       "observation": "LO-0171",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-10T06:24:58",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0023",
@@ -226,19 +252,22 @@
       "topic": "Prefer `--record local` early for brand-specific `ui/` atoms so reuse does not b",
       "source": "lo",
       "observation": "LO-0171",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-10T06:24:58",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0024",
       "skill_id": "SO-001",
       "topic": "Reuse gate still demanded --approve / path records after inform-only messaging",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0169",
+      "status": "done",
       "created": "2026-09-10T10:43:24",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0025",
@@ -246,9 +275,10 @@
       "topic": "Empty states must name the previous step (Affiliate assign) when a section depen",
       "source": "lo",
       "observation": "LO-0179",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-10T22:56:52",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0026",
@@ -256,49 +286,58 @@
       "topic": "Empty states must name the previous step (Affiliate assign) when a section depen",
       "source": "lo",
       "observation": "LO-0179",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-10T22:56:52",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0027",
       "skill_id": "UX-002",
       "topic": "Empty states must name the previous step (Affiliate assign)",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0179",
+      "status": "done",
       "created": "2026-09-10T22:57:00",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0028",
       "skill_id": "FE-004",
       "topic": "Empty states must name the previous step (Affiliate assign)",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0179",
+      "status": "done",
       "created": "2026-09-10T22:57:00",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0029",
       "skill_id": "UX-002",
       "topic": "Empty states must name the previous step and link to it",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0179",
+      "status": "done",
       "created": "2026-09-11T08:25:16",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0030",
       "skill_id": "FE-004",
       "topic": "Empty states must name the previous step and link to it",
       "source": "mistake",
-      "observation": "",
-      "status": "open",
+      "observation": "LO-0179",
+      "status": "done",
       "created": "2026-09-11T08:25:16",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:48:24",
+      "closed_reason": "duplicate-of-done"
     },
     {
       "id": "TR-0031",
@@ -306,9 +345,11 @@
       "topic": "Persist native board column ids when wiring a job API",
       "source": "mistake",
       "observation": "",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T08:25:16",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T10:48:34",
+      "closed_reason": "empty-observation-invalid"
     },
     {
       "id": "TR-0032",
@@ -316,9 +357,10 @@
       "topic": "Selected MD rail palette must drive presentation and PDF color \u2014 Figma-only fixe",
       "source": "lo",
       "observation": "LO-0201",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:02:42",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0033",
@@ -326,9 +368,10 @@
       "topic": "Selected MD rail palette must drive presentation and PDF color \u2014 Figma-only fixe",
       "source": "lo",
       "observation": "LO-0201",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:02:42",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0034",
@@ -336,9 +379,11 @@
       "topic": "Self-hosted deploy env contracts should accept common vendor aliases for the same secret (prefixed and unprefixed) witho",
       "source": "mistake",
       "observation": "",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:26:08",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T10:48:34",
+      "closed_reason": "empty-observation-invalid"
     },
     {
       "id": "TR-0035",
@@ -346,9 +391,11 @@
       "topic": "Self-hosted deploy env contracts should accept common vendor aliases for the same secret (prefixed and unprefixed) witho",
       "source": "mistake",
       "observation": "",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:26:08",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-14T10:48:34",
+      "closed_reason": "empty-observation-invalid"
     },
     {
       "id": "TR-0036",
@@ -356,9 +403,10 @@
       "topic": "Accept Coolify env aliases in code; never put API keys in NEXT_PUBLIC",
       "source": "lo",
       "observation": "LO-0202",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:51:33",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0037",
@@ -366,9 +414,10 @@
       "topic": "Accept Coolify env aliases in code; never put API keys in NEXT_PUBLIC",
       "source": "lo",
       "observation": "LO-0202",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:51:33",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0038",
@@ -376,9 +425,10 @@
       "topic": "Any magazine chrome ticket must smoke `/` on Compose `:13000` with published inv",
       "source": "lo",
       "observation": "LO-0205",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:51:33",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0039",
@@ -386,9 +436,10 @@
       "topic": "Any magazine chrome ticket must smoke `/` on Compose `:13000` with published inv",
       "source": "lo",
       "observation": "LO-0205",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-11T17:51:33",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0040",
@@ -396,9 +447,10 @@
       "topic": "Reuse scanner still flags `@affi/ui` paths as unpromoted though they are product",
       "source": "lo",
       "observation": "LO-0206",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T12:27:00",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0041",
@@ -406,9 +458,10 @@
       "topic": "Reuse scanner still flags `@affi/ui` paths as unpromoted though they are product",
       "source": "lo",
       "observation": "LO-0206",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T12:27:00",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0042",
@@ -416,9 +469,10 @@
       "topic": "Add HTML sticker integrity test (style closes before body) in gate \u2014 already add",
       "source": "lo",
       "observation": "LO-0210",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T12:27:00",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0043",
@@ -426,9 +480,10 @@
       "topic": "Add HTML sticker integrity test (style closes before body) in gate \u2014 already add",
       "source": "lo",
       "observation": "LO-0210",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T12:27:00",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0044",
@@ -436,9 +491,10 @@
       "topic": "Agentic learning needs a write target \u2014 versioned playbooks evolved by delta, ne",
       "source": "lo",
       "observation": "LO-0231",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-12T21:34:51",
-      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+      "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel.",
+      "closed": "2026-09-13T10:09:41"
     },
     {
       "id": "TR-0045",
@@ -469,6 +525,16 @@
       "status": "open",
       "created": "2026-09-12T21:34:51",
       "instruction": "Second agent: research (web or cited source), derive portable principles (no project/product names in HQ docs; provenance only), append to the skill toolbox and a playbook. Product execute continues IMPLEMENT in parallel."
+    },
+    {
+      "id": "TR-0048",
+      "skill_id": "UX-003",
+      "topic": "Batch design-track specs earlier when IA tickets (0784, 0779) share the same spr",
+      "source": "lo",
+      "observation": "LO-0245",
+      "status": "open",
+      "created": "2026-09-13T14:14:55",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0048. Product execute stays IMPLEMENT."
     }
   ]
 }

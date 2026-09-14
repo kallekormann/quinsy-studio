@@ -1,6 +1,8 @@
-# Quinsy Studio — 7-Phase Lifecycle
+# Quinsy Studio — Lifecycle
 
 > The binding flow from intake to deployment. The agent works autonomously — **only** at the human gates does it stop and wait for approval.
+
+**Human HITL is named by gate, not by “Phase N”.** Numbered phases below are execution slices. If a doc disagrees with this table, **this table wins**.
 
 ## Architecture principle
 
@@ -11,45 +13,24 @@ Project (execution level)  ──▶  executed by the studio, local loop
 
 ---
 
-## Overview
+## Overview (gates first)
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        7-PHASE LIFECYCLE                               │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  Phase 1: Intake & PRD Processing                                       │
-│     └─▶ read PRD, milestones/tickets, repo/docker init                 │
-│                                                                         │
-│  Phase 2: Architecture & Design Blueprinting                           │
-│     └─▶ ADRs, UI specs based on playbooks                              │
-│                                                                         │
-│  ═══════════════ HUMAN PHASE GATE 1 ═══════════════                    │
-│     └─▶ ./studio approve <project> --gate 1                            │
-│                                                                         │
-│  Phase 3: Design (prototype) + HUMAN GATE 2                            │
-│     └─▶ tokens, mocks, sticker sheet                                   │
-│                                                                         │
-│  Execution planning — milestone roadmap (HITL)                           │
-│     └─▶ docs/phases/ — versions M0, M1, … + backlog for active only  │
-│                                                                         │
-│  Phase 4: Sprint Setup & Backlog Grooming                              │
-│     └─▶ sprint scope within current milestone                          │
-│                                                                         │
-│  Phase 5: Autonomous Sprint Execution                                  │
-│     └─▶ write code, test locally; agent runs migrate if DB reachable   │
-│                                                                         │
-│  Phase 6: Comprehensive QA & Compliance Gate                           │
-│     └─▶ validate_anti_slop.py + run_qa_gate.py                         │
-│                                                                         │
-│  Phase 7: Dual-Loop Knowledge Harvesting                               │
-│     └─▶ retro: local learnings (project) + global evolution (studio)   │
-│                                                                         │
-│  Phase 8: Deployment & Iteration                                       │
-│     └─▶ zero-downtime deployment, monitoring                           │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+| HITL / slice | What | CLI |
+|--------------|------|-----|
+| **Gate 0** | PRD + definitions (as-built if adopt) | `./studio approve --gate 0` |
+| **Gate 1** | Architecture (ADRs, stack, persistence) | `./studio approve --gate 1` |
+| **Gate 2** | Design direction + system + mocks/prototype | `./studio approve --gate 2` |
+| **Milestones** | Version plan `docs/phases/` | `./studio approve --milestones` |
+| Sprint setup | Scope + groom; implementation `--approve-scope` blocked if ready pipeline starved | `./studio sprint` → `--approve-scope` → `groom` |
+| **Sprint execute** | Autonomous ready tickets; `PRODUCTION` writes packets | `./studio execute` until HITL |
+| Design / arch packets | Spec + mocks / architecture note, then human | `./studio approve-design` / `approve-arch` |
+| **QA level 5** | Lint/tests/build/smoke + receipt skill QA (not a human phase gate) | `./studio gate --level 5` before `move … done` |
+| **Cadence review** | Every N implementation sprints (default 2) | `./studio review` → `--approve` |
+| Hygiene | Lint/debt batch after implementation batches | `./studio sprint --kind hygiene` |
+| Harvest | Portable LO + train; project incidents stay local | `docs/studio-learnings-local.md` vs HQ playbooks |
+| Deploy | Staging → prod (release is HITL) | project RUNBOOK |
+
+ASCII “Phase 1…8” in older notes is the same flow: intake → architecture → design → sprint → QA → harvest → deploy. **Do not invent Phase 8 as a ninth human gate.**
 
 ---
 
@@ -211,7 +192,7 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 | **Output** | implemented code with local tests |
 | **Roles (lead)** | Frontend Engineer, Backend Engineer |
 | **Roles (support)** | Database Specialist, QA Specialist |
-| **Human gate** | No mid-sprint — agent runs the full sprint; **human joins at sprint review** (Phase 7) |
+| **Human gate** | No mid-sprint ticket ACK — agent runs ready tickets; **human joins for packet sign-off and cadence review** |
 
 ### Flow per ticket (9 steps)
 
@@ -276,7 +257,7 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 | **Output** | local learnings + global studio evolution |
 | **Roles (lead)** | Process Guard, Platform Architect |
 | **Roles (support)** | Documentation Writer, Agile Coach |
-| **Human gate** | **Yes** — sprint review (`./studio review --approve`) before the next sprint |
+| **Human gate** | **Cadence** — `./studio review --approve` every N implementation sprints; off-cadence batches go to retro |
 
 ### Flow
 
@@ -286,14 +267,14 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 4. Clarify + ticket from feedback (`./studio clarify` → `./studio ticket --from-feedback`)
 5. Run the sprint retrospective (`./studio retro <project>`)
 6. Collect learning items (`./studio learn`)
-7. **Local loop:** project-specific learnings → `projects/[name]/docs/local_learnings.md`
+7. **Local loop:** project-specific learnings → `projects/<name>/docs/studio-learnings-local.md`
 8. **Global loop:** universal improvements → `.quinsy-studio/knowledge-base/`
 9. Groom backlog (`./studio groom`) + plan next sprint (`./studio sprint <project>`)
 10. If milestone tickets are all `done` → **milestone review** before next milestone planning (see [milestone-planning.md](milestone-planning.md))
 
 ---
 
-## Phase 8: Deployment & Iteration
+## Phase 8: Deployment & Iteration (not a numbered human gate)
 
 **Goal:** deploy the production environment, monitor, plan the next iteration.
 
@@ -321,13 +302,13 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 
 | Gate | Phase | Checkpoints |
 |------|-------|-------------|
-| **Gate 0** | Phase 1→2 | PRD + definitions — **user approval** |
-| **Gate 1** | Phase 2→3 | architecture blueprint — **user approval** |
-| **Gate 2** | Design→execution | design + mocks — **user approval** (library promotion) |
+| **Gate 0** | After intake / as-built | PRD + definitions — **user approval** |
+| **Gate 1** | After architecture | ADRs / stack — **user approval** |
+| **Gate 2** | After design track | design + mocks — **user approval** (library promotion) |
 | **Milestones** | Post gate 2 | milestone roadmap — **user approval** (`--milestones`) |
 | **Milestone review** | End of M0, M1, … | version complete — **user approval** before next milestone backlog |
-| **Gate 3** | Phase 4 (internal) | sprint planned, tickets assigned |
-| **Gate 5** | Phase 6 (internal) | QA, security, anti-slop, GDPR — all green |
+| **Gate 3** | Sprint setup (internal) | sprint planned, tickets assigned — **not** a human stop |
+| **QA level 5** | Before `move … done` | QA, security, anti-slop, GDPR — all green (`./studio gate --level 5`) |
 
 ---
 
@@ -344,7 +325,7 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 │  • Niche insights                      • Python tooling updates         │
 │  • Workarounds                         • Anti-slop rule updates         │
 │  • Storage: projects/[name]/           • Storage: .quinsy-studio/       │
-│    docs/local_learnings.md              knowledge-base/                  │
+│    docs/studio-learnings-local.md        knowledge-base/                  │
 │                                                                         │
 │  ⚠️ Does NOT affect other             ✅ Applies to ALL future          │
 │     projects                              projects                       │

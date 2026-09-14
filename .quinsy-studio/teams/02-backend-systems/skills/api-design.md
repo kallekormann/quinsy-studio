@@ -2,6 +2,8 @@
 
 > RESTful APIs, OpenAPI specification, versioning, rate limiting, pagination
 
+**Playbook:** [backend_playbook.md](../../../knowledge-base/backend_playbook.md) (API spine). Do not rewrite this file wholesale — `./studio infusion-delta`.
+
 ## Metadata
 
 ```

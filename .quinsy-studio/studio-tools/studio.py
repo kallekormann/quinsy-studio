@@ -20,7 +20,12 @@ Commands:
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
   ./studio veto <project> --decision ADR-…
-  ./studio train <skill-id> --from mistake --topic "…"
+  ./studio train <skill-id> --from lo --topic "…" --lo LO-NNNN
+  ./studio train --done TR-NNNN                  Mark train job infused
+  ./studio train --purge-empty                 Close open jobs with blank observation
+  ./studio approve-design <p> <TICKET>         After spec + all-state mocks exist
+  ./studio approve-arch <p> <TICKET>           After docs/architecture/<TICKET>.md exists
+  ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
   ./studio health <project>                      Sprint state-graph check
@@ -56,8 +61,8 @@ Commands:
   ./studio concept <project>                     → blueprint / design
 
   # Phase 3: Sprint Management
-  ./studio sprint <project>                      Create sprint
-  ./studio review <project> [--approve|--reject] Sprint review (human)
+  ./studio sprint <project> [--kind implementation|hygiene]
+  ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
   ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
@@ -79,7 +84,10 @@ Commands:
   # Phase 6: Learning
   ./studio learn "Title" --signal <s>            Create learning item
   ./studio learn-list                            Show learning items
-  ./studio infusion                              Studio LO gate — open learnings before project sprint
+  ./studio infusion                              Open LO status (does not block IMPLEMENT)
+  ./studio train --done TR-NNNN                  Close a train job after infusion
+  ./studio infusion-delta --path FILE --op add  Deterministic playbook bullet
+  ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio retro <project> [--complete]          Sprint retrospective
   ./studio sync <project>                        Sync global assets
 
@@ -780,7 +788,7 @@ class StudioOrchestrator:
         path = write_receipt_stub(project, sprint, ticket_id, card)
         print_header(f"RECEIPT {ticket_id}")
         print(f"  {path.relative_to(STUDIO_ROOT)}")
-        print("  Fill Plan, AC coverage, and Default flow (LO-0051), then ./studio execute")
+        print("  Fill Plan, AC coverage, Default flow (LO-0051), and Playbook citations, then ./studio execute")
         return True
 
     def cmd_health(self, project: str):
@@ -882,23 +890,93 @@ class StudioOrchestrator:
         print(f"  Loop: ./studio execute {project}  → HITL tech-veto before the next ticket")
         return True
 
-    def cmd_train(self, skill_id: str, topic: str, source: str = "mistake"):
+    def cmd_train(self, skill_id: str, topic: str, source: str = "mistake", done: str = "", lo_id: str = "", close_mode: bool = False, purge_empty: bool = False):
         """Queue a parallel skill-training job. Does not block product IMPLEMENT."""
-        from studio_train import enqueue_train, skill_file_hint
+        from studio_train import (
+            enqueue_train,
+            skill_file_hint,
+            close_job,
+            close_jobs_for_lo,
+            sync_train_with_done_los,
+            open_jobs,
+            purge_empty_observations,
+        )
 
         print_header("TRAIN")
+        if purge_empty:
+            closed = purge_empty_observations()
+            print(f"  Purged {len(closed)} empty-observation job(s): {', '.join(closed) or 'none'}")
+            print(f"  Queue now {len(open_jobs())} open")
+            return True
+        synced = sync_train_with_done_los()
+        if synced:
+            print(f"  Synced {len(synced)} job(s) whose LO is already in backlog/done/")
+        if close_mode:
+            closed = close_jobs_for_lo(lo_id) if lo_id else []
+            if done:
+                job = close_job(done)
+                if job:
+                    closed = [job]
+                elif not closed:
+                    print(f"  ⚠️  Train job {done} not found")
+                    return False
+            if not done and lo_id and not closed:
+                print(f"  ⚠️  No open train job for {lo_id}")
+                return False
+            ids = ", ".join(str(j.get("id")) for j in closed)
+            print(f"  Closed {ids or 'none'} — queue now {len(open_jobs())} open")
+            return True
         try:
-            job = enqueue_train(skill_id, topic, source=source)
+            job = enqueue_train(
+                skill_id,
+                topic,
+                source="lo" if lo_id else source,
+                observation=lo_id,
+            )
         except ValueError as exc:
             print(f"  ⚠️  {exc}")
-            print("  Usage: ./studio train <skill-id> --from book|url|mistake --topic \"…\"")
+            print("  Usage: ./studio train <skill-id> --topic \"…\" --lo LO-NNNN")
+            print("         ./studio train --done TR-NNNN")
             return False
         hint = skill_file_hint(skill_id)
-        print(f"  Queued {job['id']}  skill={job['skill_id']}  topic={job['topic']}")
-        print("  Second agent: research (cited), derive principles (no copyrighted verbatim),")
-        print("  append to the skill toolbox and a playbook. Product execute continues IMPLEMENT.")
+        print(f"  Queued {job['id']}  skill={job['skill_id']}  topic={job['topic']}  lo={job.get('observation') or '-'}")
+        print("  Infuse with ./studio infusion-delta, then ./studio train --done")
         if hint:
             print(f"  Skill file: {hint}")
+        return True
+
+    def cmd_cite(self, rel_path: str, helpful: str = "", harmful: str = ""):
+        """Increment helpful/harmful on playbook bullets (HQ-T18)."""
+        from studio_infusion_delta import bump_counts
+
+        print_header("CITE")
+        ids_h = [p.strip() for p in (helpful or "").split(",") if p.strip() and p.strip().lower() != "none"]
+        ids_d = [p.strip() for p in (harmful or "").split(",") if p.strip() and p.strip().lower() != "none"]
+        if not rel_path or not (ids_h or ids_d):
+            print("  Usage: ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001 [--harmful PB-…]")
+            return False
+        try:
+            for bid in ids_h:
+                print(f"  {bump_counts(rel_path, bid, helpful=1)}")
+            for bid in ids_d:
+                print(f"  {bump_counts(rel_path, bid, helpful=0, harmful=1)}")
+        except (ValueError, FileNotFoundError) as exc:
+            print(f"  ⚠️  {exc}")
+            return False
+        return True
+
+    def cmd_infusion_delta(self, rel_path: str, op: str, section: str = "Deltas", body: str = "", bullet_id: str = ""):
+        """Apply one ADD/UPDATE/REMOVE bullet to a studio HQ playbook."""
+        from studio_infusion_delta import apply_delta
+
+        print_header("INFUSION DELTA")
+        try:
+            result = apply_delta(rel_path, op, section=section, body=body, bullet_id=bullet_id)
+        except (ValueError, FileNotFoundError) as exc:
+            print(f"  ⚠️  {exc}")
+            print("  Usage: ./studio infusion-delta --path knowledge-base/foo.md --op add --section Deltas --body \"…\"")
+            return False
+        print(f"  {result['op']} {result['id']} → {result['path']}")
         return True
 
     def cmd_focus(self, project: str):
@@ -1580,7 +1658,7 @@ class StudioOrchestrator:
     # PHASE 3: SPRINT MANAGEMENT
     # -------------------------------------------------------------------------
     
-    def cmd_sprint(self, project: str, approve_scope: bool = False):
+    def cmd_sprint(self, project: str, approve_scope: bool = False, kind: str = ""):
         """Propose or approve sprint scope from product backlog."""
         
         status = load_status(project)
@@ -1594,6 +1672,17 @@ class StudioOrchestrator:
             if not sprint:
                 print(f"  ⚠️  No active sprint — run ./studio sprint {project} first")
                 return False
+            kind = (status.get("sprint_kind") or "implementation").strip().lower()
+            if kind == "implementation":
+                from studio_streams import count_production_backlog, count_ready_backlog, production_ready_min
+
+                if count_production_backlog(project) and count_ready_backlog(project) < production_ready_min():
+                    print(
+                        f"\n  ❌ Implementation scope blocked — ready pipeline "
+                        f"{count_ready_backlog(project)}/{production_ready_min()}. "
+                        "Finish PRODUCTION packets (approve-design / approve-arch) first."
+                    )
+                    return False
             reuse_msg = reuse_gate_message(project, status)
             if reuse_msg:
                 print(f"\n  ⚠️  Cannot approve sprint scope until reuse review is complete.")
@@ -1712,6 +1801,9 @@ class StudioOrchestrator:
             print(f"  Immature tickets: {rel}")
 
         status["current_sprint"] = sprint_name
+        status["sprint_kind"] = (kind or "implementation").strip().lower() or "implementation"
+        if status["sprint_kind"] not in ("implementation", "hygiene"):
+            status["sprint_kind"] = "implementation"
         status["phase"] = PHASE_IMPLEMENT
         hitl = get_sprint_hitl(status)
         hitl["review_status"] = None
@@ -1727,7 +1819,7 @@ class StudioOrchestrator:
         hitl["groom_status"] = None
         save_status(project, status)
 
-        print(f"\n  Sprint created: {sprint_name} (scope **pending**)")
+        print(f"\n  Sprint created: {sprint_name} kind={status.get('sprint_kind')} (scope **pending**)")
         print(f"  Human steps:")
         print(f"    1. Read {rel_scope}")
         print(f"    2. Edit sprints/{sprint_name}/plan.md goal if needed")
@@ -2110,6 +2202,16 @@ class StudioOrchestrator:
             ticket["ticket_type"] = ticket_type
             ticket["design_status"] = design_status
             ticket["design_spec"] = design_spec
+        from studio_streams import needs_architecture_from_blob
+
+        needs_arch = needs_architecture_from_blob(ticket_type, title)
+        ticket["ticket_type"] = ticket_type
+        ticket["needs_design"] = design_status == "pending"
+        ticket["needs_architecture"] = needs_arch
+        ticket["architecture_status"] = "pending" if needs_arch else "n/a"
+        ticket["stream"] = (
+            "production" if design_status == "pending" or needs_arch else "ready"
+        )
         
         content = render_ticket_markdown(ticket)
         if rationale_extra:
@@ -2176,7 +2278,7 @@ class StudioOrchestrator:
                     print(f"\n  ❌ Cannot mark {ticket_id} done without an execution receipt.")
                     print(f"     Fill: {rec.relative_to(STUDIO_ROOT)}")
                     print(f"     ./studio receipt {project} {ticket_id}")
-                    print("     Required sections: Plan, AC coverage, Default flow (LO-0051)")
+                    print("     Required sections: Plan, AC coverage, Default flow (LO-0051), Playbook citations")
                     return False
 
         if new_status == "implement":
@@ -2259,10 +2361,26 @@ class StudioOrchestrator:
                 hitl_now = get_sprint_hitl(status)
                 if hitl_now.get("review_status") == "informed":
                     print(f"\n  Backend-only sprint complete — review is inform-only. Next: ./studio retro {project}")
+                else:
+                    print(
+                        f"\n  Implementation sprint complete — skill QA on receipts; "
+                        f"cadence review not due. Next: ./studio retro {project} "
+                        f"(optional later: ./studio sprint {project} --kind hygiene)"
+                    )
             save_status(project, status)
             sprint_done = status.get("current_sprint") or ""
             if sprint_done:
                 append_execution_event(project, sprint_done, "done", ticket_id, reason or "done")
+                rec = receipt_path(project, sprint_done, ticket_id)
+                if rec.exists():
+                    try:
+                        from studio_cite import apply_receipt_citations
+
+                        cited = apply_receipt_citations(rec.read_text(encoding="utf-8", errors="ignore"))
+                        if cited:
+                            print(f"  Citations: {len(cited)} playbook bullet counter(s) updated")
+                    except Exception as exc:
+                        print(f"  ⚠️  Playbook citations skipped: {exc}")
                 print(f"  Loop: ./studio execute {project}")
         
         # If moving to done, check if all tickets are done
@@ -2313,12 +2431,38 @@ class StudioOrchestrator:
         if emoji_warn:
             print(f"\n  ⚠️  {emoji_warn}")
         updated = set_design_approved(content)
+        from studio_streams import refresh_stream_field
+
+        updated = refresh_stream_field(updated)
         if notes:
             updated += f"\n\n## Design approval\n- **Approved:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n- **Notes:** {notes}\n"
         ticket_file.write_text(updated)
         print(f"\n  ✓ Design approved for {ticket_id}")
         print(f"    Spec: {spec_rel}")
-        print(f"  Next: ./studio move {project} {ticket_id} implement")
+        print(f"  Next: implement only after stream is ready (approve-arch if required)")
+        return True
+
+    def cmd_approve_arch(self, project: str, ticket_id: str, notes: str = ""):
+        """HITL: approve architecture packet before implementation sprint."""
+        from studio_streams import architecture_packet_ready, set_architecture_approved
+
+        ticket_file, _status = find_project_ticket(project, ticket_id)
+        if not ticket_file:
+            print(f"  Ticket {ticket_id} not found in project {project}")
+            return False
+        content = ticket_file.read_text()
+        if not re.search(r"^architecture_status:\s*pending", content, re.M):
+            print(f"  Ticket {ticket_id} does not need architecture sign-off.")
+            return True
+        if not architecture_packet_ready(project, ticket_id):
+            print(f"\n  ❌ Cannot approve-arch — write docs/architecture/{ticket_id}.md first (not a stub).")
+            return False
+        updated = set_architecture_approved(content)
+        if notes:
+            updated += f"\n\n## Architecture approval\n- **Approved:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n- **Notes:** {notes}\n"
+        ticket_file.write_text(updated)
+        print(f"\n  ✓ Architecture approved for {ticket_id}")
+        print(f"    Note: docs/architecture/{ticket_id}.md")
         return True
     
     # -------------------------------------------------------------------------
@@ -2535,7 +2679,12 @@ class StudioOrchestrator:
         from studio_learning_gate import can_infuse_project_sprint, open_lo_tickets
         from studio_portability import open_lo_title_portability_failures, scan_hq_for_project_nouns
 
-        print_header("STUDIO INFUSION GATE")
+        print_header("STUDIO INFUSION")
+        from studio_train import sync_train_with_done_los, open_jobs, sidecar_commands
+
+        synced = sync_train_with_done_los()
+        if synced:
+            print(f"\n  Closed {len(synced)} train job(s) for LOs already in backlog/done/")
         items = open_lo_tickets()
         hq_hits = scan_hq_for_project_nouns()
         bad_titles = open_lo_title_portability_failures(items) if items else []
@@ -2562,7 +2711,12 @@ class StudioOrchestrator:
         print("\n  Product: ./studio execute <project>  → IMPLEMENT")
         if items:
             skills = items[0].get("train_skills") or "SO-001"
-            print(f"  Train:   ./studio train <skill-id> --from mistake --topic \"<principle>\"  (skills: {skills})")
+            print(f"  Train:   ./studio train <skill-id> --topic \"<principle>\"  then infusion-delta, then --done")
+            queued = sidecar_commands(4)
+            if queued:
+                print("  Open train jobs (oldest first):")
+                for q in queued:
+                    print(f"    {q.get('id')} {q.get('command')}")
         return not bad_titles
     
     def cmd_update_skills(self, extra_args=None):
@@ -3134,7 +3288,12 @@ Commands:
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
   ./studio veto <project> --decision ADR-…
-  ./studio train <skill-id> --from mistake --topic "…"
+  ./studio train <skill-id> --from lo --topic "…" --lo LO-NNNN
+  ./studio train --done TR-NNNN                  Mark train job infused
+  ./studio train --purge-empty                 Close open jobs with blank observation
+  ./studio approve-design <p> <TICKET>         After spec + all-state mocks exist
+  ./studio approve-arch <p> <TICKET>           After docs/architecture/<TICKET>.md exists
+  ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
   ./studio health <project>                      Sprint state-graph check
@@ -3170,8 +3329,8 @@ Commands:
   ./studio concept <project>                     → blueprint / design
 
   # Phase 3: Sprint Management
-  ./studio sprint <project>                      Create sprint
-  ./studio review <project> [--approve|--reject] Sprint review (human)
+  ./studio sprint <project> [--kind implementation|hygiene]
+  ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
   ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
@@ -3193,7 +3352,10 @@ Commands:
   # Phase 6: Learning
   ./studio learn "Title" --signal <s>            Create learning item
   ./studio learn-list                            Show learning items
-  ./studio infusion                              Studio LO gate — open learnings before project sprint
+  ./studio infusion                              Open LO status (does not block IMPLEMENT)
+  ./studio train --done TR-NNNN                  Close a train job after infusion
+  ./studio infusion-delta --path FILE --op add  Deterministic playbook bullet
+  ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio retro <project> [--complete]          Sprint retrospective
   ./studio sync <project>                        Sync global assets
   ./studio update-skills                         Subscribe/update external skill packages
@@ -3306,17 +3468,74 @@ def main():
         orchestrator.cmd_veto(args[0], decision=decision, reason=reason, ack=ack)
 
     elif command == "train" and len(args) >= 1:
-        skill_id = args[0]
+        done_id = ""
+        lo_id = ""
+        skill_id = ""
         topic = ""
         source = "mistake"
-        for i, arg in enumerate(args):
+        i = 0
+        while i < len(args):
+            arg = args[i]
+            if arg == "--done":
+                if i + 1 < len(args) and not args[i + 1].startswith("--"):
+                    done_id = args[i + 1]
+                    i += 2
+                    continue
+                i += 1
+                continue
+            if arg == "--lo" and i + 1 < len(args):
+                lo_id = args[i + 1]
+                i += 2
+                continue
             if arg == "--topic" and i + 1 < len(args):
                 topic = args[i + 1]
-            elif arg == "--from" and i + 1 < len(args):
+                i += 2
+                continue
+            if arg == "--from" and i + 1 < len(args):
                 source = args[i + 1]
-        if not topic and len(args) >= 2 and not args[1].startswith("--"):
-            topic = " ".join(a for a in args[1:] if not a.startswith("--"))
-        orchestrator.cmd_train(skill_id, topic, source=source)
+                i += 2
+                continue
+            if arg == "--purge-empty":
+                i += 1
+                continue
+            if not skill_id and not arg.startswith("--"):
+                skill_id = arg
+            i += 1
+        if not topic and skill_id and len(args) >= 2 and not args[1].startswith("--") and args[0] != "--done":
+            topic = topic or " ".join(a for a in args[1:] if not a.startswith("--"))
+        orchestrator.cmd_train(skill_id, topic, source=source, done=done_id, lo_id=lo_id, close_mode="--done" in args, purge_empty="--purge-empty" in args)
+
+    elif command == "infusion-delta":
+        rel_path = ""
+        op = "add"
+        section = "Deltas"
+        body = ""
+        bullet_id = ""
+        for i, arg in enumerate(args):
+            if arg == "--path" and i + 1 < len(args):
+                rel_path = args[i + 1]
+            elif arg == "--op" and i + 1 < len(args):
+                op = args[i + 1]
+            elif arg == "--section" and i + 1 < len(args):
+                section = args[i + 1]
+            elif arg == "--body" and i + 1 < len(args):
+                body = args[i + 1]
+            elif arg == "--id" and i + 1 < len(args):
+                bullet_id = args[i + 1]
+        orchestrator.cmd_infusion_delta(rel_path, op, section=section, body=body, bullet_id=bullet_id)
+
+    elif command == "cite":
+        rel_path = args[0] if args and not args[0].startswith("--") else ""
+        helpful = ""
+        harmful = ""
+        for i, arg in enumerate(args):
+            if arg == "--path" and i + 1 < len(args):
+                rel_path = args[i + 1]
+            elif arg == "--helpful" and i + 1 < len(args):
+                helpful = args[i + 1]
+            elif arg == "--harmful" and i + 1 < len(args):
+                harmful = args[i + 1]
+        orchestrator.cmd_cite(rel_path, helpful=helpful, harmful=harmful)
 
     elif command == "ticket-card" and len(args) >= 2:
         orchestrator.cmd_ticket_card(args[0], args[1])
@@ -3438,7 +3657,11 @@ def main():
     
     elif command == "sprint" and len(args) >= 1:
         approve_scope = "--approve-scope" in args
-        orchestrator.cmd_sprint(args[0], approve_scope=approve_scope)
+        kind = ""
+        for i, arg in enumerate(args):
+            if arg == "--kind" and i + 1 < len(args):
+                kind = args[i + 1]
+        orchestrator.cmd_sprint(args[0], approve_scope=approve_scope, kind=kind)
 
     elif command == "review" and len(args) >= 1:
         project = args[0]
@@ -3568,6 +3791,15 @@ def main():
             if arg == "--notes" and i + 1 < len(args):
                 notes = args[i + 1]
         orchestrator.cmd_approve_design(project, ticket_id, notes=notes)
+
+    elif command == "approve-arch" and len(args) >= 2:
+        project = args[0]
+        ticket_id = args[1]
+        notes = ""
+        for i, arg in enumerate(args):
+            if arg == "--notes" and i + 1 < len(args):
+                notes = args[i + 1]
+        orchestrator.cmd_approve_arch(project, ticket_id, notes=notes)
     
     elif command == "gate" and len(args) >= 1:
         project = args[0]

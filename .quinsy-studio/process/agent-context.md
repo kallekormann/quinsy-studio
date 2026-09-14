@@ -4,21 +4,21 @@
 
 ## Every turn (before session start)
 
-Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit **gate / design-track approve-design / sprint-review** when execute already says `STOP`. Mid-sprint “looks good” on a **feature** ticket is not HITL.
+Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit **gate / approve-design / approve-arch / cadence review** when execute already says `STOP`. Mid-sprint “looks good” on a **feature** ticket is not HITL.
 
 ## Session start
 
 1. Read [`AGENTS.md`](../../AGENTS.md)
 2. Run `./studio bootstrap` (new PRD), `./studio adopt <p> --from …` (existing codebase), or `./studio focus <project>`
 3. Run `./studio settings` (merged policy + estimated usage). Defaults cover a **medium project**.
-4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`. If the gold path needs an operator click (submit/start a job) and a later unblocked ticket is only notify/revalidate polish, do the click ticket first (LO-0155).
+4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`. If `ACTION` is `PRODUCTION`, write the packet (do not implement the product ticket). If the gold path needs an operator click (submit/start a job) and a later unblocked ticket is only notify/revalidate polish, do the click ticket first (LO-0155).
 5. If `ACTION` is `INFORM` (inbox drain / reuse brief), do NEXT and loop — do not wait for a signature. Architecture and design are HITL, not inform.
 6. If `ACTION` is `INFORM` and the reason is `cost-cap`, **stop**. Do not keep stuffing files. The human raises the **named** yaml key in `studio.settings.local.yaml`, then execute continues.
 7. If `ACTION` is `STUDIO_LO`, the product loop is idle — infuse in `.quinsy-studio/` now. Mid-sprint gaps: spawn `./studio train` and keep `IMPLEMENT`
 8. Mid-execute human messages: `./studio guard` → `INBOX_ACK` (auto-queued). Resume NEXT. Drain after MOVE_DONE
 9. `./studio resume <project>` is a human-readable checklist; do not stop after printing it
 
-Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog.
+Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog. **READ only CARD playbooks.** Never open `knowledge-base/learnings/inbox.md` on IMPLEMENT.
 
 **Docker / local URLs:** before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
 
@@ -57,7 +57,7 @@ Studio HQ must stay **project-agnostic** in docs/tools — see [studio-abstracti
 
 ### 0. Mid-execute inbox (first)
 
-If the previous turn was execute-loop work, `./studio guard` is still the first command — it returns `inbox_ack` and queues the note. Skip the rest of this section until after drain.
+If the previous turn was execute-loop work, `./studio guard` is still the first command. Product chat becomes `inbox_ack`. **Exception (LO-0243):** `HQ-T*`, `LO-NNNN`, `.quinsy-studio`, or “quinsy-studio process” is `studio_meta` — do **not** queue it on the product sprint inbox, and do not resume product `IMPLEMENT`.
 
 ### 1. Check active project
 
@@ -77,7 +77,7 @@ If the previous turn was execute-loop work, `./studio guard` is still the first 
 | `needs_ticket` | Do **not** implement — create `./studio ticket` or ask user |
 | `pre_impl` | Redirect to current gate (`./studio resume`) |
 | `feedback_only` | Sprint review HITL — capture feedback, do not code |
-| `studio_meta` | Studio backlog only — not project code |
+| `studio_meta` | Studio HQ (`HQ-T*`, `LO-NNNN`, `.quinsy-studio`, process) — not product code and **not** the product sprint inbox |
 | `unclear` | Ask one clarifying question |
 
 ### 2. Off-topic / interference
@@ -154,7 +154,7 @@ Projects **consume** library via `./studio sync <project>`; they **feed** librar
 
 **Mid-sprint:** agent implements autonomously — do not ask the human for direction between tickets.
 
-**Sprint review:** when all sprint tickets are `done`, pause for human review — never ticket sprint-review ideas directly. **Never implement review feedback in code** — only `./studio feedback` → clarify → ticket for the **next** sprint. If the human reviews a **git-deployed** host, push the product branch that host tracks before HITL (LO-0167 / LO-0170).
+**Cadence review:** when `implementation_sprints_since_review` reaches `cost.human_review_every_sprints` (default 2), pause for human review. Off-cadence, receipts + gate 5 are enough. Never ticket review ideas directly. **Never implement review feedback in code** — only `./studio feedback` → clarify → ticket (production stream until packets signed). If the human reviews a **git-deployed** host, push the product branch that host tracks before HITL (LO-0167 / LO-0170).
 
 ```bash
 ./studio review <project>

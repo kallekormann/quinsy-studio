@@ -9,6 +9,42 @@ Fast. Offline-capable. Accessible.
 No compromise on performance.
 ```
 
+Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-gate-playbook.md](qa-gate-playbook.md).
+
+## Implementer rules (Do / Don’t / fail)
+
+### Kit-first (FE-001)
+
+| Do | Don’t | Implement-fail |
+|----|-------|----------------|
+| `library suggest` → `pull`; kit peers in `docs/setup/ui-kit.md` | Hand-roll modal/menu/focus trap | Native `<select>` on product chrome |
+| Tailwind + CVA variants | One-off hex / extra CSS file for a kit control | Second copy of the same organism |
+| Compose Team 10 spec | Invent a new atom in a feature ticket | Shipped control not in the spec inventory |
+
+### Tokens & system (FE-002)
+
+| Do | Don’t | Implement-fail |
+|----|-------|----------------|
+| Project `ui/tokens` CSS variables | Parallel palette for “just this page” | Dark mode unreadable / missing token |
+
+### Performance (FE-003)
+
+| Do | Don’t | Implement-fail |
+|----|-------|----------------|
+| Images sized + lazy below fold | Unbounded client lists | LCP ignored on the ticket’s primary view |
+
+### Accessibility (FE-004)
+
+| Do | Don’t | Implement-fail |
+|----|-------|----------------|
+| Label every control; keyboard + visible focus | Icon-only without accessible name | Contrast or 24px target fail on the changed control |
+
+### Testing (FE-006)
+
+Follow [qa-gate-playbook.md](qa-gate-playbook.md).
+
+---
+
 ## UI kit peers (project setup)
 
 Styled studio-library components need these in the **product** React app (not only Studio HQ):

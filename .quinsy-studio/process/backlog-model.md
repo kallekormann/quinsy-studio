@@ -39,11 +39,13 @@ Product backlog (backlog/*.md, milestone: M0, no sprint tag)
   → Human approves scope
   → ./studio sprint <p> --approve-scope
   → ./studio groom <p> --approve
-  → backlog → implement → done   (autonomous mid-sprint)
-  → ./studio review --approve
-  → retro → next sprint (same milestone)
+  → backlog → implement → done   (autonomous mid-sprint; skill QA on receipt)
+  → cadence ./studio review --approve (every N implementation sprints)
+  → retro → next sprint (or --kind hygiene)
   → milestone review when all M* tickets done → plan next milestone
 ```
+
+**Streams:** tickets with `design_status: pending` or `architecture_status: pending` stay on the **production** stream (`ACTION: PRODUCTION` + HITL). Only **ready** tickets enter an implementation sprint. `cost.production_ready_min` (default 2) blocks implementation `--approve-scope` and steals execute into PRODUCTION when the pipeline is starved.
 
 ### Scope proposal
 

@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import patch
 
 import studio_harvest
+import studio_train
 from studio_harvest import (
     classify_learning,
     harvest_identified_learning,
@@ -18,6 +20,7 @@ from studio_harvest import (
 from ticket_helpers import render_ticket_markdown
 
 
+@contextmanager
 def _patch_harvest_dirs(tmp: Path):
     open_dir = tmp / "open"
     done_dir = tmp / "done"
@@ -28,7 +31,8 @@ def _patch_harvest_dirs(tmp: Path):
     blocked.mkdir()
     learnings.mkdir()
     inbox = learnings / "inbox.md"
-    return patch.multiple(
+    queue = tmp / "train-queue.json"
+    harvest = patch.multiple(
         studio_harvest,
         BACKLOG_OPEN=open_dir,
         BACKLOG_DONE=done_dir,
@@ -36,6 +40,14 @@ def _patch_harvest_dirs(tmp: Path):
         LEARNINGS_DIR=learnings,
         INBOX_PATH=inbox,
     )
+    train = patch.multiple(
+        studio_train,
+        QUEUE_PATH=queue,
+        BACKLOG_OPEN=open_dir,
+        BACKLOG_DONE=done_dir,
+    )
+    with harvest, train:
+        yield
 
 
 class ClassifyTests(unittest.TestCase):
@@ -69,6 +81,10 @@ class HarvestWriteTests(unittest.TestCase):
                 inbox = (tmp / "learnings" / "inbox.md").read_text(encoding="utf-8")
                 self.assertIn(result["lo_id"], inbox)
                 self.assertIn("Nested board overflow", inbox)
+                if result.get("train_skills"):
+                    jobs = studio_train.load_queue().get("jobs") or []
+                    self.assertTrue(jobs)
+                    self.assertTrue(all(j.get("observation") == result["lo_id"] for j in jobs))
 
     def test_dedupe_exact_title_only(self):
         with tempfile.TemporaryDirectory() as raw:

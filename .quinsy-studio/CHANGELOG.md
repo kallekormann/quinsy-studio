@@ -1,5 +1,46 @@
 # Quinsy Studio CHANGELOG
 
+## 2026-09-14 — Guides + Cursor Auto-run for MOVE_DONE
+
+### Changed
+
+- Root `README.md`, `.quinsy-studio/README.md`, and `GETTING_STARTED.md` describe `PRODUCTION`, `approve-arch`, cadence review, hygiene sprints, and that `MOVE_DONE` is not studio HITL.
+- `.cursor/permissions.json` steers Auto-review to allow `./studio` (including `move … done`). Add `./studio` to the **in-app** terminal allowlist; do not put `terminalAllowlist` only in this file if you want Auto-review.
+
+## 2026-09-14 — Production stream + cadence review (LO-0244)
+
+### Changed
+
+- Tickets that still need design or architecture packets sit on a **production** stream. `./studio execute` returns `ACTION: PRODUCTION` (same loop, not a skipped sidecar). HITL is `./studio approve-design` and `./studio approve-arch`.
+- Implementation sprints only pull **ready** tickets. `--approve-scope` is blocked when production work exists and ready backlog is below `cost.production_ready_min` (default 2). Starved pipelines steal execute into PRODUCTION when no ticket is `implement`.
+- Human product review is every `cost.human_review_every_sprints` implementation sprints (default 2). Off-cadence `MOVE_DONE` is skill QA on the receipt (Skill QA / Design skill / Architecture skill). Hygiene: `./studio sprint --kind hygiene`.
+- `./studio train --purge-empty` closes open train jobs with a blank observation (`closed_reason: empty-observation-invalid`).
+
+## 2026-09-14 — Studio HQ chat is not the product inbox (LO-0243)
+
+### Changed
+
+- Guard returns `studio_meta` for `HQ-T*`, `LO-NNNN`, `.quinsy-studio`, and “quinsy-studio process” even while a product ticket is in flight. Those bubbles are not `./studio note` on the product sprint.
+
+## 2026-09-13 — HQ-T18 ACE cite + train observation
+
+### Changed
+
+- Train jobs must carry an LO **observation**. Harvest enqueues `--from lo --lo`; CARD sidecar no longer omits `--lo`. `./studio train --topic … --lo` **enqueues** (only `--done` closes).
+- Dedup + backfill close historic empty-obs duplicates of already-done jobs after portability rewrites.
+- Receipt **Playbook citations** + `./studio cite` increment `helpful=` / `harmful=` on infusion-delta bullets at `move … done`.
+
+## 2026-09-13 — HQ loop close, CARD tokens, Team 01/02 canon
+
+### Changed
+
+- Lifecycle docs lead with **gate 0/1/2** (not Phase 1 vs Phase 8). Project-local learnings path is `docs/studio-learnings-local.md`.
+- Open LOs **do not** block product sprint. `./studio train --done` / `--lo`; queue cap `cost.train_open_max` (12). `./studio infusion-delta` ADD/UPDATE/REMOVE bullets (no full-file rewrite).
+- Implement CARD context **28000** (design stays 40000). CARD: read only listed playbooks; never `learnings/inbox.md` on IMPLEMENT.
+- Team 01 README is implement-only (UX/growth/SEO stay 10/11/05). Thin FE skills + `frontend_playbook` Do/Don’t/fail + `qa-gate-playbook.md` (no Team 12).
+- Team 02 backend spine + CARD extras. Legal **spec-fail** rows on `compliance_playbook.md`.
+- Team 07 owns loop integrity. Agentic-loop playbook lists the real CLI.
+
 ## 2026-09-12 — Delight as a layer (no UX-009)
 
 ### Changed

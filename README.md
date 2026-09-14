@@ -64,7 +64,7 @@ Full loop: [GETTING_STARTED — execute loop](.quinsy-studio/GETTING_STARTED.md#
 | 2 | Design direction + system + stills/mocks or clickable prototype (adopt: design of what exists) | Library promotion (greenfield only) → milestones |
 | Milestones | Version roadmap (`docs/phases/`) | Tickets for **active milestone** → sprints |
 
-You also approve **design-track specs** (`approve-design`) and **UI sprint review**. Non-design tickets stay on the defined design system — no ticket ACK. Sprint scope/groom are agent-owned.
+You also approve **design/architecture packets** (`approve-design`, `approve-arch`) and a **cadence review** every N implementation sprints (default 2). Ready tickets close via receipt skill QA + gate 5 — no ticket ACK. Sprint scope/groom are agent-owned. Implementation `--approve-scope` waits until enough **ready** tickets exist (`cost.production_ready_min`).
 
 Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `package.json`. Adopt merges them into the live app. Schema migrate is agent work when the DB is reachable — you get an INFORM, not a “please run migrate.”
 
@@ -74,26 +74,29 @@ Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `pa
 ./studio design my-project --scope core-views && ./studio approve my-project --gate 2
 ./studio approve my-project --milestones    # after agent drafts docs/phases/
 ./studio sprint my-project --approve-scope  # agent-owned; you may override
-./studio execute my-project                 # until HITL (UI sprint-review, …)
+./studio execute my-project                 # until HITL (packet sign-off or cadence review)
 ```
 
 ### Execute actions
 
 | ACTION | Meaning |
 |--------|---------|
-| `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Sprint: next unblocked ticket (CARD lists skills + playbooks) |
-| `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Adopt: synthesize PRD. Sprint: receipt + fresh QA level 5, then mark done |
+| `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Sprint: next **ready** ticket (CARD lists skills + playbooks) |
+| `PRODUCTION` | Write unsigned packets (spec + all-state mocks, or `docs/architecture/<TICKET>.md`) — same loop, not a sidecar |
+| `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Receipt + fresh QA level 5, then `./studio move … done` (agent; **not** HITL) |
 | `INFORM` | Reuse brief / inbox drain — loop. **`cost-cap`:** stop; raise the named key in `studio.settings.local.yaml` |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT |
-| `HITL` | **You:** gates 0–2, **design-track `approve-design`**, UI sprint review, tech-veto, abort. Not a feature-ticket ACK |
+| `HITL` | **You:** gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort. Not a feature-ticket ACK |
 
-Priority: adopt as-built (if needed) → HITL gates 0–2 → finish an in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
+Priority: adopt as-built (if needed) → HITL gates 0–2 → `PRODUCTION` if the ready pipeline is starved → finish an in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
+
+If Cursor asks you to **Allow** `./studio move … done`, that is the IDE Auto-review prompt — not studio HITL. See [GETTING_STARTED — Cursor Auto-run](.quinsy-studio/GETTING_STARTED.md#cursor-auto-run-vs-studio-hitl).
 
 Full guide: [`.quinsy-studio/GETTING_STARTED.md`](.quinsy-studio/GETTING_STARTED.md) · Agent contract: [`AGENTS.md`](AGENTS.md)
 
 ## Talk to the agent (Cursor)
 
-Open this repo in Cursor. You approve HITL stops; the agent runs `./studio execute` in between.
+Open this repo in Cursor. You approve HITL stops; the agent runs `./studio execute` in between. Closing a ticket (`MOVE_DONE`) is agent work once the receipt and gate 5 are green.
 
 | Step | You say |
 |------|---------|
@@ -104,7 +107,7 @@ Open this repo in Cursor. You approve HITL stops; the agent runs `./studio execu
 | 4. Design ready | *"Approve gate 2"* (or *"Design core-views first"*) |
 | 5. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | 6. Build | *"Let the sprint run — execute until HITL"* (agent owns scope; you may override) |
-| 7. Sprint done | *"Sprint review"* → UI: *"Approve review"* → reuse inform + retro **auto-harvest** → `./studio train` beside execute |
+| 7. Cadence | Every N implementation sprints: *"Sprint review"* → *"Approve review"*. Off-cadence: retro without a UI review |
 | 8. Mid-sprint thought | Agent queues `./studio note` and **keeps implementing** — it does not switch to your new message |
 | 9. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | Drift | *"Execute my-project — back on track"* |
@@ -227,7 +230,7 @@ quinsy-studio/
 2. **No code without a ticket** (after gate 2)
 3. **Three human gates** — PRD, architecture, design track. No product IMPLEMENT before gate 2. Existing apps: `./studio adopt` (never empty-init)
 4. **Execute loop** — `./studio execute` until HITL; compact cards (skills + playbooks); receipt + gate 5 before `done`; train LOs in parallel (idle `STUDIO_LO` only)
-5. **Sprint HITL** — no feature-ticket ACK; write spec+mocks **then** `approve-design` on design-track; then UI review. Stay on the defined design system (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
+5. **Sprint HITL** — no feature-ticket ACK; `PRODUCTION` then `approve-design` / `approve-arch`; cadence review every N implementation sprints. Hygiene: `./studio sprint --kind hygiene` (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
 6. **Milestones** — roadmap after gate 2; milestone review before next version backlog
 7. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
 8. **Placement before layout** — Team 10 writes the spec file (§2 + §2c); mocks use project tokens, sit in the real view, and cover all states; `ia-feature-placement` for cross-surface moves
@@ -256,6 +259,10 @@ quinsy-studio/
 ./studio library list
 ./studio adopt <project> --from <git-url-or-path>
 ./studio bootstrap <project>
+./studio approve-design <p> <TICKET>
+./studio approve-arch <p> <TICKET>
+./studio train --purge-empty
+./studio sprint <p> --kind hygiene
 ./studio review <project>
 ./studio feedback <project> "..."
 ./studio board <project>

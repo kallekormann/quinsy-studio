@@ -37,6 +37,9 @@ class ClassifyTests(unittest.TestCase):
         self.assertFalse(should_queue_as_note("approved the review"))
         self.assertFalse(should_queue_as_note("looks good"))
         self.assertTrue(should_queue_as_note("looks good", named_hitl_waiting=False))
+        self.assertFalse(should_queue_as_note("please implement HQ-T18 as well"))
+        self.assertFalse(should_queue_as_note("back to quinsy-studio process"))
+        self.assertFalse(should_queue_as_note("update getting started in quinsy-studio"))
         self.assertFalse(should_queue_as_note(""))
 
 

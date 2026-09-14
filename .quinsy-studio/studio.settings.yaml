@@ -18,34 +18,37 @@ cost:
   load_full_ticket_only_on: IMPLEMENT
   max_qa_retries: 3
   train_parallel: true
+  train_open_max: 12
+  production_ready_min: 2
+  human_review_every_sprints: 2
   steps:
     intake:
-      context: 24000
-      budget: 200000
+      context: 100000
+      budget: 1000000
     architecture:
-      context: 32000
-      budget: 250000
+      context: 100000
+      budget: 1000000
     design:
-      context: 40000
-      budget: 400000
+      context: 100000
+      budget: 1000000
     planning:
-      context: 16000
-      budget: 80000
+      context: 32000
+      budget: 100000
     scoping:
       context: 12000
       budget: 60000
     implement:
-      context: 16000
-      budget: 400000
+      context: 100000
+      budget: 1500000
     review:
-      context: 16000
+      context: 32000
       budget: 80000
     reuse:
-      context: 12000
-      budget: 40000
+      context: 80000
+      budget: 800000
     learning:
-      context: 12000
-      budget: 60000
+      context: 80000
+      budget: 800000
     retro:
-      context: 12000
-      budget: 40000
+      context: 32000
+      budget: 80000

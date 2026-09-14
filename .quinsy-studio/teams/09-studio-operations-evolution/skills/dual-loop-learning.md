@@ -32,7 +32,7 @@ What belongs here:
   - Project-specific config details
 
 Storage location:
-  projects/[name]/docs/local_learnings.md
+  projects/[name]/docs/studio-learnings-local.md
 
 Format:
   ## Learning LL-{NNN}
@@ -72,7 +72,7 @@ When a learning is identified (gate, retro bullet, reuse path, explicit learn):
   3. Open LO-* with infusion_kind + infusion_path
   4. ./studio train (parallel) — product execute keeps IMPLEMENT
   5. Generalize into the infusion path + CHANGELOG; move LO to done
-Project-specific only → projects/[name]/docs/local_learnings.md
+Project-specific only → projects/[name]/docs/studio-learnings-local.md
 Do not copy project UI/tokens into studio-library.
 ```
 

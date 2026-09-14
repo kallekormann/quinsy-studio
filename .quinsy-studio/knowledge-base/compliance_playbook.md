@@ -230,6 +230,19 @@ We are not willing or obliged to participate in dispute resolution proceedings b
 
 ---
 
+## Spec-fail (public surfaces)
+
+| Fail | Why |
+|------|------|
+| Public site ships without imprint / privacy links in chrome | Legal HITL is not optional on public URLs (CL-003) |
+| Non-essential cookies or pixels before consent | Cookie banner is a gate, not a footer note (CL-002) |
+| Collecting account data with no purpose + retention | GDPR minimization (CL-001) |
+| Dark-pattern “accept all” only | Must be able to reject non-essential |
+
+Contracts, GDPR exceptions, and production personal-data deletes stay **HITL**. Do not invent a Team 10-style book stack here.
+
+---
+
 ## References
 
 - `.quinsy-studio/teams/03-compliance-legal/` — compliance team

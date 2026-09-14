@@ -1,52 +1,56 @@
-# Team 01 — Frontend & Experience
+# Team 01 — Frontend Experience
 
-> Responsible for UI/UX, design system, components, performance, accessibility, SEO/AEO and growth.
+Owns **shipping** UI after Team 10 (and Team 11 on commercial surfaces). Compose the gate-2 design system and studio-library. Do **not** invent IA, visual language, SEO programs, or experiment backlogs.
+
+## Split
+
+| Craft | Owner |
+|-------|--------|
+| What / why / states / brand / atomic | Team 10 |
+| Hypothesis / commercial mechanics | Team 11 |
+| SEO / AEO / campaign copy | Team 05 |
+| Implementation (React, kit, a11y, perf, tests) | **Team 01** |
 
 ## Director-level roles
 
 | Role | Level | Responsibilities |
 |------|-------|------------------|
-| **Lead Experience Architect** | Director | overall responsibility for information architecture, user journeys, cognitive smoothness |
-| **Frontend Architect** | Director | monorepo, Next.js, SSR/ISR, core web vitals |
-| **Frontend Engineer** | Lead | React, Tailwind CSS, Shadcn UI |
-| **Frontend Security Engineer** | — | XSS/CSRF protection, token handling |
-| **QA Specialist** | Director | E2E tests, regression safety, UI/UX spec validation |
-| **UI/Interaction Designer** | Director | design tokens, visual uniqueness, strict enforcement of anti-slop rules in the UI |
-| **Marketing, SEO/AEO & Affiliate Specialists** | Director | pSEO architecture, link-rot prevention, network integrations, fact-based copywriting |
-| **Growth Manager & Data Analysts** | Director | AARRR funnel, Redis event buffering, cost of experimentation, the ghost of experiments past |
-
----
+| **Frontend Architect** | Director | app shell, SSR/ISR, Core Web Vitals, PWA |
+| **Frontend Engineer** | Lead | React, Tailwind, studio-library / Radix kit |
+| **Frontend Security Engineer** | — | XSS/CSRF, token handling in the client |
+| **QA Specialist** | Director | FE-006 + QA level 5; default-flow proof — **not** a separate Team 12 |
 
 ## Skills
 
 | ID | Skill | Lead role | File |
 |----|-------|-----------|------|
 | FE-001 | UI Component Design | Frontend Engineer | `skills/ui-component-design.md` |
-| FE-002 | Design System | UI/Interaction Designer | `skills/design-system.md` |
+| FE-002 | Design System | Frontend Engineer (tokens already approved) | `skills/design-system.md` |
 | FE-003 | Performance Optimization | Frontend Architect | `skills/performance-optimization.md` |
 | FE-004 | Accessibility (a11y) | QA Specialist | `skills/accessibility.md` |
 | FE-005 | PWA Implementation | Frontend Architect | `skills/pwa-implementation.md` |
 | FE-006 | Frontend Testing | QA Specialist | `skills/frontend-testing.md` |
 
----
+Canon: [frontend-team-canon-ledger.md](../../knowledge-base/frontend-team-canon-ledger.md). Playbook: [frontend_playbook.md](../../knowledge-base/frontend_playbook.md). QA rubric: [qa-gate-playbook.md](../../knowledge-base/qa-gate-playbook.md).
 
 ## Phase participation
 
-| Phase | Lead roles | Support roles |
-|-------|------------|---------------|
-| Phase 0 | — | Lead Experience Architect (feasibility) |
-| Phase 1 | — | Frontend Architect (UI alternatives) |
-| Phase 2 | Frontend Architect, UI/Interaction Designer | Lead Experience Architect |
-| Phase 3 | Frontend Engineer, UI/Interaction Designer | QA Specialist |
-| Phase 4 | Frontend Engineer | QA Specialist, Frontend Security Engineer |
-| Phase 5 | QA Specialist | Frontend Engineer, UI/Interaction Designer |
-| Phase 6 | — | Documentation Writer |
-| Phase 7 | Growth Manager | Data Analysts |
+| Slice | Lead | Support |
+|-------|-------|---------|
+| Gate 0–1 | — | Frontend Architect (feasibility) |
+| Gate 2 | — | FE-002 (tokens already from design track) |
+| Implement | Frontend Engineer | FE-004, FE-006 |
+| QA level 5 | QA Specialist | Frontend Engineer |
 
----
+## Workflow
+
+1. Design-track: wait for `design_status: approved` (spec + mocks exist).
+2. `./studio library list` → `suggest` → `pull`. Confirm kit peers in `docs/setup/ui-kit.md`.
+3. Stay on project tokens. Missing atom → design-track ticket, not a one-off CSS control.
+4. Receipt + `./studio gate --level 5` before `move … done`.
 
 ## References
 
-- `.quinsy-studio/process/lifecycle.md` — phases
-- `.quinsy-studio/studio-library/ui/` — UI assets
-- `./studio promote <project> <asset>` — promote an asset to the library
+- `.quinsy-studio/process/ticket-team-allocation.md`
+- `.quinsy-studio/studio-library/ui/`
+- `./studio library pull <project> …`

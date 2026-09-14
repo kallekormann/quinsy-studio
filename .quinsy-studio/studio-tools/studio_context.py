@@ -246,7 +246,12 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     verdict: inbox_ack | abort | cross_project | in_scope | needs_ticket | pre_impl | sprint_review |
              sprint_closed | autonomous_sprint | feedback_only | studio_meta | unclear
     """
-    from studio_human_inbox import ABORT_RE, SHORT_HITL_RE, should_queue_as_note
+    from studio_human_inbox import (
+        ABORT_RE,
+        SHORT_HITL_RE,
+        is_studio_hq_request,
+        should_queue_as_note,
+    )
 
     req_tokens = _tokenize(request)
     if not req_tokens:
@@ -266,6 +271,12 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
             f"Request names sibling project '{sibling}'. Stay in projects/{project}/. "
             f"Do not Read, copy, or git '{sibling}' into this repo. "
             f"Switch with ./studio focus {sibling} in a separate session.",
+        )
+
+    if is_studio_hq_request(request or ""):
+        return "studio_meta", (
+            "This looks like studio-meta work (.quinsy-studio/). "
+            "Use LO-* backlog or ./studio learn — not the product sprint inbox."
         )
 
     if in_flight and SHORT_HITL_RE.match(request or "") and not hitl_live:

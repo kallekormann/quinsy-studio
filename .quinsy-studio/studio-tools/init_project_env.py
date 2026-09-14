@@ -268,7 +268,7 @@ Flow per sprint:
 
 ## Phase 6 — Dual-Loop Knowledge Harvesting
 Roles: Process Guard, Platform Architect.
-Local loop: project-specific learnings → `docs/local_learnings.md`.
+Local loop: project-specific learnings → `docs/studio-learnings-local.md`.
 Global loop: universal improvements → `.quinsy-studio/knowledge-base/`.
 
 ## Phase 7 — Deployment & Iteration

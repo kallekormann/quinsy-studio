@@ -45,5 +45,7 @@
 ## References
 
 - `.quinsy-studio/process/adr-policy.md` — architecture decisions
+- `.quinsy-studio/knowledge-base/backend_playbook.md` — implementer spine
+- `.quinsy-studio/knowledge-base/backend-team-canon-ledger.md`
 - `.quinsy-studio/process/anti-slop.md` — code quality
 - `studio-library/packages/` — reusable packages

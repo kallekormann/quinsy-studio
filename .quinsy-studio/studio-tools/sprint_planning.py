@@ -139,6 +139,16 @@ def propose_sprint_scope(
             )
             continue
 
+        from studio_streams import ticket_is_ready
+
+        if not ticket_is_ready(meta):
+            q = "Ticket is on the production stream — design and/or architecture sign-off before implementation sprint."
+            deferred_immature.append(
+                {"id": tid, "title": meta.get("title", path.stem), "questions": [q]},
+            )
+            planning_questions.append({"id": tid, "title": meta.get("title", ""), "questions": [q]})
+            continue
+
         if len(proposed) >= max_tickets:
             deferred_capacity.append({"id": tid, "title": meta.get("title", path.stem)})
             continue

@@ -3,7 +3,7 @@
 Agentic execution protocol — next action until a typed HITL stop.
 
 Markdown tickets stay the source of truth. This module:
-  - emits one machine-readable step (IMPLEMENT / GATE / VERIFY / MOVE_DONE / INFORM / HITL / STUDIO_LO)
+  - emits one machine-readable step (IMPLEMENT / PRODUCTION / GATE / VERIFY / MOVE_DONE / INFORM / HITL / STUDIO_LO)
   - loads a compact ticket card (skills + playbooks) instead of the whole backlog
   - tracks execution-log, receipts, and bounded gate-fail retries
   - health-checks the sprint state graph
@@ -46,6 +46,7 @@ HITL_KINDS = (
     "gate-1",
     "gate-2",
     "design-approve",
+    "arch-approve",
     "sprint-review",
     "tech-veto",
     "human-abort",
@@ -58,6 +59,10 @@ RECEIPT_REQUIRED_HEADINGS = (
     ("plan", re.compile(r"^##\s*plan\b", re.I | re.M)),
     ("ac", re.compile(r"^##\s*(ac|acceptance|ac coverage)\b", re.I | re.M)),
     ("default-flow", re.compile(r"^##\s*(default flow|default-flow|lo-0051)\b", re.I | re.M)),
+    ("citations", re.compile(r"^##\s*(playbook citations|citations)\b", re.I | re.M)),
+    ("skill-qa", re.compile(r"^##\s*(skill qa|qa skill)\b", re.I | re.M)),
+    ("skill-design", re.compile(r"^##\s*(design skill|skill design)\b", re.I | re.M)),
+    ("skill-arch", re.compile(r"^##\s*(architecture skill|skill architecture)\b", re.I | re.M)),
 )
 
 FILLER_GIVEN = re.compile(r"current project state", re.I)
@@ -404,6 +409,20 @@ def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional
 - Route / user path a real user would take (LO-0051):
 - Screenshot: (path or none — function-only ticket)
 
+## Playbook citations
+- playbook: {(card or {}).get("playbooks") and (card or {}).get("playbooks")[0] or "none"}
+- helpful: none
+- harmful: none
+
+## Skill QA
+- gate 5 green; AC covered by tests or route check
+
+## Design skill
+- n/a (or: matches approved spec tokens/states)
+
+## Architecture skill
+- n/a (or: matches approved architecture note / ADR)
+
 ## Skills read
 - (skill IDs + playbooks from the CARD)
 """,
@@ -590,20 +609,85 @@ def _train_sidecar(open_los: List[Dict]) -> List[Dict[str, Any]]:
         except Exception:
             pass
         for skill_id in skills[:2]:
+            lo_id = lo.get("id") or ""
+            cmd = f'./studio train {skill_id} --from lo --topic "{title[:80]}"'
+            if lo_id:
+                cmd += f" --lo {lo_id}"
             sidecar.append(
                 {
-                    "lo": lo.get("id"),
+                    "lo": lo_id,
                     "skill_id": skill_id,
                     "topic": title[:80],
-                    "command": f'./studio train {skill_id} --from mistake --topic "{title[:80]}"',
+                    "command": cmd,
                 }
             )
         if len(sidecar) >= 4:
             break
+    try:
+        from studio_train import sidecar_commands, sync_train_with_done_los
+
+        sync_train_with_done_los()
+        seen = {s.get("command") for s in sidecar}
+        for job in sidecar_commands(4):
+            if len(sidecar) >= 4:
+                break
+            cmd = job.get("command")
+            if cmd and cmd not in seen:
+                sidecar.append(job)
+                seen.add(cmd)
+    except Exception:
+        pass
     return sidecar[:4]
 
 def _has_in_progress(sprint_tickets: List[Dict[str, Any]]) -> bool:
     return any(t.get("status") == "implement" for t in (sprint_tickets or []))
+
+
+def _production_step(project: str, prod: Dict, write_kind) -> ExecuteStep:
+    tid = str(prod.get("id") or "")
+    kind = write_kind(project, tid, prod)
+    path = prod.get("path") or ""
+    if kind == "hitl-design":
+        return ExecuteStep(
+            kind="HITL",
+            ticket_id=tid,
+            reason="production packet ready — human approve-design",
+            command=f"./studio approve-design {project} {tid}",
+            read=path,
+            loop=False,
+        )
+    if kind == "hitl-arch":
+        return ExecuteStep(
+            kind="HITL",
+            ticket_id=tid,
+            reason="production packet ready — human approve-arch",
+            command=f"./studio approve-arch {project} {tid}",
+            read=path,
+            loop=False,
+        )
+    if kind == "write-arch":
+        note = f"docs/architecture/{tid}.md"
+        return ExecuteStep(
+            kind="PRODUCTION",
+            ticket_id=tid,
+            reason="write architecture packet before implementation sprint",
+            command=f"Write {note} (approach, constraints, files). Then HITL ./studio approve-arch {project} {tid}",
+            read=path,
+            loop=True,
+        )
+    spec_hint = f"docs/design-specs/{tid}.md"
+    return ExecuteStep(
+        kind="PRODUCTION",
+        ticket_id=tid,
+        reason="write design packet (spec + all-state mocks) before implementation sprint",
+        command=(
+            f"Write {spec_hint} and docs/design-specs/mocks/{tid}/*.html "
+            f"(project tokens, in-context, all states). "
+            f"Then HITL ./studio approve-design {project} {tid}"
+        ),
+        read=path,
+        loop=True,
+    )
 
 
 def execute_is_looping(project: str) -> bool:
@@ -769,7 +853,7 @@ def decide_from_state(
             "sprint-review",
             project,
             f"./studio review {project}",
-            "human tries shipped UI — do not implement design feedback",
+            "cadence review — feedback into ticket production; do not implement last sprint",
         )
 
     hitl = get_sprint_hitl(status)
@@ -826,6 +910,21 @@ def decide_from_state(
             loop=True,
         )
 
+    if not _has_in_progress(sprint_tickets):
+        try:
+            from studio_streams import (
+                next_production_ticket,
+                pipeline_starved,
+                production_write_kind,
+            )
+
+            if pipeline_starved(project):
+                prod = next_production_ticket(project)
+                if prod:
+                    return _production_step(project, prod, production_write_kind)
+        except Exception:
+            pass
+
     tickets = sprint_tickets
     # Cross-sprint deps (e.g. MOOD-0629 done last sprint) must count as satisfied.
     done_ids = project_done_ids(project) | {t["id"] for t in tickets if t.get("status") == "done"}
@@ -851,20 +950,21 @@ def decide_from_state(
                 loop=False,
             )
         if tickets and all(t.get("status") == "done" for t in tickets):
-            if backend_only:
+            if needs_sprint_review(status):
+                return _hitl(
+                    "sprint-review",
+                    project,
+                    f"./studio review {project}",
+                    "cadence review — feedback into ticket production (not implement last sprint)",
+                )
+            if backend_only or not needs_sprint_review(status):
                 return ExecuteStep(
                     kind="VERIFY",
-                    reason="backend-only sprint complete — inform review then retro",
+                    reason="implementation sprint complete — skill QA done; cadence review not due — retro then next sprint",
                     command=f"./studio retro {project}",
-                    inform="No UI shipped — sprint review is inform-only.",
+                    inform="Human review is every N implementation sprints. This batch used skill QA only.",
                     loop=True,
                 )
-            return _hitl(
-                "sprint-review",
-                project,
-                f"./studio review {project}",
-                "all sprint tickets done",
-            )
         return ExecuteStep(
             kind="VERIFY",
             reason="no executable sprint ticket — check board or propose scope",
@@ -945,7 +1045,7 @@ def decide_from_state(
         return ExecuteStep(
             kind="VERIFY",
             ticket_id=tid,
-            reason="write execution receipt (plan, AC coverage, default flow)",
+            reason="write execution receipt (plan, AC coverage, default flow, playbook citations)",
             command=f"./studio receipt {project} {tid}",
             card=card,
             read=read_path,
@@ -1096,12 +1196,18 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
             "(queued) → resume this ACTION. Do not implement the note. Abort is the only preempt."
         )
     lines.append(f"  ACTION:  {step.kind}" + (f" {step.ticket_id}" if step.ticket_id else ""))
+    if step.kind == "PRODUCTION":
+        lines.append("  STREAM:  production packet (not silent sidecar — loop until HITL approve-design / approve-arch)")
     if step.reason:
         lines.append(f"  REASON:  {step.reason}")
     if step.command:
         lines.append(f"  NEXT:    {step.command}")
     if step.read:
-        lines.append(f"  READ:    {step.read}  (this ticket only — not the backlog)")
+        read = step.read
+        banned = "learnings/inbox.md"
+        if step.kind in ("IMPLEMENT", "VERIFY", "GATE", "DEBUG", "MOVE_DONE") and banned in str(read):
+            read = "(this ticket only — not learnings/inbox.md)"
+        lines.append(f"  READ:    {read}  (this ticket only — not the backlog)")
     if step.retries:
         lines.append(f"  RETRIES: {step.retries}/{MAX_GATE_RETRIES}")
     if step.inbox_pending:
@@ -1134,6 +1240,9 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
         lines.append("  Studio HQ only (.quinsy-studio/). Idle infusion — product had no IMPLEMENT.")
         lines.append("  Mid-sprint gaps use TRAIN in parallel instead of blocking IMPLEMENT.")
         lines.append("  Then loop: ./studio execute <project>")
+    elif step.kind == "PRODUCTION":
+        lines.append("  Write the packet now. Do not implement the product ticket until stream is ready.")
+        lines.append("  Then loop: ./studio execute <project> until HITL approve-design / approve-arch.")
     else:
         lines.append("  Loop: do NEXT, then ./studio execute again. Do not ask to continue.")
         if step.kind in ("IMPLEMENT", "VERIFY", "GATE", "DEBUG", "MOVE_DONE"):
@@ -1145,8 +1254,8 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
             else:
                 lines.append(
                     "  SPRINT: do not wait for ticket ACK — loop until HITL "
-                    "(sprint-review, or approve-design on a design-track ticket "
-                    "whose spec+mocks already exist). "
+                    "(cadence review every N implementation sprints, approve-design / "
+                    "approve-arch on production packets). "
                     "If you can reach the DB, apply pending migrations yourself and INFORM."
                 )
     card = step.card
@@ -1168,6 +1277,7 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
             lines.append(f"    skills: {', '.join(card['skills'])}")
         if card.get("playbooks"):
             lines.append(f"    playbooks: {', '.join(card['playbooks'])}")
+            lines.append("    READ only these playbooks. Do not open the canon ledger or learnings/inbox.md unless listed.")
     return "\n".join(lines)
 
 

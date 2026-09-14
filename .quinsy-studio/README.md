@@ -123,8 +123,6 @@ Greenfield scaffold includes UI kit peers (`radix-ui`, `class-variance-authority
 
 ### Step 1: Place a PRD **or** point at an existing repo
 
-### Step 1: Place a PRD **or** point at an existing repo
-
 New product:
 
 ```bash
@@ -247,6 +245,8 @@ No separate plugin — the repo *is* the integration.
 
 `resume` prints a **checklist**. **`execute` is the driver** — one action at a time. Do not ask “should I continue?” mid-sprint. Stop only on `HITL`. Harvest LOs immediately and `./studio train` in parallel; `STUDIO_LO` only when the product loop is idle.
 
+If Cursor prompts **Allow** on `./studio move … done`, that is IDE Auto-review, not studio HITL. See [GETTING_STARTED — Cursor Auto-run](GETTING_STARTED.md#cursor-auto-run-vs-studio-hitl).
+
 ### The execute loop
 
 Execute drives **gate 0 → architecture HITL → design-track HITL**, then sprints. After sprint scope + groom (agent-owned):
@@ -257,16 +257,17 @@ focus → execute → do NEXT → execute again → … until HITL
 
 | ACTION | Meaning |
 |--------|---------|
-| `IMPLEMENT` | Adopt as-built, blueprint, design track, or next unblocked sprint ticket. Load the **CARD** (`./studio ticket-card`); open that one `.md` only |
-| `VERIFY` | Fill `./studio receipt` (plan, AC coverage, default user flow) |
+| `IMPLEMENT` | Adopt as-built, blueprint, design track, or next **ready** sprint ticket. Load the **CARD** (`./studio ticket-card`); open that one `.md` only |
+| `PRODUCTION` | Write unsigned design/architecture packets, then HITL `approve-design` / `approve-arch` |
+| `VERIFY` | Fill `./studio receipt` (plan, AC coverage, default user flow, skill QA headings) |
 | `GATE` | `./studio gate --level 5` (fresh after this ticket’s implement) |
 | `DEBUG` | Gate red → `sprints/SPRINT-NN/debug/<id>.md`, retry up to 3 times |
-| `MOVE_DONE` | Receipt + gate 5 → `move … done`, then execute again |
+| `MOVE_DONE` | Receipt + gate 5 → `./studio move … done`, then execute again (**agent**, not HITL) |
 | `INFORM` | Reuse brief / inbox drain — loop; **not** architecture or design. **`cost-cap`:** stop and raise the named yaml key |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT — classified path on the CARD |
-| `HITL` | **You:** gates 0–2, design-track `approve-design`, UI sprint review, tech-veto, abort |
+| `HITL` | **You:** gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort |
 
-**Priority:** HITL gates 0–2 → finish in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). `STUDIO_LO` only when idle. Learnings are harvested when identified (see [§9](#9-optimizing-the-process) and [GETTING_STARTED — learnings](GETTING_STARTED.md#learnings-harvest-when-identified)).
+**Priority:** HITL gates 0–2 → `PRODUCTION` if ready tickets are below `production_ready_min` → finish in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). `STUDIO_LO` only when idle. Learnings are harvested when identified (see [§9](#9-optimizing-the-process) and [GETTING_STARTED — learnings](GETTING_STARTED.md#learnings-harvest-when-identified)).
 
 ```bash
 ./studio execute <project> [--json]
@@ -292,7 +293,7 @@ See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-a
 | **Milestones** | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | **Amendment** | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | **Sprint + build** | *"Let the sprint run — execute until HITL"* (agent owns scope; you may override) |
-| **Sprint review** | *"Sprint review"* → try UI → *"Approve review"* (backend-only: inform → retro) |
+| **Cadence review** | Every N implementation sprints: *"Sprint review"* → try UI → *"Approve review"*. Off-cadence: retro |
 | **Sprint close** | reuse inform (auto-harvest) → retro `--complete` (auto-harvest) → `./studio train` beside execute → next `./studio sprint` |
 | **Mid-sprint thought** | *"Note: also consider denser type"* → `./studio note` (ACK; continue current ticket) |
 | **New idea (sprint)** | *"Feedback: I want offline mode"* — **not** "create a ticket for offline" |
@@ -315,7 +316,7 @@ Agent: blueprint + ADRs (as-is on adopt) → waits for gate 1
 You:  Approve gate 1. Design core views only.   — or —  Map the existing UI.
 Agent: design --scope core-views  (adopt: surface map, no fake prototype)
 You:  Approve gate 2.
-Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → agent-owned sprint scope → execute loop until HITL (design-track approve-design, then UI sprint-review)
+Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 tickets → agent-owned sprint scope → execute loop until HITL (PRODUCTION packets, approve-design / approve-arch, then cadence review every N sprints)
 ```
 
 ### Two git worlds in Cursor
@@ -333,7 +334,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 | You (human) | Agent |
 |-------------|-------|
-| Approve gates **0–2**, design-track `approve-design`, UI sprint review, tech-veto | Fill artifacts; **execute loop** on non-design tickets (no ticket ACK) |
+| Approve gates **0–2**, `approve-design` / `approve-arch`, cadence review, tech-veto | Fill artifacts; **execute loop** on ready tickets (no ticket ACK). `MOVE_DONE` is agent work |
 | Mid-sprint notes (`./studio note`) | ACK and continue; drain after `MOVE_DONE` |
 | Review PRs / mocks / shipped UI | Library pull before coding (not stubs); compact cards; receipts + gate 5 before `done` |
 | Final product decisions | `./studio train` beside product work when LOs are open |
@@ -388,7 +389,7 @@ Same gate sequence. **CORE** starts from a PRD. **ADOPT** (`./studio adopt`) rec
 | **3b. Milestones** | Version roadmap, M0/M1 outlines | `docs/phases/` | **HUMAN** (`--milestones`) |
 | **3c. Amendments** | Strategic direction → revised roadmap + tickets | `docs/amendments/AM-NNN/` | **HUMAN** (`--amendment`) |
 | **4. Sprint planning** | Scope proposal, groom, sprint | `sprints/SPRINT-01/` | Agent-owned (you may override) |
-| **5. Implementation** | Execute loop until HITL | Code + receipts + gate 5 | Design-track `approve-design`; then UI review |
+| **5. Implementation** | Execute loop until HITL | Code + receipts + gate 5 | `PRODUCTION` then `approve-design` / `approve-arch`; cadence review every N sprints |
 | **6. QA** | Anti-slop, tests | QA report | Gate 5 (QA level) |
 | **7. Learning** | Harvest when identified (not a later batch) | Inbox + LO-* → train sidecar | `./studio train` / idle `STUDIO_LO` |
 
@@ -442,7 +443,8 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio blueprint <project>
 ./studio design <project> --scope journey|core-views|as-built
 ./studio approve <project> --gate 0|1|2
-./studio approve-design <project> <TICKET-ID>   # HITL for design-track before implement
+./studio approve-design <project> <TICKET-ID>   # after spec + all-state mocks exist
+./studio approve-arch <project> <TICKET-ID>     # after docs/architecture/<TICKET>.md exists
 ./studio approve <project> --milestones
 ./studio revise <project> --gate <n> --feedback "..."
 
@@ -462,7 +464,8 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 
 # Sprints & tickets
 ./studio sprint <project>
-./studio sprint <project> --approve-scope       # agent-owned; you may override
+./studio sprint <project> --kind hygiene         # lint/debt; does not count toward cadence
+./studio sprint <project> --approve-scope       # blocked if ready pipeline is starved
 ./studio note <project> "…"                     # mid-execute inbox (ACK; drain after MOVE_DONE)
 ./studio review <project> [--approve|--reject --reason "..."]
 ./studio feedback <project> "raw idea"
@@ -487,7 +490,8 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 # Learning & legacy sync
 ./studio learn "title" --signal <s>            # harvest now (inbox + classified LO)
 ./studio learn-list
-./studio train SO-001 --from mistake --topic "…"  # infuse in parallel with product execute
+./studio train SO-001 --from mistake --topic "…" --lo LO-NNNN
+./studio train --purge-empty                    # close jobs with blank observation
 ./studio infusion                              # lists open LOs; does not block IMPLEMENT
 ./studio retro <project> [--complete]          # --complete auto-harvests LOs from badly/improve
 ./studio sync <project>              # heuristic scan project → library
@@ -625,7 +629,7 @@ Signals: `tooling-gap`, `process-gap`, `design-gap`, `quality-risk`, `conflict`,
 
 Project-specific insights remain **captured in the project**:
 - ADRs → `projects/<name>/docs/adr/`
-- Learnings → `projects/<name>/docs/local_learnings.md`
+- Learnings → `projects/<name>/docs/studio-learnings-local.md`
 - Schema decisions → `docs/definitions/`
 
 These do **not** influence how the studio operates in other projects.
@@ -719,7 +723,8 @@ See [library_registry.md](studio-library/library_registry.md).
 | Studio files lost | **Git backup!** Check `.gitignore` (external skills are regenerable) |
 | Agent asks “should I continue?” mid-sprint | Tell it to `./studio execute` until `HITL` — do not approve ticket-by-ticket |
 | `move … done` refused | Need gate **level 5** passed **and** a filled `sprints/SPRINT-NN/receipts/<ID>.md` |
-| Execute says `HITL` | Gate 0–2, design-track `approve-design`, UI sprint review, or tech-veto — not a feature-ticket ACK |
+| Execute says `HITL` | Gate 0–2, `approve-design` / `approve-arch`, cadence review, or tech-veto — not a feature-ticket ACK |
+| Cursor asks to Allow `./studio move … done` | IDE Auto-review, not studio HITL — see [GETTING_STARTED — Cursor Auto-run](GETTING_STARTED.md#cursor-auto-run-vs-studio-hitl) |
 | Execute says `STUDIO_LO` | Product loop is idle — infuse the LO in `.quinsy-studio/` (not project code), CHANGELOG, move to `backlog/done/`, then `./studio execute` again |
 | Open LOs mid-sprint | Harvest immediately; `./studio train` beside product `IMPLEMENT` — do not wait for next sprint |
 | Mid-execute chat | `./studio note` — ACK and continue; drain after `MOVE_DONE`. Only abort preempts |

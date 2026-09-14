@@ -51,6 +51,7 @@ class YamlAndMergeTests(unittest.TestCase):
     def test_standard_design_is_medium(self):
         settings = load_settings(committed=Path("nonexistent.yaml"), local=Path("nonexistent-local.yaml"))
         self.assertEqual(settings["cost"]["steps"]["design"]["context"], 40000)
+        self.assertEqual(settings["cost"]["steps"]["implement"]["context"], 28000)
         self.assertEqual(settings["cost"]["session_token_budget"], 1_500_000)
 
 
@@ -65,6 +66,7 @@ class StepAndCapTests(unittest.TestCase):
         self.assertEqual(resolve_cost_step("STUDIO_LO", "./studio infusion", "idle infusion", ""), "learning")
         self.assertEqual(resolve_cost_step("VERIFY", "./studio retro p", "fill project retro", ""), "retro")
         self.assertEqual(resolve_cost_step("HITL", "./studio review p", "sprint-review: human tries shipped UI", ""), "review")
+        self.assertEqual(resolve_cost_step("PRODUCTION", "./studio approve-design p T", "write design packet", ""), "design")
 
     def test_estimate_chars_div_4(self):
         self.assertEqual(estimate_tokens("abcd"), 1)

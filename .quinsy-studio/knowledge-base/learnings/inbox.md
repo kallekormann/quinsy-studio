@@ -1757,3 +1757,53 @@ See [learning-loop.md](../../process/learning-loop.md).
 - **Observation:** Push `main` when a UI ticket is `done` if Coolify auto-deploys from GitHub — otherwise sprint review sees stale prod.
 - **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
 
+## LO-0241 — Manual Figma pass required before marking plugin tickets done (0788)
+- **When:** 2026-09-13T11:53:01
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Manual Figma pass required before marking plugin tickets done (0788).
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0242 — Share specimen model between HTML export and Figma placer before implement (0790
+- **When:** 2026-09-13T11:53:01
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Share specimen model between HTML export and Figma placer before implement (0790).
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0243 — Do not conflate studio HQ inbox notes with the product sprint notes
+- **When:** 2026-09-13T11:53:01
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Do not conflate studio HQ inbox notes with Moody sprint notes.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0244 — Run hygiene ticket at sprint end before push
+- **When:** 2026-09-13T14:14:55
+- **Source:** `moody` (provenance only)
+- **Kind:** process
+- **Infuse into:** `process/`
+- **Playbook:** `process/learning-loop.md`
+- **Signal:** process-gap
+- **Observation:** Run hygiene ticket at sprint end before push.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+
+## LO-0245 — Batch design-track specs earlier when IA tickets (0784, 0779) share the same spr
+- **When:** 2026-09-13T14:14:55
+- **Source:** `moody` (provenance only)
+- **Kind:** ia
+- **Infuse into:** `knowledge-base/contextual-ia-playbook.md`
+- **Playbook:** `knowledge-base/contextual-ia-playbook.md`
+- **Signal:** design-gap
+- **Observation:** Batch design-track specs earlier when IA tickets (0784, 0779) share the same sprint as feature work.
+- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO
+

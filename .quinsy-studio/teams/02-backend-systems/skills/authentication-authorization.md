@@ -2,6 +2,8 @@
 
 > JWT, RBAC, OAuth 2.0, sessions, password hashing, CSRF protection
 
+**Playbook:** [backend_playbook.md](../../../knowledge-base/backend_playbook.md) (Auth).
+
 ## Metadata
 
 ```

@@ -110,16 +110,24 @@ class GuardInboxAckTests(unittest.TestCase):
             verdict, _msg = guard_request("acme-app", "also use postgres", status)
         self.assertEqual(verdict, "inbox_ack")
 
-    def test_studio_meta_does_not_win_while_implementing(self):
+    def test_studio_hq_is_meta_while_implementing(self):
         status = _review_pending_status(active_ticket="DEMO-0001")
-        with patch(
-            "studio_context._ack_inbox",
-            return_value=("inbox_ack", "ACK queued N-002"),
-        ):
-            verdict, _msg = guard_request(
-                "demo", "quinsy studio process should queue this", status
+        with patch("studio_context._ack_inbox") as ack:
+            verdict, msg = guard_request(
+                "demo", "please implement HQ-T18 as well", status
             )
-        self.assertEqual(verdict, "inbox_ack")
+        ack.assert_not_called()
+        self.assertEqual(verdict, "studio_meta")
+        self.assertIn("not the product sprint inbox", msg)
+
+    def test_back_to_studio_process_is_meta_while_implementing(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context._ack_inbox") as ack:
+            verdict, _msg = guard_request(
+                "demo", "back to quinsy-studio process", status
+            )
+        ack.assert_not_called()
+        self.assertEqual(verdict, "studio_meta")
 
     def test_sibling_project_name_is_cross_project(self):
         status = {

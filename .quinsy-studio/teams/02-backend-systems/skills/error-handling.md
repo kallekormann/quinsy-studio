@@ -2,6 +2,8 @@
 
 > Error handling, logging, retry with backoff, circuit breaker
 
+**Playbook:** [backend_playbook.md](../../../knowledge-base/backend_playbook.md) (Errors).
+
 ## Metadata
 
 ```

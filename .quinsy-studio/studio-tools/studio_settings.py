@@ -39,7 +39,7 @@ STANDARD_STEPS = {
     "design": {"context": 40000, "budget": 400000},
     "planning": {"context": 16000, "budget": 80000},
     "scoping": {"context": 12000, "budget": 60000},
-    "implement": {"context": 16000, "budget": 400000},
+    "implement": {"context": 28000, "budget": 400000},
     "review": {"context": 16000, "budget": 80000},
     "reuse": {"context": 12000, "budget": 40000},
     "learning": {"context": 12000, "budget": 60000},
@@ -168,6 +168,7 @@ def builtin_defaults() -> Dict[str, Any]:
             "load_full_ticket_only_on": "IMPLEMENT",
             "max_qa_retries": 3,
             "train_parallel": True,
+            "train_open_max": 12,
             "steps": deepcopy(STANDARD_STEPS),
         },
     }
@@ -298,8 +299,8 @@ def resolve_cost_step(kind: str, command: str = "", reason: str = "", read: str 
     blob = f"{kind} {command} {reason} {read}".lower()
     if kind == "STUDIO_LO" or "studio train" in blob or "idle infusion" in blob:
         return "learning"
-    if "approve-design" in blob:
-        return "implement"
+    if "approve-design" in blob or "approve-arch" in blob or kind == "PRODUCTION":
+        return "design"
     if "./studio design" in blob or "design track" in blob or "design of what exists" in blob or "stills/mocks" in blob:
         return "design"
     if "blueprint" in blob or "--gate 1" in blob:

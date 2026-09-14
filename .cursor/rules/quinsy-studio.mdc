@@ -17,7 +17,7 @@ A new chat bubble is **not** a new assignment while work is in flight on **any**
 
 - `INBOX_ACK` — note is already queued. One-line ACK, then `./studio execute` (same ACTION). Do not implement the note.
 - `ABORT` — stop the current ticket.
-- Gate / **design-track `approve-design`** / review approval, “back on track” — handle that HITL; do not queue.
+- Gate / **`approve-design` / `approve-arch`** / cadence review approval, “back on track” — handle that HITL; do not queue.
 - Mid-sprint “looks good” on a **non-design** ticket is not HITL — resume `./studio execute`.
 
 This is core studio behavior, not a per-project rule. Sprint-review `FEEDBACK_ONLY` must not win while a ticket is still `implement`.
@@ -67,7 +67,7 @@ Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gat
 
 ## Sprint HITL
 
-Autonomous mid-sprint for **non-design** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2**, **design-track `approve-design`**, **UI sprint review**, rare **tech-veto**. Missing components → design-track ticket in a **design sprint**, then HITL. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.**
+Autonomous mid-sprint for **ready** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2**, **`approve-design` / `approve-arch`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.**
 
 ## Drift recovery
 

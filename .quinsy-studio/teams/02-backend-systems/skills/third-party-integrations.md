@@ -2,6 +2,8 @@
 
 > API integration, webhooks, queues, payment, email, analytics
 
+**Playbook:** [backend_playbook.md](../../../knowledge-base/backend_playbook.md) (Integrations).
+
 ## Metadata
 
 ```
