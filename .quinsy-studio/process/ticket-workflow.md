@@ -31,6 +31,10 @@ Move during sprint:
 ./studio move <project> TICKET-NNN done
 ```
 
+**Rule (LO-0294):** When `needs_architecture` is true, write `docs/architecture/<TICKET>.md` and keep the ticket on the production stream until `architecture_status` is approved. `./studio execute` must not offer `IMPLEMENT` while the architecture packet is pending (`PB-20260916-003` ticket-workflow, `PB-20260916-004` HITL).
+
+**Rule (LO-0292):** `move … done` may print “sprint complete” only when every sprint ticket is `done` or `cancelled`. If others remain, print remaining count and `./studio execute` — do not send the agent to retro mid-sprint.
+
 **Rule (LO-0175):** When a ticket is **superseded** or **cancelled**, in the **same turn** either clear `sprint:` (and set `sprint_deferred: true` if it stays in backlog) **or** `./studio move … cancelled` so it is not in `implement/` / sprint plan. Do not leave a ghost that `review` / `execute` can still pick. Pair with LO-0060 when the sprint goal itself changes.
 
 ---
@@ -389,3 +393,13 @@ When a ticket is blocked:
 ## Park parent epics before the first proposal (LO-0252)
 
 - **PB-20260914-007** helpful=0 harmful=0 :: Set `sprint_deferred: true` on parent epics (XL / `ticket_type: epic`) **before** the first `./studio sprint` of a cycle. Children that are S/M and composer-executable are what get proposed. An un-deferred epic is a P0 magnet.
+
+## Deltas
+
+- **PB-20260916-007** helpful=0 harmful=0 :: After the core entity rename, new tables that store domain_id must foreign-key properties, not the domains view. Constraining domains fails because it is no longer a table.
+- **PB-20260916-006** helpful=0 harmful=0 :: A light presentation island inside a dark (or mixed) theme must pin --ink (and related text tokens) on that island so inherited theme text-ink cannot flip the island pale. Do not rely on a parent html.dark token for type on a forced-light surface.
+- **PB-20260916-005** helpful=0 harmful=0 :: Canvas (non-DOM) paint must follow html.dark the same way HTML chrome does. Resolve theme colors to hex from computed styles before stroke, fill, or title text. CSS variables never reach a canvas 2D API.
+- **PB-20260916-003** helpful=0 harmful=0 :: needs_architecture tickets stay on the production stream until the architecture packet exists and architecture_status is approved. Execute must not offer IMPLEMENT on a pending architecture packet.
+- **PB-20260916-002** helpful=0 harmful=0 :: infer_ticket_type treats fixture or identity swaps as feature, not design-pending ui-composition, even when the raw text also mentions a menu.
+- **PB-20260916-001** helpful=0 harmful=0 :: When proposing sprint scope, sort --from-feedback tickets by newer ticket number first at the same priority. Older leftover P0 restyle work must not beat the feedback just captured this session.
+- **PB-20260915-001** helpful=0 harmful=0 :: Ticket --from-feedback must put each Given/When/Then on its own AC bullet. Two clauses in one dash fail the sprint maturity check (needs at least two specific AC items) and gold-path work looks immature.

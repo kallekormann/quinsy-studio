@@ -58,6 +58,29 @@ class PortabilityTests(unittest.TestCase):
         )
         self.assertFalse(v["portable"])
 
+    def test_host_and_chrome_incidents_are_not_principles(self):
+        self.assertFalse(
+            looks_like_principle(
+                "Live Inbox list stayed on Loading feedback inbox after host-scope landed"
+            )
+        )
+        v = portability_verdict(
+            "canonicalHost trusted the raw Host header while Chrome used the forwarded public host",
+            observation="layout disagreed on im-sucher.com",
+        )
+        self.assertFalse(v["portable"])
+        v2 = portability_verdict(
+            "Diagnose delivery loadPublishedPage for the published Ratgeber before the next demo"
+        )
+        self.assertFalse(v2["portable"])
+
+    def test_sanitize_strips_hosts(self):
+        from studio_portability import sanitize_observation
+
+        out = sanitize_observation("stuck on im-sucher.com after AFFI-0276")
+        self.assertNotIn("im-sucher.com", out.lower())
+        self.assertIn("<host>", out)
+
     def test_long_incident_sentence_is_not_a_principle(self):
         self.assertFalse(
             looks_like_principle(

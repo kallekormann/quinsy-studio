@@ -46,7 +46,7 @@ Before an LO or train job is created:
 | Public document route must serve operator Save; no silent fixture when a live id exists | This brand’s article still shows fixture copy after Save |
 | Reuse harvest: generalize `packages/auth` | Copy this product’s first-brand token kit into the library |
 
-A five-word incident is **not** a principle. Retro bullets that name a ticket, sprint, vendor, or surface go local. Rewrite into a rule that the *next* product would still need, or do not open an LO.
+A five-word incident is **not** a principle. Retro bullets that name a ticket, sprint, vendor, host, or surface go local. `when` / `before` / `after` / `chrome` / `inbox` alone are **not** enough to enter HQ. Rewrite into a must/should/never/prefer rule that the *next* product would still need, or do not open an LO.
 
 ```
 raw observation → generalize title → portable?
@@ -57,9 +57,12 @@ raw observation → generalize title → portable?
 
 Each portable harvest:
 
-1. **Classifies** into an infusion bucket (package, ui-component, design, ux, ia, layout, usability, frontend, backend, database, security, process, tooling)
-2. **Appends** `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; `--source` is provenance only)
-3. **Opens** a compact LO-* with `infusion_kind`, `infusion_path`, and `train_skills`
+1. **Classifies** into a domain/topic (`knowledge-base/learnings/<domain>/<topic>.md`) plus the matching playbook/skill
+2. **Appends** the **open** queue `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; `--source` is provenance only)
+3. **Writes** the principle into the topic file and refreshes `learnings/index.md`
+4. **Opens** a compact LO-* with `infusion_kind`, `infusion_path` (topic file), and `train_skills`
+
+`inbox.md` is not the long-term store. Infused/stale rows are archived to `learnings/archive/inbox-YYYY-MM.md`. Find rules with `./studio learn-find "<topic>"` or the CARD's domain README. IMPLEMENT must not Read `inbox.md`.
 
 Then `./studio execute <project>` **continues product IMPLEMENT** (or `PRODUCTION` if the ready pipeline is starved). Open LOs with `train_skills` queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, `approve-design` / `approve-arch`, and cadence review still win. `./studio train --purge-empty` closes jobs written without an LO observation.
 
@@ -152,16 +155,14 @@ Project work identifies a learning
 
 **Infusion targets** (generalize — never copy client project names into studio docs):
 
-| Kind | Infuse into |
-|------|-------------|
-| `ui-component` | `studio-library/ui/components/` + atomic-design playbook (LO, not project copy) |
-| `package` | `studio-library/packages/` |
-| `design` / `layout` | `knowledge-base/design_playbook.md` |
-| `ux` / `usability` | `knowledge-base/design-science-playbook.md` |
-| `ia` | `knowledge-base/contextual-ia-playbook.md` |
-| `frontend` / `backend` / `database` / `security` | matching playbooks / PE–BE skills |
-| `process` | `process/` |
-| `tooling` / `gate-fail` | `studio-tools/` |
+| Kind | Durable store | Also infuse |
+|------|----------------|-------------|
+| `ui-component` / `package` | `knowledge-base/learnings/library/` | studio-library + atomic-design / registry |
+| `design` / `layout` / `ux` / `ia` | `knowledge-base/learnings/design/` | matching design playbooks / UX skills |
+| `frontend` / `backend` / `database` / `security` | `knowledge-base/learnings/frontend/` or `backend/` | matching playbooks / PE–BE skills |
+| `process` / `tooling` | `knowledge-base/learnings/process/` | `process/` + studio-tools / SO skills |
+
+Signals still map to these kinds (`design-gap` → design, `library-gap` → package or ui-component, `gate-fail` → tooling).
 
 Signals still map to these kinds (`design-gap` → design, `library-gap` → package or ui-component, `gate-fail` → tooling).
 

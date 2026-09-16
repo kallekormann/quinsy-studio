@@ -114,6 +114,15 @@ def list_sprint_tickets(project: str, sprint: str) -> List[Dict]:
     return sorted(tickets, key=lambda t: t["id"])
 
 
+def open_sprint_ticket_ids(tickets: List[Dict]) -> List[str]:
+    """Ids still in the sprint after MOVE_DONE — cancelled does not count as remaining work."""
+    return [
+        t["id"]
+        for t in tickets
+        if t.get("status") not in ("done", "cancelled")
+    ]
+
+
 def sprint_ticket_summary(project: str, sprint: str) -> Dict:
     tickets = list_sprint_tickets(project, sprint)
     by_status: Dict[str, int] = {}
@@ -538,7 +547,8 @@ def approve_review(project: str, sprint: str, status: Dict, notes: str = "") -> 
     hitl["implementation_sprints_since_review"] = 0
     hitl["last_review_at"] = datetime.now().isoformat()
     hitl["last_review_notes"] = notes.strip() or None
-    hitl["retro_status"] = RETRO_PENDING
+    if hitl.get("retro_status") != RETRO_DONE:
+        hitl["retro_status"] = RETRO_PENDING
     hitl["reuse_status"] = REUSE_PENDING
     hitl["reuse_sprint"] = sprint
     hitl["reuse_pending_since"] = datetime.now().isoformat()

@@ -123,36 +123,62 @@ def rewrite_title_for_portability(title: str) -> str:
     return out[:120]
 
 
+# Hosts, vendor admin, and named product surfaces — not studio principles.
+_INCIDENT_MARKERS = re.compile(
+    r"(?i)("
+    r"\b(screenshot|ticket\s*#|fb-\d+|n-\d{3}|sprint-\d+|[a-z]{3,5}-\d{4,})\b"
+    r"|\bboard\s+[a-f0-9]{8,}(-[a-f0-9]+)+"
+    r"|\bboard/[a-z0-9_-]{4,}\b"
+    r"|\b(awin|filament|ratgeber|command center|im-sucher|usemoody)\b"
+    r"|\b(?:[a-z0-9-]+\.)+(?:com|app|io|dev|net|org)\b"
+    r")"
+)
+
+# Modal / reuse verbs only. "when/before/after/chrome/inbox" appear in incidents.
+_RULE_CUE = re.compile(
+    r"(?i)\b("
+    r"must|never|always|should|must not|do not|prefer|"
+    r"adapters?|reuse|generalize|promote|needs"
+    r")\b"
+)
+
+
+def find_incident_markers(text: str) -> List[str]:
+    blob = text or ""
+    found: List[str] = []
+    for match in _INCIDENT_MARKERS.finditer(blob):
+        token = match.group(0).strip()
+        if token and token.lower() not in {m.lower() for m in found}:
+            found.append(token)
+    return found[:8]
+
+
 def looks_like_principle(title: str) -> bool:
     """Reusable studio rule — not a one-project incident sentence."""
     t = (title or "").strip()
     if len(t) < 20:
         return False
-    lower = t.lower()
-    # Incident-shaped: screenshots, product tickets, sprint numbers, inbox notes
-    if re.search(
-        r"\b(screenshot|ticket\s*#|fb-\d+|lo-\d+|n-\d{3}|"
-        r"sprint-\d+|[a-z]{3,5}-\d{4,})\b",
-        lower,
-    ):
+    if find_incident_markers(t):
         return False
-    if re.search(r"\bboard\s+[a-f0-9]{8,}(-[a-f0-9]+)+\b", lower):
-        return False
-    if re.search(r"\bboard/[a-z0-9_-]{4,}\b", lower):
-        return False
-    if re.search(r"\b(awin|filament)\b", lower):
-        return False
-    # Require a rule cue — a long incident sentence is not a principle.
-    return bool(
-        re.search(
-            r"\b(must|never|always|should|when|before|after|as soon as|"
-            r"do not queue|must not|adapters?|budget|degraded|map|prefer|"
-            r"reuse|generalize|promote|overflow|gate|smoke|cache|licence|"
-            r"license|pixel|provider|playbook|skill|needs|chrome|hitl|"
-            r"inbox|queue)\b",
-            lower,
-        )
+    return bool(_RULE_CUE.search(t))
+
+
+def sanitize_observation(text: str) -> str:
+    """Keep HQ observations generic — hosts and product tickets become placeholders."""
+    out = text or ""
+    out = re.sub(
+        r"(?i)\b(?:[a-z0-9-]+\.)+(?:com|app|io|dev|net|org)\b",
+        "<host>",
+        out,
     )
+    out = re.sub(r"\b[A-Z]{2,5}-\d{3,}\b", "<ticket>", out)
+    for noun in product_nouns():
+        if " " in noun or noun in list_project_names():
+            out = re.sub(re.escape(noun), "<product>", out, flags=re.I)
+    out = re.sub(r"(?i)\b(awin|filament|ratgeber|command center)\b", "<surface>", out)
+    return re.sub(r"\s{2,}", " ", out).strip()[:600]
+
+
 def portability_verdict(
     title: str,
     observation: str = "",
@@ -170,15 +196,29 @@ def portability_verdict(
             "hits": hits,
             "reason": f"title still contains product nouns after rewrite: {', '.join(hits)}",
         }
+    obs_hits = find_product_nouns(observation or "")
+    if obs_hits:
+        return {
+            "portable": False,
+            "title": rewritten,
+            "hits": obs_hits,
+            "reason": f"observation still contains product nouns: {', '.join(obs_hits)}",
+        }
+    incidents = find_incident_markers(f"{rewritten}\n{observation or ''}")
+    if incidents:
+        return {
+            "portable": False,
+            "title": rewritten,
+            "hits": incidents,
+            "reason": f"incident-shaped (host, ticket, or product surface): {', '.join(incidents)}",
+        }
     if not looks_like_principle(rewritten):
-        # observation may still be project-local; require principle-shaped title
         return {
             "portable": False,
             "title": rewritten,
             "hits": [],
             "reason": "cannot state a reusable principle without project-specific framing",
         }
-    # Observation may keep provenance detail; title must be clean.
     return {
         "portable": True,
         "title": rewritten,
@@ -288,8 +328,14 @@ def scan_hq_for_project_nouns(
         for path in QUINSY_STUDIO.glob(pattern):
             if not path.is_file():
                 continue
-            # CHANGELOG often cites projects — skip or soften
+            # CHANGELOG and inbox archive cite projects as provenance
             if path.name == "CHANGELOG.md":
+                continue
+            try:
+                rel_check = str(path.relative_to(QUINSY_STUDIO)).replace("\\", "/")
+            except ValueError:
+                rel_check = str(path)
+            if "/learnings/archive/" in rel_check or rel_check.startswith("learnings/archive/"):
                 continue
             try:
                 text = path.read_text(encoding="utf-8", errors="ignore")

@@ -80,6 +80,11 @@ def _priority_rank(priority: str) -> int:
     return PRIORITY_ORDER.get((priority or "P1").upper(), 9)
 
 
+def _ticket_seq(tid: str) -> int:
+    match = re.search(r"(\d+)$", tid or "")
+    return int(match.group(1)) if match else 0
+
+
 def propose_sprint_scope(
     project: str,
     sprint_name: str,
@@ -94,7 +99,7 @@ def propose_sprint_scope(
         key=lambda t: (
             0 if t.get("from_feedback") else 1,
             _priority_rank(t.get("priority", "P1")),
-            t.get("id", ""),
+            -_ticket_seq(t.get("id", "")),
         ),
     )
 

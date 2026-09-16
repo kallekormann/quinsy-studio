@@ -89,6 +89,8 @@ Agents: read project `package.json` scripts and `.env.local` before running migr
 
 **PHPUnit vs Compose queue (LO-0255):** The same leak applies to `QUEUE_CONNECTION`. Compose often injects `redis`/`database`; phpunit.xml `sync` without `force="true"` plus a TestCase env pin means `ShouldQueue` jobs are pushed to Redis and never run. Pin `QUEUE_CONNECTION=sync` in the test bootstrap the same way as `DB_DATABASE`.
 
+**Worker `--queue` vs topology (LO-0257 / LO-0258):** The Compose worker `command` `--queue=` list must include every queue name the app topology routes jobs to (not only `default` or one named queue). Dispatching to a topology queue the worker does not listen on looks like a silent hang. YAML edits do not refresh a running worker — recreate that service (LO-0156).
+
 **Graph mentions need persisted ids (LO-0256):** Derived knowledge-graph `mentions` (document → entity) must use stable foreign keys already stored on content blocks. Do not mint entities from display names. If payloads have no id, ship coverage/`covers` and assert mention count `0` rather than inventing rows.
 
 **Filament operator home (LO-0141):** set panel `homeUrl` to the primary resource **index** (the list of existing records), not an empty dashboard. Header `StatsOverviewWidget`s are lazy by default — set `protected static bool $isLazy = false` so counts render on first paint, not after `x-intersect`.
@@ -403,5 +405,14 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 
 ## Deltas
 
+- **PB-20260916-005** helpful=0 harmful=0 :: Operator-loop network credentials are per-host rows in api_credentials (encrypted payload) plus sourcing_configs.networks. Do not have the Command Center read process .env publisher tokens for connect/browse.
+- **PB-20260916-004** helpful=3 harmful=0 :: A list GET must return every attribute the inspector is supposed to show. Do not ship a write path whose corresponding list omits those fields.
+- **PB-20260916-003** helpful=1 harmful=0 :: Operator-authorized jobs skip the exploration weekly cap. Re-check monthly and kill-switch caps on every LLM complete; do not add a daemon. After the operator raises a limit, the next call picks up available budget.
+- **PB-20260916-002** helpful=0 harmful=0 :: Lifecycle folder queries (awaiting approval, in progress, done) must exclude dismissed rows. Filtering dismissed only on the Dismissed folder still lists trashed items in the other lifecycle views.
+- **PB-20260916-001** helpful=0 harmful=0 :: Empty production pipeline maps activity or trace status to idle, not in_progress. Defaulting unknown or empty rows to in_progress lies to the operator.
+- **PB-20260915-002** helpful=0 harmful=0 :: Bootstrap plans that need catalog items queue research as an operator Inbox request, not a ticket-id hint in the UI.
+- **PB-20260915-001** helpful=0 harmful=0 :: Cache-bust after a write belongs on the plane that holds the secret (admin worker, server action, route handler). A client module cannot see admin-only env; Saved can look true while the public host stays stale. Pull write-side-revalidate; never use NEXT_PUBLIC_ as the secret source.
+- **PB-20260914-004** helpful=0 harmful=0 :: Compose worker --queue must list every topology queue jobs are dispatched on; default or a single named queue is not enough.
+- **PB-20260914-003** helpful=0 harmful=0 :: Changing Compose queue-worker command or --queue flags requires recreating that service; up -d of the HTTP process leaves the old worker command running.
 - **PB-20260914-002** helpful=0 harmful=0 :: Derived graph mentions use persisted entity foreign keys on content blocks; if ids are absent, mention count stays 0 — do not mint entities from display names.
 - **PB-20260914-001** helpful=0 harmful=0 :: PHPUnit TestCase must pin QUEUE_CONNECTION=sync when Compose injects redis/database; phpunit.xml without force is not enough (same class of leak as DB_DATABASE).

@@ -85,8 +85,10 @@ Commands:
   ./studio gate <project> [--level N]            Run QA gate
 
   # Phase 6: Learning
-  ./studio learn "Title" --signal <s>            Create learning item
-  ./studio learn-list                            Show learning items
+  ./studio learn "Title" --signal <s>            Create learning item (portable only)
+  ./studio learn-list                            Show open LO items
+  ./studio learn-find "<topic>"                  Search durable learnings catalog
+  ./studio learn-compact                          Archive infused inbox rows
   ./studio infusion                              Open LO status (does not block IMPLEMENT)
   ./studio train --done TR-NNNN                  Close a train job after infusion
   ./studio infusion-delta --path FILE --op add  Deterministic playbook bullet
@@ -205,6 +207,7 @@ from sprint_hitl import (
     load_feedback_queue,
     maybe_flag_sprint_review,
     needs_sprint_review,
+    open_sprint_ticket_ids,
     complete_retro,
     prepare_retro,
     prepare_review,
@@ -2420,15 +2423,29 @@ class StudioOrchestrator:
                 print(f"\n  ⏸ All sprint tickets done — UI sprint review required")
                 print(f"    ./studio review {project}")
             else:
-                hitl_now = get_sprint_hitl(status)
-                if hitl_now.get("review_status") == "informed":
-                    print(f"\n  Backend-only sprint complete — review is inform-only. Next: ./studio retro {project}")
-                else:
+                sprint_now = status.get("current_sprint") or ""
+                remaining = (
+                    open_sprint_ticket_ids(sprint_ticket_summary(project, sprint_now)["tickets"])
+                    if sprint_now
+                    else []
+                )
+                if remaining:
                     print(
-                        f"\n  Implementation sprint complete — skill QA on receipts; "
-                        f"cadence review not due. Next: ./studio retro {project} "
-                        f"(optional later: ./studio sprint {project} --kind hygiene)"
+                        f"\n  Ticket done — {len(remaining)} sprint ticket(s) still open. "
+                        f"Next: ./studio execute {project}"
                     )
+                else:
+                    hitl_now = get_sprint_hitl(status)
+                    if hitl_now.get("review_status") == "informed":
+                        print(
+                            f"\n  Backend-only sprint complete — review is inform-only. Next: ./studio retro {project}"
+                        )
+                    else:
+                        print(
+                            f"\n  Implementation sprint complete — skill QA on receipts; "
+                            f"cadence review not due. Next: ./studio retro {project} "
+                            f"(optional later: ./studio sprint {project} --kind hygiene)"
+                        )
             save_status(project, status)
             sprint_done = status.get("current_sprint") or ""
             if sprint_done:
@@ -2622,6 +2639,14 @@ class StudioOrchestrator:
         result = harvest_identified_learning(
             title, source=source, signal=signal, observation=title
         )
+        if result.get("dropped"):
+            print(f"\n  Learning dropped (not studio-portable): {title[:80]}")
+            print(f"  Reason: {result.get('reason')}")
+            if result.get("local_log"):
+                print(f"  Project log: {result['local_log']}")
+            else:
+                print("  Rewrite as a reusable must/should/never rule, or keep it in the project local log.")
+            return ""
         lo_id = result["lo_id"]
         if result.get("created"):
             print(f"\n  Learning captured: {lo_id}")
@@ -2630,8 +2655,9 @@ class StudioOrchestrator:
         print(f"  Kind: {result.get('kind')} → {result.get('infusion_path')}")
         print(f"  Signal: {result.get('signal')}")
         if result.get("inbox"):
-            print(f"  Inbox: .quinsy-studio/{result['inbox']}")
-        print("  Harvested. Product execute continues IMPLEMENT; train agent infuses in parallel:")
+            print(f"  Inbox (open queue only): .quinsy-studio/{result['inbox']}")
+        print("  Durable store: knowledge-base/learnings/<domain>/<topic>.md  (see index.md)")
+        print("  Harvested. Product execute continues IMPLEMENT; train agent infuses the matching playbook/skill:")
         print("    ./studio train SO-001 --from mistake --topic \"<gap>\"")
         print("    ./studio execute <project>  → ACTION IMPLEMENT (open LOs do not block)")
         return lo_id
@@ -2664,8 +2690,33 @@ class StudioOrchestrator:
             extra += f" → {path}" if path else ""
             print(f"  - {lo.stem} [Signal: {signal}{extra}]")
         print("\n  Next: ./studio execute <project> continues IMPLEMENT; TRAIN sidecar infuses LOs")
-    
-    def cmd_retro(self, project: str, complete: bool = False):
+        print("  Find durable principles: ./studio learn-find \"<topic>\"  (not inbox.md)")
+
+    def cmd_learn_find(self, query: str):
+        """Search the durable learnings catalog (domain/topic files)."""
+        from studio_learnings_store import INDEX_PATH, search_learnings
+
+        print_header("LEARNINGS CATALOG")
+        hits = search_learnings(query)
+        if not hits:
+            print(f"\n  No matches for {query!r}. See {INDEX_PATH.relative_to(QUINSY_STUDIO.parent)}")
+            return False
+        for hit in hits:
+            print(f"  {hit['path']}")
+            print(f"    {hit['line']}")
+        return True
+
+    def cmd_learn_compact(self):
+        """Archive infused/stale inbox rows; keep only open LOs in inbox.md."""
+        from studio_learnings_store import compact_inbox, rebuild_index
+
+        print_header("LEARNING INBOX COMPACT")
+        result = compact_inbox()
+        rebuild_index()
+        print(f"\n  Kept {result['kept']} open inbox rows; archived {result['archived']}")
+        print("  Durable store: knowledge-base/learnings/<domain>/<topic>.md")
+        print("  Index: knowledge-base/learnings/index.md")
+        return True
         """Start or complete a project sprint retrospective."""
         status = load_status(project)
         sprint = status.get("current_sprint", "SPRINT-01")
@@ -2697,15 +2748,18 @@ class StudioOrchestrator:
                     retro_path.read_text(encoding="utf-8", errors="ignore"), project
                 )
                 created = [h for h in harvested if h.get("created")]
-                skipped = [h for h in harvested if not h.get("created")]
-                if created or skipped:
-                    print("\n  Harvested into studio HQ (inbox + LO) — not waiting for a human learn prompt:")
+                dropped = [h for h in harvested if h.get("dropped")]
+                skipped = [h for h in harvested if not h.get("created") and not h.get("dropped")]
+                if created or skipped or dropped:
+                    print("\n  Retro harvest (portable principles only):")
                     for h in created:
                         print(
                             f"    {h.get('lo_id')} [{h.get('kind')}] → {h.get('infusion_path')}"
                         )
                     for h in skipped:
                         print(f"    {h.get('lo_id')} already open (deduped)")
+                    for h in dropped:
+                        print(f"    dropped (project-local): {h.get('reason')}")
             print("  Harvested. Product loop continues; spawn train beside it:")
             print(f"    ./studio execute {project}  → IMPLEMENT (not STUDIO_LO)")
             print(f"    ./studio train SO-001 --from mistake --topic \"retro gap\"")
@@ -2762,7 +2816,7 @@ class StudioOrchestrator:
         if not items and not hq_hits:
             print("\n  ✅ No open LO tickets — safe to plan the next project sprint.")
             print("  Portability: no project folder names found in HQ playbooks/skills (excl. CHANGELOG).")
-            print("  Generalize learnings into: process/, teams/skills/, knowledge-base/, studio-library/")
+            print("  Generalize learnings into: knowledge-base/learnings/<domain>/<topic>.md (+ matching playbook/skill)")
             return True
         if items:
             print(f"\n  {len(items)} open studio learning item(s) — train skill gaps in parallel; product IMPLEMENT is not blocked.")
@@ -2778,7 +2832,7 @@ class StudioOrchestrator:
                 print(f"    • {h['path']}:{h['line']} ({h['noun']}) {h['snippet'][:70]}")
             print("    Confine project names to provenance/`source:` lines, or replace with <project>.")
         print("\n  Infusion targets:")
-        print("    process/ · teams/*/skills/ · knowledge-base/ · studio-tools/ · studio-library/")
+        print("    knowledge-base/learnings/<domain>/ · process/ · teams/*/skills/ · playbooks · studio-library/")
         print("\n  Product: ./studio execute <project>  → IMPLEMENT")
         if items:
             skills = items[0].get("train_skills") or "SO-001"
@@ -3424,8 +3478,10 @@ Commands:
   ./studio gate <project> [--level N]            Run QA gate
 
   # Phase 6: Learning
-  ./studio learn "Title" --signal <s>            Create learning item
-  ./studio learn-list                            Show learning items
+  ./studio learn "Title" --signal <s>            Create learning item (portable only)
+  ./studio learn-list                            Show open LO items
+  ./studio learn-find "<topic>"                  Search durable learnings catalog
+  ./studio learn-compact                          Archive infused inbox rows
   ./studio infusion                              Open LO status (does not block IMPLEMENT)
   ./studio train --done TR-NNNN                  Close a train job after infusion
   ./studio infusion-delta --path FILE --op add  Deterministic playbook bullet
@@ -3913,6 +3969,12 @@ def main():
     
     elif command == "learn-list":
         orchestrator.cmd_learn_list()
+
+    elif command == "learn-find" and args:
+        orchestrator.cmd_learn_find(" ".join(args))
+
+    elif command == "learn-compact":
+        orchestrator.cmd_learn_compact()
 
     elif command == "infusion":
         orchestrator.cmd_infusion()

@@ -113,6 +113,11 @@
       "library_path": "packages/viewport-fit/",
       "aliases": ["viewport-fit", "zoom-to-fit", "fit-viewport"]
     },
+    "package-write-side-revalidate": {
+      "project_path": "packages/write-side-revalidate/",
+      "library_path": "packages/write-side-revalidate/",
+      "aliases": ["write-side-revalidate", "server-revalidate", "cache-bust-after-write"]
+    },
     "sticker-sheet": {
       "project_path": "design/prototype/app/sticker-sheet/",
       "library_path": "ui/sticker-sheet/",

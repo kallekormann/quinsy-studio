@@ -21,14 +21,32 @@ try:
         append_project_local_learning,
         portability_verdict,
         resolve_project_from_source,
+        sanitize_observation,
         train_skills_for_kind,
+    )
+    from studio_learnings_store import (
+        INBOX_PATH as STORE_INBOX,
+        LEARNINGS_ROOT,
+        commit_principle,
+        compact_inbox,
+        ensure_inbox_header,
+        topic_relpath,
     )
 except ImportError:  # pragma: no cover
     from studio_tools.studio_portability import (  # type: ignore
         append_project_local_learning,
         portability_verdict,
         resolve_project_from_source,
+        sanitize_observation,
         train_skills_for_kind,
+    )
+    from studio_tools.studio_learnings_store import (  # type: ignore
+        INBOX_PATH as STORE_INBOX,
+        LEARNINGS_ROOT,
+        commit_principle,
+        compact_inbox,
+        ensure_inbox_header,
+        topic_relpath,
     )
 
 TOOLS_DIR = Path(__file__).parent
@@ -36,14 +54,14 @@ QUINSY_STUDIO = TOOLS_DIR.parent
 BACKLOG_OPEN = QUINSY_STUDIO / "backlog" / "open"
 BACKLOG_DONE = QUINSY_STUDIO / "backlog" / "done"
 BACKLOG_BLOCKED = QUINSY_STUDIO / "backlog" / "blocked"
-LEARNINGS_DIR = QUINSY_STUDIO / "knowledge-base" / "learnings"
-INBOX_PATH = LEARNINGS_DIR / "inbox.md"
+LEARNINGS_DIR = LEARNINGS_ROOT
+INBOX_PATH = STORE_INBOX
 
 # kind → (signal, infusion_path, skills, role, team)
 KIND_MAP: Dict[str, Dict[str, object]] = {
     "ui-component": {
         "signal": "library-gap",
-        "path": "studio-library/ui/components/",
+        "path": "knowledge-base/learnings/library/components.md",
         "skills": ["UX-005", "FE-002", "SO-001"],
         "role": "UI/Interaction Designer (Director)",
         "team": "10-product-design-experience",
@@ -51,7 +69,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "package": {
         "signal": "library-gap",
-        "path": "studio-library/packages/",
+        "path": "knowledge-base/learnings/library/packages.md",
         "skills": ["SO-001", "BE-001"],
         "role": "Studio Automation Engineer (Director)",
         "team": "09-studio-operations-evolution",
@@ -59,7 +77,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "design": {
         "signal": "design-gap",
-        "path": "knowledge-base/design_playbook.md",
+        "path": "knowledge-base/learnings/design/visual.md",
         "skills": ["UX-005", "UX-001"],
         "role": "Product Designer (Director)",
         "team": "10-product-design-experience",
@@ -67,7 +85,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "ux": {
         "signal": "design-gap",
-        "path": "knowledge-base/design-science-playbook.md",
+        "path": "knowledge-base/learnings/design/interaction.md",
         "skills": ["UX-002", "UX-004"],
         "role": "UX Designer (Director)",
         "team": "10-product-design-experience",
@@ -75,7 +93,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "ia": {
         "signal": "design-gap",
-        "path": "knowledge-base/contextual-ia-playbook.md",
+        "path": "knowledge-base/learnings/design/information-architecture.md",
         "skills": ["UX-003"],
         "role": "Information Architect (Director)",
         "team": "10-product-design-experience",
@@ -83,7 +101,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "layout": {
         "signal": "design-gap",
-        "path": "knowledge-base/design_playbook.md",
+        "path": "knowledge-base/learnings/design/layout.md",
         "skills": ["UX-003", "FE-002"],
         "role": "UX Designer (Director)",
         "team": "10-product-design-experience",
@@ -91,7 +109,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "usability": {
         "signal": "design-gap",
-        "path": "knowledge-base/design-science-playbook.md",
+        "path": "knowledge-base/learnings/design/interaction.md",
         "skills": ["UX-002", "FE-004"],
         "role": "UX Designer (Director)",
         "team": "10-product-design-experience",
@@ -99,7 +117,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "frontend": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/frontend_playbook.md",
+        "path": "knowledge-base/learnings/frontend/runtime.md",
         "skills": ["FE-001", "FE-003"],
         "role": "Frontend Architect (Director)",
         "team": "01-frontend-experience",
@@ -107,7 +125,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "backend": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/backend_playbook.md",
+        "path": "knowledge-base/learnings/backend/services.md",
         "skills": ["BE-001", "BE-004"],
         "role": "Backend Architect (Director)",
         "team": "02-backend-systems",
@@ -115,7 +133,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "database": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/local-first-sync-playbook.md",
+        "path": "knowledge-base/learnings/backend/data.md",
         "skills": ["BE-002"],
         "role": "Database Specialist (Director)",
         "team": "02-backend-systems",
@@ -123,7 +141,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "security": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/skill-extensions/backend-security-auditor.md",
+        "path": "knowledge-base/learnings/backend/security.md",
         "skills": ["PE-003", "BE-001"],
         "role": "Backend Security Specialist (Director)",
         "team": "08-platform-enterprise-engineering",
@@ -131,7 +149,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "process": {
         "signal": "process-gap",
-        "path": "process/",
+        "path": "knowledge-base/learnings/process/workflow.md",
         "skills": ["SO-002"],
         "role": "Process Guard (Director)",
         "team": "09-studio-operations-evolution",
@@ -139,7 +157,7 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "tooling": {
         "signal": "tooling-gap",
-        "path": "studio-tools/",
+        "path": "knowledge-base/learnings/process/tooling.md",
         "skills": ["SO-001"],
         "role": "Studio Automation Engineer (Director)",
         "team": "09-studio-operations-evolution",
@@ -235,21 +253,12 @@ def _existing_lo_match(norm: str) -> Optional[str]:
 
 
 def _ensure_inbox_header() -> None:
-    LEARNINGS_DIR.mkdir(parents=True, exist_ok=True)
-    if INBOX_PATH.exists():
-        return
-    INBOX_PATH.write_text(
-        "# Studio learning inbox\n\n"
-        "Entries are appended **when a learning is identified** (gate, retro, reuse, `./studio learn`).\n"
-        "They are **generic** (no client product names). The agent promotes each item into the\n"
-        "listed infusion path on `STUDIO_LO`, then moves the LO to `backlog/done/`.\n"
-        "Do not copy project source here — generalize the rule or extract a library asset.\n\n",
-        encoding="utf-8",
-    )
+    ensure_inbox_header(inbox_path=INBOX_PATH)
 
 
 def append_inbox(entry: Dict[str, str]) -> Path:
     _ensure_inbox_header()
+    observation = sanitize_observation(entry.get("observation") or entry.get("title") or "")
     block = (
         f"## {entry['id']} — {entry['title']}\n"
         f"- **When:** {entry['when']}\n"
@@ -258,10 +267,11 @@ def append_inbox(entry: Dict[str, str]) -> Path:
         f"- **Infuse into:** `{entry['infusion_path']}`\n"
         f"- **Playbook:** `{entry['playbook']}`\n"
         f"- **Signal:** {entry['signal']}\n"
-        f"- **Observation:** {entry['observation']}\n"
-        f"- **Status:** inbox — generalize into infusion path, CHANGELOG, close LO\n\n"
+        f"- **Observation:** {observation}\n"
+        f"- **Status:** inbox — generalize into topic file + playbook, CHANGELOG, close LO\n\n"
     )
     INBOX_PATH.write_text(INBOX_PATH.read_text(encoding="utf-8") + block, encoding="utf-8")
+    compact_inbox(open_dir=BACKLOG_OPEN, inbox_path=INBOX_PATH, archive_dir=LEARNINGS_DIR / "archive")
     return INBOX_PATH
 
 
@@ -316,6 +326,9 @@ def harvest_identified_learning(
     signal = signal or str(meta["signal"])
     skills = list(meta["skills"])  # type: ignore[arg-type]
     train_skills = train_skills_for_kind(kind, skills)
+    infusion_path = topic_relpath(kind, title, observation)
+    playbook = str(meta["playbook"])
+    observation = sanitize_observation(observation)
     norm = _norm_title(title)
     existing = _existing_lo_match(norm)
     if existing:
@@ -325,15 +338,13 @@ def harvest_identified_learning(
             "lo_id": existing,
             "kind": kind,
             "signal": signal,
-            "infusion_path": meta["path"],
+            "infusion_path": infusion_path,
             "train_skills": train_skills,
             "inbox": _rel(INBOX_PATH) if INBOX_PATH.exists() else "",
         }
 
     BACKLOG_OPEN.mkdir(parents=True, exist_ok=True)
     lo_id = next_lo_id()
-    infusion_path = str(meta["path"])
-    playbook = str(meta["playbook"])
     ticket = {
         "id": lo_id,
         "title": title[:120],
@@ -372,6 +383,13 @@ def harvest_identified_learning(
     }
     lo_file = BACKLOG_OPEN / f"{lo_id}-{_slugify(title)}.md"
     lo_file.write_text(render_ticket_markdown(ticket), encoding="utf-8")
+    commit_principle(
+        kind=kind,
+        lo_id=lo_id,
+        title=title[:120],
+        observation=observation,
+        root=LEARNINGS_DIR,
+    )
     append_inbox(
         {
             "id": lo_id,

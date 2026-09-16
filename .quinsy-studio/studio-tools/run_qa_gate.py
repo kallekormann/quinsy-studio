@@ -150,6 +150,8 @@ def get_checks_for_level(level: int) -> List[QACheck]:
                 timeout=180
             ),
             QACheck(
+                # LO-0165 / LO-0261: moderate @vitest/mocker (and the same class)
+                # stays a warning — excluded from RESULT in hard_failed below.
                 name="npm_audit",
                 command="npm audit --audit-level=moderate",
                 description="Dependency Security Check",

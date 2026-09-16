@@ -409,6 +409,7 @@ def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional
 ## Default flow
 - Route / user path a real user would take (LO-0051):
 - Screenshot: (path or none — function-only ticket)
+- If the live surface never left loading, that is not browser proof of list chrome — record the hang and cite HTTP/API tests (curl, PHPUnit, Vitest), not a click-through (LO-0276, LO-0291)
 
 ## Playbook citations
 - playbook: {(card or {}).get("playbooks") and (card or {}).get("playbooks")[0] or "none"}
@@ -1294,7 +1295,7 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
             lines.append(f"    skills: {', '.join(card['skills'])}")
         if card.get("playbooks"):
             lines.append(f"    playbooks: {', '.join(card['playbooks'])}")
-            lines.append("    READ only these playbooks. Do not open the canon ledger or learnings/inbox.md unless listed.")
+            lines.append("    READ only these playbooks and the listed learnings README. Do not open learnings/inbox.md or archive/.")
     return "\n".join(lines)
 
 

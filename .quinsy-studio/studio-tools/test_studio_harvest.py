@@ -77,7 +77,7 @@ class HarvestWriteTests(unittest.TestCase):
                 self.assertEqual(len(lo_files), 1)
                 text = lo_files[0].read_text(encoding="utf-8")
                 self.assertIn("infusion_kind: layout", text)
-                self.assertIn("infusion_path: knowledge-base/design_playbook.md", text)
+                self.assertIn("infusion_path: knowledge-base/learnings/design/layout.md", text)
                 inbox = (tmp / "learnings" / "inbox.md").read_text(encoding="utf-8")
                 self.assertIn(result["lo_id"], inbox)
                 self.assertIn("Nested board overflow", inbox)
@@ -116,7 +116,7 @@ class HarvestWriteTests(unittest.TestCase):
 ## What went well?
 - tests were fast
 ## What went badly?
-- gate smoke used a temp cache
+- Gate smoke must not use a temp cache
 ## What can we improve?
 - ...
 """

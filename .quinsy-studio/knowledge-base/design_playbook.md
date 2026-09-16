@@ -326,6 +326,15 @@ The **operator-selected** color set (token rail, brand MD, kit palette id) must 
 
 See also frontend WYSIWYG type stack (LO-0032).
 
+## Zone-sourced kit rails (LO-0290)
+
+When a canvas zone is the source of truth for a kit or inspector rail, reassemble from **current** zone children on add or delete. Do not rematch a stale stored palette that still contains removed items (`PB-20260916-003`).
+
+```
+❌ Operator deletes a zone swatch; the rail still shows that hex from last persist
+✅ Zone children change → Color / type / imagery / mood reassemble from what is in the zone now
+```
+
 ---
 
 ## References
@@ -356,3 +365,25 @@ Complements the §2/§2c lock rule (LO-0213/0218/0220/0222): this adds the sched
 ## Symlinked file layouts must stay complete (LO-0247)
 
 - **PB-20260914-002** helpful=0 harmful=0 :: When a repo mirrors files via symlinks (e.g. root config/entry files pointing into an app subtree), any file **referenced by** a symlinked file must also be reachable from the symlink's location. Adding a sibling module without its matching symlink breaks type-checking/builds at the root while the subtree stays green. Rule: when adding a file next to a symlink target, add the mirror symlink in the same change — or better, remove the mirror layout.
+
+## Gold-path chrome matches live chrome (LO-0293)
+
+When a ticket removes an operator control, update gold-path tests in the **same** change. Do not leave the suite asserting a control operators no longer see (`PB-20260916-004`).
+
+```
+❌ Chrome ticket removes Trash; gold-path still expects a trash control until a later pin ticket
+✅ Gold-path asserts the chrome that shipped — remove or rewrite the assertion with the control
+```
+
+## Deltas
+
+- **PB-20260916-006** helpful=1 harmful=0 :: Canvas or other non-DOM paint must use the same dark/light ink as html.dark CSS, never a hardcoded light-theme hex. CSS variables do not reach canvas/Konva fills unless resolved to hex first.
+- **PB-20260916-005** helpful=0 harmful=0 :: When a chrome ticket removes or rewires a control, update the gold-path source test in the same change. Do not leave the suite asserting the old button.
+- **PB-20260916-004** helpful=2 harmful=0 :: Gold-path tests for operator chrome must match the live chrome. When a ticket removes a control, update the gold path in the same change; do not leave the suite asserting a control operators no longer see.
+- **PB-20260916-003** helpful=0 harmful=0 :: When a canvas zone is the source of truth for a kit or inspector rail, reassemble from current zone children on add or delete. Do not rematch a stale stored palette that still contains removed items.
+- **PB-20260916-002** helpful=0 harmful=0 :: Left-rail demo profiles and app-chrome identity are separate surfaces. When the operator asks to remove all hardcoded profiles, ticket both the column and the shell chip.
+- **PB-20260916-001** helpful=0 harmful=0 :: A sprint that ships operator chrome or identity is not backend-only. Cadence review stays on the UI path; do not skip review because ticket_type is feature.
+- **PB-20260915-004** helpful=0 harmful=0 :: Host helpers for chrome and for catalog or page lookup must share one tenant key. Two resolvers for the same property split masthead from inventory.
+- **PB-20260915-003** helpful=0 harmful=0 :: Chrome and page lookup must share one host resolver. Do not trust the raw Host header on a preview origin when chrome already resolved the public hostname — layout and Start will disagree.
+- **PB-20260915-002** helpful=0 harmful=0 :: Close a canvas-chrome sprint when those tickets are done; keep export/MD deliverable work in a later sprint.
+- **PB-20260915-001** helpful=1 harmful=0 :: Do not mix canvas chrome with long export/MD deliverable tickets in one implementation sprint; finish gold-path product bugs first.

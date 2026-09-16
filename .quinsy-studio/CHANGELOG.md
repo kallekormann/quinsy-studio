@@ -1,4 +1,207 @@
+## 2026-09-16 — Durable learnings store + tighter portability
+
+### Changed
+
+- HQ harvest only accepts must/should/never/prefer/generalize principles. Hosts, product tickets, Ratgeber/Command Center, and `when`/`chrome`/`inbox` cue-only incidents stay in the project local log (`studio_portability`).
+- `inbox.md` is the **open queue**. Infused rows archive to `knowledge-base/learnings/archive/`. Durable principles live in `knowledge-base/learnings/<domain>/<topic>.md` with `index.md`. CARD lists the domain README. `./studio learn-find` / `learn-compact`. Dropped `./studio learn` prints the reason instead of "already open".
+
+### Added
+
+- Domain folders: `learnings/{frontend,backend,design,process,library}/` plus topic files written on portable harvest.
+
+
+### Changed
+
+- Command Center operator-loop network tokens live in per-host `api_credentials` (encrypted) plus `sourcing_configs.networks`, not process `.env` (`PB-20260916-005` backend).
+
+## 2026-09-16 — New domain_id FKs target properties (LO-0312)
+
+### Changed
+
+- After the core rename, new tables with `domain_id` foreign-key `properties`, not the `domains` view (`PB-20260916-007` ticket-workflow).
+
+## 2026-09-16 — Light islands must pin ink (LO-0300)
+
+### Changed
+
+- A forced-light presentation island pins `--ink` (and related text tokens) so inherited theme `text-ink` cannot flip the island pale (`PB-20260916-006` ticket-workflow).
+
+## 2026-09-16 — Canvas 2D APIs never take CSS variables (LO-0299)
+
+### Changed
+
+- Non-DOM canvas stroke, fill, and title text resolve `html.dark` theme colors to hex first. CSS variables never reach the canvas API (`PB-20260916-005` ticket-workflow).
+
+## 2026-09-16 — Canvas paint must resolve theme ink (LO-0298)
+
+### Changed
+
+- Non-DOM canvas paint uses the same dark/light ink as `html.dark`; CSS variables never reach canvas fills unless resolved to hex (`PB-20260916-006` design).
+
+## 2026-09-16 — Catalog list GET must match inspector fields (LO-0297)
+
+### Changed
+
+- List APIs return every attribute the inspector shows; a write path is incomplete if GET omits those fields (`PB-20260916-004` backend).
+
+## 2026-09-16 — Jobs without production orders still need Inbox and Agent (LO-0296)
+
+### Changed
+
+- Tickets whose jobs skip production orders must still define Inbox Done and Agent running/done rows (`PB-20260916-006` HITL).
+
+## 2026-09-16 — Spend ledger is not the Agent view (LO-0295)
+
+### Changed
+
+- A green spend/LLM line is not operator proof of agent work. Jobs without a production order still need an Agent-surface row (`PB-20260916-005` HITL).
+
+## 2026-09-16 — Gold-path chrome and architecture packets (LO-0293, LO-0294)
+
+### Changed
+
+- Gold-path tests for operator chrome must match the live chrome. When a ticket removes a control, update the gold path in the same change (`PB-20260916-004` design).
+- `needs_architecture` tickets stay on the production stream until the architecture packet exists and is approved. Execute must not offer IMPLEMENT while `architecture_status` is pending (`PB-20260916-003` ticket-workflow, `PB-20260916-004` HITL).
+
+## 2026-09-16 — MOVE_DONE sprint-complete copy only when the sprint is empty (LO-0292)
+
+### Changed
+
+- `move … done` prints sprint-complete / retro copy only when every sprint ticket is done or cancelled. Remaining tickets continue `./studio execute` (`PB-20260916-003` HITL).
+
+## 2026-09-16 — Zone-sourced kit rails reassemble from current children (LO-0290)
+
+### Changed
+
+- When a canvas zone is the source of truth for a kit or inspector rail, reassemble from current children on add/delete. Do not rematch a stale stored palette (`PB-20260916-003` design).
+
+## 2026-09-16 — Host-scope hang is not API proof (LO-0291)
+
+### Changed
+
+- An automation browser stuck on the fleet empty state on a host-only route is not proof the API failed. Cover AC with tests or curl and record the hang (`PB-20260916-004` gates).
+
+## 2026-09-16 — Review --approve keeps a completed retro (LO-0285)
+
+### Changed
+
+- Review `--approve` must not rewind `retro_status` after `--complete`. Cadence or skill-QA approve after retro is done must not send execute back to fill retro (`PB-20260916-001` HITL).
+
+## 2026-09-16 — Operator go vs exploration caps (LO-0286, LO-0287)
+
+### Changed
+
+- Operator-authorized Approve bypasses exploration or weekly synthesis caps; those caps throttle autonomous work (`PB-20260916-003` gates).
+- Gold-path coverage includes the operator-authorized approve path when the autonomous cap is already exhausted (`PB-20260916-001` QA).
+
+## 2026-09-16 — Visible review outcome; image gen is architecture-first (LO-0288, LO-0289)
+
+### Changed
+
+- Operator review Approve shows a visible outcome next to the action; preview URLs are the public reader host, not the admin sign-in wall (`PB-20260916-001` frontend).
+- Costly generation stays an architecture packet (cost envelope + prompt/reference) before any vendor (`PB-20260916-002` HITL).
+
+## 2026-09-16 — Lifecycle folders exclude dismissed (LO-0284)
+
+### Changed
+
+- Lifecycle folder queries must exclude dismissed rows; filtering dismissed only on the Dismissed folder still lists trashed items elsewhere (`PB-20260916-002` backend).
+
+## 2026-09-16 — Chrome Share vs canvas; invite previews need cloud URLs (LO-0282, LO-0283)
+
+### Changed
+
+- Chrome actions such as Share belong on the shell that is already painted; a media rail must not offer a stock provider that never returns results (`PB-20260916-001` contextual-ia).
+- Hub or invite previews are not done on a local blob URL; resolve the cloud content URL first (`PB-20260916-002` gates).
+
+## 2026-09-16 — Chrome identity is UI review; identity tickets stay feature (LO-0279, LO-0280, LO-0281)
+
+### Changed
+
+- Operator chrome/identity sprints are not backend-only inform review (`PB-20260916-001` design).
+- Left-rail demo profiles and app-chrome identity are separate tickets when the operator asks to remove all hardcoded profiles (`PB-20260916-002` design).
+- `infer_ticket_type` keeps fixture/identity swaps on the feature stream even if the raw text mentions a menu (`PB-20260916-002` ticket-workflow).
+
+## 2026-09-16 — Receipt honesty, newer feedback first, idle traces (LO-0276, LO-0277, LO-0278)
+
+### Changed
+
+- A hung loading surface is not browser proof of list chrome. Receipt Default flow must name what loaded; if the list never left loading, cite tests and record the hang (`PB-20260916-001` gates).
+- Sprint scope sorts `--from-feedback` tickets by newer ticket number first at the same priority so leftover P0 restyle work cannot beat this session's feedback (`PB-20260916-001` ticket-workflow).
+- Empty production pipeline maps activity/trace status to idle, not in_progress (`PB-20260916-001` backend).
+
+## 2026-09-15 — Split AC bullets on --from-feedback (LO-0275)
+
+### Changed
+
+- Each Given/When/Then is its own AC bullet so sprint maturity sees two specific criteria (`PB-20260915-001` ticket-workflow).
+
+## 2026-09-15 — Setup finish lands in Inbox (LO-0270, LO-0271, LO-0273, LO-0274)
+
+### Changed
+
+- After the last required wizard step succeeds, enable the primary finish action. Do not leave Finish disabled with an unexplained secondary pipeline link (`PB-20260915-004` HITL).
+- Loading and empty states must not render leftover navigation from a previous step. Show a loading label until the next checks exist (`PB-20260915-005` HITL).
+- After activate, the only enabled primary action is the operator Inbox. Downstream pipeline views stay secondary until approval (`PB-20260915-006` HITL).
+- Editorial catalog forms omit merchant inventory fields the operator never uses (`PB-20260915-007` HITL).
+
+## 2026-09-15 — Bootstrap research via Inbox (LO-0272)
+
+### Changed
+
+- Bootstrap plans that need catalog items queue research as an operator Inbox request, not a ticket-id hint in the UI (`PB-20260915-002` backend).
+
+## 2026-09-15 — Shared host resolver (LO-0267, LO-0269)
+
+### Changed
+
+- Chrome and page lookup must share one host resolver. Do not trust the raw Host header on a preview origin when chrome already resolved the public hostname (`PB-20260915-003` design).
+- Host helpers for chrome and for catalog or page lookup must share one tenant key (`PB-20260915-004` design).
+
+## 2026-09-15 — Write-side revalidate (LO-0266, LO-0268)
+
+### Changed
+
+- Cache-bust after a write belongs on the plane that holds the secret. `"use client"` cannot see admin-only env — Saved can look true while the public host stays stale. Pull `write-side-revalidate`; skip `NEXT_PUBLIC_*` as the secret source (`PB-20260915-001` backend, `PB-20260915-002` frontend).
+- Same rule in process: do not treat a client Saved click as proof the public host refreshed (`PB-20260915-003` HITL).
+
+## 2026-09-15 — Sprint scope: canvas vs export/MD (LO-0263)
+
+### Changed
+
+- Do not mix canvas chrome with long export/MD deliverable tickets in one implementation sprint; finish gold-path product bugs first (`PB-20260915-001` design).
+- Close a canvas-chrome sprint when those tickets are done; keep export/MD work later (`PB-20260915-002` design).
+- After production auth or email-link changes, HITL-push the production git branch in the same session the operator can still click the message (`PB-20260915-002` HITL).
+
+## 2026-09-15 — Soft npm_audit + delivery fetch after publish (LO-0261, LO-0262)
+
+### Changed
+
+- Gate-5 `npm_audit` remaining moderate on `@vitest/mocker` (same advisory class) stays a soft warning; MOVE_DONE when hard checks are green (`PB-20260915-002` gates + qa-gate).
+- Gold-path publish is not done on WORK/CMS status alone — fetch the public delivery URL and confirm the document assembled (`PB-20260915-001` HITL).
+
+## 2026-09-15 — Root tsc isolation + same-session close (LO-0259, LO-0260)
+
+### Changed
+
+- Public-app root `tsc` must exclude sibling apps; tests that import another app's `@/` belong in that app's graph (`PB-20260915-001` frontend Testing).
+- Gate Prettier/`100` anti-slop: format the product tree before MOVE_DONE; named consts after equals (`PB-20260915-001` qa-gate).
+- Close the current ticket in the same session the work lands so inbox drain can feed the next sprint (`PB-20260915-001` gates).
+
+## 2026-09-15 — Write-side revalidate (LO-0266)
+
+### Changed
+
+- Cache-bust after a write belongs on the plane that holds the secret. `"use client"` cannot see admin-only env — Saved can look true while the public host stays stale. Pull `write-side-revalidate`; skip `NEXT_PUBLIC_*` as the secret source.
+
 # Quinsy Studio CHANGELOG
+
+## 2026-09-14 — Compose worker queues vs topology (LO-0257, LO-0258)
+
+### Changed
+
+- Worker `--queue=` must include every topology queue jobs are dispatched on (`PB-20260914-004`).
+- YAML `--queue` / worker-command edits require recreating that service; HTTP `up -d` leaves the old command running (`PB-20260914-003`, same class as LO-0156).
 
 ## 2026-09-14 — QA prettier vs session usage JSON (LO-0254)
 

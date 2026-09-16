@@ -56,6 +56,8 @@ Agent or groom should set `ticket_type: ia-feature-placement` when request inclu
 
 Run **placement before** width/spacing/tokens.
 
+When a canvas zone owns a kit/inspector rail, the rail follows **current** zone children (add/delete). Stored palettes must not keep removed items (LO-0290 / `PB-20260916-003`).
+
 ---
 
 ## Approve-design gate
@@ -68,3 +70,7 @@ Run **placement before** width/spacing/tokens.
 
 - UX-002 — workflow steps across surfaces
 - UX-006 — brand/token compliance on chosen surface
+
+## Deltas
+
+- **PB-20260916-004** helpful=0 harmful=0 :: When a chrome ticket removes or rewires a control, update the gold-path source test in the same change.

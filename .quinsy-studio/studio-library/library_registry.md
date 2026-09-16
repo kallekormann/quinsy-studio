@@ -50,6 +50,7 @@
 | `package-password-gate` | `packages/password-gate/` | `packages/password-gate/` | `password-gate`, `password`, `bcrypt-gate` |
 | `package-rect-selection` | `packages/rect-selection/` | `packages/rect-selection/` | `rect-selection`, `marquee-selection`, `marquee` |
 | `package-viewport-fit` | `packages/viewport-fit/` | `packages/viewport-fit/` | `viewport-fit`, `zoom-to-fit`, `fit-viewport` |
+| `package-write-side-revalidate` | `packages/write-side-revalidate/` | `packages/write-side-revalidate/` | `write-side-revalidate`, `server-revalidate`, `cache-bust-after-write` |
 | `sticker-sheet` | `design/prototype/app/sticker-sheet/` | `ui/sticker-sheet/` | (reference only) |
 
 ---

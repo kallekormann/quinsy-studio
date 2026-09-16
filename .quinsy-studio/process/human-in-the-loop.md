@@ -65,7 +65,7 @@ While sprint tickets are not all `done`:
 | Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
 | Open LOs spawn `./studio train` in parallel | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
 
-**Enforced by CLI:** `./studio move … implement` is blocked when cadence review is pending or the sprint is closed pending retro. Implementation `--approve-scope` is blocked when production tickets exist and ready backlog is below `cost.production_ready_min`. When the last sprint ticket is `done` and cadence is not due, execute continues to retro — not HITL.
+**Enforced by CLI:** `./studio move … implement` is blocked when cadence review is pending or the sprint is closed pending retro. Implementation `--approve-scope` is blocked when production tickets exist and ready backlog is below `cost.production_ready_min`. When the last sprint ticket is `done` and cadence is not due, execute continues to retro — not HITL. Mid-sprint `MOVE_DONE` must not print sprint-complete / retro copy while other sprint tickets are still open (LO-0292).
 
 **Rule (LO-0144):** Close **this** sprint as soon as its tickets are `done` (UI review or backend inform → reuse → retro). Do not keep review open because a later amendment, operator console, or unwritten skill is still only feedback. Capture that work with `./studio feedback` → clarify → ticket for a later sprint.
 
@@ -170,6 +170,8 @@ Sprint review feedback (once per theme)
 | **Approve / reject** | **Human** | `./studio review <p> --approve` or `--reject --reason "..."` — **LO-0025:** `--approve` is refused unless every current-sprint ticket is `done` |
 
 **Rule (LO-0025):** `./studio review <p> --approve` must **refuse** while any current-sprint ticket is still `open` / `implement` / not `done`. Mid-sprint approve freezes implementation incorrectly. Finish tickets → `./studio review` → human `--approve`.
+
+**Rule (LO-0285):** `--approve` must not rewind a completed retrospective. If `retro_status` is already `done`, keep it. Cadence or skill-QA `--approve` after `./studio retro --complete` must not send execute back to fill retro.
 
 **Rule (LO-0144):** Review is for **this sprint’s shipped tickets**, not for work that is still only feedback (amendments, console, unwritten skills). Do not linger in review waiting for that work to become a ticket in the same close. Ticket it, then plan the next sprint.
 | **Reuse review** | **Agent** | `./studio reuse <p>` → promote / LO ticket / `--record local`. Completes when unresolved paths are 0 (LO-0169) — no `--approve` |
@@ -523,3 +525,19 @@ hitl_triggers:
 - `.quinsy-studio/process/gates.md` — gates
 - `./studio decide <project> "<title>"` — create a decision record
 - `./studio decisions <project>` — show the overview
+
+## Deltas
+
+- **PB-20260916-006** helpful=1 harmful=0 :: When a job does not create a production order, the same ticket must define Inbox Done (not only a linked brief) and Agent running/done rows. Persisting catalog or warehouse data is not enough.
+- **PB-20260916-005** helpful=1 harmful=0 :: The spend or LLM ledger is not the agent control room. A green cost line is not proof the operator can see work during or after a job. Jobs that do not create a production order still need a row on the Agent surface (and Inbox Done when the request is actioned).
+- **PB-20260916-004** helpful=0 harmful=0 :: When needs_architecture is true, write docs/architecture/<TICKET>.md and wait for approve-arch (or ACTION: PRODUCTION) before implement. Do not move the ticket to implement while architecture_status is pending.
+- **PB-20260916-003** helpful=0 harmful=0 :: MOVE_DONE prints sprint-complete copy only when every sprint ticket is done or cancelled; remaining tickets continue execute.
+- **PB-20260916-002** helpful=0 harmful=0 :: Costly generation (images, long LLM) stays an architecture packet — cost envelope plus prompt or reference contract — before any vendor. Implementation tickets depend on approve-arch; do not pick a vendor in the architecture note.
+- **PB-20260916-001** helpful=0 harmful=0 :: Review --approve must not rewind a completed retrospective. If retro_status is already done, keep it. Cadence or skill-QA --approve after retro --complete must not send execute back to fill retro.
+- **PB-20260915-007** helpful=0 harmful=0 :: Editorial catalog forms omit merchant inventory fields the operator never uses. Do not copy warehouse stock fields into an affiliate or editorial product form.
+- **PB-20260915-006** helpful=0 harmful=0 :: After activate, the only enabled primary action is the operator Inbox. Downstream pipeline views stay secondary until approval.
+- **PB-20260915-005** helpful=0 harmful=0 :: Loading and empty states must not render leftover navigation from a previous step. Show a loading label until the next checks exist.
+- **PB-20260915-004** helpful=0 harmful=0 :: After the last required wizard step succeeds, enable the primary finish action. Do not leave Finish disabled with an unexplained secondary pipeline link — setup then feels unfinished.
+- **PB-20260915-003** helpful=0 harmful=0 :: Cache-bust after a write belongs on the plane that already holds the secret, not a browser fetch of internal env. Saved on a client control is not proof the public host refreshed — pull write-side-revalidate on the write plane.
+- **PB-20260915-002** helpful=0 harmful=0 :: After production auth or email-link changes, HITL-push the production git branch in the same session the operator can still click the message.
+- **PB-20260915-001** helpful=0 harmful=0 :: Gold-path publish is not done on WORK/CMS status alone. Before a demo, fetch the public delivery URL and confirm the document assembled (nested blocks / public read). A published row with a public 404 is an open delivery defect, not a successful gold path.

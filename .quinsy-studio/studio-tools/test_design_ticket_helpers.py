@@ -29,6 +29,23 @@ def test_infer_design_brief_title_and_scope():
     )
 
 
+def test_infer_identity_fixture_stays_feature():
+    assert (
+        infer_ticket_type(
+            "Command Center chrome drops kit demo identity. GitHub kit menus still show demo profiles."
+        )
+        == "feature"
+    )
+
+
+def test_feature_chrome_is_not_backend_only():
+    from design_ticket_helpers import tickets_are_backend_only
+
+    assert not tickets_are_backend_only(
+        [{"ticket_type": "feature", "title": "Command Center chrome drops kit demo identity"}]
+    )
+
+
 def test_placement_section_detected():
     spec = """
 ## 1. Summary

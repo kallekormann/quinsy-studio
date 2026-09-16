@@ -54,7 +54,11 @@ What belongs here:
   - Reusable components
 
 Storage location:
-  .quinsy-studio/knowledge-base/  → Playbooks
+  .quinsy-studio/knowledge-base/learnings/<domain>/<topic>.md  → durable principles
+  .quinsy-studio/knowledge-base/learnings/index.md              → catalog (learn-find)
+  .quinsy-studio/knowledge-base/learnings/inbox.md           → open queue only
+  .quinsy-studio/knowledge-base/  → Playbooks (ACE deltas on train)
+  .quinsy-studio/teams/*/skills/ → Skill deltas
   .quinsy-studio/studio-tools/    → Python Scripts
   .quinsy-studio/studio-templates/ → Templates
   studio-library/                 → UI/Packages
@@ -67,11 +71,13 @@ Promotion via:
 
 ```markdown
 When a learning is identified (gate, retro bullet, reuse path, explicit learn):
-  1. Classify (package / ui-component / design / ux / ia / layout / …)
-  2. Append knowledge-base/learnings/inbox.md (generic — no client names)
-  3. Open LO-* with infusion_kind + infusion_path
-  4. ./studio train (parallel) — product execute keeps IMPLEMENT
-  5. Generalize into the infusion path + CHANGELOG; move LO to done
+  1. Portability gate (must/should/never/prefer — not host/ticket incidents)
+  2. Classify domain/topic
+  3. Append open queue inbox.md (generic — no client names)
+  4. Write principle to knowledge-base/learnings/<domain>/<topic>.md + index.md
+  5. Open LO-* with infusion_kind + infusion_path (topic file)
+  6. ./studio train (parallel) — product execute keeps IMPLEMENT
+  7. Delta matching playbook/skill + CHANGELOG; move LO to done; inbox compact archives the row
 Project-specific only → projects/[name]/docs/studio-learnings-local.md
 Do not copy project UI/tokens into studio-library.
 ```

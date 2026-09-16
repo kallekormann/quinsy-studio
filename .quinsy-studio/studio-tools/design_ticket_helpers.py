@@ -95,6 +95,17 @@ def infer_ticket_type(text: str) -> str:
             return "ia-navigation"
     if any(x in t for x in NEW_COMPONENT_TRIGGERS):
         return "ui-new-component"
+    if any(
+        x in t
+        for x in (
+            "fixture",
+            "identity",
+            "hardcoded profile",
+            "demo profile",
+            "kit identity",
+        )
+    ):
+        return "feature"
     if any(x in t for x in ("component", "modal", "dialog", "menu", "ui", "layout")):
         return "ui-composition"
     if any(x in t for x in STYLING_TRIGGERS):
@@ -170,10 +181,25 @@ def requires_design_approval(content: str) -> bool:
     return ticket_type in DESIGN_TRACK_TYPES
 
 
+UI_TITLE_HINTS = (
+    "chrome",
+    "sidebar",
+    "inbox",
+    "header",
+    "nav user",
+    "operator chip",
+    "kit identity",
+    "demo identity",
+)
+
+
 def ticket_looks_like_ui(ticket_type: str, title: str = "") -> bool:
     """True when the ticket is design-track or ships a user-visible UI surface."""
     tt = (ticket_type or "").strip() or infer_ticket_type(title or "")
-    return tt in DESIGN_TRACK_TYPES or tt in UI_IMPLEMENT_TYPES
+    if tt in DESIGN_TRACK_TYPES or tt in UI_IMPLEMENT_TYPES:
+        return True
+    blob = f"{title}".lower()
+    return any(hint in blob for hint in UI_TITLE_HINTS)
 
 
 def tickets_are_backend_only(tickets: List[Dict]) -> bool:

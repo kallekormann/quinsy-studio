@@ -140,3 +140,7 @@ Every design spec **must** include **§2 Context & placement** (see `design-spec
 ## Batch IA specs ahead of shared-sprint feature work (LO-0245)
 
 - **PB-20260914-001** helpful=0 harmful=0 :: When IA/design-track tickets share a sprint with feature work that depends on them, batch and approve the IA specs **at sprint start (or the prior sprint)** rather than interleaving. Feature tickets blocked on unapproved IA stall mid-sprint and invite improvised structure that the later spec then contradicts.
+
+## Deltas
+
+- **PB-20260916-001** helpful=0 harmful=0 :: Chrome actions such as Share belong on the shell that is already painted. Do not wait for a later canvas or document plane. A media rail must not offer a stock-media provider that never returns results.

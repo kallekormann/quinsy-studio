@@ -225,12 +225,12 @@ Studio HQ must learn **in the same session** the gap appears. If LOs pile until 
 
 | When identified | What happens (no extra human trigger) |
 |-----------------|----------------------------------------|
-| You or the agent log a gap | `./studio learn "…"` → classified LO + inbox line |
-| Retro `--complete` | “Went badly” / “improve” bullets become LOs |
-| Reuse review | Unpromoted `packages/` / `ui/components/` become LOs (not a raw copy of project UI) |
-| 3rd red gate on a ticket | Auto-LO (`signal: gate-fail`) |
+| You or the agent log a gap | `./studio learn "…"` → portable? topic file + open inbox + LO : project local log |
+| Retro `--complete` | Portable “went badly” / “improve” bullets become LOs; incidents stay local |
+| Reuse review | Unpromoted generic `packages/` become LOs (not a raw copy of project UI) |
+| 3rd red gate on a ticket | Auto-LO (`signal: gate-fail`) if portable |
 
-Each harvest **classifies** the learning, appends [knowledge-base/learnings/inbox.md](knowledge-base/learnings/inbox.md), and opens a compact LO. Product `./studio execute` **continues IMPLEMENT**. Infusion is `./studio train` in parallel (or `STUDIO_LO` when idle).
+Portable harvest writes [knowledge-base/learnings/<domain>/<topic>.md](knowledge-base/learnings/index.md), keeps [inbox.md](knowledge-base/learnings/inbox.md) as the **open queue only**, and opens a compact LO. Find rules with `./studio learn-find`. Product `./studio execute` **continues IMPLEMENT**. Infusion is `./studio train` into the matching playbook/skill (or `STUDIO_LO` when idle).
 
 The agent **generalizes** into that path (playbook, process, tooling, or library asset). It does **not** merge project tokens or UI into `studio-library/`.
 

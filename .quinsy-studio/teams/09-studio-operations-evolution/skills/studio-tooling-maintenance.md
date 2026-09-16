@@ -63,7 +63,7 @@ What to track:
 
 ---
 
-## Toolbox (trained — TR-0001–TR-0007, TR-0011)
+## Toolbox (trained — TR-0001–TR-0007, TR-0011, TR-0077)
 
 Distilled principles from parallel train jobs (Openverse imagery sprint). Full detail in linked playbooks — no client product names.
 
@@ -108,6 +108,17 @@ Distilled principles from parallel train jobs (Openverse imagery sprint). Full d
 ### Laravel serve in Compose (LO-0101)
 
 - `php artisan serve` strips Compose env from the PHP child unless `--no-reload`. CLI artisan can look healthy while HTTP 500s. Pass `--no-reload` or use `php -S`.
+
+### Operator go vs exploration caps (LO-0286, TR-0083)
+
+- An operator Approve / explicit dispatch is a go. Weekly or exploration budget caps throttle **autonomous** jobs, not the request the operator just authorized ([gates.md](../../../process/gates.md), [backend_playbook.md](../../../knowledge-base/backend_playbook.md)).
+- Do not pause an operator-authorized synthesis because the unattended weekly cap is already reached. Re-check caps on the next autonomous call.
+
+### Receipt honesty when live UI hangs (LO-0276, LO-0291, TR-0077)
+
+- A hung loading surface is not browser proof of list chrome. Receipt Default flow must name what actually loaded; if the list never left loading, cover chrome AC with HTTP/API tests (curl, PHPUnit, Vitest) and record the hang ([qa-gate-playbook.md](../../../knowledge-base/qa-gate-playbook.md), [gates.md](../../../process/gates.md)).
+- Host-scoped operator chrome that never leaves the loading state is the same class: do not treat a spinner as click-through (LO-0276, LO-0291).
+- Host-only operator pages that still show the fleet empty state (select a host) in an automation tab are the same class: cite API or tests, record the hang, put the route in HOST_ONLY_PATHS. Do not treat a spinner screenshot as operator click-through.
 
 ### Upgrade soft-path DoD (LO-0142 / LO-0143, TR-0011)
 

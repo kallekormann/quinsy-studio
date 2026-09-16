@@ -358,6 +358,17 @@
       "title": "Zoom-to-fit viewport math"
     },
     {
+      "name": "write-side-revalidate",
+      "kind": "package",
+      "path": "packages/write-side-revalidate/",
+      "version": "1.0.1",
+      "source_project": "affiliate-platform",
+      "promoted": "2026-09-16",
+      "promoted_at": "2026-09-16T19:57:14.692302",
+      "title": "write-side-revalidate (promoted from affiliate-platform)",
+      "ticket_id": "AFFI-0304"
+    },
+    {
       "name": "checkbox",
       "kind": "ui-atom",
       "path": "ui/components/checkbox/",
@@ -1092,8 +1103,8 @@
     }
   ],
   "last_promotion": {
-    "project": "moody",
-    "at": "2026-09-01T16:04:21.031213"
+    "project": "affiliate-platform",
+    "at": "2026-09-16T19:57:14.692305"
   },
   "schema_version": 2
 }

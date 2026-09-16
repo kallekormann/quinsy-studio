@@ -298,4 +298,11 @@ The gate history is logged in the project's `status.json`:
 
 ## Deltas
 
+- **PB-20260916-005** helpful=0 harmful=0 :: When host-scoped live chrome never leaves loading, default-flow proof is HTTP/API tests (curl, PHPUnit, Vitest) plus a recorded hang — not a click-through.
+- **PB-20260916-004** helpful=0 harmful=0 :: An automation browser stuck on the fleet empty state (select a host) on a host-only route is not proof the API failed. Cover AC with tests or curl; record the hang. Host-only routes belong in HOST_ONLY_PATHS so the host query is restored.
+- **PB-20260916-003** helpful=0 harmful=0 :: Operator-authorized go (Inbox Approve, explicit operator dispatch) bypasses exploration or weekly synthesis caps. Those caps throttle autonomous work, not the request the operator just approved.
+- **PB-20260916-002** helpful=0 harmful=0 :: Hub or invite previews are not done on a local blob URL. Resolve the cloud content URL the invitee will actually open, then call done.
+- **PB-20260916-001** helpful=3 harmful=0 :: A hung loading surface is not browser proof of list chrome. Receipt Default flow must name what actually loaded; if the list never left loading, cover chrome AC with tests and record the hang — do not claim a click-through.
+- **PB-20260915-002** helpful=0 harmful=0 :: Level 5 npm_audit remaining moderate on @vitest/mocker (or the same advisory class) is still a soft warning. MOVE_DONE when hard checks are green; do not open a follow-up ticket or hold the sprint for that advisory.
+- **PB-20260915-001** helpful=0 harmful=0 :: Close the current ticket (receipt + gate 5 + MOVE_DONE) in the same session the work lands so inbox drain can feed the next sprint instead of stacking mid-loop notes. Do not leave a finished loop ticket open while starting a new slice.
 - **PB-20260914-002** helpful=0 harmful=0 :: QA Prettier must ignore generated product session usage JSON; do not fail a ticket because the estimate ledger is unformatted.

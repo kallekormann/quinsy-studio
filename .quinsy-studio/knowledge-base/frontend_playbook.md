@@ -39,7 +39,10 @@ Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-g
 |----|-------|----------------|
 | Label every control; keyboard + visible focus | Icon-only without accessible name | Contrast or 24px target fail on the changed control |
 
-### Testing (FE-006)
+### Testing
+
+- **PB-20260915-001** helpful=5 harmful=0 :: Root tsc for the public app must exclude sibling apps. Tests that import another app's path aliases belong in that app's tsconfig or the root exclude list — otherwise gate TypeScript fails on unresolved @/ modules that never ship in the public build.
+ (FE-006)
 
 Follow [qa-gate-playbook.md](qa-gate-playbook.md).
 
@@ -434,3 +437,8 @@ Tickets that claim “no third-party font CDN pre-auth” are not done until **a
 - `.quinsy-studio/knowledge-base/anti_ai_slop_protocol.md` — frontend slop rules
 - `.quinsy-studio/studio-library/ui/` — UI assets
 - `.quinsy-studio/teams/01-frontend-experience/` — frontend team
+
+## Deltas
+
+- **PB-20260916-001** helpful=0 harmful=0 :: Operator review Approve must show a visible outcome next to the action (published, already published, or error). Preview URLs must be the public reader host, not the operator admin sign-in wall.
+- **PB-20260915-002** helpful=0 harmful=0 :: Do not call delivery cache-bust from a use-client module. After a write, revalidate from the server plane that already has the secret. Client-visible env cannot reach admin-only URLs, so the UI can report Saved while the public host stays stale.

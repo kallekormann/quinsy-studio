@@ -62,6 +62,52 @@ class ReviewApproveGateTests(unittest.TestCase):
         approve_mock.assert_called_once()
         save_mock.assert_called_once()
 
+    def test_approve_review_keeps_completed_retro(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        from sprint_hitl import RETRO_DONE, approve_review
+
+        status = {
+            "sprint_hitl": {
+                "retro_status": RETRO_DONE,
+                "retro_completed_at": "2026-09-16T12:00:00",
+            }
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            sprint_dir = Path(tmp)
+            with (
+                patch("sprint_hitl.sprint_directory", return_value=sprint_dir),
+                patch(
+                    "sprint_hitl.sprint_ticket_summary",
+                    return_value={"tickets": [], "done": 0, "total": 0},
+                ),
+            ):
+                approve_review("demo", "SPRINT-1", status, notes="skill-qa")
+
+        self.assertEqual(status["sprint_hitl"]["retro_status"], RETRO_DONE)
+        self.assertEqual(status["sprint_hitl"]["review_status"], "approved")
+
+    def test_approve_review_sets_pending_when_retro_not_done(self) -> None:
+        import tempfile
+        from pathlib import Path
+
+        from sprint_hitl import RETRO_PENDING, approve_review
+
+        status = {"sprint_hitl": {"retro_status": None}}
+        with tempfile.TemporaryDirectory() as tmp:
+            sprint_dir = Path(tmp)
+            with (
+                patch("sprint_hitl.sprint_directory", return_value=sprint_dir),
+                patch(
+                    "sprint_hitl.sprint_ticket_summary",
+                    return_value={"tickets": [], "done": 0, "total": 0},
+                ),
+            ):
+                approve_review("demo", "SPRINT-1", status, notes="ok")
+
+        self.assertEqual(status["sprint_hitl"]["retro_status"], RETRO_PENDING)
+
 
 if __name__ == "__main__":
     unittest.main()
