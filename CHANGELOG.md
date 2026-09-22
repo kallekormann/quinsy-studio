@@ -2,6 +2,16 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [1.16.0] — 2026-09-22
+
+### HQ isolation (LO-0314–LO-0326)
+
+- Secrets as **names** (`env.schema.json`); values in the host secret store; `./studio env … --approve`
+- Docker required for gate / migrate / boot; execute leases (`parallel.max_projects`); one chat per product
+- Sequential `approve --gate N`; execute CARD **CONSTITUTION**; INFORM open HQ learning counts; HQ train in a separate session
+
+Detail: [.quinsy-studio/CHANGELOG.md](.quinsy-studio/CHANGELOG.md) · [hq-isolation-sprints.md](.quinsy-studio/process/hq-isolation-sprints.md)
+
 ## [1.12.0] — 2026-08-25
 
 ### STUDIO-SPRINT-01 — Design discipline & studio abstraction

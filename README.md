@@ -51,7 +51,7 @@ Do **not** `init` / `bootstrap` over a live tree. Hand over the repo + how to ru
 
 The agent reconstructs **implementation state in depth** (cite file paths; a README restatement is not done). You still approve as-built truth, architecture, and design of what exists, then a further-work milestone plan. Process: [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md)
 
-If a learning is identified mid-sprint, harvest is immediate and `./studio train` runs **beside** product work. Execute returns `STUDIO_LO` only when the product loop is idle.
+If a learning is identified mid-sprint, harvest is immediate. Product execute **INFORM**s the open HQ LO count and keeps `IMPLEMENT`. Infuse with `./studio train` in a **separate HQ chat**. Execute returns `STUDIO_LO` only when the product loop is idle.
 
 Full loop: [GETTING_STARTED — execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) · [learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified)
 
@@ -66,7 +66,9 @@ Full loop: [GETTING_STARTED — execute loop](.quinsy-studio/GETTING_STARTED.md#
 
 You also approve **design/architecture packets** (`approve-design`, `approve-arch`) and a **cadence review** every N implementation sprints (default 2). Ready tickets close via receipt skill QA + gate 5 — no ticket ACK. Sprint scope/groom are agent-owned. Implementation `--approve-scope` waits until enough **ready** tickets exist (`cost.production_ready_min`).
 
-Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `package.json`. Adopt merges them into the live app. Schema migrate is agent work when the DB is reachable — you get an INFORM, not a “please run migrate.”
+Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `package.json`. Adopt merges them into the live app. Schema migrate is agent work when Compose is up — you get an INFORM, not a “please run migrate.” **Docker is required.** Env **names** live in `env.schema.json`; values are injected with `./studio env <p> up --approve` from the host secret store (never Read `.env` values into chat).
+
+`./studio approve --gate N` refuses unless gate N-1 is already approved (re-approve of the same gate is allowed). Every execute CARD reprints a short **CONSTITUTION** (worlds, secrets-as-names, packet HITL).
 
 ```bash
 ./studio approve my-project --gate 0
@@ -84,9 +86,9 @@ Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `pa
 | `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Sprint: next **ready** ticket (CARD lists skills + playbooks) |
 | `PRODUCTION` | Write unsigned packets (spec + all-state mocks, or `docs/architecture/<TICKET>.md`) — same loop, not a sidecar |
 | `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Receipt + QA 5, then `move … done` (product git commit). Cadence: `ship --to dev`. `main` is HITL |
-| `INFORM` | Reuse brief / inbox drain — loop. **`cost-cap`:** stop; raise the named key in the **product** or **HQ** local yaml (see COST `ledger=`) |
-| `STUDIO_LO` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT |
-| `HITL` | **You:** gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort. Not a feature-ticket ACK |
+| `INFORM` | Reuse brief / inbox drain / **open HQ LO count** — loop. **`cost-cap`:** stop; raise the named key |
+| `STUDIO_LO` | Idle infusion in `.quinsy-studio/` only when there is no in-flight product ticket |
+| `HITL` | **You:** gates 0–2 (sequential), packet `approve-design` / `approve-arch`, `./studio env … --approve`, cadence review. Not a morning brief. Not a feature-ticket ACK |
 
 Priority: adopt as-built (if needed) → HITL gates 0–2 → `PRODUCTION` if the ready pipeline is starved → finish an in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
 
@@ -129,7 +131,7 @@ More examples: [GETTING_STARTED — start here](.quinsy-studio/GETTING_STARTED.m
 
 Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `./studio verify-abstraction` → `./studio settings` → `focus` (isolates siblings) → **`execute`** (loop until HITL). You approve gates; the agent runs `./studio`. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
 
-**Other hosts (same `./studio` loop, keys stay in that tool):** [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md). Codex already reads [`AGENTS.md`](AGENTS.md). Product Gemini keys in a project `.env` are not the coding-agent key.
+**Other hosts (same `./studio` loop, keys stay in that tool):** [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md). Codex already reads [`AGENTS.md`](AGENTS.md). Product LLM **names** live in `env.schema.json`; **values** are not the coding-agent key and must not be pasted into chat.
 
 ## Cost & token policy (studio load, not Cursor billing)
 
@@ -188,7 +190,7 @@ Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/s
 ./studio revise <project> --gate 1 --feedback "..."
 ```
 
-`focus` / `execute` / `verify-worlds` hide other `projects/*` from Read/Grep via a **local** `.cursorignore` and generated Cursor rule (gitignored). That is an **assignment**, not a sandbox: Shell can still see sibling trees, and parallel chats in the same window can mix products. One chat (or CLI process) per product. Product git: `git -C projects/<name> …`. Studio HQ git (this repo): never `git add projects/`.
+`focus` / `execute` / `verify-worlds` hide other `projects/*` from Read/Grep via a **local** `.cursorignore` (including a **QUINSY-SECRETS** block) and generated Cursor rule. That is an **assignment**, not a sandbox. **One chat per product.** `parallel.max_projects` (default 5) leases executes; a sixth is queued and does not rewrite isolation. `./studio focus` will not clobber another live lease unless `--force`. Product git: `git -C projects/<name> …`. Studio HQ git: never `git add projects/` (HQ pre-commit refuses `projects/`).
 
 Docs: [agent-context](.quinsy-studio/process/agent-context.md) · [two worlds](.quinsy-studio/process/worlds.md)
 
@@ -206,7 +208,7 @@ quinsy-studio/
 │   ├── studio-tools/         # Python CLI (studio.py)
 │   ├── studio-templates/
 │   ├── knowledge-base/
-│   │   └── learnings/inbox.md  # harvest landing pad (immediate, not batched)
+│   │   └── learnings/            # domain/topic catalog + inbox.md (open queue) + archive/
 │   └── backlog/              # LO-* studio improvements only
 ├── intake/                   # Raw PRDs + amendment briefs (gitignored)
 ├── projects/                 # Client projects (gitignored, own .git each)
@@ -218,7 +220,8 @@ quinsy-studio/
 | Topic | Document |
 |-------|----------|
 | Execute loop (agentic sprint) | [GETTING_STARTED § execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) |
-| Immediate harvest + parallel train | [GETTING_STARTED § learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified) |
+| HQ isolation (Docker, secrets, leases) | [process/hq-isolation-sprints.md](.quinsy-studio/process/hq-isolation-sprints.md) |
+| Immediate harvest + HQ train session | [GETTING_STARTED § learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified) |
 | Operations manual | [.quinsy-studio/README.md](.quinsy-studio/README.md) |
 | Getting started | [.quinsy-studio/GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
 | Agent prompts (new product or existing repo) | [GETTING_STARTED § start here](.quinsy-studio/GETTING_STARTED.md#start-here-tell-the-agent) |
@@ -248,23 +251,26 @@ quinsy-studio/
 1. **Library-first** — suggest + pull before coding; do not pull stubs; promote only when the generic asset improved
 2. **No code without a ticket** (after gate 2)
 3. **Three human gates** — PRD, architecture, design track. No product IMPLEMENT before gate 2. Existing apps: `./studio adopt` (never empty-init)
-4. **Execute loop** — `./studio execute` until HITL; compact cards (skills + playbooks); receipt + gate 5 before `done`; train LOs in parallel (idle `STUDIO_LO` only)
+4. **Execute loop** — `./studio execute` until HITL; compact cards (skills + playbooks); receipt + gate 5 before `done`; INFORM open HQ LO counts; train in a separate HQ session (idle `STUDIO_LO` only)
 5. **Sprint HITL** — no feature-ticket ACK; `PRODUCTION` then `approve-design` / `approve-arch`; cadence review every N implementation sprints. Hygiene: `./studio sprint --kind hygiene` (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
 6. **Milestones** — roadmap after gate 2; milestone review before next version backlog
 7. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
 8. **Placement before layout** — Team 10 writes the spec file (§2 + §2c); mocks use project tokens, sit in the real view, and cover all states; `ia-feature-placement` for cross-surface moves
-9. **Immediate harvest** — classify + inbox + LO when a learning is identified; `./studio train` beside product execute
+9. **Immediate harvest** — classify + inbox + LO when a learning is identified; product chat **INFORM**s; `./studio train` in a HQ session
 10. **Two git worlds** — never commit `projects/` to this repo; product commits from `projects/<name>/` on each `MOVE_DONE`. Cadence review may push **`origin/dev`**. `main` / production is HITL `./studio ship --to main --approve`. Studio HQ stays project-agnostic (`./studio verify-abstraction`).
-11. **Isolation** — `./studio focus` / `isolate`; guard `CROSS_PROJECT` for sibling names; do not treat focus as a jail
-12. **Cost caps** — medium-project defaults in `studio.settings.yaml`; on `INFORM cost-cap` raise the named key (do not dump more files)
-13. **Anti-slop + ADRs + HITL** — see process docs
+11. **Isolation** — one chat per product; `./studio focus` / `isolate`; guard `CROSS_PROJECT`; focus does not clobber a live execute lease unless `--force`. Not a kernel jail.
+12. **Cost caps** — medium-project defaults in `studio.settings.yaml`; `parallel.max_projects` (default 5); on `INFORM cost-cap` raise the named key (do not dump more files)
+13. **Docker + secrets** — Docker required for gate/migrate/boot; env **names** only; values via `./studio env … --approve`
+14. **Anti-slop + ADRs + HITL packets** — see process docs; no morning-brief dashboard
 
 ## CLI overview
 
 ```bash
 ./studio --help
 ./studio install                  # after git clone
-./studio focus <project> && ./studio execute <project>   # isolate + loop until HITL
+./studio focus <project> [--force] && ./studio execute <project>   # isolate + loop until HITL
+./studio execute <project> --release  # free an execute lease
+./studio env <project> up --approve   # inject named vars into Compose
 ./studio isolate <project>            # hide sibling projects/ from the agent
 ./studio settings                 # policy + estimated token usage
 ./studio note <project> "…"       # mid-execute inbox (ACK; drain after MOVE_DONE)
@@ -294,5 +300,5 @@ See [CHANGELOG.md](CHANGELOG.md) · studio process: [`.quinsy-studio/CHANGELOG.m
 
 ---
 
-**Version:** 1.15.0  
-**Date:** 2026-09-12
+**Version:** 1.16.0  
+**Date:** 2026-09-22

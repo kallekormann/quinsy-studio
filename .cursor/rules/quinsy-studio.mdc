@@ -38,7 +38,8 @@ Active project: `.quinsy-studio/.active-project.json`
 
 - **Studio HQ** (this repo): `.quinsy-studio/`, LO-* backlog — commit here only for studio work
 - **Project**: `projects/<name>/` — **separate git repo**; never `git add projects/` from studio root. Existing apps: `./studio adopt` (do not `init` over source).
-- **Siblings:** after `./studio focus <project>`, other `projects/*` trees are out of bounds. Do not Read, copy, or git them into the active repo. Switch products with `./studio focus <other>` (new session).
+- **Siblings:** after `./studio focus <project>`, other `projects/*` trees are out of bounds. Do not Read, copy, or git them into the active repo. **One chat per product.** Focus will not rewrite `.cursorignore` while another product holds an execute lease, unless `--force`. Switch products with `./studio focus <other>` (new session).
+- **Secrets:** Read `env.schema.json` / `*.env.example` for **names**. Do not Read `.env` values. Inject with `./studio env <p> … --approve`. Docker is required for gate, migrate, and boot.
 
 ## Before implementing anything
 
@@ -63,11 +64,11 @@ Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gat
 
 **UI kit (project setup):** `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` in the product app from `init` / `design` / `adopt` — not after the first failed import.
 
-**Migrations:** if you can reach the DB (local or VPS), you apply them as sprint work and INFORM. Do not ask the human to migrate. Destructive reset is HITL.
+**Migrations:** if you can reach the DB (Compose via `./studio env <p> migrate --approve`, or VPS), you apply them as sprint work and INFORM. Do not Read `.env` values. Do not ask the human to migrate. Destructive reset is HITL.
 
 ## Sprint HITL
 
-Autonomous mid-sprint for **ready** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2**, **`approve-design` / `approve-arch`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.**
+Autonomous mid-sprint for **ready** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2** (sequential), **`approve-design` / `approve-arch`**, **`env --approve`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.** INFORM open HQ LO counts; do not `STUDIO_LO` mid-product.
 
 ## Drift recovery
 

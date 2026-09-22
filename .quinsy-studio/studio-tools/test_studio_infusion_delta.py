@@ -44,6 +44,27 @@ class InfusionDeltaTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             delta.apply_delta(str(self.play), "add", body=huge)
 
+    def test_add_refuses_project_folder_name(self):
+        with patch("studio_portability.list_project_names", return_value=["acme-app"]):
+            with self.assertRaises(ValueError) as ctx:
+                delta.apply_delta(
+                    str(self.play),
+                    "add",
+                    body="Fix the acme-app canvas selection bug.",
+                )
+        self.assertIn("acme-app", str(ctx.exception))
+        self.assertNotIn("Fix the acme-app", self.play.read_text(encoding="utf-8"))
+
+    def test_add_allows_provenance_source_line(self):
+        with patch("studio_portability.list_project_names", return_value=["acme-app"]):
+            result = delta.apply_delta(
+                str(self.play),
+                "add",
+                body="Prefer library buttons. source: acme-app",
+            )
+        self.assertEqual(result["op"], "add")
+        self.assertIn("Prefer library buttons", self.play.read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     unittest.main()

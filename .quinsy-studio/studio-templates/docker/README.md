@@ -19,10 +19,12 @@ the project folder as the foundation and extended there per project.
 ## Running (from quinsy-studio root)
 
 ```bash
-./studio env <project> up      # docker compose -p <project> up -d
+./studio env <project> up --approve   # inject named vars from the host secret store
 ./studio env <project> status
 ./studio env <project> down
 ```
+
+`up`, `migrate`, and `dev` refuse without `--approve`. Compose receives `--env-file` pointing at the host secret store. Logs print **names only**.
 
 Compose file sets `name: <project>` and `container_name: <project>-postgres` so containers are **not** prefixed `docker-`.
 

@@ -9,6 +9,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from studio_hq_lock import hq_write_lock
+
 QUINSY_STUDIO = Path(__file__).parent.parent
 QUEUE_PATH = QUINSY_STUDIO / "knowledge-base" / "learnings" / "train-queue.json"
 TEAMS_DIR = QUINSY_STUDIO / "teams"
@@ -39,7 +41,8 @@ def load_queue() -> Dict:
 
 def save_queue(data: Dict) -> Path:
     QUEUE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    QUEUE_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    with hq_write_lock("hq"):
+        QUEUE_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     return QUEUE_PATH
 
 
@@ -104,6 +107,19 @@ def enqueue_train(
         observation = infer_lo_id(topic) or ""
     if (source or "").lower() == "lo" and not observation:
         raise ValueError("source=lo requires observation --lo LO-NNNN (empty observation is a bug)")
+    with hq_write_lock("hq"):
+        return _enqueue_train_locked(
+            skill_id, topic, source=source, observation=observation
+        )
+
+
+def _enqueue_train_locked(
+    skill_id: str,
+    topic: str,
+    *,
+    source: str,
+    observation: str,
+) -> Dict:
     data = load_queue()
     family = (skill_id, _topic_family(topic))
     family_hit = None

@@ -1063,9 +1063,10 @@
       "topic": "Sole-item re-click should stay selected; empty-canvas click is what clears",
       "source": "lo",
       "observation": "LO-0301",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T17:52:17",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0096. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0096. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:19:01"
     },
     {
       "id": "TR-0097",
@@ -1073,9 +1074,10 @@
       "topic": "When an image URL fails reachability, queue public-photo research (Commons/Wikip",
       "source": "lo",
       "observation": "LO-0302",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T18:10:58",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0097. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0097. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:20:10"
     },
     {
       "id": "TR-0098",
@@ -1083,9 +1085,10 @@
       "topic": "When an image URL fails reachability, queue public-photo research (Commons/Wikip",
       "source": "lo",
       "observation": "LO-0302",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T18:10:58",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0098. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0098. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:20:10"
     },
     {
       "id": "TR-0099",
@@ -1093,9 +1096,10 @@
       "topic": "Dead image URLs should queue public-photo research in the same gold path as pers",
       "source": "lo",
       "observation": "LO-0303",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T18:27:59",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0099. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0099. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:20:10"
     },
     {
       "id": "TR-0100",
@@ -1103,9 +1107,10 @@
       "topic": "Dead image URLs should queue public-photo research in the same gold path as pers",
       "source": "lo",
       "observation": "LO-0303",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T18:27:59",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0100. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0100. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:22:10"
     },
     {
       "id": "TR-0101",
@@ -1113,9 +1118,10 @@
       "topic": "Library Tokens listed typefaces only when `collectBoardFonts` found them; `/libr",
       "source": "lo",
       "observation": "LO-0304",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T19:20:15",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0101. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0101. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:23:28"
     },
     {
       "id": "TR-0102",
@@ -1123,9 +1129,10 @@
       "topic": "Library Tokens listed typefaces only when `collectBoardFonts` found them; `/libr",
       "source": "lo",
       "observation": "LO-0304",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T19:20:15",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0102. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0102. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:22:10"
     },
     {
       "id": "TR-0103",
@@ -1133,9 +1140,10 @@
       "topic": "Zone placement stamped `zonePlaced` but never selected Primary, so deliverables",
       "source": "lo",
       "observation": "LO-0305",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T19:20:15",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0103. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0103. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:23:28"
     },
     {
       "id": "TR-0104",
@@ -1143,9 +1151,10 @@
       "topic": "When adding a canvas item type, ship the Yjs allowlist + Postgres enum in the sa",
       "source": "lo",
       "observation": "LO-0311",
-      "status": "open",
+      "status": "done",
       "created": "2026-09-16T20:49:37",
-      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0104. Product execute stays IMPLEMENT."
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0104. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-22T15:23:28"
     }
   ]
 }

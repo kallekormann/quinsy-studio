@@ -1,9 +1,9 @@
 # Quinsy Studio — Getting Started
 
-> Canonical workflow: **new product** (PRD → **architecture HITL** → **design-track HITL**) **or existing codebase** (`./studio adopt` → as-built) → **execute loop** (`IMPLEMENT` / `PRODUCTION` until HITL; train LOs in parallel) → cadence review every N implementation sprints.  
-> Root overview: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md)
+> Canonical workflow: **new product** (PRD → **architecture HITL** → **design-track HITL**) **or existing codebase** (`./studio adopt` → as-built) → **execute loop** (`IMPLEMENT` / `PRODUCTION` until HITL) → cadence review every N implementation sprints.  
+> Root overview: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md) · Isolation epic: [hq-isolation-sprints.md](process/hq-isolation-sprints.md)
 
-**How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2 (design track)**. After that, `INFORM` still loops. Open learnings spawn `./studio train` beside product work — they do **not** replace the next `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks), not the whole backlog.
+**How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2 (design track)** — `approve --gate N` requires gate N-1. After that, `INFORM` still loops. Product execute **INFORM**s open HQ learning counts; infuse in a **separate HQ chat** (`./studio train`). `STUDIO_LO` does **not** replace `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks + **CONSTITUTION**), not the whole backlog.
 
 ## Start here: tell the agent
 
@@ -20,7 +20,23 @@ Two ways in — both are implemented:
 
 Open **quinsy-studio** at the repo root (not `projects/<name>/` alone). Cursor rules: [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc). Claude Code: [`CLAUDE.md`](../CLAUDE.md). Gemini CLI: [`GEMINI.md`](../GEMINI.md).
 
-**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run and rewrite a **local** `.cursorignore` + generated isolation rule (Read/Grep). They are not a sandbox. Shell can still see other `projects/` trees. In Cursor, Claude Code, Gemini, or any other agent IDE, parallel chats can mix concepts or git the wrong repo. Guard returns `CROSS_PROJECT` if the request names a sibling. Use a dedicated chat or CLI process per product, pass that `<project>` on every `./studio` command, and never copy or commit another product into the active git. Product git runs **inside** `projects/<name>/`. Studio HQ git never stages `projects/`.
+**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run and rewrite a **local** `.cursorignore` + generated isolation rule (Read/Grep). They are not a sandbox. **One chat (or IDE window) per product** — five concurrent products need five chats, not one ignore list. `parallel.max_projects` (default 5) file-leases executes; a sixth is queued. `./studio focus` will not clobber another live lease unless `--force`. Shell can still see other `projects/` trees. Guard returns `CROSS_PROJECT` if the request names a sibling. Product git runs **inside** `projects/<name>/`. Studio HQ git never stages `projects/`. HQ train stays in a **separate** session.
+
+**Docker is required** for gate, migrate, and product boot (`./studio env <p> up|migrate|dev --approve`). Missing Docker stops those commands with install instructions — there is no host fallback that cats `.env` into the chat.
+
+### Secrets, Docker, and concurrent products
+
+| Rule | What to do |
+|------|------------|
+| **Names, not values** | Agents Read `env.schema.json` / `*.env.example`. Do not Read `.env` / `.env.local` values (Cursor ignore: QUINSY-SECRETS). |
+| **Host secret store** | Values live outside the workspace: `~/Library/Application Support/quinsy-studio/secrets/<project>/` (macOS) or `~/.config/quinsy-studio/secrets/<project>/` (Linux). |
+| **Inject** | `./studio env <p> up\|migrate\|dev --approve` passes `--env-file` to Compose. Without `--approve` the command exits non-zero. |
+| **Docker** | Required. Install Docker Desktop if the CLI is missing. Gate/QA output is redacted. |
+| **Leases** | `parallel.max_projects: 5` in `.quinsy-studio/studio.settings.yaml`. A sixth `./studio execute` is queued. HITL idle or `./studio execute <p> --release` frees a slot. |
+| **Focus** | `./studio focus` will not rewrite `.cursorignore` while another product holds a lease, unless `--force`. |
+| **HITL packets** | Sign-off is spec/mocks, `docs/architecture/<TICKET>.md`, or env `--approve` intent — not a morning-brief dashboard. |
+
+Plan: [hq-isolation-sprints.md](process/hq-isolation-sprints.md) (`LO-0314`–`LO-0326`).
 
 ```bash
 ./studio install                    # once after clone (Tailwind + Headless UI)
@@ -49,7 +65,7 @@ Bootstrap / `init` / `design` install **UI kit peers** in the prototype `package
 Do **not** run `./studio bootstrap` / `init` on a live tree — that scaffolds an empty app. Hand over:
 
 1. The repo (git URL or folder)
-2. How to run it (README / env). Secrets stay in `.env`
+2. How to run it (README / env **names**). Secret **values** stay in the host secret store, not in chat.
 3. Optional intent: copy [adopt_intent.md](studio-templates/adopt_intent.md) → `intake/<slug>.md`
 
 ```bash
@@ -92,8 +108,8 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 ./studio execute <project>     → do the NEXT command
 ./studio execute <project>     → again
 … until ACTION is HITL         → stop and wait for you
-         INFORM still loops    → do NEXT, execute again
-         TRAIN sidecar         → product IMPLEMENT continues
+         INFORM still loops    → do NEXT, execute again (includes open HQ LO count)
+         TRAIN                 → separate HQ session; product IMPLEMENT continues
 ```
 
 Do **not** ask “should I continue?” between tickets. `resume` is optional background; **execute** is the driver.
@@ -119,9 +135,9 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 | `DEBUG` | Gate went red. Write hypotheses in `sprints/SPRINT-NN/debug/<id>.md`, fix, re-gate (max 3 tries) | Agent |
 | `MOVE_DONE` | Receipt + gate 5 → `move … done` (product git commit). Then execute again | Agent |
 | `VERIFY` (ship) | Before cadence HITL: `./studio ship <p> --to dev` when origin is behind `dev` | Agent |
-| `STUDIO_LO <id>` | Idle infusion in `.quinsy-studio/` when there is no ready IMPLEMENT. Mid-sprint: TRAIN sidecar instead | Agent |
-| `INFORM` | Reuse brief / inbox drain — do NEXT, loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key | Agent or **you** |
-| `HITL` | **Stop.** Gates 0–2, **`approve-design` / `approve-arch`** (only when packets exist), cadence review, tech-veto, abort. Not a feature-ticket ACK. | **You** |
+| `STUDIO_LO <id>` | Idle infusion in `.quinsy-studio/` when there is no in-flight product ticket | Agent (HQ chat) |
+| `INFORM` | Reuse / inbox drain / **N open HQ LOs** — do NEXT, loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key | Agent or **you** |
+| `HITL` | **Stop.** Gates 0–2 (sequential), **`approve-design` / `approve-arch`** (packets exist), **`env --approve`**, cadence review. Not a morning brief. Not a feature-ticket ACK. | **You** |
 | `PRODUCTION` | Write spec/mocks or architecture note, then loop until HITL. | **Agent** |
 
 **What execute picks (in order):**
@@ -132,12 +148,14 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 4. **Design track (gate 2)** — after architecture, `IMPLEMENT` `./studio design` (direction, design system, stills/mocks or clickable prototype), then **HITL** `./studio approve --gate 2`. Iterate with `./studio revise --gate 2`
 5. **Finish in-progress** — a ticket already in `implement` still runs VERIFY → GATE → DEBUG → MOVE_DONE (inbox notes wait)
 6. **`PRODUCTION`** — if ready tickets are below `production_ready_min` and packets are unsigned, write spec/arch notes then HITL `approve-design` / `approve-arch`
-7. **`IMPLEMENT`** — next unblocked **ready** sprint ticket. Open LOs → `TRAIN` sidecar
-8. **`STUDIO_LO`** — only when idle (no ready product ticket)
+7. **`IMPLEMENT`** — next unblocked **ready** sprint ticket. INFORM open HQ LO count; do **not** `STUDIO_LO` in this chat
+8. **`STUDIO_LO`** — only when idle (`implementation_in_flight` is false)
 
 ```bash
-./studio execute <project>           # human-readable
+./studio execute <project>           # human-readable (CONSTITUTION + CARD)
 ./studio execute <project> --json    # machine-readable (scripts / automations)
+./studio execute <project> --release # free the execute lease
+./studio env <project> up --approve  # inject named vars into Compose
 ./studio ticket-card <project> <ID>  # compact card only (~AC, files, deps)
 ./studio receipt <project> <ID>      # scaffold receipt before done
 ./studio health <project>            # state-graph: open LOs, missing receipts, deps
@@ -202,7 +220,7 @@ Committed product + HQ defaults are **M (medium)**: session **400k**, implement 
 
 ### What this does not do
 
-Higher budgets do not improve design or code quality. They only delay the stop. `model_hint` is the lever that can change host model cost (the IDE must honor it). Product LLM keys stay in `projects/<p>/.env`.
+Higher budgets do not improve design or code quality. They only delay the stop. `model_hint` is the lever that can change host model cost (the IDE must honor it). Product LLM **names** live in `env.schema.json`; **values** stay in the host secret store — never print `projects/<p>/.env` into chat.
 
 ```bash
 ./studio settings                         # HQ used vs cap
@@ -230,14 +248,14 @@ Studio HQ must learn **in the same session** the gap appears. If LOs pile until 
 | Reuse review | Unpromoted generic `packages/` become LOs (not a raw copy of project UI) |
 | 3rd red gate on a ticket | Auto-LO (`signal: gate-fail`) if portable |
 
-Portable harvest writes [knowledge-base/learnings/<domain>/<topic>.md](knowledge-base/learnings/index.md), keeps [inbox.md](knowledge-base/learnings/inbox.md) as the **open queue only**, and opens a compact LO. Find rules with `./studio learn-find`. Product `./studio execute` **continues IMPLEMENT**. Infusion is `./studio train` into the matching playbook/skill (or `STUDIO_LO` when idle).
+Portable harvest writes [knowledge-base/learnings/<domain>/<topic>.md](knowledge-base/learnings/index.md), keeps [inbox.md](knowledge-base/learnings/inbox.md) as the **open queue only**, and opens a compact LO. Find rules with `./studio learn-find`. Product `./studio execute` **continues IMPLEMENT** and **INFORM**s the open LO count. Infusion is `./studio train` in a **HQ session** (or `STUDIO_LO` when the product loop is idle). Infusion-delta aborts if a project folder name appears outside provenance. HQ JSON/inbox writes take a file lock.
 
 The agent **generalizes** into that path (playbook, process, tooling, or library asset). It does **not** merge project tokens or UI into `studio-library/`.
 
 ```
 learning identified → inbox + classified LO
-→ product: ./studio execute  → ACTION IMPLEMENT
-→ train:   ./studio train SO-001 --from mistake --topic "…"
+→ product chat: ./studio execute  → ACTION IMPLEMENT + INFORM N LOs
+→ HQ chat:      ./studio train SO-001 --from lo --topic "…" --lo LO-NNNN
 → CHANGELOG + move LO to backlog/done/ (train agent)
 ```
 
@@ -369,11 +387,11 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 - Implement features with no backlog ticket (after gate 2)
 - Dump the whole backlog into context (use `ticket-card` / execute CARD)
 - Pull library **stubs** (`billing`, `feature-gating`) — build in-project, then promote a working generic
-- Leave open LO-* piled for a later human `learn` prompt — harvest immediately; `./studio train` in parallel
+- Leave open LO-* piled for a later human `learn` prompt — harvest immediately; INFORM the count; infuse with `./studio train` in a **HQ** session
 - Treat a mid-execute chat message as a new assignment. Run `./studio guard <p> "<verbatim>"` first. On `INBOX_ACK`, resume the current ACTION. `FEEDBACK_ONLY` / `NEEDS_TICKET` must not preempt an in-flight ticket.
 - Wait for a feature-ticket ACK / “looks good” after `MOVE_DONE` — loop `./studio execute` until HITL (cadence review or `approve-design` / `approve-arch` **after packets exist**)
 - Ask the human to `approve-design` when `docs/design-specs/<TICKET>.md` or all-state token mocks are missing — write them first (execute will say IMPLEMENT, not HITL)
-- Ask the human to run schema migrate when you can reach the database (local Compose, `.env`, documented VPS). Apply it yourself, then INFORM. Destructive `migrate:fresh` / drop is HITL.
+- Ask the human to run schema migrate when you can reach the database (Compose via `./studio env <p> migrate --approve`, documented VPS). Apply it yourself, then INFORM. Do not Read `.env` values. Destructive `migrate:fresh` / drop is HITL.
 - Skip UI kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) on scaffold — they belong in the product app `package.json` from day one (`docs/setup/ui-kit.md`)
 - Keep stuffing files after `INFORM cost-cap` — wait for the named key in the **product** or HQ local yaml (`ledger=` on COST)
 
@@ -387,11 +405,12 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 |------|---------|
 | **After git clone** | `./studio install` · optional `./studio install --with-skills` |
 | Session start | `./studio verify-worlds` · `./studio verify-abstraction` · `./studio settings` · `./studio focus <p>` · **`./studio execute <p>`** |
-| Isolate siblings | `./studio isolate <p>` (also applied by `focus` / `execute` / `verify-worlds`) |
+| Isolate siblings | `./studio isolate <p>` (also applied by `focus` / `execute` / `verify-worlds`). Focus will not clobber a live execute lease unless `--force`. |
+| Docker / secrets | `./studio env <p> init` · `./studio env <p> up\|migrate\|dev --approve` (names from schema; values from host secret store) |
+| Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` (gate N needs N-1) · `./studio revise <p> --gate N --feedback "..."` |
 | Checklist | `./studio resume <p>` (optional; execute is the driver) |
 | New project from PRD | `./studio bootstrap <p>` (writes `docs/setup/ui-kit.md`; prototype `package.json` has kit peers) |
 | Existing codebase | `./studio adopt <p> --from <git-url-or-path> [--intent intake/<p>.md]` (same ui-kit note; merge peers into live `package.json` if present) |
-| Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` · `./studio revise <p> --gate N --feedback "..."` |
 | UI / arch packet HITL | `./studio approve-design <p> <TICKET-ID>` after spec + all-state mocks; `./studio approve-arch <p> <TICKET-ID>` after `docs/architecture/<TICKET>.md` |
 | Milestones | `./studio approve <p> --milestones` (after `docs/phases/` drafted) |
 | Architecture | `./studio blueprint <p>` |
@@ -401,12 +420,12 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Ticket card / receipt | `./studio ticket-card <p> <ID>` · `./studio receipt <p> <ID>` |
 | Mid-execute chat | `./studio guard <p> "…"` → `INBOX_ACK` (queued). Drain: `./studio note <p> --drain` |
 | Library-first | `./studio library suggest <p> "auth button"` · `./studio library pull <p> auth tokens button` (not stubs). Kit peers must already be in the app. |
-| Schema migrate | Agent runs the project migrate command when DB is reachable; INFORM. Not HITL. |
+| Schema migrate | `./studio env <p> migrate --approve` (or project migrate inside Compose). INFORM. Do not Read `.env` values. |
 | Product git / production | `./studio ship <p> --to dev` · `./studio ship <p> --to main --approve` (HITL) |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
 | Amendment intake | `./studio amend <p> intake/amendments/<p>/amendment_NN.md` · `./studio amendments <p>` · `./studio approve <p> --amendment AM-001` |
 | Groom / retro / train | `./studio groom <p>` · `./studio retro <p> --complete` (auto-harvest) · `./studio train SO-001 --from mistake --topic "…"` · `./studio infusion` |
-| Studio learnings | `./studio learn "..." --signal <s>` (harvests immediately) · `./studio learn-list` · then train beside execute |
+| Studio learnings | `./studio learn "..." --signal <s>` · `./studio learn-find` · `./studio learn-compact` · train in a **HQ** session |
 | Cost / tokens | `./studio settings` (HQ) · `./studio settings <p> [--init] [--reset-usage]` · product `docs/studio.settings.local.yaml` |
 | Scope check | `./studio guard <p> "your request text"` |
 
@@ -430,7 +449,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 ## Cursor Auto-run vs studio HITL
 
-Studio HITL is `ACTION: HITL` from `./studio execute` (gates 0–2, `approve-design` / `approve-arch`, cadence review, tech-veto, abort).
+Studio HITL is `ACTION: HITL` from `./studio execute` (gates 0–2 sequential, `approve-design` / `approve-arch`, `./studio env … --approve`, cadence review, tech-veto, abort).
 
 If Cursor shows **Allow** when the agent runs `./studio move <project> <ID> done`, that is **Cursor Auto-review** (Approvals & Execution), not a studio gate. The CLI already requires a filled receipt and gate 5; you should not also ACK the ticket in chat.
 
@@ -512,8 +531,8 @@ These are the **core start-of-project decisions**. Execute produces the artifact
 | Gate | You approve | CLI |
 |------|-------------|-----|
 | **0** | PRD + definitions **or** as-built truth + synthesized PRD (adopt) | `./studio approve <p> --gate 0` |
-| **1** | Architecture + ADRs after PRD (as-is on adopt; no stack swap unless you asked) | `./studio blueprint` then `./studio approve <p> --gate 1` |
-| **2** | Design track after architecture: direction, design system, stills/mocks **or** clickable prototype (adopt: design of what exists — no fake prototype) | `./studio design` then `./studio approve <p> --gate 2`. Iterate: `./studio revise --gate 2` |
+| **1** | Architecture + ADRs after PRD (as-is on adopt; no stack swap unless you asked) | `./studio blueprint` then `./studio approve <p> --gate 1` (refuses if gate 0 is pending) |
+| **2** | Design track after architecture: direction, design system, stills/mocks **or** clickable prototype (adopt: design of what exists — no fake prototype) | `./studio design` then `./studio approve <p> --gate 2` (refuses if gate 1 is pending). Iterate: `./studio revise --gate 2` |
 
 Gate 2 promotes design artifacts to [studio-library](studio-library/library_registry.md) on **greenfield** only. Adopted UI stays in the project; gaps become LOs. **No product IMPLEMENT until gates 0–2 are approved.** After a sprint starts, new UI tickets get an agent spec then implement; human taste is sprint review.
 
@@ -572,7 +591,7 @@ See [milestone-planning.md](process/milestone-planning.md) · [amendment-intake.
 ./studio sprint my-project
 ./studio sprint my-project --approve-scope
 ./studio groom my-project --approve
-./studio execute my-project          # loop until HITL; train LOs in parallel
+./studio execute my-project          # loop until HITL; INFORM open HQ LOs
 ```
 
 ## Iteration at any gate
@@ -596,7 +615,7 @@ Logged in `projects/<p>/docs/phases/revisions.md`.
 On `./studio move <p> <ID> implement` → library hint. Kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) are **setup**, not an afterthought — see `docs/setup/ui-kit.md`.
 On `./studio move … done` → requires gate level 5 **and** a filled execution receipt; warns if registry paths changed without promotion.
 
-**Migrations:** if Compose / `.env` / VPS access exists, the agent applies pending migrations as sprint work and tells you it ran. You are not the migrate operator.
+**Migrations:** if Compose is up (`./studio env <p> migrate --approve`) or a documented VPS is reachable, the agent applies pending migrations as sprint work and tells you it ran. You are not the migrate operator. Secret **values** stay out of chat.
 
 ## Project artifacts (all under `projects/<p>/`)
 
@@ -637,7 +656,8 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 | Brownfield adopt | [process/brownfield-adopt.md](process/brownfield-adopt.md) · `./studio adopt` |
 | Scope & drift | [process/agent-context.md](process/agent-context.md) |
 | Two git worlds | [process/worlds.md](process/worlds.md) · `./studio verify-worlds` |
-| Sibling isolation | `./studio focus` / `isolate` · guard `CROSS_PROJECT` · not a sandbox |
+| Sibling isolation | `./studio focus` / `isolate` · leases (`parallel.max_projects`) · guard `CROSS_PROJECT` · not a sandbox |
+| Secrets / Docker | [§ Secrets, Docker, and concurrent products](#secrets-docker-and-concurrent-products) · [hq-isolation-sprints.md](process/hq-isolation-sprints.md) |
 | Local URLs / ports | [host-port-allocation.md](knowledge-base/host-port-allocation.md) — smoke the project RUNBOOK URL |
 | Studio HQ generic docs | [process/studio-abstraction.md](process/studio-abstraction.md) · `./studio verify-abstraction` |
 | Cost / token policy | [Studio settings](#studio-settings-cost--tokens) — HQ vs product, how to estimate, size S–XL |
@@ -671,7 +691,7 @@ After gates **0–2** and the milestone roadmap, the agent runs **ready** ticket
 | Phase | Who | What |
 |-------|-----|------|
 | Sprint scope | **Agent** (you may override) | `./studio sprint <p> --approve-scope` (blocked if production packets starve the ready pipeline) |
-| Mid-sprint | Agent | `./studio execute` until HITL — `IMPLEMENT` / `PRODUCTION`; `MOVE_DONE` commits product git (no ticket ACK); migrate when DB is reachable; train LOs in parallel |
+| Mid-sprint | Agent | `./studio execute` until HITL — `IMPLEMENT` / `PRODUCTION`; `MOVE_DONE` commits product git (no ticket ACK); migrate via `env --approve` when Compose is up; INFORM open HQ LOs |
 | Cadence review | **You** | After `ship --to dev` if needed: try shipped UI → `./studio review <p> --approve` |
 | After review | **You** + agent | Feedback → clarify → ticket (production stream until packets signed); reuse inform; retro → train |
 | Milestone done | **You** | Approve milestone complete before next milestone backlog |

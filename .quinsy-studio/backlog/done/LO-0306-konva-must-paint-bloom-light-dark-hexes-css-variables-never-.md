@@ -1,8 +1,8 @@
 ---
-id: LO-0307
-title: A font placed in a zone should be used as Primary until the opera
+id: LO-0306
+title: Konva must paint Bloom light/dark hexes; CSS variables never reach canvas fill/t
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S
@@ -23,10 +23,10 @@ created: 2026-09-16
 General rule lives in `process/` so the next project cannot repeat this. No client / product names in studio HQ titles or infused body (provenance `--source` / CHANGELOG only).
 
 ## Scope
-Kind `process`. Promote or author in `process/` using `process/learning-loop.md`. Principle title must stay product-agnostic. Train skills: none (playbook-only). Observation (provenance): A font placed in a Mood Direction zone should be used as Primary until the operator picks another face.
+Kind `process`. Promote or author in `process/` using `process/learning-loop.md`. Principle title must stay product-agnostic. Train skills: none (playbook-only). Observation (provenance): Konva must paint Bloom light/dark hexes; CSS variables never reach canvas fill/text.
 
 ## AC
-- Inbox item LO-0307 generalized into `process/` (or matching playbook/skill/package)
+- Inbox item LO-0306 generalized into `process/` (or matching playbook/skill/package)
 - Infused text passes portability gate (no project folder names outside provenance)
 - CHANGELOG.md updated
 - LO moved to backlog/done/

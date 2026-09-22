@@ -13,6 +13,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from studio_hq_lock import hq_write_lock
+
 STUDIO_ROOT = Path(__file__).parent.parent.parent
 STUDIO_LIBRARY = STUDIO_ROOT / ".quinsy-studio" / "studio-library"
 PROJECTS_DIR = STUDIO_ROOT / "projects"
@@ -52,7 +54,8 @@ def _load_manifest() -> Dict:
 
 def _save_manifest(manifest: Dict) -> None:
     manifest["schema_version"] = 2
-    MANIFEST_FILE.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+    with hq_write_lock("hq"):
+        MANIFEST_FILE.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
 
 
 def _bump_version(current: str) -> str:

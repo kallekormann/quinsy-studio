@@ -13,10 +13,12 @@ import studio_isolation
 from studio_isolation import (
     HOOK_MARKER,
     ISOLATION_BEGIN,
+    SECRETS_BEGIN,
     _cursorignore_without_block,
     install_project_git_hook,
     path_escapes_project,
     request_names_sibling,
+    secrets_ignore_block,
     write_cursorignore,
 )
 
@@ -65,12 +67,22 @@ class IsolationTests(unittest.TestCase):
                 text = ignore.read_text(encoding="utf-8")
                 self.assertIn("node_modules/", text)
                 self.assertIn(ISOLATION_BEGIN, text)
+                self.assertIn(SECRETS_BEGIN, text)
+                self.assertIn("**/.env", text)
                 self.assertIn("projects/other-app/", text)
                 write_cursorignore(["third-app"])
                 text2 = ignore.read_text(encoding="utf-8")
                 self.assertNotIn("projects/other-app/", text2)
                 self.assertIn("projects/third-app/", text2)
                 self.assertEqual(text2.count(ISOLATION_BEGIN), 1)
+                self.assertEqual(text2.count(SECRETS_BEGIN), 1)
+                self.assertIn("**/.env", text2)
+
+    def test_secrets_block_covers_focused_project_env(self):
+        block = secrets_ignore_block()
+        self.assertIn("projects/*/.env", block)
+        self.assertIn("**/.env.local", block)
+        self.assertIn(".quinsy-studio/.secrets/", block)
 
     def test_strip_block_keeps_manual_lines(self):
         raw = "foo\n" + ISOLATION_BEGIN + "\nold\n# END QUINSY-ISOLATION\nbar\n"
@@ -101,6 +113,36 @@ class IsolationTests(unittest.TestCase):
             self.assertIn(str(proj.resolve()), text)
             self.assertIn("mktemp", text)
             self.assertNotIn(" | while ", text)
+
+    def test_hq_commit_blocked_projects_path(self):
+        from studio_isolation import hq_commit_blocked
+
+        self.assertIsNone(hq_commit_blocked([".quinsy-studio/CHANGELOG.md", "AGENTS.md"]))
+        msg = hq_commit_blocked(["projects/foo/src/a.ts"])
+        self.assertIsNotNone(msg)
+        self.assertIn("projects/foo", msg)
+
+    def test_install_studio_hq_hook_refuses_projects_in_index(self):
+        from studio_isolation import HQ_HOOK_MARKER, install_studio_hq_git_hook
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subprocess.run(["git", "init"], cwd=root, check=True, capture_output=True)
+            hook = install_studio_hq_git_hook(studio_root=root)
+            self.assertIsNotNone(hook)
+            text = hook.read_text(encoding="utf-8")
+            self.assertIn(HQ_HOOK_MARKER, text)
+            (root / "projects" / "foo").mkdir(parents=True)
+            (root / "projects" / "foo" / "leak.txt").write_text("nope\n")
+            subprocess.run(["git", "add", "projects/foo/leak.txt"], cwd=root, check=True)
+            result = subprocess.run(
+                ["sh", str(hook)],
+                cwd=root,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("projects/foo", result.stderr)
 
 
 if __name__ == "__main__":

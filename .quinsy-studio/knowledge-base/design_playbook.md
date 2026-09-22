@@ -377,6 +377,8 @@ When a ticket removes an operator control, update gold-path tests in the **same*
 
 ## Deltas
 
+- **PB-20260922-002** helpful=0 harmful=0 :: Font-token cards show an eyebrow family name, then an ABC specimen, then a sentence in that face. Name-only cards are not a type preview.
+- **PB-20260922-001** helpful=0 harmful=0 :: A Tokens library lists typefaces declared on the kit, not only fonts discovered on the current board. Board collection is a filter, not the inventory source.
 - **PB-20260916-006** helpful=1 harmful=0 :: Canvas or other non-DOM paint must use the same dark/light ink as html.dark CSS, never a hardcoded light-theme hex. CSS variables do not reach canvas/Konva fills unless resolved to hex first.
 - **PB-20260916-005** helpful=0 harmful=0 :: When a chrome ticket removes or rewires a control, update the gold-path source test in the same change. Do not leave the suite asserting the old button.
 - **PB-20260916-004** helpful=2 harmful=0 :: Gold-path tests for operator chrome must match the live chrome. When a ticket removes a control, update the gold path in the same change; do not leave the suite asserting a control operators no longer see.

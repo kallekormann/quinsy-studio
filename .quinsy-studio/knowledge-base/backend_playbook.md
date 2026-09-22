@@ -63,11 +63,11 @@ Every decision is documented.
 
 | Stack | Migrate command | Notes |
 |-------|-----------------|-------|
-| Studio docker template | `./studio env <project> up` | Generic Postgres on 5432 |
+| Studio docker template | `./studio env <project> up --approve` | Generic Postgres on 5432; `--approve` required |
 | Supabase CLI (local) | `npm run db:migrate:supabase` in **project** repo | API ~54321, DB ~54322 — not legacy port 54320 |
 | Local-first canvas | See [local-first-sync-playbook.md](local-first-sync-playbook.md) | Continuous sync, not one-time migration |
 
-Agents: read project `package.json` scripts and `.env.local` before running migrate. **You run the migrate command** when you can reach the database (local Docker/Compose, documented SSH/VPS, credentials already in project `.env`). That is sprint work. Tell the human it ran (one INFORM line). Do **not** paste migrate steps for the operator to execute instead of you.
+Agents: read project `package.json` scripts and `env.schema.json` / `*.env.example` (**names**) before running migrate. Do not Read `.env` **values**. **You run** `./studio env <project> migrate --approve` (or the project migrate command inside Compose) when you can reach the database. That is sprint work. Tell the human it ran (one INFORM line). Do **not** paste migrate steps for the operator to execute instead of you.
 
 **No access** (no DSN, no container, production without deploy credentials) → say so once and stop; that is HITL / tech-veto, not a fake “please run migrate.”
 
@@ -405,14 +405,15 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 
 ## Deltas
 
+- **PB-20260922-001** helpful=0 harmful=0 :: When a persisted image URL fails reachability, queue public-photo research on the same gold path as persist. Do not wait for a generation vendor.
 - **PB-20260916-005** helpful=0 harmful=0 :: Operator-loop network credentials are per-host rows in api_credentials (encrypted payload) plus sourcing_configs.networks. Do not have the Command Center read process .env publisher tokens for connect/browse.
-- **PB-20260916-004** helpful=3 harmful=0 :: A list GET must return every attribute the inspector is supposed to show. Do not ship a write path whose corresponding list omits those fields.
+- **PB-20260916-004** helpful=5 harmful=0 :: A list GET must return every attribute the inspector is supposed to show. Do not ship a write path whose corresponding list omits those fields.
 - **PB-20260916-003** helpful=1 harmful=0 :: Operator-authorized jobs skip the exploration weekly cap. Re-check monthly and kill-switch caps on every LLM complete; do not add a daemon. After the operator raises a limit, the next call picks up available budget.
 - **PB-20260916-002** helpful=0 harmful=0 :: Lifecycle folder queries (awaiting approval, in progress, done) must exclude dismissed rows. Filtering dismissed only on the Dismissed folder still lists trashed items in the other lifecycle views.
 - **PB-20260916-001** helpful=0 harmful=0 :: Empty production pipeline maps activity or trace status to idle, not in_progress. Defaulting unknown or empty rows to in_progress lies to the operator.
-- **PB-20260915-002** helpful=0 harmful=0 :: Bootstrap plans that need catalog items queue research as an operator Inbox request, not a ticket-id hint in the UI.
+- **PB-20260915-002** helpful=1 harmful=0 :: Bootstrap plans that need catalog items queue research as an operator Inbox request, not a ticket-id hint in the UI.
 - **PB-20260915-001** helpful=0 harmful=0 :: Cache-bust after a write belongs on the plane that holds the secret (admin worker, server action, route handler). A client module cannot see admin-only env; Saved can look true while the public host stays stale. Pull write-side-revalidate; never use NEXT_PUBLIC_ as the secret source.
 - **PB-20260914-004** helpful=0 harmful=0 :: Compose worker --queue must list every topology queue jobs are dispatched on; default or a single named queue is not enough.
 - **PB-20260914-003** helpful=0 harmful=0 :: Changing Compose queue-worker command or --queue flags requires recreating that service; up -d of the HTTP process leaves the old worker command running.
-- **PB-20260914-002** helpful=0 harmful=0 :: Derived graph mentions use persisted entity foreign keys on content blocks; if ids are absent, mention count stays 0 — do not mint entities from display names.
+- **PB-20260914-002** helpful=1 harmful=0 :: Derived graph mentions use persisted entity foreign keys on content blocks; if ids are absent, mention count stays 0 — do not mint entities from display names.
 - **PB-20260914-001** helpful=0 harmful=0 :: PHPUnit TestCase must pin QUEUE_CONNECTION=sync when Compose injects redis/database; phpunit.xml without force is not enough (same class of leak as DB_DATABASE).

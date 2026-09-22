@@ -1,4 +1,76 @@
-## 2026-09-16 — Durable learnings store + tighter portability
+## 2026-09-22 — Concurrent execute leases + isolation + guides (LO-0324–0326)
+
+### Changed
+
+- `parallel.max_projects` (default 5) file-leases `.quinsy-studio/.cache/execute-leases/`. A sixth `./studio execute` is queued and does not rewrite isolation. HITL idle or `--release` frees a slot. `./studio focus` will not clobber another live lease unless `--force`. Operator docs (root README, GETTING_STARTED, ops README, AGENTS, CLAUDE, GEMINI, Cursor rules, gates, worlds, HITL): Docker required, secrets as names, one chat per product, HQ train in a separate session.
+
+## 2026-09-22 — Execute constitution, INFORM LOs, sequential gates, packet HITL (LO-0320–0323)
+
+### Changed
+
+- Every execute CARD prints **CONSTITUTION** (worlds, secrets-as-names, packet HITL). In-flight product steps INFORM open HQ LO counts and never switch to `STUDIO_LO`. `approve --gate N` refuses unless gate N-1 is approved (re-approve still allowed). HITL copy points at spec/arch/env packets, not a morning brief.
+
+## 2026-09-22 — Infusion/learn abort on product nouns + HQ lock (LO-0318)
+
+### Changed
+
+- `infusion-delta` add/update refuse project folder names outside provenance and do not write. train-queue, inbox compact, and principle commits take `.quinsy-studio/.cache/hq.lock` (fcntl flock, re-entrant).
+
+## 2026-09-22 — Abstraction verify uses every project folder (LO-0319)
+
+### Changed
+
+- `./studio verify-abstraction` flags any `projects/<name>` token via `list_project_names()`, skipping provenance lines, CHANGELOG, inbox archive, and tests.
+
+## 2026-09-22 — HQ pre-commit refuses `projects/` (LO-0317)
+
+### Changed
+
+- `./studio install` copies `studio-templates/hooks/studio-hq-pre-commit.sh` into the studio `.git/hooks/pre-commit`. Staging `projects/` fails the hook.
+
+## 2026-09-22 — Gate/migrate/dev require Docker (LO-0316)
+
+### Changed
+
+- Missing Docker fails closed with an install URL. No host fallback that prints `.env`. QA/gate stdout is pattern-redacted. `GETTING_STARTED.md` states Docker is required for gate, migrate, and boot.
+
+## 2026-09-22 — Docker env inject is HITL `--approve` (LO-0315)
+
+### Changed
+
+- `./studio env <project> up|migrate|dev` exits non-zero without `--approve` and prints the HITL command (intent only). With `--approve`, Compose gets `--env-file` from the host secret store. Stdout/stderr are redacted; command lines never dump values.
+
+## 2026-09-22 — Secret values stay out of the agent tree (LO-0314)
+
+### Changed
+
+- Cursor ignore always includes a **QUINSY-SECRETS** block (`**/.env`, `projects/*/.env`, host `.secrets/`) for the focused product as well as siblings. Names live in `studio-templates/env.schema.json` and `env.example`. Values belong in `~/Library/Application Support/quinsy-studio/secrets/<project>/` (or XDG). `./studio focus` / `install` rewrite the block.
+
+## 2026-09-22 — HQ isolation epic planned (HQ-ISO-01…04)
+
+### Added
+
+- Four HQ sprints (`LO-0314`–`LO-0326`) so Studio can isolate secrets, require Docker, serialize HQ writes, and run ≥5 product chats. Plan: `process/hq-isolation-sprints.md`. Pause product execute until HQ-ISO-04 is done.
+
+## 2026-09-22 — Legal templates parameterized by property identity (LO-0313)
+
+### Changed
+
+- Default legal templates use the property's public identity, never a hard-coded first-tenant brand string (`LO-0313` process).
+- Sprint `--approve-scope` reads `scope-proposal.json` against open `backlog/*.md` only; already-done ids must be dropped from `proposed` first (`PB-20260922-003` process).
+
+## 2026-09-22 — Sole-item canvas re-click stays selected (LO-0301)
+
+### Changed
+
+- Board-canvas selection: re-clicking the only selected item keeps it selected. Clear on empty-canvas click or an explicit deselect control (`PB-20260922-001` frontend).
+- Unreachable persisted image URLs queue public-photo research on the same gold path as persist; do not wait for a generation vendor (`PB-20260922-001` backend, LO-0302, LO-0303).
+- Tokens libraries list typefaces declared on the kit, not only fonts found on the current board (`PB-20260922-001` design, LO-0304). Canvas/Konva paint already resolves theme hex (`PB-20260916-006`; LO-0306, LO-0308 closed as duplicates).
+- Zone placement must select Primary (`PB-20260922-001` IA, LO-0305). A typeface placed in a zone stays Primary until replaced (`PB-20260922-001` gates, LO-0307).
+- Font-token cards: eyebrow name, ABC specimen, then a sentence in that face (`PB-20260922-002` design, LO-0309).
+- New canvas item types ship CRDT allowlist and persistence enum together (`PB-20260922-001` local-first, LO-0311).
+
+
 
 ### Changed
 

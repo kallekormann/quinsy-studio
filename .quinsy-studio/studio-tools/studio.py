@@ -99,7 +99,7 @@ Commands:
   # Tools
   ./studio adr <project> "Title"                 Create ADR
   ./studio decide <project> "Title"              Create decision record
-  ./studio env <project> init|up|down|status     Docker env
+  ./studio env <project> init|up|down|status [--approve]
   ./studio repo <project> create|status          GitHub repo
   ./studio promote <project> <asset>             Promote asset to library
 """
@@ -131,6 +131,22 @@ from design_ticket_helpers import (
     write_design_spec_stub,
 )
 from init_project_env import init_project
+from studio_env import (
+    INJECT_ACTIONS,
+    RUNTIME_EXECUTE_KINDS,
+    compose_argv,
+    docker_cli_available,
+    docker_install_hint,
+    ensure_host_env_file,
+    inject_summary,
+    parse_env_assignments,
+    public_command_line,
+    redact_output,
+    redact_secret_patterns,
+    refuse_without_approve,
+    schema_variable_names,
+    secret_values_for_redaction,
+)
 from pre_impl_workflow import (
     PHASE_BLUEPRINT,
     PHASE_DESIGN,
@@ -140,6 +156,7 @@ from pre_impl_workflow import (
     record_revision,
     scaffold_blueprint,
     scaffold_design,
+    previous_human_gate_block,
     validate_human_gate,
 )
 from studio_context import (
@@ -740,22 +757,43 @@ class StudioOrchestrator:
         print("  Do NEXT, then execute again, until ACTION is HITL. Do not ask to continue.")
         return True
 
-    def cmd_execute(self, project: str, as_json: bool = False):
+    def cmd_execute(self, project: str, as_json: bool = False, release: bool = False):
         """Emit exactly one next action. Agent must loop until HITL."""
         if not (PROJECTS_DIR / project).exists():
             print(f"\n  ❌ Project '{project}' not found.")
             return False
+        from studio_execute_leases import acquire_execute_lease, release_execute_lease
         from studio_isolation import apply_project_isolation
+
+        if release:
+            release_execute_lease(project)
+            print_header(f"EXECUTE LEASE RELEASED: {project}")
+            print("  Next queued project may acquire a lease.")
+            return True
+
+        granted, lease_msg = acquire_execute_lease(project)
+        if not granted:
+            print_header(f"EXECUTE QUEUED: {project}")
+            print(f"\n  {lease_msg}")
+            return False
 
         apply_project_isolation(project)
         status = load_status(project)
         step = decide_next_action(project)
+        if step.kind in RUNTIME_EXECUTE_KINDS and not docker_cli_available():
+            print(docker_install_hint())
+            return False
         if as_json:
             print(json.dumps(step.to_dict(), indent=2))
         else:
             print_header(f"EXECUTE: {project}")
             print(format_execute_step(project, step))
+            print(f"  LEASE:   {lease_msg}")
         set_active_project(project, status)
+        if step.kind == "HITL":
+            release_execute_lease(project)
+            if not as_json:
+                print("  LEASE:   released (HITL idle) — another product may execute")
         return True
 
     def cmd_ticket_card(self, project: str, ticket_id: str):
@@ -1006,11 +1044,19 @@ class StudioOrchestrator:
         print(f"  {result['op']} {result['id']} → {result['path']}")
         return True
 
-    def cmd_focus(self, project: str):
+    def cmd_focus(self, project: str, force: bool = False):
         """Set active project context for IDE agent (scope banner)."""
         project_dir = PROJECTS_DIR / project
         if not project_dir.exists():
             print(f"\n  ❌ Project '{project}' not found.")
+            return False
+        from studio_execute_leases import focus_isolation_blocked
+
+        blocked = focus_isolation_blocked(project, force=force)
+        if blocked:
+            print_header(f"FOCUS BLOCKED: {project}")
+            print(f"\n  {blocked}")
+            print("  Five concurrent products need five chats/windows, not one .cursorignore.")
             return False
         status = load_status(project)
         set_active_project(project, status)
@@ -1134,6 +1180,15 @@ class StudioOrchestrator:
 
         print("\n  ✅ npm dependencies installed")
         print(f"     {STUDIO_ROOT / 'node_modules'}")
+        from studio_context import load_active_project
+        from studio_isolation import install_studio_hq_git_hook, sibling_projects, write_cursorignore
+
+        active = (load_active_project() or {}).get("project") or ""
+        write_cursorignore(sibling_projects(active) if active else [])
+        print("  Cursor ignore: QUINSY-SECRETS block (LO-0314)")
+        hq_hook = install_studio_hq_git_hook()
+        if hq_hook:
+            print(f"  HQ pre-commit: {hq_hook} (refuses projects/ in the studio index)")
 
         if with_skills:
             print("\n  Importing external skill packages…")
@@ -1527,6 +1582,12 @@ class StudioOrchestrator:
             for issue in issues:
                 print(f"    • {issue}")
             print(f"\n  Iteration: ./studio revise {project} --gate {gate} --feedback \"...\"")
+            return False
+
+        blocked = previous_human_gate_block(status, gate)
+        if blocked:
+            print_header(f"GATE {gate} BLOCKED — {project}")
+            print(f"\n  {blocked}")
             return False
 
         if gate == 0:
@@ -2561,7 +2622,10 @@ class StudioOrchestrator:
         """Run the QA gate."""
         
         print_header(f"PHASE 5: QA-GATE — {project} (Level {level})")
-        
+
+        if not docker_cli_available():
+            print(docker_install_hint())
+            return False
         # Run run_qa_gate.py
         cmd = [
             sys.executable,
@@ -2574,7 +2638,9 @@ class StudioOrchestrator:
             cmd.append("--anti-slop")
         
         result = subprocess.run(cmd, capture_output=True, text=True)
-        print(result.stdout)
+        print(redact_secret_patterns(result.stdout or ""))
+        if result.stderr:
+            print(redact_secret_patterns(result.stderr))
         
         # Update status
         status = load_status(project)
@@ -2603,7 +2669,7 @@ class StudioOrchestrator:
 
         sprint = status.get("current_sprint") or ""
         ticket_id = status.get("active_ticket")
-        excerpt = (result.stdout or "")[-1500:]
+        excerpt = redact_secret_patterns((result.stdout or "")[-1500:])
         if sprint and ticket_id:
             if result.returncode == 0:
                 append_execution_event(project, sprint, "gate-pass", ticket_id)
@@ -2717,6 +2783,8 @@ class StudioOrchestrator:
         print("  Durable store: knowledge-base/learnings/<domain>/<topic>.md")
         print("  Index: knowledge-base/learnings/index.md")
         return True
+
+    def cmd_retro(self, project: str, complete: bool = False):
         """Start or complete a project sprint retrospective."""
         status = load_status(project)
         sprint = status.get("current_sprint", "SPRINT-01")
@@ -3167,19 +3235,12 @@ What does this decision mean for the project?
     def _docker_dir(self, project: str) -> Path:
         return PROJECTS_DIR / project / "docker"
 
-    def _ensure_docker_env_file(self, docker_dir: Path) -> None:
-        env_file = docker_dir / ".env"
-        env_example = docker_dir / ".env.example"
-        if not env_file.exists() and env_example.exists():
-            shutil.copy(env_example, env_file)
-            rel = env_file.relative_to(PROJECTS_DIR)
-            print(f"  ℹ️  Created {rel} from .env.example")
-
     def _run_docker_compose(
         self,
         project: str,
         *compose_args: str,
         attach: bool = False,
+        inject: bool = False,
     ) -> bool:
         """Run docker compose with project name (-p) so containers are <project>-*, not docker-*."""
         docker_dir = self._docker_dir(project)
@@ -3190,20 +3251,19 @@ What does this decision mean for the project?
             print(f"  Run: ./studio env {project} init")
             return False
 
-        self._ensure_docker_env_file(docker_dir)
+        if not docker_cli_available():
+            print(docker_install_hint())
+            return False
 
-        cmd = [
-            "docker",
-            "compose",
-            "-p",
-            project,
-            "--project-directory",
-            str(docker_dir),
-            "-f",
-            str(compose_file),
-            *compose_args,
-        ]
-        print(f"  → {' '.join(cmd)}")
+        names = schema_variable_names()
+        host_env = ensure_host_env_file(project, names=names)
+        assignments = parse_env_assignments(host_env.read_text(encoding="utf-8"))
+        redaction = secret_values_for_redaction(assignments)
+        if inject:
+            print(inject_summary(project, names, host_env))
+
+        cmd = compose_argv(project, docker_dir, compose_file, host_env, compose_args)
+        print(f"  → {public_command_line(cmd)}")
         try:
             result = subprocess.run(
                 cmd,
@@ -3214,9 +3274,9 @@ What does this decision mean for the project?
             )
             if not attach:
                 if result.stdout:
-                    print(result.stdout.rstrip())
+                    print(redact_output(result.stdout.rstrip(), redaction))
                 if result.stderr:
-                    print(result.stderr.rstrip())
+                    print(redact_output(result.stderr.rstrip(), redaction))
             if result.returncode != 0:
                 print(f"\n  ❌ docker compose failed (exit {result.returncode})")
                 return False
@@ -3226,12 +3286,16 @@ What does this decision mean for the project?
             print("  Install Docker Desktop: https://docs.docker.com/get-docker/")
             return False
 
-    def cmd_env(self, project: str, action: str):
+    def cmd_env(self, project: str, action: str, approve: bool = False):
         """Manage the Docker environment (runs docker compose -p <project>)."""
         
         docker_dir = self._docker_dir(project)
         
         print_header(f"DOCKER ENV: {project}")
+
+        if action in INJECT_ACTIONS and not approve:
+            print(refuse_without_approve(project, action))
+            return False
         
         if action == "init":
             docker_dir.mkdir(parents=True, exist_ok=True)
@@ -3254,15 +3318,29 @@ What does this decision mean for the project?
             print(f"\n  Add project-specific services (Mailpit, MinIO, ...) here:")
             print(f"    {docker_dir}/docker-compose.yml")
             print(f"\n  Next step:")
-            print(f"    ./studio env {project} up")
+            print(f"    ./studio env {project} up --approve")
         
         elif action == "up":
             print(f"\n  Starting backing services (Postgres, Redis, …) as project **{project}**…")
-            if not self._run_docker_compose(project, "up", "-d"):
+            if not self._run_docker_compose(project, "up", "-d", inject=True):
                 return False
             print(f"\n  Status:")
             self._run_docker_compose(project, "ps")
-            print(f"\n  Next: cd projects/{project} && npm run dev")
+            print(f"\n  Next: ./studio env {project} migrate --approve  (or product boot — LO-0316)")
+            return True
+
+        elif action == "migrate":
+            print(f"\n  Injecting named variables, then bringing Compose up for **{project}** migrate…")
+            if not self._run_docker_compose(project, "up", "-d", inject=True):
+                return False
+            print("  Compose has the named variables. Product migrate commands are LO-0316.")
+            return True
+
+        elif action == "dev":
+            print(f"\n  Injecting named variables for **{project}** dev boot…")
+            if not self._run_docker_compose(project, "up", "-d", inject=True):
+                return False
+            print("  Compose has the named variables. Product server boot is LO-0316.")
             return True
         
         elif action == "down":
@@ -3278,7 +3356,7 @@ What does this decision mean for the project?
         
         else:
             print(f"\n  ⚠️  Unknown action: {action}")
-            print(f"  Usage: ./studio env {project} init|up|down|status|logs")
+            print(f"  Usage: ./studio env {project} init|up|down|status|logs|migrate|dev [--approve]")
             return False
         
         return True
@@ -3494,7 +3572,7 @@ Commands:
   ./studio adr <project> "Title"                 Create ADR
   ./studio decide <project> "Title"              Create decision record
   ./studio decisions <project>                   Show decision records
-  ./studio env <project> init|up|down|status     Docker env (base template)
+  ./studio env <project> init|up|down|status [--approve] (base template)
   ./studio repo <project> create|status          GitHub repo
   ./studio promote <project> <asset>             Promote asset to library
 
@@ -3569,7 +3647,14 @@ def main():
 
     elif command == "execute" and len(args) >= 1:
         as_json = "--json" in args
-        orchestrator.cmd_execute(args[0], as_json=as_json)
+        release = "--release" in args
+        positional = [a for a in args if not a.startswith("--")]
+        if not positional:
+            print("  Usage: ./studio execute <project> [--json] [--release]")
+            sys.exit(2)
+        ok = orchestrator.cmd_execute(positional[0], as_json=as_json, release=release)
+        if ok is False:
+            sys.exit(2)
 
     elif command == "settings":
         positional = [a for a in args if not a.startswith("--")]
@@ -3683,7 +3768,14 @@ def main():
         orchestrator.cmd_health(args[0])
 
     elif command == "focus" and len(args) >= 1:
-        orchestrator.cmd_focus(args[0])
+        force = "--force" in args
+        positional = [a for a in args if not a.startswith("--")]
+        if not positional:
+            print("  Usage: ./studio focus <project> [--force]")
+            sys.exit(2)
+        ok = orchestrator.cmd_focus(positional[0], force=force)
+        if ok is False:
+            sys.exit(2)
 
     elif command == "isolate" and len(args) >= 1:
         orchestrator.cmd_isolate(args[0])
@@ -3954,7 +4046,9 @@ def main():
                 level = int(args[i + 1])
             elif arg == "--anti-slop":
                 anti_slop = True
-        orchestrator.cmd_gate(project, level, anti_slop)
+        ok = orchestrator.cmd_gate(project, level, anti_slop)
+        if ok is False:
+            sys.exit(2)
     
     elif command == "learn" and len(args) >= 1:
         title = args[0]
@@ -4008,7 +4102,14 @@ def main():
         orchestrator.cmd_decisions(args[0])
     
     elif command == "env" and len(args) >= 2:
-        orchestrator.cmd_env(args[0], args[1])
+        approve = "--approve" in args
+        positional = [a for a in args if a != "--approve" and not a.startswith("--")]
+        if len(positional) < 2:
+            print("  Usage: ./studio env <project> init|up|down|status|logs|migrate|dev [--approve]")
+            sys.exit(2)
+        ok = orchestrator.cmd_env(positional[0], positional[1], approve=approve)
+        if ok is False:
+            sys.exit(2)
     
     elif command == "repo" and len(args) >= 2:
         url = args[2] if len(args) >= 3 else ""

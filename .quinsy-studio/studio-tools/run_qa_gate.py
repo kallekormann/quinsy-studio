@@ -29,7 +29,7 @@ import platform
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
-from dataclasses import dataclass, asdict
+from studio_env import redact_secret_patterns
 
 # =============================================================================
 # CONFIGURATION
@@ -479,7 +479,8 @@ def print_report(report: QAReport, use_json: bool = False):
     """Print the QA report."""
     
     if use_json:
-        print(json.dumps(asdict(report), indent=2, ensure_ascii=False))
+        blob = json.dumps(asdict(report), indent=2, ensure_ascii=False)
+        print(redact_secret_patterns(blob))
         return
     
     print(f"\n{'='*60}")
@@ -507,7 +508,7 @@ def print_report(report: QAReport, use_json: bool = False):
                 # Show first few lines of output
                 output_lines = result["output"].strip().split('\n')[:5]
                 for line in output_lines:
-                    print(f"     {line}")
+                    print(f"     {redact_secret_patterns(line)}")
     
     hard_failed = [r for r in report.results if not r["passed"] and r["check"] != "npm_audit"]
     soft_failed = [r for r in report.results if not r["passed"] and r["check"] == "npm_audit"]

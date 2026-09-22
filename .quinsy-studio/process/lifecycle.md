@@ -18,8 +18,8 @@ Project (execution level)  ──▶  executed by the studio, local loop
 | HITL / slice | What | CLI |
 |--------------|------|-----|
 | **Gate 0** | PRD + definitions (as-built if adopt) | `./studio approve --gate 0` |
-| **Gate 1** | Architecture (ADRs, stack, persistence) | `./studio approve --gate 1` |
-| **Gate 2** | Design direction + system + mocks/prototype | `./studio approve --gate 2` |
+| **Gate 1** | Architecture (ADRs, stack, persistence) | `./studio approve --gate 1` (refuses if gate 0 pending) |
+| **Gate 2** | Design direction + system + mocks/prototype | `./studio approve --gate 2` (refuses if gate 1 pending) |
 | **Milestones** | Version plan `docs/phases/` | `./studio approve --milestones` |
 | Sprint setup | Scope + groom; implementation `--approve-scope` blocked if ready pipeline starved | `./studio sprint` → `--approve-scope` → `groom` |
 | **Sprint execute** | Autonomous ready tickets; `PRODUCTION` writes packets; `MOVE_DONE` commits product git | `./studio execute` until HITL |
@@ -27,7 +27,7 @@ Project (execution level)  ──▶  executed by the studio, local loop
 | **QA level 5** | Lint/tests/build/smoke + receipt skill QA (not a human phase gate) | `./studio gate --level 5` before `move … done` |
 | **Cadence review** | Every N implementation sprints (default 2) | `./studio review` → `--approve` |
 | Hygiene | Lint/debt batch after implementation batches | `./studio sprint --kind hygiene` |
-| Harvest | Portable LO + train; project incidents stay local | `docs/studio-learnings-local.md` vs HQ playbooks |
+| Harvest | Portable LO + HQ train session; product execute INFORM the count | `docs/studio-learnings-local.md` vs HQ playbooks |
 | Deploy | Staging → prod (release is HITL) | project RUNBOOK |
 
 ASCII “Phase 1…8” in older notes is the same flow: intake → architecture → design → sprint → QA → harvest → deploy. **Do not invent Phase 8 as a ninth human gate.**

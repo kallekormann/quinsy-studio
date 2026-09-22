@@ -14,4 +14,4 @@ IMPLEMENT: Read the domain README + topic file from the CARD, not `inbox.md` or 
 | design | information-architecture | `knowledge-base/learnings/design/information-architecture.md` | 1 |
 | design | visual | `knowledge-base/learnings/design/visual.md` | 1 |
 | process | canvas | `knowledge-base/learnings/process/canvas.md` | 2 |
-| process | workflow | `knowledge-base/learnings/process/workflow.md` | 1 |
+| process | workflow | `knowledge-base/learnings/process/workflow.md` | 2 |

@@ -11,6 +11,8 @@ Human: "I decide."
 Agent: "Implemented."
 ```
 
+**Packet HITL (not a morning brief).** Sign-off is the file in `NEXT`/`READ`: design spec + all-state mocks (`approve-design`), architecture note (`approve-arch`), or `./studio env <p> … --approve`. Do not invent an ops morning-brief dashboard as the human gate.
+
 ---
 
 ## When is HITL needed?
@@ -22,8 +24,8 @@ Agent: "Implemented."
 | **Irreversible** | deleting data, production deploy, DNS changes | **Yes** |
 | **Security** | security exceptions, access rights | **Yes** (tech-veto) |
 | **As-built / PRD (gate 0)** | confirm “this is what we have / are building” | **Yes** (`./studio approve --gate 0`) |
-| **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`). Iterate: `./studio revise --gate 1` |
-| **Design track (gate 2)** | direction, design system, stills/mocks or clickable prototype | **Yes** (`./studio approve --gate 2`). Starts after architecture. Iterate: `./studio revise --gate 2` |
+| **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`; refuses if gate 0 pending). Iterate: `./studio revise --gate 1` |
+| **Design track (gate 2)** | direction, design system, stills/mocks or clickable prototype | **Yes** (`./studio approve --gate 2`; refuses if gate 1 pending). Iterate: `./studio revise --gate 2` |
 | **Release** | production release | **Yes** |
 | **Cadence review** | shipped UI / product after **N implementation sprints** (default 2) | **Yes** (`./studio review`) — feedback goes into **production** tickets, not a silent next implement |
 | **Architecture packet** | ticket-level approach note | **Yes** (`./studio approve-arch`) after `docs/architecture/<TICKET>.md` exists |
@@ -39,7 +41,7 @@ Agent: "Implemented."
 | **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
 | **Bugfix** | fixing bugs | No |
 | **Docs** | documentation | No |
-| **Schema migrate (apply)** | Pending migrations on a DB the agent can reach (local Compose, `.env` DSN, documented VPS) | **No** — agent runs the project migrate command, then **informs** the human it happened |
+| **Schema migrate (apply)** | Pending migrations on a DB the agent can reach (Compose via `./studio env <p> migrate --approve`, documented VPS) | **No** — agent runs migrate, then **informs**. Do not Read `.env` values |
 | **Destructive DB reset** | `migrate:fresh`, drop database, wipe production | **Yes** |
 | **Mid-execute chat** | thoughts while IMPLEMENT is in flight | **Queue** (`./studio guard` → `INBOX_ACK`) — auto-queued, do not preempt. Drain after MOVE_DONE. Only “stop this ticket” aborts |
 
@@ -47,7 +49,7 @@ Agent: "Implemented."
 
 ## Sprint cadence HITL (after gates 0–2)
 
-Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, **design system**, stills/mocks or clickable prototype). All three are HITL. **After the sprint has started**, the human does **not** ACK every ticket. Packet sign-off is **`approve-design` / `approve-arch`** (execute `ACTION: PRODUCTION` writes the files first). Cadence **`./studio review`** runs every `cost.human_review_every_sprints` **implementation** sprints (default 2), not after every batch. Tickets `done` via **skill QA on the receipt** (QA / Design skill / Architecture skill), not a human ACK. Hygiene is `./studio sprint --kind hygiene`. Safety valves stay: tech-veto, 3× gate fail, abort, `INFORM cost-cap`.
+Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, **design system**, stills/mocks or clickable prototype). `approve --gate N` requires gate N-1. All three are HITL. **After the sprint has started**, the human does **not** ACK every ticket. Packet sign-off is **`approve-design` / `approve-arch`** (execute `ACTION: PRODUCTION` writes the files first) or **`./studio env … --approve`**. Cadence **`./studio review`** runs every `cost.human_review_every_sprints` **implementation** sprints (default 2), not after every batch. Tickets `done` via **skill QA on the receipt** (QA / Design skill / Architecture skill), not a human ACK. Hygiene is `./studio sprint --kind hygiene`. Safety valves stay: tech-veto, 3× gate fail, abort, `INFORM cost-cap`.
 
 See [milestone-planning.md](milestone-planning.md) for roadmap ceremony.
 
@@ -63,7 +65,7 @@ While sprint tickets are not all `done`:
 | Stay inside gate-2 design system + library pulls | One-off CSS / hallucinated atoms because “the sprint needs it” |
 | Agent **ACK-queues** a **product** mid-execute chat (`./studio note`) and resumes ACTION. `HQ-T*`, `LO-NNNN`, `.quinsy-studio`, and “quinsy-studio process” are `studio_meta` (not the product inbox) | Queue studio HQ on the product sprint inbox, or keep product `IMPLEMENT` for an HQ ask |
 | Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
-| Open LOs spawn `./studio train` in parallel | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
+| Open LOs spawn `./studio train` in a **HQ chat** | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
 
 **Enforced by CLI:** `./studio move … implement` is blocked when cadence review is pending or the sprint is closed pending retro. Implementation `--approve-scope` is blocked when production tickets exist and ready backlog is below `cost.production_ready_min`. When the last sprint ticket is `done` and cadence is not due, execute continues to retro — not HITL. Mid-sprint `MOVE_DONE` must not print sprint-complete / retro copy while other sprint tickets are still open (LO-0292).
 

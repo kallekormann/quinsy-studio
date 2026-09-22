@@ -314,6 +314,17 @@ def find_product_nouns_in_hq_text(text: str, *, nouns: Optional[Sequence[str]] =
     return hits
 
 
+def refuse_product_nouns_in_hq_body(text: str, *, nouns: Optional[Sequence[str]] = None) -> None:
+    """Raise if a project folder name appears outside provenance (infusion/learn writes)."""
+    hits = find_product_nouns_in_hq_text(text, nouns=nouns)
+    if hits:
+        _line, noun, snippet = hits[0]
+        raise ValueError(
+            f"HQ write aborted: product noun {noun!r} outside provenance ({snippet!r}). "
+            "Keep incidents in projects/<p>/docs/studio-learnings-local.md."
+        )
+
+
 def scan_hq_for_project_nouns(
     *,
     roots: Optional[Sequence[str]] = None,

@@ -1,8 +1,8 @@
 ---
-id: LO-0304
-title: Library Tokens listed typefaces only when `collectBoardFonts` found them; `/libr
+id: LO-0308
+title: Konva font cards must paint Bloom light/dark hexes; CSS variables and hardcoded #171717 fail in dark mode
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S
@@ -23,10 +23,10 @@ created: 2026-09-16
 General rule lives in `knowledge-base/design_playbook.md` so the next project cannot repeat this. No client / product names in studio HQ titles or infused body (provenance `--source` / CHANGELOG only).
 
 ## Scope
-Kind `design`. Promote or author in `knowledge-base/design_playbook.md` using `knowledge-base/design_playbook.md`. Principle title must stay product-agnostic. Train skills: ['UX-005', 'UX-001']. Observation (provenance): Library Tokens listed typefaces only when `collectBoardFonts` found them; `/library` Tokens never listed typefaces at all.
+Kind `design`. Promote or author in `knowledge-base/design_playbook.md` using `knowledge-base/design_playbook.md`. Principle title must stay product-agnostic. Train skills: ['UX-005', 'UX-001']. Observation (provenance): Konva font cards must paint Bloom light/dark hexes; CSS variables and hardcoded #171717 fail in dark mode
 
 ## AC
-- Inbox item LO-0304 generalized into `knowledge-base/design_playbook.md` (or matching playbook/skill/package)
+- Inbox item LO-0308 generalized into `knowledge-base/design_playbook.md` (or matching playbook/skill/package)
 - Infused text passes portability gate (no project folder names outside provenance)
 - CHANGELOG.md updated
 - LO moved to backlog/done/

@@ -24,6 +24,7 @@ intake/amendments/**
 .quinsy-studio/.active-project.json
 .quinsy-studio/.session-usage.json
 .quinsy-studio/studio.settings.local.yaml
+.quinsy-studio/.secrets/
 .cursorignore
 .cursor/rules/quinsy-project-isolation.mdc
 

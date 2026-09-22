@@ -7,7 +7,7 @@
 ## Core principle
 
 ```
-Learning identified → classify → inbox + LO (same session) → train in parallel → CHANGELOG
+Learning identified → classify → inbox + LO (same session) → INFORM product chat + `./studio train` in a HQ session → CHANGELOG
 ```
 
 Do **not** wait for a human `./studio learn` prompt, retro close, or the next project sprint. If learnings pile up, the originating context is gone and the next project repeats the mistake.
@@ -64,7 +64,7 @@ Each portable harvest:
 
 `inbox.md` is not the long-term store. Infused/stale rows are archived to `learnings/archive/inbox-YYYY-MM.md`. Find rules with `./studio learn-find "<topic>"` or the CARD's domain README. IMPLEMENT must not Read `inbox.md`.
 
-Then `./studio execute <project>` **continues product IMPLEMENT** (or `PRODUCTION` if the ready pipeline is starved). Open LOs with `train_skills` queue `./studio train` in parallel. `STUDIO_LO` only when the product loop is idle. HITL gate 0, `approve-design` / `approve-arch`, and cadence review still win. `./studio train --purge-empty` closes jobs written without an LO observation.
+Then `./studio execute <project>` **continues product IMPLEMENT** (or `PRODUCTION` if the ready pipeline is starved). Open LOs with `train_skills` queue `./studio train` in a **HQ session**. **INFORM** the open HQ LO count on the execute CARD; do **not** infuse playbooks from the product chat. `STUDIO_LO` only when the product loop is idle (`implementation_in_flight` is false). HITL gate 0, `approve-design` / `approve-arch`, and cadence review still win. `./studio train --purge-empty` closes jobs written without an LO observation.
 
 Do **not** copy project UI/tokens into `studio-library/`. Promote reusable assets via `./studio library promote` — learnings are principles/skills, not product dumps.
 
@@ -142,7 +142,7 @@ Shows all open learning items.
 
 ### Studio Infusion Gate (mandatory)
 
-Project sprint planning is **not** blocked by open LO-* tickets. Harvest is immediate; `./studio train` infuses in parallel while product execute continues IMPLEMENT.
+Project sprint planning is **not** blocked by open LO-* tickets. Harvest is immediate; `./studio train` infuses in a HQ session while product execute continues IMPLEMENT.
 
 ```
 Project work identifies a learning

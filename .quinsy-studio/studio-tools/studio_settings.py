@@ -187,6 +187,9 @@ def builtin_defaults() -> Dict[str, Any]:
             "train_open_max": 12,
             "steps": deepcopy(STANDARD_STEPS),
         },
+        "parallel": {
+            "max_projects": 5,
+        },
     }
 
 

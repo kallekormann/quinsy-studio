@@ -8,6 +8,8 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from studio_hq_lock import hq_write_lock
+
 QUINSY_STUDIO = Path(__file__).parent.parent
 OPS = ("add", "update", "remove")
 ID_RE = re.compile(r"\*\*(PB-[0-9]{8}-\d+)\*\*")
@@ -61,6 +63,22 @@ def apply_delta(
     path = _resolve_path(rel_path)
     if not path.exists():
         raise FileNotFoundError(str(path))
+    if (body or "").strip():
+        from studio_portability import refuse_product_nouns_in_hq_body
+
+        refuse_product_nouns_in_hq_body(body)
+    with hq_write_lock("hq"):
+        return _apply_delta_locked(path, op, section=section, body=body, bullet_id=bullet_id)
+
+
+def _apply_delta_locked(
+    path: Path,
+    op: str,
+    *,
+    section: str,
+    body: str,
+    bullet_id: str,
+) -> Dict:
     text = path.read_text(encoding="utf-8")
     if op == "add":
         _refuse_rewrite(body, text)

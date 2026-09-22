@@ -20,9 +20,13 @@ PROJECTS_DIR = STUDIO_ROOT / "projects"
 
 ISOLATION_BEGIN = "# BEGIN QUINSY-ISOLATION"
 ISOLATION_END = "# END QUINSY-ISOLATION"
+SECRETS_BEGIN = "# BEGIN QUINSY-SECRETS"
+SECRETS_END = "# END QUINSY-SECRETS"
 CURSORIGNORE_PATH = STUDIO_ROOT / ".cursorignore"
 ISOLATION_RULE_PATH = STUDIO_ROOT / ".cursor" / "rules" / "quinsy-project-isolation.mdc"
 HOOK_MARKER = "QUINSY-ISOLATION"
+HQ_HOOK_MARKER = "QUINSY-HQ-HOOK"
+ENV_SCHEMA_PATH = QUINSY_STUDIO / "studio-templates" / "env.schema.json"
 
 _CLI_JUNK_PROJECT_RE = re.compile(r"^(LO-\d+|testproj)$")
 
@@ -84,15 +88,59 @@ def path_escapes_project(project: str, rel_or_abs: str) -> bool:
     return parts[0] != project
 
 
-def _cursorignore_without_block(text: str) -> str:
-    if ISOLATION_BEGIN not in text:
+def _strip_marked_block(text: str, begin: str, end: str) -> str:
+    if begin not in text:
         return text.rstrip() + ("\n" if text and not text.endswith("\n") else "")
-    before, rest = text.split(ISOLATION_BEGIN, 1)
-    if ISOLATION_END in rest:
-        _, after = rest.split(ISOLATION_END, 1)
+    before, rest = text.split(begin, 1)
+    if end in rest:
+        _, after = rest.split(end, 1)
     else:
         after = ""
     return (before.rstrip() + "\n" + after.lstrip("\n")).lstrip("\n")
+
+
+def _cursorignore_without_block(text: str) -> str:
+    """Drop isolation and secrets blocks; keep any manual lines."""
+    out = _strip_marked_block(text, ISOLATION_BEGIN, ISOLATION_END)
+    return _strip_marked_block(out, SECRETS_BEGIN, SECRETS_END)
+
+
+def secrets_ignore_block() -> str:
+    """Cursor deny list for env *values* — including the focused product."""
+    lines = [
+        SECRETS_BEGIN,
+        "# LO-0314 — secret values are not agent-readable (focused project included).",
+        "# Names live in .quinsy-studio/studio-templates/env.schema.json and *.env.example.",
+        "**/.env",
+        "**/.env.local",
+        "**/.env.*.local",
+        "!**/.env.example",
+        "**/*.pem",
+        "**/*.key",
+        ".quinsy-studio/.secrets/",
+        ".quinsy-studio/.secrets/**",
+        "projects/*/.env",
+        "projects/*/.env.local",
+        SECRETS_END,
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def host_secret_dir(project: str) -> Path:
+    """Host-side values dir — outside the git workspace when possible."""
+    import sys
+
+    slug = (project or "studio").strip() or "studio"
+    if sys.platform == "darwin":
+        return (
+            Path.home()
+            / "Library"
+            / "Application Support"
+            / "quinsy-studio"
+            / "secrets"
+            / slug
+        )
+    return Path.home() / ".config" / "quinsy-studio" / "secrets" / slug
 
 
 def _isolation_block(siblings: List[str]) -> str:
@@ -111,8 +159,12 @@ def write_cursorignore(siblings: List[str]) -> Path:
     if CURSORIGNORE_PATH.exists():
         existing = CURSORIGNORE_PATH.read_text(encoding="utf-8")
     kept = _cursorignore_without_block(existing).rstrip()
-    body = (kept + "\n\n" if kept else "") + _isolation_block(siblings)
-    CURSORIGNORE_PATH.write_text(body, encoding="utf-8")
+    parts = []
+    if kept:
+        parts.append(kept)
+    parts.append(secrets_ignore_block().rstrip())
+    parts.append(_isolation_block(siblings).rstrip())
+    CURSORIGNORE_PATH.write_text("\n\n".join(parts) + "\n", encoding="utf-8")
     return CURSORIGNORE_PATH
 
 
@@ -134,6 +186,7 @@ Sibling trees are **out of bounds**: {sib}
 - Do **not** `git remote add` / fetch / push a sibling product remote into this repo.
 - Project git runs **inside** `projects/{project}/` (`git -C projects/{project} …`). Toplevel must be that folder — never the studio root, never a sibling.
 - Studio HQ (`.quinsy-studio/`) is allowed for LO/process/tooling. Product code is only `projects/{project}/`.
+- **Secrets:** do **not** Read, Grep, or Shell-print `.env` / `.env.local` / `*.pem` **values** (this project included). Use `env.schema.json` / `.env.example` for **names**. Inject values only via `./studio env … --approve` (LO-0315).
 - Switching products: `./studio focus <other>` (rewrites this gate). Do not keep two product trees in one commit.
 """
     ISOLATION_RULE_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -199,6 +252,59 @@ done < "$tmp"
     return hook
 
 
+def hq_commit_blocked(staged: List[str]) -> Optional[str]:
+    """Studio HQ git must never contain a product tree."""
+    for raw in staged:
+        norm = str(raw).replace("\\", "/").lstrip("./")
+        if norm == "projects" or norm.startswith("projects/"):
+            return (
+                f"quinsy HQ: refuse staging product path {raw}. "
+                "Product git lives inside projects/<name>/ — never the studio index."
+            )
+    return None
+
+
+def studio_hq_pre_commit_script() -> str:
+    sample = QUINSY_STUDIO / "studio-templates" / "hooks" / "studio-hq-pre-commit.sh"
+    if sample.exists():
+        return sample.read_text(encoding="utf-8")
+    return """#!/bin/sh
+# QUINSY-HQ-HOOK — studio root must not stage projects/
+git diff --cached --name-only | while IFS= read -r f; do
+  case "$f" in
+    projects|projects/*) echo "quinsy HQ: refuse $f" >&2; exit 1 ;;
+  esac
+done
+"""
+
+
+def install_studio_hq_git_hook(studio_root: Optional[Path] = None) -> Optional[Path]:
+    root = studio_root or STUDIO_ROOT
+    git_dir = root / ".git"
+    if git_dir.is_file():
+        raw = git_dir.read_text(encoding="utf-8", errors="ignore")
+        match = re.search(r"^gitdir:\s*(.+)$", raw, re.M)
+        if not match:
+            return None
+        git_dir = Path(match.group(1).strip())
+        if not git_dir.is_absolute():
+            git_dir = (root / git_dir).resolve()
+    elif not git_dir.is_dir():
+        return None
+    hooks = git_dir / "hooks"
+    hooks.mkdir(parents=True, exist_ok=True)
+    hook = hooks / "pre-commit"
+    script = studio_hq_pre_commit_script()
+    if hook.exists():
+        prev = hook.read_text(encoding="utf-8", errors="ignore")
+        if HQ_HOOK_MARKER not in prev and HOOK_MARKER not in prev:
+            backup = hook.with_suffix(".pre-quinsy-hq")
+            backup.write_text(prev, encoding="utf-8")
+    hook.write_text(script, encoding="utf-8")
+    hook.chmod(0o755)
+    return hook
+
+
 def apply_project_isolation(project: str) -> Tuple[List[str], Path, Path]:
     """Hide sibling projects from the IDE agent and stamp the focus rule."""
     siblings = sibling_projects(project)
@@ -206,6 +312,15 @@ def apply_project_isolation(project: str) -> Tuple[List[str], Path, Path]:
     rule = write_isolation_rule(project, siblings)
     install_project_git_hook(project)
     return siblings, ignore, rule
+
+
+def cursorignore_hides_secret_values() -> bool:
+    if not CURSORIGNORE_PATH.exists():
+        return False
+    text = CURSORIGNORE_PATH.read_text(encoding="utf-8")
+    if SECRETS_BEGIN not in text or "**/.env" not in text:
+        return False
+    return True
 
 
 def cursorignore_lists_siblings(project: str) -> bool:
@@ -256,6 +371,11 @@ def isolation_issues(project: Optional[str] = None) -> List[str]:
     if not cursorignore_lists_siblings(project):
         issues.append(
             f"Sibling isolation stale for '{project}' — run ./studio focus {project}"
+        )
+    if not cursorignore_hides_secret_values():
+        issues.append(
+            "Cursor ignore missing QUINSY-SECRETS block — run ./studio focus <project> "
+            "(LO-0314: .env values must not be agent-readable)"
         )
     issues.extend(project_git_isolation_issues(project))
     return issues

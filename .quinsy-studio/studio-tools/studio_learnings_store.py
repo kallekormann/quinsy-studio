@@ -14,6 +14,8 @@ from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from studio_hq_lock import hq_write_lock
+
 TOOLS_DIR = Path(__file__).parent
 QUINSY_STUDIO = TOOLS_DIR.parent
 LEARNINGS_ROOT = QUINSY_STUDIO / "knowledge-base" / "learnings"
@@ -162,9 +164,25 @@ def commit_principle(
     root: Optional[Path] = None,
 ) -> str:
     """Append one principle to the domain topic file and rebuild the index."""
-    from studio_portability import sanitize_observation
+    from studio_portability import refuse_product_nouns_in_hq_body, sanitize_observation
 
     root = root or LEARNINGS_ROOT
+    refuse_product_nouns_in_hq_body(f"{title}\n{observation}")
+    with hq_write_lock("hq"):
+        return _commit_principle_locked(
+            kind=kind, lo_id=lo_id, title=title, observation=observation, root=root
+        )
+
+
+def _commit_principle_locked(
+    *,
+    kind: str,
+    lo_id: str,
+    title: str,
+    observation: str,
+    root: Path,
+) -> str:
+    from studio_portability import sanitize_observation
     path = ensure_topic_file(kind, title, observation, root=root)
     text = path.read_text(encoding="utf-8")
     if lo_id and lo_id in text:
@@ -317,6 +335,18 @@ def compact_inbox(
     archive_dir: Optional[Path] = None,
 ) -> Dict[str, int]:
     """Keep only still-open harvest rows in inbox.md; archive the rest by month."""
+    with hq_write_lock("hq"):
+        return _compact_inbox_locked(
+            open_dir=open_dir, inbox_path=inbox_path, archive_dir=archive_dir
+        )
+
+
+def _compact_inbox_locked(
+    *,
+    open_dir: Optional[Path] = None,
+    inbox_path: Optional[Path] = None,
+    archive_dir: Optional[Path] = None,
+) -> Dict[str, int]:
     inbox = inbox_path or INBOX_PATH
     archive = archive_dir or ARCHIVE_DIR
     if not inbox.exists():

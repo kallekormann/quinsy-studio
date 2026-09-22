@@ -45,3 +45,7 @@ Generic sync helpers belong in `studio-library/packages/` after promotion — no
 
 - [backend_playbook.md](backend_playbook.md)
 - [project-archetypes.md](../process/project-archetypes.md)
+
+## Deltas
+
+- **PB-20260922-001** helpful=0 harmful=0 :: Adding a canvas item type ships the CRDT/Yjs allowlist and the persistence enum in the same change. A UI type the sync layer rejects is not done.

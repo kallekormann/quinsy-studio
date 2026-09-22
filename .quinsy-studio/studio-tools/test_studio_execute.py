@@ -664,6 +664,52 @@ class DecideTests(unittest.TestCase):
         self.assertTrue(any("temp cache" in p for p in prompts))
         self.assertTrue(all("--source demo" in p for p in prompts))
 
+    def test_format_execute_step_prints_constitution(self):
+        step = ExecuteStep(
+            kind="IMPLEMENT",
+            ticket_id="DEMO-0001",
+            reason="next unblocked sprint ticket",
+            command="./studio move demo DEMO-0001 implement",
+            loop=True,
+        )
+        text = format_execute_step("demo", step)
+        self.assertIn("CONSTITUTION:", text)
+        self.assertIn("never Read .env values", text)
+        self.assertIn("not a morning brief", text)
+
+    def test_implement_informs_open_lo_count_not_studio_lo(self):
+        from studio_execute import implementation_in_flight
+
+        tickets = [{"id": "DEMO-0002", "status": "implement", "deps": [], "card": {"id": "DEMO-0002"}}]
+        self.assertTrue(implementation_in_flight(tickets))
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "card": {"id": "DEMO-0001"}}],
+            open_los=[{"id": "LO-0099", "title": "portable lock", "path": "backlog/open/LO-0099.md"}],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertIn("1 open HQ learning", step.inform or "")
+        self.assertNotEqual(step.kind, "STUDIO_LO")
+
+    def test_hitl_design_cites_packet_path(self):
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            [{"id": "DEMO-0001", "status": "backlog", "deps": [], "ticket_type": "ui-composition"}],
+            design_block="Design HITL required before implement",
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "HITL")
+        self.assertIn("docs/design-specs/DEMO-0001.md", step.read or "")
+        text = format_execute_step("demo", step)
+        self.assertIn("PACKET:", text)
+        self.assertIn("morning-brief", text)
+
 
 if __name__ == "__main__":
     unittest.main()

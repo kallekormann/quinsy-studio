@@ -544,12 +544,20 @@ def _enrich_sprint_tickets(project: str, tickets: List[Dict]) -> List[Dict]:
     return enriched
 
 
-def _hitl(kind: str, project: str, command: str, reason: str, ticket_id: Optional[str] = None) -> ExecuteStep:
+def _hitl(
+    kind: str,
+    project: str,
+    command: str,
+    reason: str,
+    ticket_id: Optional[str] = None,
+    read: Optional[str] = None,
+) -> ExecuteStep:
     return ExecuteStep(
         kind="HITL",
         ticket_id=ticket_id,
         reason=kind if not reason else f"{kind}: {reason}" if kind not in reason else reason,
         command=command,
+        read=read,
         loop=False,
     )
 
@@ -645,6 +653,26 @@ def _has_in_progress(sprint_tickets: List[Dict[str, Any]]) -> bool:
     return any(t.get("status") == "implement" for t in (sprint_tickets or []))
 
 
+def implementation_in_flight(sprint_tickets: List[Dict[str, Any]]) -> bool:
+    """True while a product ticket is being executed (not idle infusion)."""
+    busy = {"implement", "qa", "review", "debug"}
+    return any((t.get("status") or "") in busy for t in (sprint_tickets or []))
+
+
+def _attach_lo_inform(step: ExecuteStep, open_los: List[Dict]) -> ExecuteStep:
+    if step.kind in ("HITL", "STUDIO_LO", "INFORM"):
+        return step
+    n = len(open_los or [])
+    if n <= 0:
+        return step
+    extra = (
+        f"{n} open HQ learning ticket(s) — INFORM; open a separate HQ train session. "
+        "Do not switch this product chat to STUDIO_LO."
+    )
+    step.inform = f"{step.inform} | {extra}" if step.inform else extra
+    return step
+
+
 def _production_step(project: str, prod: Dict, write_kind) -> ExecuteStep:
     tid = str(prod.get("id") or "")
     kind = write_kind(project, tid, prod)
@@ -730,7 +758,7 @@ def _studio_lo_if_idle(
     """Infuse when idle (no in-progress ticket). Never substitute for IMPLEMENT of a ready ticket."""
     if not open_los:
         return None
-    if _has_in_progress(sprint_tickets or []):
+    if implementation_in_flight(sprint_tickets or []) or _has_in_progress(sprint_tickets or []):
         return None
     return _studio_lo_step(open_los)
 
@@ -754,6 +782,44 @@ def decide_from_state(
     gate2_ready: bool = True,
 ) -> ExecuteStep:
     """Pure next-step machine. Disk I/O lives in decide_next_action."""
+    step = _decide_from_state_body(
+        project,
+        status,
+        sprint_tickets,
+        open_los=open_los,
+        log=log,
+        receipts_ok=receipts_ok,
+        design_block=design_block,
+        design_write=design_write,
+        amendment_actions=amendment_actions,
+        prd_exists=prd_exists,
+        as_built_ready=as_built_ready,
+        inbox_open=inbox_open,
+        pending_veto=pending_veto,
+        gate1_ready=gate1_ready,
+        gate2_ready=gate2_ready,
+    )
+    return _attach_lo_inform(step, open_los if open_los is not None else [])
+
+
+def _decide_from_state_body(
+    project: str,
+    status: Dict,
+    sprint_tickets: List[Dict[str, Any]],
+    *,
+    open_los: Optional[List[Dict]] = None,
+    log: Optional[Dict[str, Any]] = None,
+    receipts_ok: Optional[Dict[str, bool]] = None,
+    design_block: Optional[str] = None,
+    design_write: Optional[str] = None,
+    amendment_actions: Optional[List[str]] = None,
+    prd_exists: bool = True,
+    as_built_ready: bool = True,
+    inbox_open: Optional[List[Dict]] = None,
+    pending_veto: Optional[str] = None,
+    gate1_ready: bool = True,
+    gate2_ready: bool = True,
+) -> ExecuteStep:
     hg = status.get("human_gates") or {}
     open_los = open_los if open_los is not None else []
     log = log or {"entries": []}
@@ -1029,6 +1095,7 @@ def decide_from_state(
                 f"./studio approve-design {project} {tid}",
                 design_block[:160],
                 ticket_id=tid,
+                read=f"docs/design-specs/{tid}.md",
             )
         train = _train_sidecar(open_los) if open_los else None
         return ExecuteStep(
@@ -1201,6 +1268,12 @@ def decide_next_action(project: str) -> ExecuteStep:
 
 def format_execute_step(project: str, step: ExecuteStep) -> str:
     lines = [f"EXECUTE {project}"]
+    lines.append("  CONSTITUTION:")
+    lines.append("    Worlds: studio HQ vs this product tree only. No sibling Read/copy/git.")
+    lines.append("    Secrets: names from env.schema.json — never Read .env values.")
+    lines.append(
+        "    HITL: spec/mocks, architecture packet, or ./studio env --approve — not a morning brief."
+    )
     looping = step.kind != "HITL" and step.loop
     lines.append(
         f"  ISOLATE: only projects/{project}/ — do not Read, copy, or git sibling projects/"
@@ -1248,6 +1321,10 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
                 lines.append(f"    {cmd}")
     if step.kind == "HITL" or (isinstance(step.reason, str) and step.reason.startswith("HITL")):
         lines.append("  STOP. Wait for the human. Do not implement past this gate.")
+        lines.append(
+            "  PACKET: review the spec/mocks, architecture note, or env --approve intent in NEXT/READ. "
+            "Not a morning-brief dashboard."
+        )
     elif step.kind == "INFORM":
         if step.loop is False:
             lines.append("  STOP. Raise the named cost key (product docs/studio.settings.local.yaml or HQ local yaml), then execute again.")

@@ -470,13 +470,17 @@ def verify_worlds() -> Tuple[bool, List[str]]:
     return len(issues) == 0, issues
 
 
-# Paths where project names are allowed (learning provenance, retros, manifest)
+# Paths where project names are allowed (learning provenance, retros, tests)
 _ABSTRACTION_ALLOWLIST_PREFIXES = (
     "backlog/",
     "retros/",
     "studio-library/manifest.json",
     "process/studio-abstraction.md",
     "studio-tools/studio_context.py",
+    "studio-tools/studio_portability.py",
+    "studio-tools/test_",
+    "knowledge-base/learnings/archive/",
+    "CHANGELOG.md",
 )
 
 _ABSTRACTION_SCAN_ROOTS = (
@@ -489,21 +493,22 @@ _ABSTRACTION_SCAN_ROOTS = (
     "README.md",
 )
 
-_ABSTRACTION_PATTERNS = (
-    (re.compile(r"\bmoody\b", re.IGNORECASE), "project name 'moody'"),
-    (re.compile(r"\bMOOD-\d+\b"), "project ticket id MOOD-*"),
-    (re.compile(r"intake/amendments/moody"), "moody-specific intake path"),
-)
+_ABSTRACTION_PATTERNS = ()  # replaced by list_project_names() in verify_studio_abstraction
 
 
 def verify_studio_abstraction() -> Tuple[bool, List[str]]:
     """Flag project-specific references in studio HQ docs/tools/templates."""
     issues: List[str] = []
     studio_dir = QUINSY_STUDIO
+    from studio_portability import find_product_nouns_in_hq_text, list_project_names
+
+    names = list_project_names()
 
     def _scan_file(path: Path) -> None:
         rel = path.relative_to(studio_dir).as_posix()
         if any(rel.startswith(prefix) for prefix in _ABSTRACTION_ALLOWLIST_PREFIXES):
+            return
+        if path.name == "CHANGELOG.md":
             return
         if rel.endswith(".pyc") or "/__pycache__/" in rel:
             return
@@ -511,11 +516,8 @@ def verify_studio_abstraction() -> Tuple[bool, List[str]]:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             return
-        for line_no, line in enumerate(text.splitlines(), 1):
-            for pattern, label in _ABSTRACTION_PATTERNS:
-                if pattern.search(line):
-                    issues.append(f"{rel}:{line_no}: {label}")
-                    break
+        for line_no, noun, snippet in find_product_nouns_in_hq_text(text, nouns=names):
+            issues.append(f"{rel}:{line_no}: project folder {noun!r} ({snippet})")
 
     for root_name in _ABSTRACTION_SCAN_ROOTS:
         target = studio_dir / root_name

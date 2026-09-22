@@ -2,6 +2,8 @@
 
 > How the IDE agent stays in studio/project scope and recovers from drift.
 
+**HQ isolation epic:** `LO-0314`–`LO-0326` shipped — [hq-isolation-sprints.md](hq-isolation-sprints.md). Resume product `./studio execute` in a **product** chat. Do not Read env **values**.
+
 ## Every turn (before session start)
 
 Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit **gate / approve-design / approve-arch / cadence review** when execute already says `STOP`. Mid-sprint “looks good” on a **feature** ticket is not HITL.
@@ -14,15 +16,15 @@ Run `./studio guard <project> "<verbatim user message>"` first. While implementa
 4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`. If `ACTION` is `PRODUCTION`, write the packet (do not implement the product ticket). If the gold path needs an operator click (submit/start a job) and a later unblocked ticket is only notify/revalidate polish, do the click ticket first (LO-0155).
 5. If `ACTION` is `INFORM` (inbox drain / reuse brief), do NEXT and loop — do not wait for a signature. Architecture and design are HITL, not inform.
 6. If `ACTION` is `INFORM` and the reason is `cost-cap`, **stop**. Do not keep stuffing files. Raise the **named** key in product `docs/studio.settings.local.yaml` (or HQ local yaml for train), then execute continues.
-7. If `ACTION` is `STUDIO_LO`, the product loop is idle — infuse in `.quinsy-studio/` now. Mid-sprint gaps: spawn `./studio train` and keep `IMPLEMENT`
+7. If `ACTION` is `STUDIO_LO`, the product loop is idle — infuse in `.quinsy-studio/` now. Mid-sprint gaps: spawn `./studio train` in a **HQ chat** and keep `IMPLEMENT`
 8. Mid-execute human messages: `./studio guard` → `INBOX_ACK` (auto-queued). Resume NEXT. Drain after MOVE_DONE
 9. `./studio resume <project>` is a human-readable checklist; do not stop after printing it
 
 Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog. **READ only CARD playbooks.** Never open `knowledge-base/learnings/inbox.md` on IMPLEMENT.
 
-**Docker / local URLs:** before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
+**Docker / secrets:** Docker is required for gate, migrate, and boot. Do not Read `.env` values. `./studio env <p> up|migrate|dev --approve` injects named vars from the host secret store. Before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
 
-**Schema migrate:** if you can reach the database, **you run** the project migrate command (sprint work). INFORM the human. Do not HITL “please run migrate.” See [backend_playbook.md](../knowledge-base/backend_playbook.md).
+**Schema migrate:** if you can reach the database, **you run** the project migrate command (sprint work) via Compose `--approve` when that is the path. INFORM the human. Do not HITL “please run migrate.” See [backend_playbook.md](../knowledge-base/backend_playbook.md).
 
 **Greenfield UI kit:** `./studio init` / `design` / `adopt` write `docs/setup/ui-kit.md` and put kit peers in the app `package.json`.
 
@@ -36,8 +38,10 @@ The IDE workspace is Studio HQ, so every `projects/<name>/` tree is on disk. Aft
 - A generated Cursor rule names the **only** allowed product tree
 - Guard returns `cross_project` if the request names a sibling folder
 - Project `pre-commit` refuses a wrong git toplevel and staged `projects/` symlinks
+- HQ pre-commit refuses `projects/` in the studio repo
+- `parallel.max_projects` (default 5) leases `./studio execute`. Focus will not clobber another live lease unless `--force`
 
-Do not use Shell to `ls`/`cp`/`git` a sibling. Never merge two product gits.
+Do not use Shell to `ls`/`cp`/`git` a sibling. Never merge two product gits. **One chat per product.**
 
 **Do not switch project scope mid-thread.** Stay on `.active-project.json` unless the human **explicitly** asks to switch (`./studio focus <other>`, “switch to …”, “focus …”, “work on … now” naming that product as the new active scope). Naming a sibling in feedback, contrast, or a mistaken label is **not** a switch — ACK, stay put, or queue a note. Do not `./studio focus` another product on your own.
 

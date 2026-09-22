@@ -10,6 +10,8 @@ Honor the COST line on execute. On `INFORM cost-cap`, stop stuffing files — te
 
 Keys stay in Gemini CLI (`GEMINI_API_KEY` or Google login). Never write API keys into studio settings.
 
-Product LLM keys in a project `.env` are not the coding-agent key.
+**Docker is required.** Do not Read `.env` **values**. Inject with `./studio env <p> up|migrate|dev --approve`. One chat per product; `focus --force` only to steal isolation. HQ train is a **separate** session.
+
+Product LLM names in `env.schema.json` are not the coding-agent key.
 
 UI kit peers and agent-run migrations: see `AGENTS.md`.

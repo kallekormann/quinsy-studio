@@ -143,4 +143,5 @@ Every design spec **must** include **§2 Context & placement** (see `design-spec
 
 ## Deltas
 
+- **PB-20260922-001** helpful=0 harmful=0 :: Placing an item into a zone must also select it as Primary (or the zone's active token). A placement stamp without selection leaves deliverables on the previous primary.
 - **PB-20260916-001** helpful=0 harmful=0 :: Chrome actions such as Share belong on the shell that is already painted. Do not wait for a later canvas or document plane. A media rail must not offer a stock-media provider that never returns results.

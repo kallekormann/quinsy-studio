@@ -41,7 +41,7 @@ Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-g
 
 ### Testing
 
-- **PB-20260915-001** helpful=5 harmful=0 :: Root tsc for the public app must exclude sibling apps. Tests that import another app's path aliases belong in that app's tsconfig or the root exclude list — otherwise gate TypeScript fails on unresolved @/ modules that never ship in the public build.
+- **PB-20260915-001** helpful=14 harmful=0 :: Root tsc for the public app must exclude sibling apps. Tests that import another app's path aliases belong in that app's tsconfig or the root exclude list — otherwise gate TypeScript fails on unresolved @/ modules that never ship in the public build.
  (FE-006)
 
 Follow [qa-gate-playbook.md](qa-gate-playbook.md).
@@ -65,6 +65,8 @@ Paywall / marketing soft-paths that defer checkout must land on a **real** Accou
 ---
 
 ## Canvas shell vs document routes (LO-0035)
+
+- **PB-20260922-001** helpful=0 harmful=0 :: On a board canvas, re-clicking the only selected item must keep it selected. Clear selection only on empty-canvas click (or an explicit deselect control), never on a second click of the sole item.
 
 Infinite-canvas apps often lock the board shell with `h-dvh overflow-hidden`. That is correct for Konva/canvas, but **document UIs** under the same segment (`/board/[id]/brand-guide`, `/presentation`, etc.) will not scroll on `body`.
 

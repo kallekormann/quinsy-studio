@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from ticket_helpers import render_ticket_markdown
+from studio_hq_lock import hq_write_lock
 
 try:
     from studio_portability import (
@@ -257,22 +258,23 @@ def _ensure_inbox_header() -> None:
 
 
 def append_inbox(entry: Dict[str, str]) -> Path:
-    _ensure_inbox_header()
-    observation = sanitize_observation(entry.get("observation") or entry.get("title") or "")
-    block = (
-        f"## {entry['id']} — {entry['title']}\n"
-        f"- **When:** {entry['when']}\n"
-        f"- **Source:** `{entry['source']}` (provenance only)\n"
-        f"- **Kind:** {entry['kind']}\n"
-        f"- **Infuse into:** `{entry['infusion_path']}`\n"
-        f"- **Playbook:** `{entry['playbook']}`\n"
-        f"- **Signal:** {entry['signal']}\n"
-        f"- **Observation:** {observation}\n"
-        f"- **Status:** inbox — generalize into topic file + playbook, CHANGELOG, close LO\n\n"
-    )
-    INBOX_PATH.write_text(INBOX_PATH.read_text(encoding="utf-8") + block, encoding="utf-8")
-    compact_inbox(open_dir=BACKLOG_OPEN, inbox_path=INBOX_PATH, archive_dir=LEARNINGS_DIR / "archive")
-    return INBOX_PATH
+    with hq_write_lock("hq"):
+        _ensure_inbox_header()
+        observation = sanitize_observation(entry.get("observation") or entry.get("title") or "")
+        block = (
+            f"## {entry['id']} — {entry['title']}\n"
+            f"- **When:** {entry['when']}\n"
+            f"- **Source:** `{entry['source']}` (provenance only)\n"
+            f"- **Kind:** {entry['kind']}\n"
+            f"- **Infuse into:** `{entry['infusion_path']}`\n"
+            f"- **Playbook:** `{entry['playbook']}`\n"
+            f"- **Signal:** {entry['signal']}\n"
+            f"- **Observation:** {observation}\n"
+            f"- **Status:** inbox — generalize into topic file + playbook, CHANGELOG, close LO\n\n"
+        )
+        INBOX_PATH.write_text(INBOX_PATH.read_text(encoding="utf-8") + block, encoding="utf-8")
+        compact_inbox(open_dir=BACKLOG_OPEN, inbox_path=INBOX_PATH, archive_dir=LEARNINGS_DIR / "archive")
+        return INBOX_PATH
 
 
 def harvest_identified_learning(

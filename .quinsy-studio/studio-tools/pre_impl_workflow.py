@@ -191,6 +191,22 @@ GATE_VALIDATORS = {
 }
 
 
+def previous_human_gate_block(status: Dict, gate: int) -> Optional[str]:
+    """Refuse gate N until N-1 is approved, unless this gate is already approved (re-approve)."""
+    hg = status.get("human_gates") or {}
+    if gate not in (1, 2):
+        return None
+    already = (hg.get(str(gate)) or {}).get("status") == "approved"
+    if already:
+        return None
+    prev = str(gate - 1)
+    if (hg.get(prev) or {}).get("status") != "approved":
+        return (
+            f"Gate {prev} is not approved. Run ./studio approve <project> --gate {prev} first."
+        )
+    return None
+
+
 def validate_human_gate(project: str, gate: int) -> Tuple[bool, List[str]]:
     validator = GATE_VALIDATORS.get(gate)
     if not validator:

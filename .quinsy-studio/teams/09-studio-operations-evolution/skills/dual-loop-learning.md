@@ -116,7 +116,7 @@ How to promote:
 ### ✅ Instead
 
 ```markdown
-- Immediate harvest when identified (inbox + LO) then train in parallel
+- Immediate harvest when identified (inbox + LO) then `./studio train` in a HQ session
   - Strict separation Local/Global
   - Promotion with complete documentation
   - Only universally applicable solutions in Studio HQ

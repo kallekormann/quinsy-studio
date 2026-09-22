@@ -2,7 +2,7 @@
 id: LO-0305
 title: Zone placement stamped `zonePlaced` but never selected Primary, so deliverables
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

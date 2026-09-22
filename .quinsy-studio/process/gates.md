@@ -23,6 +23,7 @@ Gate = automated check + human confirmation
 - **Automated:** as much as possible is checked by tooling
 - **Human:** irreversible decisions wait for approval
 - **No bypass:** a gate cannot be skipped
+- **Sequential human gates:** `./studio approve --gate N` refuses unless gate N-1 is already approved (re-approving the same gate is allowed). Gate 1 cannot run while gate 0 is pending; gate 2 cannot run while gate 1 is pending.
 
 **Residual UI after a status-only ticket (LO-0174):** If the shipped change only flipped a flag, enum, or CSS class and a flicker/regression remains, open a **new** ticket that changes the render path (mount, effect, animation, layout). Do not treat a second status-only patch as the fix.
 
@@ -298,6 +299,7 @@ The gate history is logged in the project's `status.json`:
 
 ## Deltas
 
+- **PB-20260922-001** helpful=0 harmful=0 :: A typeface placed in a composition zone is Primary until the operator picks another. Placement without promoting Primary is not done.
 - **PB-20260916-005** helpful=0 harmful=0 :: When host-scoped live chrome never leaves loading, default-flow proof is HTTP/API tests (curl, PHPUnit, Vitest) plus a recorded hang — not a click-through.
 - **PB-20260916-004** helpful=0 harmful=0 :: An automation browser stuck on the fleet empty state (select a host) on a host-only route is not proof the API failed. Cover AC with tests or curl; record the hang. Host-only routes belong in HOST_ONLY_PATHS so the host query is restored.
 - **PB-20260916-003** helpful=0 harmful=0 :: Operator-authorized go (Inbox Approve, explicit operator dispatch) bypasses exploration or weekly synthesis caps. Those caps throttle autonomous work, not the request the operator just approved.

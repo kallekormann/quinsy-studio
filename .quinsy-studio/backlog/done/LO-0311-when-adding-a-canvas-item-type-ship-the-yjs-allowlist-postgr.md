@@ -2,7 +2,7 @@
 id: LO-0311
 title: When adding a canvas item type, ship the Yjs allowlist + Postgres enum in the sa
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

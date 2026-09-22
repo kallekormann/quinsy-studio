@@ -2,7 +2,7 @@
 id: LO-0301
 title: Sole-item re-click should stay selected; empty-canvas click is what clears
 type: studio-evolution
-status: open
+status: done
 phase: 6
 priority: P1
 estimate: S

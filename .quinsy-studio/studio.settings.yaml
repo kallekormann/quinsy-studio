@@ -9,6 +9,10 @@
 
 runtime: cursor
 
+# ≥5 concurrent product chats. File leases: .quinsy-studio/.cache/execute-leases/
+parallel:
+  max_projects: 5
+
 cost:
   profile: standard
   model_hint: ""
