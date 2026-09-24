@@ -28,6 +28,9 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
     "FE-006": {"name": "Frontend Testing", "triggers": [
         "test", "testing", "coverage", "unit-test", "e2e"
     ]},
+    "FE-007": {"name": "Client Security", "triggers": [
+        "client security", "content-security-policy", "csp header", "frontend security"
+    ]},
     "BE-001": {"name": "API Design", "triggers": [
         "api", "endpoint", "rest", "graphql", "http"
     ]},
@@ -42,6 +45,9 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
     ]},
     "BE-005": {"name": "Third-Party Integrations", "triggers": [
         "integration", "webhook", "stripe", "sendgrid", "payment"
+    ]},
+    "BE-006": {"name": "Jobs and Delivery", "triggers": [
+        "queue", "worker", "outbox", "bullmq", "background job"
     ]},
     "CL-001": {"name": "GDPR Compliance", "triggers": [
         "gdpr", "dsgvo", "data protection", "privacy", "datenschutz",
@@ -99,7 +105,11 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
         "anti-slop", "slop", "ai-code", "code quality"
     ]},
     "AI-003": {"name": "Automation Pipelines", "triggers": [
-        "ci/cd", "pipeline", "automation", "github actions"
+        "durable workflow", "orchestrator", "inngest", "temporal", "infusion",
+        "agent job"
+    ]},
+    "AI-004": {"name": "Eval and Context", "triggers": [
+        "eval", "rag", "context window", "prompt cache", "agent evaluation"
     ]},
     "PE-001": {"name": "Infrastructure", "triggers": [
         "infrastructure", "docker", "cloud", "deploy", "cdn"
@@ -150,7 +160,7 @@ INTERNAL_SKILLS: Dict[str, Dict] = {
     ]},
     "UX-007": {"name": "Visual Storyteller", "triggers": [
         "homepage", "landing page", "marketing page", "storyboard", "workflow diagram",
-        "explainer", "hero section", "pricing page", "narrative"
+        "explainer", "hero section", "pricing page", "narrative", "scroll experience", "scrolly"
     ]},
     "GD-001": {"name": "Hypothesis & experiment design", "triggers": [
         "a/b", "ab test", "hypothesis", "experiment", "conversion", "cro",
@@ -182,12 +192,13 @@ EXTERNAL_MAPPINGS: Dict[str, List[str]] = {
         "design_awesome/skills/<style>",
         "all_domains/design-and-ui-ux/frontend-design",
     ],
+    "FE-007": ["knowledge-base/skill-extensions/frontend-security-auditor.md"],
     "FE-002": [
         "design/skills (hallmark)",
         "design_awesome/skills/<style>",
     ],
     "UX-001": ["design-agent/ux-design-process", "design-agent/ux-desktop-app", "design-agent/ux-web-app", "design-agent/ux-knowledge-work"],
-    "UX-002": ["design-agent/ux-interaction-patterns", "design-agent/ux-form-design", "knowledge-base/skill-extensions/delight-micro-interactions.md"],
+    "UX-002": ["design-agent/ux-interaction-patterns", "design-agent/ux-form-design", "knowledge-base/skill-extensions/delight-micro-interactions.md", "knowledge-base/skill-extensions/figma-token-handoff.md"],
     "UX-003": ["design-agent/ux-information-architecture"],
     "UX-004": ["design-agent/ux-mental-models", "design-agent/ux-design-process"],
     "UX-005": [

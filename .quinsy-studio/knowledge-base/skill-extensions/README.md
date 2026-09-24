@@ -22,8 +22,9 @@
 | [cookie-compliance.md](cookie-compliance.md) | **CL-002** | 03 | Cookie banner, CMP, script hydration, dark-pattern checks |
 | [tos-architect.md](tos-architect.md) | **CL-003** | 03 | ToS/EULA from codebase (billing, AI, sub-processors, IP) |
 | [compliance-orchestrator.md](compliance-orchestrator.md) | CL-001 + CL-002 + CL-003 (+ affiliate) | 03 | **Full-route audit** — orchestrator only, not a ticket skill |
-| [frontend-security-auditor.md](frontend-security-auditor.md) | **PE-003**, FE-004 | 08, 01 | XSS, CSP, client auth, CSRF, secrets in FE |
+| [frontend-security-auditor.md](frontend-security-auditor.md) | **PE-003**, **FE-007**, FE-004 | 08, 01 | XSS, CSP, client auth, CSRF, secrets in FE |
 | [backend-security-auditor.md](backend-security-auditor.md) | **PE-003**, BE-003 | 08, 02 | BOLA, injection, SSRF, mass assignment, rate limits |
+| [figma-token-handoff.md](figma-token-handoff.md) | **UX-002**, **UX-005** | 10 | Figma file cited — map to tokens, not a new UX ID |
 
 ## Intake staging
 

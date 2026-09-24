@@ -26,12 +26,14 @@ SKILL_ROLE_MAP = {
     "FE-004": "QA Specialist (Director)",
     "FE-005": "Frontend Architect (Director)",
     "FE-006": "QA Specialist (Director)",
+    "FE-007": "Frontend Security Engineer",
     # Team 02 — Backend & Systems
     "BE-001": "Backend Architect (Director)",
     "BE-002": "Database Specialist (Director)",
     "BE-003": "Backend Architect (Director)",
     "BE-004": "Backend Engineer (Lead)",
     "BE-005": "Backend Engineer (Lead)",
+    "BE-006": "Backend Architect (Director)",
     # Team 03 — Compliance & Legal
     "CL-001": "Legal & Privacy Officer (Director)",
     "CL-002": "Legal & Privacy Officer (Director)",
@@ -55,6 +57,7 @@ SKILL_ROLE_MAP = {
     "AI-001": "Autonomous Systems Director",
     "AI-002": "LLM Prompt Engineer",
     "AI-003": "Studio Automation Engineer (Director)",
+    "AI-004": "Autonomous Systems Director",
     # Team 08 — Platform & Enterprise Engineering
     "PE-001": "Platform Architect (Director)",
     "PE-002": "Platform Architect (Director)",
@@ -134,11 +137,16 @@ SKILL_EXTRA_PLAYBOOKS = {
     "FE-004": ["knowledge-base/frontend_playbook.md", "knowledge-base/qa-gate-playbook.md"],
     "FE-005": ["knowledge-base/frontend_playbook.md"],
     "FE-006": ["knowledge-base/qa-gate-playbook.md"],
+    "FE-007": [
+        "knowledge-base/frontend_playbook.md",
+        "knowledge-base/skill-extensions/frontend-security-auditor.md",
+    ],
     "BE-001": ["knowledge-base/backend_playbook.md"],
     "BE-002": ["knowledge-base/backend_playbook.md"],
     "BE-003": ["knowledge-base/backend_playbook.md"],
     "BE-004": ["knowledge-base/backend_playbook.md"],
     "BE-005": ["knowledge-base/backend_playbook.md"],
+    "BE-006": ["knowledge-base/backend_playbook.md"],
     "GD-001": ["knowledge-base/growth-mechanics-playbook.md"],
     "GD-002": [
         "knowledge-base/growth-mechanics-playbook.md",
@@ -159,6 +167,8 @@ SKILL_EXTRA_PLAYBOOKS = {
         "knowledge-base/visual-storytelling-playbook.md",
         "knowledge-base/growth-mechanics-playbook.md",
     ],
+    "AI-003": ["knowledge-base/ai_automation_playbook.md"],
+    "AI-004": ["knowledge-base/ai_automation_playbook.md"],
 }
 
 

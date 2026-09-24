@@ -662,7 +662,8 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 | Studio HQ generic docs | [process/studio-abstraction.md](process/studio-abstraction.md) · `./studio verify-abstraction` |
 | Cost / token policy | [Studio settings](#studio-settings-cost--tokens) — HQ vs product, how to estimate, size S–XL |
 | Learning loop + infusion gate | [process/learning-loop.md](process/learning-loop.md) · [§ learnings](#learnings-harvest-when-identified) · `./studio infusion` |
-| Feature placement (IA) | [knowledge-base/contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) |
+| Feature placement (IA) | [knowledge-base/contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) · `./studio ia-audit <p> <TICKET>` |
+| HQ skill IDs | FE-007 client security · BE-006 jobs · AI-004 eval — [skill-registry.md](teams/skill-registry.md) · [hq-skill-advancement-sprints.md](process/hq-skill-advancement-sprints.md) |
 | Off-sprint work | `./studio guard <p> "request"` |
 | Ticket workflow | [process/ticket-workflow.md](process/ticket-workflow.md) |
 | UI kit on setup | [installation.md](studio-library/ui/docs/getting-started/installation.md) · `docs/setup/ui-kit.md` |
@@ -672,12 +673,13 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 
 ## External skills (optional)
 
-Subscribe to best-in-class skill packages (design, marketing, gamedev, compliance):
+Subscribe to best-in-class skill packages (design, marketing, gamedev, compliance, **superpowers**, **anthropic_docs**). Do **not** `npx claude-code-templates` the whole tree. Do **not** import `executing-plans`.
 
 ```bash
 ./studio update-skills --list
 ./studio update-skills              # import all into .quinsy-studio/external-skills/
-./studio update-skills design       # one domain only
+./studio update-skills superpowers  # one domain only
+./studio ia-audit <project> <TICKET>
 ```
 
 To **add** a new source: edit `skill-dependencies.json` → `./studio update-skills <name>` → register in `teams/skill-registry.md`. Full guide: [Managing Skills](README.md#8-managing-skills).

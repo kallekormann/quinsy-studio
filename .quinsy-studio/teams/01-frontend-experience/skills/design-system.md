@@ -10,7 +10,7 @@ Apply **already approved** project tokens. Visual language is Team 10 / gate 2.
 
 **Playbook:** [frontend_playbook.md](../../../knowledge-base/frontend_playbook.md)
 
-**Don’t:** a second palette. **Implement-fail:** dark mode that ignores tokens.
+**Don’t:** a second palette. **shadcn is not the kit.** **Implement-fail:** dark mode that ignores tokens; raw hex in product UI when tokens exist (gate 5 warn).
 
 Zone-sourced kit rails reassemble from current children; do not rematch a stale stored palette after add/delete (LO-0290).
 

@@ -62,7 +62,7 @@ When a canvas zone owns a kit/inspector rail, the rail follows **current** zone 
 
 ## Approve-design gate
 
-`./studio approve-design` **fails** if the spec file is missing or **§2 Context & placement** is empty. Human approval is not a skip for an unwritten spec.
+`./studio approve-design` **fails** if the spec file is missing or **§2 Context & placement** is empty. For `ia-navigation`, also run **`./studio ia-audit`** — missing `ia_nav` metrics or top > 7 / depth > 3 fails the CLI. Human approval is not a skip for an unwritten spec.
 
 ---
 

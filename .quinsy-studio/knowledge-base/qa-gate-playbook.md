@@ -10,6 +10,8 @@
 - Receipt records **Plan**, **AC coverage**, and **default-flow** (happy path the human will click). UI tickets: browser or documented substitute.
 - Cover empty / loading / error when the ticket touches a surface that can be empty or fail.
 - Smoke the RUNBOOK URL, not a guessed port.
+- Playwright locators: **role / name**, not CSS soup (FE-006).
+- Gate 5 **soft-warns** token `#hex` / `rgb()` and native `<select>` in product `app/`/`src/` (`studio_skill_checks.py`). Allowlist: `tokens`, tests, fixtures, studio-library primitives.
 
 ## Don’t
 

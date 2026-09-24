@@ -209,6 +209,102 @@ def test_filled_spec_with_token_all_state_mocks_passes():
         assert msg is None
 
 
+def test_ia_navigation_missing_metrics_fails():
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as raw:
+        tmp_path = Path(raw)
+        spec = tmp_path / "docs" / "design-specs" / "DEMO-IA.md"
+        spec.parent.mkdir(parents=True)
+        spec.write_text(_filled_spec(), encoding="utf-8")
+        mock = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-IA" / "list.html"
+        mock.parent.mkdir(parents=True)
+        mock.write_text(
+            """<!doctype html>
+<link rel="stylesheet" href="../../../../ui/tokens/design-tokens.css">
+<button data-state="rest">Nav</button>
+<button data-state="hover">Nav</button>
+<button data-state="pressed">Nav</button>
+<button disabled data-state="disabled">Nav</button>
+<button data-state="focus">Nav</button>
+<div data-state="closed">closed</div>
+<div data-state="open">open</div>
+<div data-state="empty">empty</div>
+<div data-state="loading">loading</div>
+<div data-state="error">error</div>
+<div style="background: var(--background); color: var(--foreground)">shell</div>
+""",
+            encoding="utf-8",
+        )
+        err = design_spec_completeness_error(spec, tmp_path, "DEMO-IA", "ia-navigation")
+        assert err and "IA nav" in err
+
+
+def test_ia_navigation_nine_top_level_fails():
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as raw:
+        tmp_path = Path(raw)
+        spec = tmp_path / "docs" / "design-specs" / "DEMO-IA.md"
+        spec.parent.mkdir(parents=True)
+        spec.write_text(_filled_spec() + "\n\nia_nav: { top: 9, depth: 2 }\n", encoding="utf-8")
+        mock = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-IA" / "list.html"
+        mock.parent.mkdir(parents=True)
+        mock.write_text(
+            """<!doctype html>
+<link rel="stylesheet" href="../../../../ui/tokens/design-tokens.css">
+<button data-state="rest">Nav</button>
+<button data-state="hover">Nav</button>
+<button data-state="pressed">Nav</button>
+<button disabled data-state="disabled">Nav</button>
+<button data-state="focus">Nav</button>
+<div data-state="closed">closed</div>
+<div data-state="open">open</div>
+<div data-state="empty">empty</div>
+<div data-state="loading">loading</div>
+<div data-state="error">error</div>
+<div style="background: var(--background); color: var(--foreground)">shell</div>
+""",
+            encoding="utf-8",
+        )
+        err = design_spec_completeness_error(spec, tmp_path, "DEMO-IA", "ia-navigation")
+        assert err and "9" in err
+
+
+def test_ia_navigation_ok_counts_pass():
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as raw:
+        tmp_path = Path(raw)
+        spec = tmp_path / "docs" / "design-specs" / "DEMO-IA.md"
+        spec.parent.mkdir(parents=True)
+        spec.write_text(_filled_spec() + "\n\nia_nav: { top: 5, depth: 2 }\n", encoding="utf-8")
+        mock = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-IA" / "list.html"
+        mock.parent.mkdir(parents=True)
+        mock.write_text(
+            """<!doctype html>
+<link rel="stylesheet" href="../../../../ui/tokens/design-tokens.css">
+<button data-state="rest">Nav</button>
+<button data-state="hover">Nav</button>
+<button data-state="pressed">Nav</button>
+<button disabled data-state="disabled">Nav</button>
+<button data-state="focus">Nav</button>
+<div data-state="closed">closed</div>
+<div data-state="open">open</div>
+<div data-state="empty">empty</div>
+<div data-state="loading">loading</div>
+<div data-state="error">error</div>
+<div style="background: var(--background); color: var(--foreground)">shell</div>
+""",
+            encoding="utf-8",
+        )
+        err = design_spec_completeness_error(spec, tmp_path, "DEMO-IA", "ia-navigation")
+        assert err is None
+
+
 def test_design_implement_blocks_pending_design_track():
     content = (
         "ticket_type: ui-composition\n"

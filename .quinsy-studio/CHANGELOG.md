@@ -1,3 +1,35 @@
+## 2026-09-24 — HQ skill advancement (LO-0331–0339)
+
+### Added
+
+- External subscribes: `obra/superpowers`, `anthropics/skills` (`skill-dependencies.json`). Conflict matrix blocks `executing-plans`, aitmpl blob, Bright Data scrape default, shadcn-as-kit.
+- Skills: **FE-007** client security, **BE-006** jobs/delivery, **AI-004** eval/context. AI-003 retargeted to durable workflows (CI stays PE-002).
+- Tools: `./studio ia-audit`; gate 5 soft `skill_application` (`studio_skill_checks.py`); `move … done` requires `## Eval` on AI-001/AI-004 receipts.
+- Playbooks: scroll-experience, theme-factory HITL, Figma handoff extension, App Router/query/i18n Don’ts, backend jobs spine.
+
+### Changed
+
+- Skill registry total **49**. `approve-design` for `ia-navigation` requires `ia_nav` metrics (≤7 top, depth ≤3).
+
+## 2026-09-24 — HQ skill advancement epic opened (LO-0331–0339)
+
+### Changed
+
+- Plan: [process/hq-skill-advancement-sprints.md](process/hq-skill-advancement-sprints.md). Vet selected claude-code-templates / superpowers / Anthropic skills against Teams 10, 01, 02, 07. Distill into playbooks; add FE-007 / BE-006 / AI-004; Python checkers. Do not install the aitmpl blob.
+
+## 2026-09-23 — Unique network SKU matches only (LO-0330)
+
+### Changed
+
+- First-party catalog rows link to a network SKU only on a unique identity match. Missing or ambiguous matches stay unmatched until the operator picks the SKU.
+
+## 2026-09-23 — Preview origin vs tenant host; inbox page link (LO-0327–0329)
+
+### Changed
+
+- Operator preview links use the configured magazine origin (loopback plus port on local stacks). Tenant chrome is a `host` query param, not the public hostname in the URL.
+- Folder filters that join work rows to pages by `page_id` must also resolve the page via the linked brief, or persist `page_id` when the page is created.
+
 ## 2026-09-22 — Concurrent execute leases + isolation + guides (LO-0324–0326)
 
 ### Changed

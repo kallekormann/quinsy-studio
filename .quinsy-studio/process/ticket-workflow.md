@@ -31,6 +31,8 @@ Move during sprint:
 ./studio move <project> TICKET-NNN done
 ```
 
+**Rule (LO-0333 / LO-0338):** `ia-navigation` specs document `ia_nav: { top, depth }` and pass `./studio ia-audit`. Gate 5 soft-warns token hex and native `<select>`. AI-001 / AI-004 receipts need a filled `## Eval` or `move … done` refuses.
+
 **Rule (LO-0294):** When `needs_architecture` is true, write `docs/architecture/<TICKET>.md` and keep the ticket on the production stream until `architecture_status` is approved. `./studio execute` must not offer `IMPLEMENT` while the architecture packet is pending (`PB-20260916-003` ticket-workflow, `PB-20260916-004` HITL).
 
 **Rule (LO-0292):** `move … done` may print “sprint complete” only when every sprint ticket is `done` or `cancelled`. If others remain, print remaining count and `./studio execute` — do not send the agent to retro mid-sprint.

@@ -43,3 +43,12 @@ Full catalog: [knowledge-base/aesthetic-presets/README.md](../../../knowledge-ba
 ## Deliverable
 
 Design spec section **Aesthetic preset** (see `design-spec-template.md`).
+
+## Theme-factory ritual (HITL — not a CSS kit)
+
+Catalog `theme-factory` is a **picker**: show repertoire → wait for human pick → apply **one** cohesive color+type pair.
+
+- Product UI: map the pick onto **one aesthetic preset** or `project-brand-only`, then **tokens**. Do not paste pack names (“Ocean Depths”) into `app/` CSS.
+- Artifacts (slides/PDF, UX-007): packs are allowed; still check WCAG on hex (`design_math.py`).
+- Never auto-generate and apply a palette without `approve-design` / brand HITL (UX-006).
+

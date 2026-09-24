@@ -20,6 +20,10 @@
 | `gamedev-skills/awesome-gamedev-agent-skills` | `external-skills/gamedev` | game dev | 🟢 Low |
 | `samir-abis/cookiecomply-skills` | `external-skills/compliance_cookies` | GDPR/cookies | 🟢 Low |
 | `bloomprotocol/agent-visibility-skill` | `external-skills/geo_visibility` | GEO/AI visibility | 🟡 Medium |
+| `obra/superpowers` | `external-skills/superpowers` | debug / review / writing | 🟡 Medium — **`executing-plans` blocked** |
+| `anthropics/skills` | `external-skills/anthropic_docs` | pdf/pptx/xlsx/docx | 🟢 Low — artifacts, not product CSS |
+
+**Blocked (do not subscribe):** `npx claude-code-templates` without a **named** skill path (aitmpl blob). Bright Data scrape MCP as a studio default. `executing-plans` / `finishing-a-development-branch` as the studio loop.
 
 ---
 
@@ -107,6 +111,11 @@ without an explicit GDPR approval (human-in-the-loop).
 | `geo_visibility` wants MCP + API key | external API | B1, zero-data | use only the markdown patterns, no API integration |
 | `gamedev` GDScript without types | unchecked variables | C8 | typing where GDScript allows it, otherwise ADR |
 | `cookiecomply` wants a third-party CMP | external banner service | zero-data | build own banner (studio library) |
+| `superpowers/executing-plans` | batch then wait | `./studio execute` until HITL | **❌ do not import** — distill debugging/review only |
+| aitmpl `npx claude-code-templates` whole tree | ~910 SKILL.md in context | cite → distill → CARD | **❌** named upstream repos only (`skill-dependencies.json`) |
+| Bright Data `web-data/scrape` | vendor scrape MCP | secrets-as-names / zero-data | **❌** not a studio default |
+| catalog `shadcn` as kit | shadcn/ui as source of truth | studio-library + Radix | **❌** not pullable as kit (LO-0334) |
+| `theme-factory` Ocean Depths hex | paste pack into `app/` CSS | aesthetic presets + tokens | HITL pick → one preset / `project-brand-only` → tokens |
 
 ---
 
@@ -115,3 +124,4 @@ without an explicit GDPR approval (human-in-the-loop).
 - Check the matrix after every `./studio update-skills` (add new sources).
 - A new source WITHOUT a row in this matrix is NOT activated (SO-002 Process Guard).
 - Conflicts are reported as learning items (`./studio learn ... --signal conflict`).
+- After adding `superpowers` or `anthropic_docs`, re-run `./studio update-skills <name>` and confirm `external-skills/INDEX.md`.

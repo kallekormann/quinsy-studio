@@ -8,7 +8,9 @@ lead_role: UI/Visual Designer
 
 Typography, color, layout, Gestalt, golden ratio. All values calculable in design spec.
 
-**Aesthetic preset:** load [aesthetic-presets.md](aesthetic-presets.md) + one preset from `knowledge-base/aesthetic-presets/<slug>/SKILL.md`.
+**Aesthetic preset:** load [aesthetic-presets.md](aesthetic-presets.md) + one preset from `knowledge-base/aesthetic-presets/<slug>/SKILL.md`. **Theme-factory** is a HITL picker ritual — not a second CSS kit.
+
+**Studio extension:** [figma-token-handoff.md](../../../knowledge-base/skill-extensions/figma-token-handoff.md)
 
 **External:** `ux-visual-design`, `ux-typography`, `ux-color-theory`, `taste-skill`
 

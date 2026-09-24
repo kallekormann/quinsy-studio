@@ -19,7 +19,7 @@ activation_triggers:
 
 ## Canonical reference
 
-Read and apply: [anti-slop-design-ux.md](../../../knowledge-base/anti-slop-design-ux.md)
+Read and apply: [anti-slop-design-ux.md](../../../knowledge-base/anti-slop-design-ux.md). Distill `avoid-ai-writing` / `deslop` into copy rules — they do not replace this file.
 
 ## Behavior rules
 

@@ -10,6 +10,8 @@ Interaction patterns, states, microcopy, error flows, forms. Load for forms, mod
 
 **Playbook:** [interaction-ux-playbook.md](../../../knowledge-base/interaction-ux-playbook.md) · [delight-playbook.md](../../../knowledge-base/delight-playbook.md)
 
+**Studio extension:** [figma-token-handoff.md](../../../knowledge-base/skill-extensions/figma-token-handoff.md) when the ticket cites Figma.
+
 **Studio extension:** [delight-micro-interactions.md](../../../knowledge-base/skill-extensions/delight-micro-interactions.md) — audit empty/wait/milestone only; **no** joke loaders or confetti-on-save.
 
 **External (optional):** `ux-interaction-patterns`, `ux-form-design`

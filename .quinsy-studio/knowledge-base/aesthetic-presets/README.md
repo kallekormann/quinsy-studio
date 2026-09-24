@@ -71,3 +71,6 @@ In every Team 10 design spec, add:
 | `taste-skill` (external) | Anti-slop quality bar |
 
 See [teams/10-product-design-experience/skills/aesthetic-presets.md](../../teams/10-product-design-experience/skills/aesthetic-presets.md).
+
+**Theme-factory:** HITL pick only. Product CSS stays presets + tokens (LO-0332).
+

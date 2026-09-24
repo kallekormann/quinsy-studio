@@ -8,7 +8,7 @@ lead_role: Brand Guardian
 
 Brand tokens, voice/tone, visual consistency. **Required on every UI implement ticket.**
 
-Verify chosen **aesthetic preset** does not conflict with project `design/DESIGN.md` and `ui/tokens/`.
+Verify chosen **aesthetic preset** does not conflict with project `design/DESIGN.md` and `ui/tokens/`. Never auto-apply a catalog palette (theme-factory waits for HITL pick).
 
 **Agent:** `agents/design-brand-guardian.md`
 **Checklist:** `knowledge-base/brand-guardian-checklist.md`

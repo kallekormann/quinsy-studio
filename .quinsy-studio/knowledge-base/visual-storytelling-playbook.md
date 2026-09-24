@@ -8,7 +8,17 @@ For homepage, landing, pricing, and in-app workflow explainers. Scan/readability
 
 **Don’t:** Metaphor heroes, overlapping badge clouds, autoplay noise, or a storyboard that doesn’t match the live product chrome (LO-0054).
 
-**Fail:** Hero with no next step. Workflow explainer with unlabeled steps. Marketing still that fakes product UI.
+**Fail:** Hero with no next step. Workflow explainer with unlabeled steps. Marketing still that fakes product UI. Scroll hijack; content only visible after a parallax beat; no reduced-motion path.
+
+## Scroll as narrative (UX-007 / UX-002)
+
+Load on `marketing-page`, `workflow-explainer`, commercial-web — **not** operator tables.
+
+**Do:** beats (setup → tension → resolution); sticky only to hold a claim; content first, motion second; Team 01 implements without CLS (FE-003) and with `prefers-reduced-motion` (FE-004).
+
+**Don’t:** default GSAP/Locomotive in studio-library; hide the CTA in a scroll gag.
+
+**Team 11:** only if the page is a funnel (GD-001).
 
 ## Narrative arc
 

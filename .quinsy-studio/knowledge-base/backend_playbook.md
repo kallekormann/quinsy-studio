@@ -18,6 +18,12 @@ Every decision is documented.
 | Auth (BE-003) | Server checks authorization on every mutating route | Trust a client role flag | Unauthenticated write |
 | Errors (BE-004) | Typed errors; no swallowed catch | Empty `catch {}` | User sees a blank 500 with no log |
 | Integrations (BE-005) | Timeouts, retries with bound, secrets in `.env` not `NEXT_PUBLIC_` | Vendor SDK on the hot path without a circuit | Paid-vendor key in the client bundle |
+| Jobs (BE-006) | Idempotency keys, outbox, worker queues listed | Fire-and-forget writes that must fan out | Job cannot retry; worker missing the queue name |
+| Indexes / FKs (BE-002) | Index what you filter; FKs or documented equivalent | Unbounded scans on operator lists | List GET omits fields the inspector shows |
+
+Durable **agent** workflows (checkpoints, orchestrator) are **AI-003**, not this spine. CI is **PE-002**.
+
+**Handoff:** API contract + error envelope + example payload in `docs/` or OpenAPI — FE must not guess field names (`backend-to-frontend-handoff`).
 
 **Evidence bullets** below are studio scars (Compose, Laravel, Filament). They do not replace the spine.
 

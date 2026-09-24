@@ -8,4 +8,4 @@ lead_role: QA Specialist
 
 **Playbook:** [qa-gate-playbook.md](../../../knowledge-base/qa-gate-playbook.md)
 
-Trophy: many unit tests, fewer e2e. Receipt default-flow is the human proof. **Implement-fail:** UI change with no browser/API proof; `move … done` without QA level 5.
+Trophy: many unit tests, fewer e2e. Receipt default-flow is the human proof. Prefer **role-based Playwright locators**. **Implement-fail:** UI change with no browser/API proof; `move … done` without QA level 5.

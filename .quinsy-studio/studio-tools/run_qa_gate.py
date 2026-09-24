@@ -27,6 +27,7 @@ import subprocess
 import re
 import platform
 from pathlib import Path
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 from studio_env import redact_secret_patterns
@@ -163,6 +164,13 @@ def get_checks_for_level(level: int) -> List[QACheck]:
                 description="Anti-Slop Audit",
                 timeout=60
             ),
+            QACheck(
+                name="skill_application",
+                command="",
+                description="Skill application (token literals / native select — soft)",
+                timeout=30,
+                required=False,
+            ),
         ])
     
     return checks
@@ -219,6 +227,23 @@ def run_check(check: QACheck, project_dir: Path) -> QAResult:
 # =============================================================================
 # SPECIAL CHECKS
 # =============================================================================
+
+def check_skill_application(project_dir: Path) -> QAResult:
+    """Soft warn: token hex / rgb and native <select> in product UI (LO-0334 / LO-0338)."""
+    from studio_skill_checks import format_scan_report, scan_project
+
+    start_time = datetime.now()
+    warnings, _hard = scan_project(project_dir)
+    duration = (datetime.now() - start_time).total_seconds()
+    report = format_scan_report(warnings)
+    return QAResult(
+        check="skill_application",
+        passed=len(warnings) == 0,
+        output=report,
+        duration=duration,
+        error=None if not warnings else f"{len(warnings)} skill-application warning(s)",
+    )
+
 
 def check_project_structure(project_dir: Path) -> QAResult:
     """Check whether the project structure is correct."""
@@ -491,7 +516,7 @@ def print_report(report: QAReport, use_json: bool = False):
     total_count = len(report.results)
     
     for result in report.results:
-        soft = result["check"] == "npm_audit"
+        soft = result["check"] in ("npm_audit", "skill_application")
         if result["passed"]:
             icon = "✅"
         elif soft:
@@ -510,8 +535,16 @@ def print_report(report: QAReport, use_json: bool = False):
                 for line in output_lines:
                     print(f"     {redact_secret_patterns(line)}")
     
-    hard_failed = [r for r in report.results if not r["passed"] and r["check"] != "npm_audit"]
-    soft_failed = [r for r in report.results if not r["passed"] and r["check"] == "npm_audit"]
+    hard_failed = [
+        r
+        for r in report.results
+        if not r["passed"] and r["check"] not in ("npm_audit", "skill_application")
+    ]
+    soft_failed = [
+        r
+        for r in report.results
+        if not r["passed"] and r["check"] in ("npm_audit", "skill_application")
+    ]
     print(f"\n  {'='*50}")
     print(f"  RESULT: {report.passed}")
     print(f"  Passed: {passed_count}/{total_count}")
@@ -602,6 +635,8 @@ def main():
             result = check_skill_matching()
         elif check.name == "smoke_routes":
             result = check_smoke_routes(project_dir)
+        elif check.name == "skill_application":
+            result = check_skill_application(project_dir)
         else:
             result = run_check(check, project_dir)
         
@@ -613,7 +648,9 @@ def main():
     total_duration = (datetime.now() - total_start).total_seconds()
     
     # Build report
-    passed = all(r.passed for r in results if r.check not in ["npm_audit"])  # npm audit is warning
+    passed = all(
+        r.passed for r in results if r.check not in ["npm_audit", "skill_application"]
+    )
     
     report = QAReport(
         project=project,

@@ -27,6 +27,7 @@ Commands:
   ./studio train --done TR-NNNN                  Mark train job infused
   ./studio train --purge-empty                 Close open jobs with blank observation
   ./studio approve-design <p> <TICKET>         After spec + all-state mocks exist
+  ./studio ia-audit <p> <TICKET>               IA nav counts (≤7 top, depth ≤3)
   ./studio approve-arch <p> <TICKET>           After docs/architecture/<TICKET>.md exists
   ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio ticket-card <project> <id>            Compact ticket card
@@ -2399,12 +2400,16 @@ class StudioOrchestrator:
             sprint_match = re.search(r"^sprint:\s*(\S+)", content_pre, re.MULTILINE)
             ticket_sprint = sprint_match.group(1) if sprint_match else None
             if sprint_pre and ticket_sprint == sprint_pre:
-                if not receipt_is_complete(project, sprint_pre, ticket_id):
+                rec_text_pre = ticket_file.read_text()
+                if not receipt_is_complete(
+                    project, sprint_pre, ticket_id, ticket_text=rec_text_pre
+                ):
                     rec = receipt_path(project, sprint_pre, ticket_id)
                     print(f"\n  ❌ Cannot mark {ticket_id} done without an execution receipt.")
                     print(f"     Fill: {rec.relative_to(STUDIO_ROOT)}")
                     print(f"     ./studio receipt {project} {ticket_id}")
                     print("     Required sections: Plan, AC coverage, Default flow (LO-0051), Playbook citations")
+                    print("     AI-001 / AI-004 tickets also need a filled ## Eval section")
                     return False
 
         if new_status == "implement":
@@ -2590,6 +2595,27 @@ class StudioOrchestrator:
         print(f"    Spec: {spec_rel}")
         print(f"  Next: implement only after stream is ready (approve-arch if required)")
         return True
+
+    def cmd_ia_audit(self, project: str, ticket_id: str):
+        """Print IA nav findings for a ticket spec (empty list = pass)."""
+        from studio_ia_audit import format_ia_audit_report, ia_nav_findings
+
+        ticket_file, _status = find_project_ticket(project, ticket_id)
+        if not ticket_file:
+            print(f"  Ticket {ticket_id} not found in project {project}")
+            return False
+        content = ticket_file.read_text()
+        spec_match = re.search(r"^design_spec:\s*(.+)$", content, re.MULTILINE)
+        spec_rel = spec_match.group(1).strip() if spec_match else default_design_spec_path(ticket_id)
+        spec_path = PROJECTS_DIR / project / spec_rel
+        if not spec_path.exists():
+            print(f"\n  ❌ Spec not found: {spec_rel}")
+            print("     Write the design spec before ./studio ia-audit")
+            return False
+        findings = ia_nav_findings(spec_path.read_text(encoding="utf-8", errors="ignore"))
+        print(f"\n  {format_ia_audit_report(findings)}")
+        print(f"    Spec: {spec_rel}")
+        return not findings
 
     def cmd_approve_arch(self, project: str, ticket_id: str, notes: str = ""):
         """HITL: approve architecture packet before implementation sprint."""
@@ -3498,6 +3524,7 @@ Commands:
   ./studio train --done TR-NNNN                  Mark train job infused
   ./studio train --purge-empty                 Close open jobs with blank observation
   ./studio approve-design <p> <TICKET>         After spec + all-state mocks exist
+  ./studio ia-audit <p> <TICKET>               IA nav counts (≤7 top, depth ≤3)
   ./studio approve-arch <p> <TICKET>           After docs/architecture/<TICKET>.md exists
   ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio ticket-card <project> <id>            Compact ticket card
@@ -4027,6 +4054,11 @@ def main():
             if arg == "--notes" and i + 1 < len(args):
                 notes = args[i + 1]
         orchestrator.cmd_approve_design(project, ticket_id, notes=notes)
+
+    elif command == "ia-audit" and len(args) >= 2:
+        ok = orchestrator.cmd_ia_audit(args[0], args[1])
+        if ok is False:
+            sys.exit(2)
 
     elif command == "approve-arch" and len(args) >= 2:
         project = args[0]

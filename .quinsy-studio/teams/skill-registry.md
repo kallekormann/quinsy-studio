@@ -8,18 +8,18 @@
 
 | Team | Skills | Lead Roles (Director) |
 |------|--------|----------------------|
-| 01 Frontend Experience | 6 Skills | Lead Experience Architect, Frontend Architect, QA Specialist, UI/Interaction Designer |
-| 02 Backend Systems | 5 Skills | Senior Fullstack Architect, Backend Architect, Database Specialist |
+| 01 Frontend Experience | 7 Skills | Lead Experience Architect, Frontend Architect, QA Specialist, UI/Interaction Designer |
+| 02 Backend Systems | 6 Skills | Senior Fullstack Architect, Backend Architect, Database Specialist |
 | 03 Compliance & Legal | 4 Skills | Legal & Privacy Officer |
 | 04 Product Strategy & Architecture | 4 Skills | Product Manager, Systems Architect |
 | 05 Growth, Marketing & Content | 3 Skills | SEO/AEO Specialist, Growth Manager |
 | 06 Product Management & Operating Model | 3 Skills | Product Manager |
-| 07 AI & Autonomous Systems | 3 Skills | Autonomous Systems Director |
+| 07 AI & Autonomous Systems | 4 Skills | Autonomous Systems Director |
 | 08 Platform & Enterprise Engineering | 4 Skills | Platform Architect |
 | 09 Studio Operations & Evolution | 4 Skills | Studio Automation Engineer, Process Guard, Agile Coach |
 | 10 Product Design & Experience | 7 Skills | Product Designer, UX Designer, Brand Guardian, Visual Storyteller |
 | 11 Growth Design | 2 Skills | Growth Designer |
-| **Total** | **46 Skills** | |
+| **Total** | **49 Skills** | |
 
 ---
 
@@ -29,6 +29,7 @@
 > (`./studio update-skills`). They are ALWAYS subordinate to the internal
 > `anti_ai_slop_protocol.md` and Zero-Data Architecture.
 > Imported to `.quinsy-studio/external-skills/` (see `INDEX.md`).
+> Advancement epic (UX/IA/UI/FE/BE/AI): [process/hq-skill-advancement-sprints.md](../process/hq-skill-advancement-sprints.md) (`LO-0331`–`LO-0339`).
 
 | External Source | Covered Domains | Internal Teams/Skills | Activation |
 |----------------|----------------|----------------------|------------|
@@ -39,6 +40,10 @@
 | `gamedev-skills/awesome-gamedev-agent-skills` | 67 Game Dev Skills (Godot, Unity, Unreal, Phaser, PixiJS, three.js, Bevy, pygame, LÖVE, Roblox) | 01 FE / 02 BE (project archetype `game`!) | Router detects engine + task automatically |
 | `samir-abis/cookiecomply-skills` | GDPR/Cookie Compliance (Banner, Consent) | 03 Compliance: CL-002 | `cookiecomply` workflow |
 | `bloomprotocol/agent-visibility-skill` | GEO/AI-Visibility: llms.txt, JSON-LD, Comparison Pages, AI-Visibility Audit | 05 Growth: GM-002 AEO | `AI-Visibility-Audit`, `llms.txt`, Comparison Pages |
+| `obra/superpowers` | Debug, review, avoid-ai-writing | 09 SO-002 / 07 AI-002 | **Not** `executing-plans` |
+| `anthropics/skills` | pdf / pptx / xlsx / docx | 09 SO-004 / 10 UX-007 artifacts | Optional export — not product CSS |
+| catalog `scroll-experience` (distilled) | Narrative scroll | UX-002 / UX-007 | Playbook — no new ID |
+| catalog `theme-factory` (distilled) | HITL theme pick | UX-005 / UX-006 / UX-007 | Map to aesthetic presets + tokens |
 
 ### Targeted Skill Mappings (awesome-ai-agent-skills → Studio Skills)
 
@@ -84,7 +89,8 @@ They **do not add new internal IDs** — they extend existing skills:
 | cookie-compliance | CL-002 | 03 |
 | tos-architect | CL-003 | 03 |
 | compliance-orchestrator | CL-001/002/003 (audit index) | 03 |
-| frontend-security-auditor | PE-003 | 08, 01 |
+| figma-token-handoff | UX-002, UX-005 | 10 |
+| frontend-security-auditor | PE-003, FE-007 | 08, 01 |
 | backend-security-auditor | PE-003 | 08, 02 |
 
 Human drafts: `intake/skills/` (gitignored) → promote to `knowledge-base/skill-extensions/` after review.
@@ -105,6 +111,7 @@ Human drafts: `intake/skills/` (gitignored) → promote to `knowledge-base/skill
 | a11y, Accessibility, WCAG, Screenreader | Accessibility | FE-004 |
 | PWA, Offline, Service Worker, Manifest, Installable | PWA Implementation | FE-005 |
 | Test, Testing, Coverage, Unit-Test, E2E | Frontend Testing | FE-006 |
+| Client XSS, CSP, frontend security | Client Security | FE-007 |
 
 #### Product Design & Experience (Team 10)
 
@@ -117,7 +124,7 @@ Human drafts: `intake/skills/` (gitignored) → promote to `knowledge-base/skill
 | Persona, usability, mental model, research | UX Research | UX-004 |
 | Typography, color, layout, visual hierarchy | Visual UI Design | UX-005 |
 | Brand, voice, tone, consistency | Brand Guardian | UX-006 |
-| Homepage, landing, storytelling, workflow diagram | Visual Storyteller | UX-007 |
+| Homepage, landing, storytelling, workflow diagram, scroll | Visual Storyteller | UX-007 |
 
 #### Growth Design (Team 11)
 
@@ -141,6 +148,7 @@ Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](
 | Auth, Login, JWT, Session, RBAC, OAuth | Authentication & Authorization | BE-003 |
 | Error, Exception, Error Handling, Retry, Logging | Error Handling | BE-004 |
 | Integration, Webhook, Stripe, SendGrid, Payment | Third-Party Integrations | BE-005 |
+| Queue, Worker, Outbox, BullMQ, Background job | Jobs and Delivery | BE-006 |
 
 #### Compliance (Team 03)
 
@@ -182,7 +190,8 @@ Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](
 |---------------|-------|----|
 | AI, LLM, GPT, Claude, Prompt, AI Integration | AI Integration | AI-001 |
 | Anti-Slop, Slop, AI Code, Code Quality | Anti-Slop Audit | AI-002 |
-| CI/CD, Pipeline, Automation, GitHub Actions | Automation Pipelines | AI-003 |
+| Durable workflow, orchestrator, Inngest, Temporal, infusion, agent job | Automation Pipelines | AI-003 |
+| Eval, RAG, context window, prompt cache | Eval and Context | AI-004 |
 
 #### Platform (Team 08)
 
@@ -222,7 +231,7 @@ Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](
 | **Phase 1** (Validation) | PS-001, PS-003, PS-004, PM-001, PE-001, GM-001, SO-004 |
 | **Phase 2** (Architecture) | PS-002, BE-001, BE-002, FE-002, CL-001, CL-004, AI-001, PE-001, PE-003, GM-001, SO-002 |
 | **Phase 3** (Sprint Setup) | PM-002, FE-001, FE-002, FE-005, BE-001, CL-002, GM-003, PE-001, PE-002, AI-001, SO-002 |
-| **Phase 4** (Implementation) | FE-001, FE-003, FE-004, FE-005, FE-006, BE-001, BE-002, BE-003, BE-004, BE-005, CL-002, CL-003, AI-001, AI-002, PE-002, PE-003, SO-001 |
+| **Phase 4** (Implementation) | FE-001, FE-003, FE-004, FE-005, FE-006, FE-007, BE-001, BE-002, BE-003, BE-004, BE-005, BE-006, CL-002, CL-003, AI-001, AI-002, AI-003, AI-004, PE-002, PE-003, SO-001 |
 | **Phase 5** (QA) | FE-003, FE-004, FE-006, BE-003, CL-001, CL-002, AI-002, PE-003, PE-004, GM-001, GM-002, PM-001, SO-002 |
 | **Phase 6** (Knowledge Harvesting) | **SO-003 (Dual-Loop)**, SO-001, SO-002, SO-004, PE-004, PM-003 |
 | **Phase 7** (Deployment) | PE-001, PE-002, PE-004, GM-001, GM-002, GM-003, PS-001, PM-002, PM-003, SO-001, SO-004 |
@@ -280,7 +289,8 @@ Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](
 │       ├── performance-optimization.md
 │       ├── accessibility.md
 │       ├── pwa-implementation.md
-│       └── frontend-testing.md
+│       ├── frontend-testing.md
+│       └── client-security.md
 ├── 02-backend-systems/
 │   ├── README.md
 │   └── skills/
@@ -288,7 +298,8 @@ Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](
 │       ├── database-design.md
 │       ├── authentication-authorization.md
 │       ├── error-handling.md
-│       └── third-party-integrations.md
+│       ├── third-party-integrations.md
+│       └── jobs-and-delivery.md
 ├── 03-compliance-legal/
 │   ├── README.md
 │   └── skills/
@@ -320,7 +331,8 @@ Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](
 │   └── skills/
 │       ├── ai-integration.md
 │       ├── anti-slop-audit.md
-│       └── automation-pipelines.md
+│       ├── automation-pipelines.md
+│       └── eval-and-context.md
 ├── 08-platform-enterprise-engineering/
 │   ├── README.md
 │   └── skills/

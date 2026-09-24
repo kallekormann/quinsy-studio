@@ -37,10 +37,20 @@ def test_ia_nav_audit():
     assert len(ia_nav_audit(9, 4)) == 2
 
 
+def test_parse_ia_nav_inline():
+    from studio_ia_audit import parse_ia_nav_counts, ia_nav_findings
+
+    assert parse_ia_nav_counts("ia_nav: { top: 5, depth: 2 }") == (5, 2)
+    assert ia_nav_findings("ia_nav: { top: 9, depth: 1 }")
+    assert ia_nav_findings("")  # missing
+    assert ia_nav_findings("ia_nav: { top: 4, depth: 2 }") == []
+
+
 if __name__ == "__main__":
     test_contrast_black_on_white()
     test_wcag_aa()
     test_golden_scale()
     test_palette_split()
     test_ia_nav_audit()
+    test_parse_ia_nav_inline()
     print("design_math tests OK")

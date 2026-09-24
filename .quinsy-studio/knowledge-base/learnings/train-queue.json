@@ -1155,6 +1155,28 @@
       "created": "2026-09-16T20:49:37",
       "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0104. Product execute stays IMPLEMENT.",
       "closed": "2026-09-22T15:23:28"
+    },
+    {
+      "id": "TR-0105",
+      "skill_id": "UX-003",
+      "topic": "Inbox preview URLs must use MAGAZINE_URL origin (localhost:13000 on Compose). Property chrome is host= query, not {prope",
+      "source": "lo",
+      "observation": "LO-0327",
+      "status": "done",
+      "created": "2026-09-23T13:08:37",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0105. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-23T13:10:05"
+    },
+    {
+      "id": "TR-0106",
+      "skill_id": "FE-002",
+      "topic": "Inbox preview URLs must use MAGAZINE_URL origin (localhost:13000 on Compose). Property chrome is host= query, not {prope",
+      "source": "lo",
+      "observation": "LO-0327",
+      "status": "done",
+      "created": "2026-09-23T13:08:37",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0106. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-23T13:10:05"
     }
   ]
 }

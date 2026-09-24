@@ -107,8 +107,9 @@ When **navigation** changes:
 
 - Top-level items ≤ 7
 - Max depth ≤ 3
-- Run `design_math.ia_nav_audit` when available
-- Document in design spec §3 IA
+- Run `./studio ia-audit <project> <TICKET>` (wraps `design_math.ia_nav_audit`)
+- Document in design spec: `ia_nav: { top: N, depth: M }` (or Top-level items / Max depth)
+- `approve-design` for `ia-navigation` **fails** if metrics are missing or top > 7 / depth > 3
 
 ---
 
@@ -127,7 +128,7 @@ When **navigation** changes:
 
 Every design spec **must** include **§2 Context & placement** (see `design-spec-template.md`).
 
-`./studio approve-design` **fails** if the spec file is missing, still a stub, or §2 is empty. Do not ask the human to review until the file is filled.
+`./studio approve-design` **fails** if the spec file is missing, still a stub, or §2 is empty. For `ia-navigation` it also fails when IA nav metrics are missing or `ia_nav_audit` warns. Do not ask the human to review until the file is filled.
 
 ---
 

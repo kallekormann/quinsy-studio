@@ -6,17 +6,20 @@ Every backlog ticket must declare **who owns the work** before implementation. A
 
 | Ticket kind | Design phase (Team 10) | Implement phase (Team 01) |
 |-------------|------------------------|---------------------------|
-| **UI new component** | UX-001/002/005 + UX-006 | FE-001, FE-002, FE-004 after `approve-design` |
-| **UI composition** | UX-002, UX-003, UX-006 | FE-001, FE-002 |
+| **UI new component** | UX-001/002/005 + UX-006 | FE-001, FE-002, FE-004, FE-007 after `approve-design` |
+| **UI composition** | UX-002, UX-003, UX-006 | FE-001, FE-002, FE-007 |
 | **UI styling** (tokens, dark mode) | UX-006 review optional | FE-001, FE-002, UX-006, AI-002 |
 | **Marketing page** | UX-007, UX-006, UX-005, **GD-001, GD-002**, GM-003 if public URL | FE-001, FE-002 after `approve-design` |
 | **Pricing / checkout / PLP / PDP** | Same as marketing or `ui-composition` + **GD-001, GD-002** | FE after `approve-design` |
 | **Workflow explainer** | UX-007, UX-002, UX-001 | FE-001 after `approve-design` |
-| **IA / navigation** | UX-003 only | — (spec for gate 2 / milestone) |
+| **IA / navigation** | UX-003 only; `./studio ia-audit` | — (spec for gate 2 / milestone) |
 | **IA / feature placement** | UX-003, UX-002 | FE-001 after `approve-design` (if UI moves) |
 | **Canvas / interaction** | UX-002 as needed | FE-001, FE-002 |
 | **API / data / auth** | — | `02-backend-systems` BE-001–BE-003 |
+| **Jobs / queues / outbox** | — | BE-006 |
 | **Email / integrations** | — | BE-005 |
+| **AI adapter / eval / RAG** | — | AI-001, AI-004 (`## Eval` on receipt) |
+| **Durable agent jobs** | — | AI-003 (not PE-002) |
 | **Legal / privacy** | — | CL-001, CL-003 |
 | **Architecture / ADR** | — | PS-002 |
 | **Growth / copy** | UX-007 optional; **GD-001** if experiment | GM-003 (SEO/AEO copy); Team 11 for hypothesis |
@@ -29,7 +32,7 @@ Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-p
 1. Team 10 **writes** `docs/design-specs/<TICKET>.md` (template: `knowledge-base/design-spec-template.md`). Ticket create may drop a **stub**; a stub is not approvable. Never tell the human to review a path that is not filled.
 2. Spec includes **§2 Context & placement** + **§2c in-context mocks** (HTML under `docs/design-specs/mocks/<TICKET>/`, **this project's CSS tokens**, **all states**) + **Atomic Inventory** + **Design Rationale**
 3. Multi-surface: workflow map per `workflow-definition-playbook.md`
-4. Human: `./studio approve-design <project> <ticket-id>` — CLI **fails** if spec/mocks/tokens/states are incomplete
+4. Human: `./studio approve-design <project> <ticket-id>` — CLI **fails** if spec/mocks/tokens/states are incomplete. `ia-navigation` also requires `./studio ia-audit` pass (≤7 top-level, depth ≤3).
 5. `./studio move … implement` is **blocked** until `design_status: approved`
 
 Execute: if the spec or mocks are missing, ACTION is **IMPLEMENT (write deliverables)** — not HITL. HITL `approve-design` only when the files would pass the CLI gate.

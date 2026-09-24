@@ -33,9 +33,10 @@ Providers:
   - Self-hosted (Llama, Mistral) — for data privacy
 
 Architecture:
-  - Abstraction layer (not the provider SDK directly)
-  - Provider switching via config
-  - Cost tracking per provider
+  - One adapter (not every cloud SDK on the CARD)
+  - Eval set + user-visible surface same sprint (AI-004, LO-0017)
+  - Provider switching via config; cost tracking
+  - Do not list GPT/Claude/Cohere as the architecture
 ```
 
 ### 2. Prompt engineering

@@ -9,6 +9,7 @@ Research that changes the spec — not a persona poster. Distilled from Indi You
 - Describe **tasks people are trying to finish** (mental-model spaces), then map product capabilities onto those tasks.
 - Separate **what we heard / saw** from **what we infer**.
 - If there is no research access this sprint: say **assumption** in the spec and list what would falsify it. Do not invent quotes.
+- Interview prompts: task, last time they did it, tools they used, where it broke (Young). Do not duplicate PM-001 personas.
 
 **Don’t**
 

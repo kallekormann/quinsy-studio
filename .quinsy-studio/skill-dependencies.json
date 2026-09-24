@@ -50,5 +50,19 @@
     "why": "GEO/AI-Visibility (vendor-neutral): llms.txt, JSON-LD-Schema, Comparison Pages, AI-Visibility-Audit. Referenz für AEO/GEO.",
     "team": "05-growth-marketing-content",
     "usage": "AI-Visibility-Audit, llms.txt, Vergleichsseiten (GM-002 AEO)"
+  },
+  "superpowers": {
+    "repo": "github:obra/superpowers@main",
+    "install": "npx skills add obra/superpowers",
+    "why": "Debugging, code review, avoid-ai-writing. Distill into SO-002 / AI-002. Do not import executing-plans (conflicts with ./studio execute until HITL).",
+    "team": "09-studio-operations-evolution",
+    "usage": "debugging-strategies, code-review-excellence, avoid-ai-writing — never executing-plans"
+  },
+  "anthropic_docs": {
+    "repo": "github:anthropics/skills@main",
+    "install": "npx skills add anthropics/skills",
+    "why": "Official pdf/pptx/xlsx/docx skills for artifact export. Optional for SO-004 / UX-007 slides and reports. Theme-factory HITL still maps to studio presets for product UI.",
+    "team": "09-studio-operations-evolution",
+    "usage": "pdf, pptx, xlsx, docx — not a product CSS kit"
   }
 }

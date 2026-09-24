@@ -20,12 +20,13 @@ Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-g
 | `library suggest` → `pull`; kit peers in `docs/setup/ui-kit.md` | Hand-roll modal/menu/focus trap | Native `<select>` on product chrome |
 | Tailwind + CVA variants | One-off hex / extra CSS file for a kit control | Second copy of the same organism |
 | Compose Team 10 spec | Invent a new atom in a feature ticket | Shipped control not in the spec inventory |
+| Kit Select / Headless | Native `<select>` on product chrome | `studio_skill_checks` native-select warn |
 
 ### Tokens & system (FE-002)
 
 | Do | Don’t | Implement-fail |
 |----|-------|----------------|
-| Project `ui/tokens` CSS variables | Parallel palette for “just this page” | Dark mode unreadable / missing token |
+| Project `ui/tokens` CSS variables | Parallel palette for “just this page”; **shadcn is not the kit** (Radix + studio-library) | Dark mode unreadable / missing token; raw `#hex` / `rgb()` in `app/` or `src/` when tokens exist (gate 5 warn) |
 
 ### Performance (FE-003)
 
@@ -45,6 +46,24 @@ Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-g
  (FE-006)
 
 Follow [qa-gate-playbook.md](qa-gate-playbook.md).
+
+### App Router / data (FE-001)
+
+| Do | Don’t | Implement-fail |
+|----|-------|----------------|
+| Server Components for first paint; client islands for interactivity | Fetch in `useEffect` for the primary list | Unbounded client lists (also FE-003) |
+| Typed query layer (TanStack Query or project equivalent) with keys | Duplicate cache in Zustand + fetch | Stale UI after a write with no invalidate |
+| Zod (or equivalent) at the form/API client boundary | Trust `any` JSON in the UI | Invalid payload rendered as a crash |
+
+### i18n (when the ticket says i18n)
+
+| Do | Don’t |
+|----|-------|
+| Message catalogs; locale in formatters | Concatenate user-facing English in JSX |
+
+### Client security (FE-007)
+
+See [frontend-security-auditor.md](skill-extensions/frontend-security-auditor.md). No `dangerouslySetInnerHTML` without a sanitizer; no secrets in `NEXT_PUBLIC_`.
 
 ---
 

@@ -77,7 +77,7 @@ Sources (distilled, not reprinted): Nielsen heuristics; Krug; Wroblewski forms; 
 | Metric | Named event or, if no analytics yet, what we would count |
 | Stop | What would kill the variant |
 
-If there is no analytics yet, still write the claim. Do not invent three layouts “to see what feels better.”
+If there is no analytics yet, still write the claim. Do not invent three layouts “to see what feels better.” Catalog CRO skills (`form-cro`, `page-cro`, `signup-flow-cro`, …) map here and to GD-001 — not a new ID.
 
 ## Dark patterns (never “growth”)
 

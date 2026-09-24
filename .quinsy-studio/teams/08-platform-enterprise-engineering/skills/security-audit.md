@@ -1,6 +1,6 @@
 # Skill: Security Audit
 
-> OWASP Top 10, Dependency Scanning, Secrets Management, Penetration Testing
+> OWASP Top 10, Dependency Scanning, Secrets Management. **Defensive** — no pentest/Metasploit catalogs. Prompt-injection for AI tickets: this skill, not a red-team pack.
 
 ## Metadata
 

@@ -2,6 +2,8 @@
 
 > How the IDE agent stays in studio/project scope and recovers from drift.
 
+**HQ skill advancement (LO-0331–0339):** Teams 01/02/07/10 playbooks distilled; IDs **FE-007**, **BE-006**, **AI-004**; tools `./studio ia-audit` and gate-5 `studio_skill_checks`. Plan: [hq-skill-advancement-sprints.md](hq-skill-advancement-sprints.md).
+
 **HQ isolation epic:** `LO-0314`–`LO-0326` shipped — [hq-isolation-sprints.md](hq-isolation-sprints.md). Resume product `./studio execute` in a **product** chat. Do not Read env **values**.
 
 ## Every turn (before session start)

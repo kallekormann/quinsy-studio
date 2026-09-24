@@ -8,4 +8,4 @@ lead_role: Frontend Architect
 
 Only when the ticket is installability / offline. **Playbook:** [frontend_playbook.md](../../../knowledge-base/frontend_playbook.md)
 
-**Don’t:** add a service worker to every SaaS ticket.
+**Don’t:** add a service worker to every SaaS ticket. Catalog `progressive-web-app` only when the ticket says PWA / offline / installable.

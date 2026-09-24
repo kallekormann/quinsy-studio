@@ -21,12 +21,14 @@ Checkout / paid forms also use [growth-mechanics-playbook.md](growth-mechanics-p
 - Disable the primary button with no explanation.
 - Use placeholder text as the only label (Wroblewski).
 - Animate through information the user needs to compare (Laws of UX: don’t hide cost of choice).
+- **Scroll hijack** (take over wheel/touch), hide copy behind motion, or desktop-only parallax as the only way to read the story (`scroll-experience`). Prefer CSS `animation-timeline: view()`; GSAP/Lenis only via ADR. Honor `prefers-reduced-motion`.
 
 **Spec / mock fail**
 
 - Interactive control with only a rest frame.
 - Error copy that says “Something went wrong” with no field or next step (Nielsen: recover).
 - Form that reloads blank after a validation error.
+- Marketing/story scroll that cannot be read with reduced motion or without a pointer wheel.
 
 ## Nielsen — fail lines (credit Nielsen / NN/g)
 

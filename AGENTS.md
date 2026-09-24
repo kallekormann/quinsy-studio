@@ -96,6 +96,7 @@ On `./studio move … done` → warns if registry paths changed without promotio
 ```bash
 ./studio approve <p> --gate 2    # validates design + refreshes library catalog (no project → library merge)
 ./studio approve-design <p> <TICKET>   # HITL after spec + all-state mocks exist
+./studio ia-audit <p> <TICKET>         # IA nav counts before approve-design (ia-navigation)
 ./studio approve-arch <p> <TICKET>     # HITL after docs/architecture/<TICKET>.md exists
 ./studio train --purge-empty            # close blank-observation train jobs
 ./studio sprint <p> --kind hygiene      # lint/debt batch (does not count toward cadence)

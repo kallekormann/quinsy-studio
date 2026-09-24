@@ -1,6 +1,7 @@
-# Skill: Automation Pipelines
+# Skill: Automation Pipelines (AI-003)
 
-> CI/CD pipelines, test automation, deployment automation, monitoring
+> Durable **agent / product jobs** (checkpoints, idempotency, backoff).  
+> GitHub Actions belongs to **PE-002**. Queues/outbox/workers belong to **BE-006**.
 
 ## Metadata
 
@@ -12,122 +13,57 @@ lead_role: Studio Automation Engineer
 support_roles: [Platform Architect, Backend Engineer]
 phases: [3, 4, 5, 6, 7]
 activation_triggers:
-  - Ticket contains "CI/CD", "pipeline", "automation", "deployment"
-  - Phase 3: CI/CD is set up
-  - Phase 4: automation is implemented
-  - Phase 5: QA pipeline
-  - Phase 7: deployment pipeline
+  - Durable workflow, orchestrator, Inngest, Temporal, n8n (ADR), train/infusion
+  - Product agent jobs that must survive process restart
 ```
 
 ---
 
 ## Behavior rules
 
-### 1. CI/CD pipeline
+### 1. Studio loop (HQ)
 
 ```markdown
-Standard pipeline (GitHub Actions):
-
-on push:
-  1. Lint (ESLint, Prettier)
-  2. Type check (TypeScript)
-  3. Unit tests (Vitest)
-  4. Integration tests
-  5. Build
-  6. Security scan (Dependabot)
-
-on merge to main:
-  1. All CI checks
-  2. Deploy to staging
-  3. Smoke tests
-  4. Deploy to production (after approval)
+Studio automation is ./studio execute until HITL, then train / infusion-delta.
+Do not import executing-plans (batch then wait) — it fights the execute loop.
 ```
 
-### 2. Test automation
+### 2. Durable product / studio jobs
 
-```markdown
-In pipeline:
-  - Unit tests: always (fast, <2 min)
-  - Integration tests: always (<5 min)
-  - E2E tests: on deploy to staging (<10 min)
-  - Visual regression: on UI changes
-  - Lighthouse: on deploy to staging
-```
+Distilled from catalog `workflow-automation` (not n8n-as-default).
 
-### 3. Deployment automation
+**Do**
 
-```markdown
-Strategy: blue/green or canary
+- Idempotency keys on every activity that has a side effect.
+- Checkpointed steps; resume after crash.
+- Activity timeouts + exponential backoff; no unbounded retry.
+- Keep workflow **state small** — store blobs in object/DB, pass ids.
+- No side effects in the orchestrator; only in activities/workers (BE-006).
 
-Vercel:
-  - Auto-deploy on push
-  - Preview deployments for PRs
-  - Production deploy after merge
+**Don’t**
 
-Docker:
-  - Multi-stage build
-  - Health checks
-  - Graceful shutdown
-```
+- Treat GitHub Actions as this skill (PE-002).
+- Pick n8n / Temporal / Inngest / in-app workers without an **ADR**.
+- Put huge payloads in workflow history.
 
-### 4. Monitoring
+**Implement-fail:** fire-and-forget LLM call that cannot resume; secrets in workflow state.
 
-```markdown
-Post-deployment:
-  - Uptime monitoring (ping/UptimeRobot)
-  - Error tracking (Sentry)
-  - Performance monitoring (Vercel Analytics)
-  - Log aggregation
+### 3. Platform choice (ADR)
 
-Alerts:
-  - Error rate > 1%
-  - Response time > 2s
-  - Uptime < 99.9%
-  - Build failure
-```
+| Option | When |
+|--------|------|
+| In-app workers + BE-006 | Default if the product already has queues |
+| Inngest / Trigger.dev | Event-driven product jobs, HITL ADR |
+| Temporal | Long-running, strongly consistent sagas, HITL ADR |
+| n8n | Operator glue only after ADR — not agent CARD default |
 
-### 5. Backup & rollback
+### 4. Observability
 
-```markdown
-Rollback:
-  - Vercel: one-click rollback
-  - Docker: previous image
-  - Database: migration down
+Log step name, idempotency key, duration. Alerts on poison messages. Prompt-injection defenses: PE-003 (defensive).
 
-Backup:
-  - Database: daily (automated)
-  - Config: in git
-  - Secrets: in secret manager
-```
+## Related
 
----
-
-## Anti-patterns
-
-### ❌ Forbidden
-
-```markdown
-- Manual deploys
-- No tests in the pipeline
-- No rollback plan
-- No post-deploy monitoring
-- Secrets in code/repository
-```
-
-### ✅ Instead
-
-```markdown
-- Automated deployment
-- Complete test pipeline
-- One-click rollback
-- Uptime + error monitoring
-- Secrets in secret manager
-```
-
----
-
-## References
-
-- `.quinsy-studio/knowledge-base/ai_automation_playbook.md` — automation
-- `templates/docker/` — docker templates
-- `.quinsy-studio/studio-tools/` — python automation
+- [ai_automation_playbook.md](../../../knowledge-base/ai_automation_playbook.md)
+- BE-006 jobs-and-delivery
+- PE-002 ci-cd-pipelines
+- AI-004 eval-and-context

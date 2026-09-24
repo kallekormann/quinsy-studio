@@ -24,6 +24,7 @@
 | BE-003 | Authentication & Authorization | Backend Security Engineer | `skills/authentication-authorization.md` |
 | BE-004 | Error Handling & Resilience | Backend Architect | `skills/error-handling.md` |
 | BE-005 | Third-Party Integrations | Backend Architect | `skills/third-party-integrations.md` |
+| BE-006 | Jobs and Delivery | Backend Architect | `skills/jobs-and-delivery.md` |
 
 ---
 

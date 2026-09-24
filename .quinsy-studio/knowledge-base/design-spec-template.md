@@ -109,8 +109,13 @@ What reads as one unit (proximity, similarity, closure).
 
 ### Navigation IA (only if nav chrome changes)
 
+```
+ia_nav: { top: __, depth: __ }
+```
+
 - Top-level items: __ (target ≤7)
 - Max depth: __ (target ≤3)
+- Tool: `./studio ia-audit <project> <TICKET>` before `approve-design`
 
 ### Platform
 

@@ -384,11 +384,32 @@ def receipt_issues(text: str) -> List[str]:
     return issues
 
 
-def receipt_is_complete(project: str, sprint: str, ticket_id: str) -> bool:
+def receipt_is_complete(
+    project: str,
+    sprint: str,
+    ticket_id: str,
+    ticket_text: str | None = None,
+) -> bool:
     path = receipt_path(project, sprint, ticket_id)
     if not path.exists():
         return False
-    return not receipt_issues(path.read_text(encoding="utf-8", errors="ignore"))
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    issues = receipt_issues(text)
+    blob = ticket_text or ""
+    if not blob:
+        for folder in ("implement", "done", "backlog"):
+            candidate = PROJECTS_DIR / project / "backlog" / folder / f"{ticket_id}.md"
+            if candidate.exists():
+                blob = candidate.read_text(encoding="utf-8", errors="ignore")
+                break
+        else:
+            loose = PROJECTS_DIR / project / "backlog" / f"{ticket_id}.md"
+            if loose.exists():
+                blob = loose.read_text(encoding="utf-8", errors="ignore")
+    from studio_skill_checks import ai_eval_receipt_issues
+
+    issues.extend(ai_eval_receipt_issues(text, blob))
+    return not issues
 
 
 def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional[Dict] = None) -> Path:
@@ -424,6 +445,9 @@ def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional
 
 ## Architecture skill
 - n/a (or: matches approved architecture note / ADR)
+
+## Eval
+- n/a (required filled section when skills include AI-001 or AI-004)
 
 ## Skills read
 - (skill IDs + playbooks from the CARD)

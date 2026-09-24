@@ -21,6 +21,20 @@ Cloud providers retire model ids (e.g. `gemini-2.0-flash-lite` → `gemini-3.5-f
 2. Allow override via env (`GEMINI_VISION_MODEL`, etc.) without hard-coding only in one call site.
 3. Before sprint review on AI tickets: either smoke a **live** generate/tag call with the configured key, or verify the **not-configured** empty state. Do not ship a default that 404s.
 
+### Durable workflows (AI-003)
+
+Product/studio jobs that must survive restart. Distill of catalog `workflow-automation`. Queues/workers: BE-006. GitHub Actions: PE-002. Platform (n8n vs Temporal vs Inngest vs in-app) is an **ADR**.
+
+**Do:** idempotency keys; checkpointed steps; activity timeouts; exponential backoff; small workflow state (ids, not blobs).  
+**Don’t:** side effects in the orchestrator; huge payloads in history.  
+**Fail:** LLM call that cannot resume; secrets in workflow state.
+
+### Eval and context (AI-004)
+
+Named eval set on the receipt (`## Eval`). RAG cites chunks; empty retrieval is a user-visible empty state. Context budget — do not dump the corpus. Prompt-injection: PE-003 (defensive).
+
+**Adapter rule (AI-001):** one provider adapter + eval + **user-visible surface** (LO-0017). Do not list every cloud model as the architecture.
+
 ---
 
 ## Token optimization

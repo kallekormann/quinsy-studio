@@ -593,6 +593,11 @@ def design_spec_completeness_error(
         growth_err = design_spec_growth_intent_error(text, ticket_type, ticket_blob)
         if growth_err:
             return growth_err
+        from studio_ia_audit import ia_nav_error_for_ticket
+
+        ia_err = ia_nav_error_for_ticket(text, ticket_type)
+        if ia_err:
+            return ia_err
         return None
     return missing_file
 

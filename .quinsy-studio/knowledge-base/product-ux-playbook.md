@@ -9,7 +9,7 @@ Load with [workflow-definition-playbook.md](workflow-definition-playbook.md) whe
 **Do**
 
 - Name the **user goal** (what “done” looks like), not the database entity.
-- Work **strategy → scope → structure → skeleton → surface**. Spec §1 must state the job; §2 the structure (placement/flow); visual is last.
+- Work **strategy → scope → structure → skeleton → surface**. Spec §1 must state the job; §2 the structure (placement/flow); visual is last. JTBD / posture check (sovereign vs transient) in §1.
 - Pick a **posture**: sovereign (long session, dense, keyboard) vs transient (quick dialog, one job, easy to dismiss).
 - Design the **happy path and the recovery path** in the same spec.
 - After pay/publish/export: the confirmation **matches the work done** (delight / *Good Services*).

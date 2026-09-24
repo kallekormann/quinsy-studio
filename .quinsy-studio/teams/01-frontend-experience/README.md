@@ -30,6 +30,7 @@ Owns **shipping** UI after Team 10 (and Team 11 on commercial surfaces). Compose
 | FE-004 | Accessibility (a11y) | QA Specialist | `skills/accessibility.md` |
 | FE-005 | PWA Implementation | Frontend Architect | `skills/pwa-implementation.md` |
 | FE-006 | Frontend Testing | QA Specialist | `skills/frontend-testing.md` |
+| FE-007 | Client Security | Frontend Security Engineer | `skills/client-security.md` |
 
 Canon: [frontend-team-canon-ledger.md](../../knowledge-base/frontend-team-canon-ledger.md). Playbook: [frontend_playbook.md](../../knowledge-base/frontend_playbook.md). QA rubric: [qa-gate-playbook.md](../../knowledge-base/qa-gate-playbook.md).
 

@@ -1,6 +1,7 @@
 # Skill: CI/CD Pipelines
 
-> GitHub Actions, automated testing, security scanning, deployment
+> GitHub Actions, automated testing, security scanning, deployment.  
+> Durable **agent** jobs are **AI-003**. Product queues are **BE-006**.
 
 ## Metadata
 

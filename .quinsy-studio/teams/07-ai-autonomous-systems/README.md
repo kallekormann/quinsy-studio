@@ -18,6 +18,7 @@
 | AI-001 | AI Integration | AI Architect | `skills/ai-integration.md` |
 | AI-002 | Anti-Slop Audit | Process Guard | `skills/anti-slop-audit.md` |
 | AI-003 | Automation Pipelines | Studio Automation Engineer | `skills/automation-pipelines.md` |
+| AI-004 | Eval and Context | Autonomous Systems Director | `skills/eval-and-context.md` |
 
 ---
 
