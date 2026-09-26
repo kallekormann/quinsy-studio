@@ -68,16 +68,16 @@ Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gat
 
 ## Sprint HITL
 
-Autonomous mid-sprint for **ready** tickets (stay on the defined design system; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2** (sequential), **`approve-design` / `approve-arch`**, **`env --approve`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.** INFORM open HQ LO counts; do not `STUDIO_LO` mid-product.
+Autonomous mid-sprint for **ready** tickets (stay on the **project** gate-2b kit; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2a**, **gate 2b** (sequential; `--gate 2` refused), **`approve-design` / `approve-arch`**, **`env --approve`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.** INFORM open HQ LO counts; do not `STUDIO_LO` mid-product.
 
 ## Drift recovery
 
 User: "back on track" / "resume project" → `./studio focus <p>` then `./studio execute <p>` (do NEXT until HITL).
 
-## Library (gate 2)
+## Library (after 2b)
 
-Design approval promotes base UI to `studio-library/` (tokens, components, sticker sheet). Project styling stays in project tokens.
+Gate 2b does **not** merge product look into `studio-library/`. Headless primitives stay studio-owned. Project styling stays in project tokens.
 
-## UI design (post gate 2)
+## UI design (post gate 2b)
 
-Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, IA): Team 10 **writes** `docs/design-specs/<TICKET>.md` and **in-context HTML mocks** (`docs/design-specs/mocks/<TICKET>/`) using **project CSS tokens**, in the **real product view**, with **all states** (rest/hover/pressed/disabled/focus; open/closed for menus; empty/loading/error for surfaces). Only then `./studio approve-design`. Do not ask to review a file that does not exist. Other tickets use gate-2 tokens + library only. If a component is missing, write a design ticket and run it in a design sprint — do not invent it in a feature ticket. New components in studio-library first (`component-creation-playbook.md`).
+Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, IA): Team 10 **writes** `docs/design-specs/<TICKET>.md` and **in-context HTML mocks** (`docs/design-specs/mocks/<TICKET>/`) using **project CSS tokens**, in the **real product view**, with **all states** (rest/hover/pressed/disabled/focus; open/closed for menus; empty/loading/error for surfaces). Only then `./studio approve-design`. Do not ask to review a file that does not exist. Other tickets use gate-2b project tokens + Headless library only. If a component is missing, write a design ticket and run it in a design sprint — do not invent it in a feature ticket. New components in studio-library first (`component-creation-playbook.md`).

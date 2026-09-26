@@ -9,8 +9,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+from studio import cli_wants_help
 from studio_status import (
     GATE_HISTORY_KEEP,
+    is_valid_project_slug,
     load_snapshots,
     load_status,
     peel_heavy_status_fields,
@@ -53,6 +55,26 @@ class PeelTests(unittest.TestCase):
                 disk = json.loads((root / "projects" / project / "status.json").read_text(encoding="utf-8"))
                 self.assertNotIn("ticket_file_snapshots", disk)
                 self.assertEqual(snapshot_for_ticket(project, "T-9")["x"], "2")
+
+    def test_help_flag_is_not_a_project_slug(self):
+        self.assertFalse(is_valid_project_slug("--help"))
+        self.assertFalse(is_valid_project_slug("-h"))
+        self.assertFalse(is_valid_project_slug("--level"))
+        self.assertFalse(is_valid_project_slug(""))
+        self.assertTrue(is_valid_project_slug("affiliate-platform"))
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with patch("studio_status.PROJECTS_DIR", root / "projects"):
+                with self.assertRaises(ValueError):
+                    save_status("--help", {"name": "--help"})
+                self.assertFalse((root / "projects" / "--help").exists())
+
+    def test_cli_help_is_not_a_project_arg(self):
+        self.assertTrue(cli_wants_help("--help", []))
+        self.assertTrue(cli_wants_help("gate", ["--help"]))
+        self.assertTrue(cli_wants_help("retro", ["-h"]))
+        self.assertFalse(cli_wants_help("gate", ["affiliate-platform", "--level", "5"]))
+        self.assertFalse(cli_wants_help("retro", ["affiliate-platform", "--complete"]))
 
 
 if __name__ == "__main__":

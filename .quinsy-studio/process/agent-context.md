@@ -96,7 +96,7 @@ If the request is unrelated to active project **and** not studio-meta:
 
 ### 3. Not in backlog / sprint
 
-After gate 2:
+After gate 2b:
 
 - **No code** without a ticket
 - Sprint-review ideas: `./studio feedback` → `clarify` → `ticket --from-feedback` (never direct ticket)
@@ -109,13 +109,13 @@ Before implementing, verify **team + skills** match ticket type — auto-match f
 
 See [ticket-team-allocation.md](ticket-team-allocation.md) for the mapping table.
 
-- **UI design-track tickets:** Team `10-product-design-experience` + UX skills + [aesthetic preset](.quinsy-studio/knowledge-base/aesthetic-presets/README.md); **write** `docs/design-specs/<TICKET>.md` + in-context token mocks (all states) **before** asking for `./studio approve-design`. A missing file is not HITL.
-- **UI implement (non-design):** `01-frontend-experience` + `FE-001`, `FE-002` — stay on gate-2 tokens + library; missing primitives → design-track ticket
+- **UI design-track tickets:** Team `10-product-design-experience` + UX skills; aesthetic preset is optional; **write** `docs/design-specs/<TICKET>.md` + in-context token mocks (all states) **before** asking for `./studio approve-design`. A missing file is not HITL.
+- **UI implement (non-design):** `01-frontend-experience` + `FE-001`, `FE-002` — stay on gate-2b project tokens + Headless library; missing primitives → design-track ticket
 - **UI implement:** `01-frontend-experience` + `FE-001`, `FE-002` (and `FE-004` for contrast/a11y)
 - **API / email / integrations:** `02-backend-systems` + relevant `BE-*` skills
 - At groom: human or agent corrects wrong auto-assignment (e.g. email → backend, not AI)
 
-## Milestones (post gate 2)
+## Milestones (post gate 2b)
 
 1. Agent drafts `docs/phases/README.md` + milestone outlines (M0, M1, …)
 2. Human approves roadmap before sprints or milestone tickets
@@ -142,21 +142,15 @@ Then continues **only** the first action in the resume list.
 
 ## Human gates block implementation
 
-Until gate 2 is approved, guard blocks implementation requests and redirects to pre-impl artifacts.
+Until gate 2b is approved, guard blocks implementation requests and redirects to pre-impl artifacts.
 
-## Library loop (gate 2)
+## Library loop (after 2b)
 
-On design approval, base UI flows to studio-library (see `library_promotion.py`):
-
-- Tokens merged → `studio-library/ui/tokens/`
-- Atoms/molecules/organisms → `studio-library/ui/components/`
-- Sticker sheet → `studio-library/ui/sticker-sheet/`
-
-Projects **consume** library via `./studio sync <project>`; they **feed** library on gate 2.
+Gate 2b does **not** merge project UI into studio-library. Headless primitives stay studio-owned. Pull library → adapt brand in the project.
 
 **Vendored admin shells (LO-0177 / LO-0178):** Reuse the shell’s Kanban, data table, Dialog, and Empty primitives before drawing a custom grid or a three-field inline create form. **Add** a new entity → full Dialog; **inspect** existing → Sheet.
 
-## Sprint HITL (after gate 2)
+## Sprint HITL (after gate 2b)
 
 **Mid-sprint:** agent implements autonomously — do not ask the human for direction between tickets.
 

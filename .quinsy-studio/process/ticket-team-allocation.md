@@ -53,7 +53,7 @@ Prefer a **design sprint** (or a design slice of scope) for these tickets. Do no
 
 | Phase | Command | Load |
 |-------|---------|------|
-| Design | `./studio move … design` (or groom assigns Team 10) | UX skills per `ticket_type`; CARD playbooks: product-ux, interaction-ux, contextual-ia, design-science; `workflow-definition-playbook.md` when multi-surface; aesthetic preset + `brand-guardian-checklist.md`; **commercial surfaces:** `growth-mechanics-playbook.md` + GD-001/GD-002 |
+| Design | `./studio move … design` (or groom assigns Team 10) | UX skills per `ticket_type`; CARD playbooks: product-ux, interaction-ux, contextual-ia, design-science, **design-direction** at 2a; `workflow-definition-playbook.md` when multi-surface; aesthetic preset **optional**; `brand-guardian-checklist.md`; **commercial surfaces:** `growth-mechanics-playbook.md` + GD-001/GD-002 |
 | Approve | `./studio approve-design` | **HITL** for design-track only |
 | Implement | `./studio move … implement` | FE-001, FE-002; FE-004 if color/a11y; `./studio library pull` — stay on tokens |
 

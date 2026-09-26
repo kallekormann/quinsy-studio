@@ -121,7 +121,9 @@ ia_nav: { top: __, depth: __ }
 
 - [ ] Desktop  - [ ] Mobile web  - [ ] Webapp  - [ ] Extension
 
-## 4b. Aesthetic preset (Team 10 — required)
+## 4b. Aesthetic preset (Team 10 — optional footnote)
+
+> Not required. Signed `design/DESIGN.md` uniqueness is the source of truth. If you use a catalog slug, map it onto project tokens.
 
 | Field | Value |
 |-------|-------|

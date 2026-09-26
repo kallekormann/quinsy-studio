@@ -19,7 +19,8 @@ Project (execution level)  ──▶  executed by the studio, local loop
 |--------------|------|-----|
 | **Gate 0** | PRD + definitions (as-built if adopt) | `./studio approve --gate 0` |
 | **Gate 1** | Architecture (ADRs, stack, persistence) | `./studio approve --gate 1` (refuses if gate 0 pending) |
-| **Gate 2** | Design direction + system + mocks/prototype | `./studio approve --gate 2` (refuses if gate 1 pending) |
+| **Gate 2a** | Design direction (interview + DESIGN.md) | `./studio approve --gate 2a` (refuses if gate 1 pending) |
+| **Gate 2b** | Project kit (tokens, A/M/O, sticker) | `./studio approve --gate 2b` (refuses if 2a pending). Bare `--gate 2` is refused. |
 | **Milestones** | Version plan `docs/phases/` | `./studio approve --milestones` |
 | Sprint setup | Scope + groom; implementation `--approve-scope` blocked if ready pipeline starved | `./studio sprint` → `--approve-scope` → `groom` |
 | **Sprint execute** | Autonomous ready tickets; `PRODUCTION` writes packets; `MOVE_DONE` commits product git | `./studio execute` until HITL |
@@ -98,28 +99,37 @@ CLI: `./studio blueprint <project>`
 
 ---
 
-## Phase 3: Design (prototype)
+## Phase 3: Design direction (2a) then project kit (2b)
 
-**Goal:** design tokens, atomic components, Next.js mocks, sticker sheet.
+**2a goal:** unique signed `design/DESIGN.md` from a human interview. Prototype is blocked.
 
-> **Adopted repo:** document **design of what exists** (surface map). Do **not** scaffold a parallel Next.js prototype. See [brownfield-adopt.md](brownfield-adopt.md).
+**2b goal:** design tokens (CSS + Tailwind), atomic components, Next.js mocks, sticker sheet — **in the project**. No library promote of product look.
+
+> **Adopted repo:** 2a is keep vs evolve; 2b is token-map of **what exists**. Do **not** scaffold a parallel Next.js prototype. See [brownfield-adopt.md](brownfield-adopt.md).
 
 | Output | Path |
 |--------|------|
+| Discovery | `docs/design/discovery.md` |
 | Design spec | `design/DESIGN.md` |
 | Mock scope | `design/DESIGN-SCOPE.md` (`journey` \| `core-views`) |
-| Prototype | `design/prototype/` (Next.js) |
-| Tokens | `ui/tokens/design-tokens.json` |
+| Prototype | `design/prototype/` (Next.js, after 2a) |
+| CSS tokens | `ui/tokens/design-tokens.css` |
 | Components | `ui/components/atoms|molecules|organisms/` |
 | Sticker sheet | `design/prototype/app/sticker-sheet/` |
 
-CLI: `./studio design <project> --scope journey|core-views`
+CLI: `./studio design <project> --discovery` then `--scope journey|core-views`
 
-## ═══════════════ HUMAN GATE 2 — Design ═══════════════
+## ═══════════════ HUMAN GATE 2a — Direction ═══════════════
 
-> User approves visual direction + mocks. **Library promotion** runs here; execution backlog is **not** filled until milestone kickoff.
-> CLI: `./studio approve <project> --gate 2`
-> Iteration: `./studio revise <project> --gate 2 --feedback "..."`
+> User answers discovery and signs visual DNA. Prototype stays blocked.
+> CLI: `./studio approve <project> --gate 2a`
+> Iteration: `./studio revise <project> --gate 2a --feedback "..."`
+
+## ═══════════════ HUMAN GATE 2b — Project kit ═══════════════
+
+> User approves the live kit. **Do not** merge product look into studio-library; execution backlog is **not** filled until milestone kickoff.
+> CLI: `./studio approve <project> --gate 2b`
+> Iteration: `./studio revise <project> --gate 2b --feedback "..."`
 
 ---
 

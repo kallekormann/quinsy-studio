@@ -3,7 +3,7 @@
 > Canonical workflow: **new product** (PRD → **architecture HITL** → **design-track HITL**) **or existing codebase** (`./studio adopt` → as-built) → **execute loop** (`IMPLEMENT` / `PRODUCTION` until HITL) → cadence review every N implementation sprints.  
 > Root overview: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md) · Isolation epic: [hq-isolation-sprints.md](process/hq-isolation-sprints.md)
 
-**How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2 (design track)** — `approve --gate N` requires gate N-1. After that, `INFORM` still loops. Product execute **INFORM**s open HQ learning counts; infuse in a **separate HQ chat** (`./studio train`). `STUDIO_LO` does **not** replace `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks + **CONSTITUTION**), not the whole backlog.
+**How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2a (direction)** → **gate 2b (project kit)** — `approve --gate 2` is refused. After that, `INFORM` still loops. Product execute **INFORM**s open HQ learning counts; infuse in a **separate HQ chat** (`./studio train`). `STUDIO_LO` does **not** replace `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks + **CONSTITUTION**), not the whole backlog.
 
 ## Start here: tell the agent
 
@@ -74,7 +74,7 @@ Do **not** run `./studio bootstrap` / `init` on a live tree — that scaffolds a
 ./studio execute my-project   # fill as-built → synthesize PRD → HITL gate 0
 ```
 
-The agent reconstructs **implementation state in depth** (`docs/as-built/`, cite file paths). Overlay also writes `docs/setup/ui-kit.md` and merges kit peers into existing app `package.json`s. Then: as-is architecture (gate 1) → design of what exists (gate 2, **no fake prototype**) → milestone plan from the gap matrix → execute loop.
+The agent reconstructs **implementation state in depth** (`docs/as-built/`, cite file paths). Overlay also writes `docs/setup/ui-kit.md` and merges kit peers into existing app `package.json`s. Then: as-is architecture (gate 1) → keep vs evolve (2a) → token-map of what exists (2b, **no fake prototype**) → milestone plan from the gap matrix → execute loop.
 
 Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
@@ -87,7 +87,8 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 | **Adopt** | *"Adopt my-project from this folder and reconstruct as-built"* | `./studio adopt` → fills `docs/as-built/` + PRD | *"This is what we have — approve gate 0"* |
 | **or new product** | *"Bootstrap my-project from intake/my-project.md"* | `./studio bootstrap` → fills `docs/definitions/` | *"Gate 0 looks good — approve"* |
 | **Architecture** | *"Continue with blueprint"* | `./studio blueprint` | *"Approve gate 1"* (core stack decision) |
-| **Design** | *"Design core views"* / stills or clickable prototype | `./studio design` + Team 10 iteration | *"Approve gate 2"* |
+| **Design direction** | *"Interview me for look and feel"* | `./studio design --discovery` | *"Approve gate 2a"* |
+| **Design kit** | *"Design core views"* / live prototype | `./studio design` + Team 10 iteration | *"Approve gate 2b"* |
 | **Sprint** | *"Let the sprint run"* | agent `--approve-scope` → groom → **`./studio execute` loop** | Override scope if you want; stay out until UI review |
 | **Milestones** | *"Draft the milestone roadmap"* | Fills `docs/phases/` from gap matrix or PRD | *"Approve milestones"* → agent writes M0 tickets |
 | **Cadence review** | *"Give me a sprint review"* | `./studio review` | Every N implementation sprints: *"Shipped looks good"* → `--approve`. Off-cadence / backend: inform → retro |
@@ -95,13 +96,13 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
 **Sprint feedback** = small, concrete ideas. **Amendments** = strategic direction (vision brief → milestone + ticket breakdown). See [Amendment intake](#amendment-intake-strategic-direction) below.
 
-**No product IMPLEMENT until gates 0–2 are approved.** After PRD, you approve architecture, then the design system (gate 2). **Design-track** tickets need a **written** spec + all-state in-context token mocks, then `./studio approve-design`, then implement. Other tickets compose that system with no ticket ACK. Missing components → design ticket in a **design sprint**.
+**No product IMPLEMENT until gates 0, 1, 2a, and 2b are approved.** After PRD, you approve architecture, then direction (2a), then the project kit (2b). **Design-track** tickets need a **written** spec + all-state in-context token mocks, then `./studio approve-design`, then implement. Other tickets compose that system with no ticket ACK. Missing components → design ticket in a **design sprint**.
 
 ---
 
 ## The execute loop (how work actually proceeds)
 
-`./studio execute` drives the whole loop: gates 0–2 (produce artifacts, then **HITL**), then sprints. After sprint **scope** and **groom** (agent-owned; you may override), the agent’s job is:
+`./studio execute` drives the whole loop: gates 0 → 1 → 2a → 2b (produce artifacts, then **HITL**), then sprints. After sprint **scope** and **groom** (agent-owned; you may override), the agent’s job is:
 
 ```
 ./studio focus <project>
@@ -129,7 +130,7 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 
 | ACTION | Meaning | Who |
 |--------|---------|-----|
-| `IMPLEMENT` / `IMPLEMENT <id>` | Adopt: fill `docs/as-built/`. Pre-impl: `./studio blueprint` or `./studio design`. Sprint: next unblocked ticket — **or write missing design spec+mocks**. Read the **CARD** (and that one `.md` only) | Agent |
+| `IMPLEMENT` / `IMPLEMENT <id>` | Adopt: fill `docs/as-built/`. Pre-impl: `./studio blueprint` or `./studio design --discovery` then `./studio design`. Sprint: next unblocked ticket — **or write missing design spec+mocks**. Read the **CARD** (and that one `.md` only) | Agent |
 | `VERIFY` | Adopt: synthesize `docs/intake/prd.md`. Sprint: fill the **execution receipt** (`./studio receipt`) | Agent |
 | `GATE` | Run `./studio gate <p> --level 5` (build + smoke + tests). Must be **fresh** after this ticket’s implement | Agent |
 | `DEBUG` | Gate went red. Write hypotheses in `sprints/SPRINT-NN/debug/<id>.md`, fix, re-gate (max 3 tries) | Agent |
@@ -137,7 +138,7 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 | `VERIFY` (ship) | Before cadence HITL: `./studio ship <p> --to dev` when origin is behind `dev` | Agent |
 | `STUDIO_LO <id>` | Idle infusion in `.quinsy-studio/` when there is no in-flight product ticket | Agent (HQ chat) |
 | `INFORM` | Reuse / inbox drain / **N open HQ LOs** — do NEXT, loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key | Agent or **you** |
-| `HITL` | **Stop.** Gates 0–2 (sequential), **`approve-design` / `approve-arch`** (packets exist), **`env --approve`**, cadence review. Not a morning brief. Not a feature-ticket ACK. | **You** |
+| `HITL` | **Stop.** Gates 0 → 1 → 2a → 2b (sequential), **`approve-design` / `approve-arch`** (packets exist), **`env --approve`**, cadence review. Not a morning brief. Not a feature-ticket ACK. | **You** |
 | `PRODUCTION` | Write spec/mocks or architecture note, then loop until HITL. | **Agent** |
 
 **What execute picks (in order):**
@@ -145,11 +146,12 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 1. **Adopt as-built** — if `mode: adopt` and `docs/as-built/` still has `_TODO_`, `IMPLEMENT` those files (cite paths). Then `VERIFY` the synthesized PRD
 2. **HITL gate 0** — PRD / as-built confirm
 3. **Architecture (gate 1)** — `IMPLEMENT` `./studio blueprint` until artifacts are ready, then **HITL** `./studio approve --gate 1`
-4. **Design track (gate 2)** — after architecture, `IMPLEMENT` `./studio design` (direction, design system, stills/mocks or clickable prototype), then **HITL** `./studio approve --gate 2`. Iterate with `./studio revise --gate 2`
-5. **Finish in-progress** — a ticket already in `implement` still runs VERIFY → GATE → DEBUG → MOVE_DONE (inbox notes wait)
-6. **`PRODUCTION`** — if ready tickets are below `production_ready_min` and packets are unsigned, write spec/arch notes then HITL `approve-design` / `approve-arch`
-7. **`IMPLEMENT`** — next unblocked **ready** sprint ticket. INFORM open HQ LO count; do **not** `STUDIO_LO` in this chat
-8. **`STUDIO_LO`** — only when idle (`implementation_in_flight` is false)
+4. **Design direction (gate 2a)** — unanswered questions in `docs/design/discovery.md`, then **HITL** `./studio approve --gate 2a`. Do not scaffold prototype.
+5. **Design kit (gate 2b)** — `IMPLEMENT` `./studio design` (CSS tokens, coded A/M/O, sticker all-states), then **HITL** `./studio approve --gate 2b`. Iterate with `./studio revise --gate 2b`
+6. **Finish in-progress** — a ticket already in `implement` still runs VERIFY → GATE → DEBUG → MOVE_DONE (inbox notes wait)
+7. **`PRODUCTION`** — if ready tickets are below `production_ready_min` and packets are unsigned, write spec/arch notes then HITL `approve-design` / `approve-arch`
+8. **`IMPLEMENT`** — next unblocked **ready** sprint ticket. INFORM open HQ LO count; do **not** `STUDIO_LO` in this chat
+9. **`STUDIO_LO`** — only when idle (`implementation_in_flight` is false)
 
 ```bash
 ./studio execute <project>           # human-readable (CONSTITUTION + CARD)
@@ -287,12 +289,13 @@ Use natural language. The agent maps your intent to `./studio` commands.
 |------|--------------------|-------------------------|
 | **0** PRD + definitions **or** as-built (adopt) | *"Approve gate 0"* | *"Revise gate 0: …"* |
 | **1** Architecture (as-is on adopt) | *"Approve gate 1"* | *"Revise gate 1: use IndexedDB only, no Supabase yet"* |
-| **2** Design direction + system + mocks/prototype | *"Approve gate 2"* / *"Approve design"* | *"Revise gate 2: …"* |
+| **2a** Design direction (discovery + DESIGN.md) | *"Approve gate 2a"* | *"Revise gate 2a: …"* |
+| **2b** Project kit (tokens, A/M/O, sticker) | *"Approve gate 2b"* | *"Revise gate 2b: …"* |
 | **Milestones** | *"Approve milestones"* / *"Roadmap looks good"* | *"Revise M0 scope: defer legal pages to M1"* |
 
 Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Milestone roadmap lives in `docs/phases/` — see [milestone-planning.md](process/milestone-planning.md).
 
-### Milestone planning (after gate 2)
+### Milestone planning (after gate 2b)
 
 | You want | Example message |
 |----------|-----------------|
@@ -301,7 +304,7 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 | Start M0 work | *"Write M0 tickets and plan the first sprint"* |
 | Milestone complete | *"M0 is done — milestone review"* (before M1 tickets) |
 
-### Design scope (gate 2)
+### Design scope (gate 2b)
 
 | You want | Example message |
 |----------|-----------------|
@@ -354,7 +357,7 @@ cp .quinsy-studio/studio-templates/amendment_01.example.md intake/amendments/<pr
 
 Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [studio-templates/amendment_01.example.md](studio-templates/amendment_01.example.md)
 
-### UI design (Team 10, after gate 2)
+### UI design (Team 10, after gate 2b)
 
 | You want | Example message |
 |----------|-----------------|
@@ -378,7 +381,7 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 
 ### What the agent should **not** do without you
 
-- Skip gates 0–2 and write product code (architecture and design track are HITL after PRD)
+- Skip gates 0 → 1 → 2a → 2b and write product code (architecture and design track are HITL after PRD)
 - Run `./studio init` / `bootstrap` on a live codebase (use `./studio adopt`)
 - Skip architecture or design HITL (`inform --gate 1` does **not** approve architecture)
 - Implement sprint-review **design** feedback in the same cycle (must: feedback → clarify → next sprint)
@@ -449,7 +452,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 ## Cursor Auto-run vs studio HITL
 
-Studio HITL is `ACTION: HITL` from `./studio execute` (gates 0–2 sequential, `approve-design` / `approve-arch`, `./studio env … --approve`, cadence review, tech-veto, abort).
+Studio HITL is `ACTION: HITL` from `./studio execute` (gates 0 → 1 → 2a → 2b sequential, `approve-design` / `approve-arch`, `./studio env … --approve`, cadence review, tech-veto, abort).
 
 If Cursor shows **Allow** when the agent runs `./studio move <project> <ID> done`, that is **Cursor Auto-review** (Approvals & Execution), not a studio gate. The CLI already requires a filled receipt and gate 5; you should not also ACK the ticket in chat.
 
@@ -488,12 +491,11 @@ Requires Node.js 20+. `node_modules/` is not committed.
 
 ## Team 10 aesthetic presets
 
-17 visual direction presets for UI design specs (e.g. `stripe-like-ui`, `apple-like-ui`, `soft-ui`):
+Optional repertoire (e.g. `stripe-like-ui`, `apple-like-ui`, `soft-ui`) — **not** required. Signed `design/DESIGN.md` uniqueness is the source of truth.
 
 - Catalog: [knowledge-base/aesthetic-presets/README.md](knowledge-base/aesthetic-presets/README.md)
 - Team skill: [teams/10-product-design-experience/skills/aesthetic-presets.md](teams/10-product-design-experience/skills/aesthetic-presets.md)
-
-Every UI design spec must declare one primary preset (or `project-brand-only`). UX-005 loads the preset `SKILL.md` alongside project tokens.
+- Direction interview: [knowledge-base/design-direction-playbook.md](knowledge-base/design-direction-playbook.md)
 
 ## UI design discipline (placement before layout)
 
@@ -524,7 +526,7 @@ Deep, codebase-aware playbooks extend internal skills (no new ticket IDs). Catal
 
 Draft new extensions in `intake/skills/` (local) → promote to `knowledge-base/skill-extensions/` after review.
 
-## Three human gates (before coding)
+## Four human gates (before coding)
 
 These are the **core start-of-project decisions**. Execute produces the artifacts, then **stops for you**.
 
@@ -532,9 +534,10 @@ These are the **core start-of-project decisions**. Execute produces the artifact
 |------|-------------|-----|
 | **0** | PRD + definitions **or** as-built truth + synthesized PRD (adopt) | `./studio approve <p> --gate 0` |
 | **1** | Architecture + ADRs after PRD (as-is on adopt; no stack swap unless you asked) | `./studio blueprint` then `./studio approve <p> --gate 1` (refuses if gate 0 is pending) |
-| **2** | Design track after architecture: direction, design system, stills/mocks **or** clickable prototype (adopt: design of what exists — no fake prototype) | `./studio design` then `./studio approve <p> --gate 2` (refuses if gate 1 is pending). Iterate: `./studio revise --gate 2` |
+| **2a** | Design direction: human interview + unique DESIGN.md (adopt: keep vs evolve). Blocks prototype. | `./studio design --discovery` then `./studio approve <p> --gate 2a` |
+| **2b** | Project kit: CSS tokens, coded A/M/O, sticker all-states (adopt: token-map of what exists — no fake prototype) | `./studio design` then `./studio approve <p> --gate 2b`. Iterate: `./studio revise --gate 2b`. Bare `--gate 2` is refused. |
 
-Gate 2 promotes design artifacts to [studio-library](studio-library/library_registry.md) on **greenfield** only. Adopted UI stays in the project; gaps become LOs. **No product IMPLEMENT until gates 0–2 are approved.** After a sprint starts, new UI tickets get an agent spec then implement; human taste is sprint review.
+Gate 2b does **not** merge product look into [studio-library](studio-library/library_registry.md). Studio-library stays Headless primitives. **No product IMPLEMENT until 0 → 1 → 2a → 2b are approved.** After a sprint starts, new UI tickets get an agent spec then implement; human taste is sprint review.
 
 Tickets for the **active milestone** are written after you approve the roadmap (`./studio approve <p> --milestones`).
 
@@ -585,8 +588,10 @@ See [milestone-planning.md](process/milestone-planning.md) · [amendment-intake.
 
 ./studio approve my-project --gate 0
 ./studio blueprint my-project && ./studio approve my-project --gate 1
+./studio design my-project --discovery
+./studio approve my-project --gate 2a
 ./studio design my-project --scope core-views    # adopt: --scope as-built (no prototype)
-./studio approve my-project --gate 2
+./studio approve my-project --gate 2b
 ./studio approve my-project --milestones
 ./studio sprint my-project
 ./studio sprint my-project --approve-scope

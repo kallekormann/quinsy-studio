@@ -19,11 +19,11 @@ Full catalog: [knowledge-base/aesthetic-presets/README.md](../../../knowledge-ba
 
 ## Selection rules
 
-1. **One primary preset** per design spec (optional secondary for marketing hero only).
-2. If project `design/DESIGN.md` names a direction → preset must align or spec explains deviation.
-3. Preset defines **layout, elevation, motion, Headless UI state styling** — not business logic.
-4. Map preset colors to **project tokens** in the spec; run `design_math.py` contrast checks.
-5. `project-brand-only` — valid when gate-2 tokens already define full visual language.
+1. **Optional.** Uniqueness in `design/DESIGN.md` beats a catalog clone. A spec may omit this section.
+2. If used: **one primary preset** (optional secondary for marketing hero only), mapped to **project tokens**.
+3. If project `design/DESIGN.md` names a direction → preset must align or spec explains deviation.
+4. Preset defines **layout, elevation, motion, Headless UI state styling** — not business logic.
+5. `project-brand-only` — valid when gate-2b tokens already define full visual language.
 
 ## Quick picker
 

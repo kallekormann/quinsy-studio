@@ -43,7 +43,7 @@ Commands:
   ./studio library pull <project> auth billing    Copy library → project
   ./studio library promote <project> packages/billing [--force]
   ./studio library suggest <project> <query>      Find assets before coding
-  ./studio promote-library <project> [--force]    Promote design system (gate 2)
+  ./studio promote-library <project> [--force]    Optional Headless/generic kit (not product look)
   ./studio start <project> --mode [core|lean]    Start project
   ./studio status <project>                      Show status
   ./studio board <project>                       Show board
@@ -56,10 +56,12 @@ Commands:
   ./studio approve <project> --gate 0            Approve PRD + definitions
   ./studio approve <project> --gate 1            Approve architecture blueprint
 
-  # Phase 3: Design (human gate 2)
+  # Phase 3: Design (human gates 2a then 2b)
+  ./studio design <project> --discovery          2a interview packet (no prototype)
   ./studio design <project> --scope journey|core-views
-  ./studio approve <project> --gate 2            Approve design → generates tickets
-  ./studio revise <project> --gate <0|1|2> --feedback "..."
+  ./studio approve <project> --gate 2a           Approve direction (blocks prototype)
+  ./studio approve <project> --gate 2b           Approve project kit → tickets (no library promote)
+  ./studio revise <project> --gate <0|1|2a|2b> --feedback "..."
 
   # Legacy
   ./studio concept <project>                     → blueprint / design
@@ -154,12 +156,16 @@ from pre_impl_workflow import (
     PHASE_IMPLEMENT,
     PHASE_INTAKE,
     PHASE_SPRINT,
+    design_system_approved,
+    direction_approved,
     record_revision,
     scaffold_blueprint,
     scaffold_design,
+    scaffold_discovery,
     previous_human_gate_block,
     validate_human_gate,
 )
+from studio_design_discovery import BARE_GATE_2_MSG, parse_cli_gate
 from studio_context import (
     build_focus_report,
     guard_request,
@@ -575,20 +581,37 @@ class StudioOrchestrator:
                 self._print_gate_pause(project, 1, "Review docs/architecture/ and ADRs.")
                 return True
 
-        if status.get("phase") in (PHASE_INTAKE, PHASE_BLUEPRINT, PHASE_DESIGN) or hg.get("2", {}).get("status") != "approved":
+        if status.get("phase") in (PHASE_INTAKE, PHASE_BLUEPRINT, PHASE_DESIGN) or not design_system_approved(status):
             if status.get("mode") == "adopt":
+                if not direction_approved(status):
+                    self._print_gate_pause(
+                        project,
+                        "2a",
+                        "Keep vs evolve the existing UI. Interview the human. Do not scaffold a fake prototype.",
+                    )
+                    return True
                 self._print_gate_pause(
                     project,
-                    2,
-                    "Document design of what exists (surface map). Do not scaffold an empty Next.js prototype.",
+                    "2b",
+                    "Token-map of what exists. Do not scaffold an empty Next.js prototype.",
                 )
                 return True
-            design = PROJECTS_DIR / project / "design" / "DESIGN.md"
+            if not direction_approved(status):
+                disc = PROJECTS_DIR / project / "docs" / "design" / "discovery.md"
+                if not disc.exists():
+                    self.cmd_design(project, discovery=True)
+                self._print_gate_pause(
+                    project,
+                    "2a",
+                    "Answer discovery questions; agent fills DESIGN.md. Do not scaffold prototype.",
+                )
+                return True
+            design = PROJECTS_DIR / project / "design" / "prototype" / "package.json"
             if not design.exists():
                 scope = status.get("design_scope") or "core-views"
                 self.cmd_design(project, scope)
-            if hg.get("2", {}).get("status") != "approved":
-                self._print_gate_pause(project, 2, "Review design/prototype mocks + sticker sheet.")
+            if not design_system_approved(status):
+                self._print_gate_pause(project, "2b", "Review project kit: CSS tokens, coded A/M/O, sticker all-states.")
                 return True
 
         status = load_status(project)
@@ -601,18 +624,25 @@ class StudioOrchestrator:
         print(f"     Next: ./studio resume {project}")
         return True
 
-    def _print_gate_pause(self, project: str, gate: int, hint: str):
+    def _print_gate_pause(self, project: str, gate, hint: str):
         labels = {
             0: "Intake — PRD & definitions",
+            "0": "Intake — PRD & definitions",
             1: "Architecture blueprint",
-            2: "Design — prototype mocks & sticker sheet",
+            "1": "Architecture blueprint",
+            2: "Design — use 2a then 2b",
+            "2a": "Design direction — discovery + DESIGN.md",
+            "2b": "Design system — project kit + sticker sheet",
         }
         status = load_status(project)
         if status.get("mode") == "adopt":
             labels = {
                 0: "As-built truth + synthesized PRD",
+                "0": "As-built truth + synthesized PRD",
                 1: "As-is architecture (no stack swap)",
-                2: "Design of what exists + debt",
+                "1": "As-is architecture (no stack swap)",
+                "2a": "Keep vs evolve the existing UI",
+                "2b": "Token-map of what exists + debt",
             }
         print(f"\n  ⏸ HUMAN GATE {gate}: {labels.get(gate, 'Review')}")
         print(f"     {hint}")
@@ -678,17 +708,27 @@ class StudioOrchestrator:
                 else "AI: fill docs/architecture/, create ADRs"
             )
             actions.append(f"Human: review blueprint → ./studio approve {project} --gate 1")
-        elif hg.get("2", {}).get("status") != "approved":
-            if adopt:
-                actions.append("AI: fill design/DESIGN.md + docs/ia/surface-map.md from existing UI")
-                actions.append("Do NOT scaffold design/prototype as a fake app")
-                actions.append(f"Human: review design of what exists → ./studio approve {project} --gate 2")
+        elif not design_system_approved(status):
+            if not direction_approved(status):
+                if adopt:
+                    actions.append("AI: write unanswered questions in docs/design/discovery.md (keep vs evolve)")
+                    actions.append("Do NOT scaffold design/prototype")
+                    actions.append(f"Human: answer discovery → ./studio approve {project} --gate 2a")
+                else:
+                    actions.append(f"./studio design {project} --discovery")
+                    actions.append("AI: unanswered questions only; fill DESIGN.md from human answers")
+                    actions.append("Do NOT scaffold design/prototype until 2a is approved")
+                    actions.append(f"Human: answer discovery → ./studio approve {project} --gate 2a")
+            elif adopt:
+                actions.append("AI: map existing UI to ui/tokens/design-tokens.css (no fake prototype)")
+                actions.append(f"Human: review token-map of what exists → ./studio approve {project} --gate 2b")
             elif not status.get("design_scope"):
                 actions.append(f"Human: choose mock scope → ./studio design {project} --scope journey|core-views")
             else:
                 actions.append(f"./studio design {project} --scope {status['design_scope']}")
-                actions.append("AI: build design/prototype (Next.js), ui/tokens, sticker-sheet")
-                actions.append(f"Human: review mocks → ./studio approve {project} --gate 2")
+                actions.append("AI: project CSS tokens, coded A/M/O, sticker all-states, mocks on those tokens")
+                actions.append(f"Human: review live prototype → ./studio approve {project} --gate 2b")
+                actions.append(f"Iterate: ./studio revise {project} --gate 2b --feedback \"...\"")
         elif not status.get("current_sprint"):
             actions.append(f"./studio sprint {project}")
         elif needs_sprint_review(status):
@@ -909,24 +949,26 @@ class StudioOrchestrator:
         print(f"  Drain after MOVE_DONE: ./studio note {project} --drain")
         return True
 
-    def cmd_inform(self, project: str, gate: Optional[int] = None):
+    def cmd_inform(self, project: str, gate: Optional[str] = None):
         """Inform-only steps (not architecture/design — those are HITL)."""
-        if gate == 1:
+        g = str(gate) if gate is not None else ""
+        if g in ("1",):
             print_header(f"GATE 1 IS HITL — {project}")
             print("  Architecture after PRD is a human decision.")
             print(f"  Agent: ./studio blueprint {project}")
             print(f"  Human: ./studio approve {project} --gate 1")
             print(f"  Iterate: ./studio revise {project} --gate 1 --feedback \"...\"")
             return False
-        if gate == 2:
-            print_header(f"GATE 2 IS HITL — {project}")
-            print("  Design track after architecture is a human decision")
-            print("  (direction, design system, stills/mocks or clickable prototype).")
-            print(f"  Agent: ./studio design {project}")
-            print(f"  Human: ./studio approve {project} --gate 2")
-            print(f"  Iterate: ./studio revise {project} --gate 2 --feedback \"...\"")
+        if g in ("2", "2a", "2b"):
+            print_header(f"GATES 2a/2b ARE HITL — {project}")
+            print("  Design is two signed packets: direction (2a) then project kit (2b).")
+            print(f"  Agent: ./studio design {project} --discovery")
+            print(f"  Human: ./studio approve {project} --gate 2a")
+            print(f"  Then:  ./studio design {project}  and  ./studio approve {project} --gate 2b")
+            print(f"  Iterate: ./studio revise {project} --gate 2b --feedback \"...\"")
+            print(f"  {BARE_GATE_2_MSG}")
             return False
-        print("  Architecture (gate 1) and design (gate 2) require ./studio approve, not inform.")
+        print("  Architecture (gate 1) and design (gates 2a then 2b) require ./studio approve, not inform.")
         return False
 
     def cmd_veto(self, project: str, decision: str = "", reason: str = "", ack: bool = False):
@@ -1218,7 +1260,7 @@ class StudioOrchestrator:
                 for p in result["skipped"]:
                     print(f"    - {p}")
         else:
-            print("\n  ⚠️  Nothing to promote (complete gate 2 design artifacts first)")
+            print("\n  ⚠️  Nothing to promote (product look stays in the project; library is Headless only)")
         return bool(result.get("promoted"))
 
     def cmd_library(self, subcommand: str, args: List[str]):
@@ -1413,7 +1455,7 @@ class StudioOrchestrator:
             return False
 
         # Tickets are generated after human gate 2 (design approval), not at intake.
-        print(f"\n  ℹ️  Tickets will be generated after design approval (gate 2).")
+        print(f"\n  ℹ️  Tickets will be generated after design approval (gate 2b).")
         
         # Update status
         status = load_status(project)
@@ -1479,8 +1521,8 @@ class StudioOrchestrator:
     # PHASE 2b: DESIGN (prototype + sticker sheet)
     # -------------------------------------------------------------------------
 
-    def cmd_design(self, project: str, scope: str = "core-views"):
-        """Scaffold design docs + Next.js prototype. scope: journey | core-views | as-built"""
+    def cmd_design(self, project: str, scope: str = "core-views", discovery: bool = False):
+        """2a: discovery packet only. 2b: project kit + prototype. Never indigo defaults."""
         status = load_status(project)
         hg = status.get("human_gates", {})
 
@@ -1488,24 +1530,43 @@ class StudioOrchestrator:
             print(f"  ⚠️  Gate 1 (architecture) must be approved first")
             return False
 
+        if discovery or not direction_approved(status):
+            if direction_approved(status) and not discovery:
+                pass
+            else:
+                print_header(f"GATE 2a: DESIGN DISCOVERY — {project}")
+                created = scaffold_discovery(project)
+                for path in created:
+                    try:
+                        print(f"  ✓ {path.relative_to(PROJECTS_DIR / project)}")
+                    except ValueError:
+                        print(f"  ✓ {path}")
+                status["phase"] = PHASE_DESIGN
+                save_status(project, status)
+                print("  Skills: UX-001, UX-004, UX-006, UX-008 — unanswered questions only.")
+                print("  Do NOT invent brand. Do NOT scaffold design/prototype until 2a is approved.")
+                print(f"  Human: fill A: lines in docs/design/discovery.md")
+                print(f"  Then:  ./studio approve {project} --gate 2a")
+                return True
+
         if status.get("mode") == "adopt":
             from studio_adopt import overlay_studio
 
-            print_header(f"PHASE 3: DESIGN TRUTH — {project} (as-built)")
+            print_header(f"GATE 2b: DESIGN TRUTH — {project} (as-built)")
             overlay_studio(PROJECTS_DIR / project, project, archetype=status.get("archetype") or "saas-application")
             status["phase"] = PHASE_DESIGN
             status["design_scope"] = "as-built"
             save_status(project, status)
-            print("  Document existing UI in design/DESIGN.md and docs/ia/surface-map.md")
+            print("  Map existing UI to ui/tokens/design-tokens.css")
             print("  Do NOT scaffold design/prototype as a parallel app")
-            print(f"  Human: ./studio approve {project} --gate 2 when the surface map is honest")
+            print(f"  Human: ./studio approve {project} --gate 2b when the token-map is honest")
             return True
 
         if scope not in ("journey", "core-views"):
             print(f"  ⚠️  scope must be 'journey' or 'core-views'")
             return False
 
-        print_header(f"PHASE 3: DESIGN — {project} (scope: {scope})")
+        print_header(f"GATE 2b: PROJECT KIT — {project} (scope: {scope})")
         created = scaffold_design(project, scope)
         for path in created:
             try:
@@ -1519,81 +1580,95 @@ class StudioOrchestrator:
 
         print(f"\n  Mock scope: {scope}")
         print(f"  Prototype:  cd projects/{project}/design/prototype && npm install && npm run dev")
-        print(f"  UI kit:     radix-ui class-variance-authority clsx tailwind-merge lucide-react @headlessui/react (in prototype package.json)")
-        print(f"  Human:      ./studio approve {project} --gate 2 when mocks + sticker sheet ready")
+        print("  Fill CSS tokens, coded A/M/O, sticker inventory (all states). Title-only fails.")
+        print(f"  Human:      ./studio approve {project} --gate 2b")
+        print(f"  Iterate:    ./studio revise {project} --gate 2b --feedback \"...\"")
         return True
 
     def cmd_concept(self, project: str):
         """Deprecated — use ./studio blueprint and ./studio design."""
         print(f"  ℹ️  `concept` is deprecated. Use:")
         print(f"     ./studio blueprint {project}")
+        print(f"     ./studio design {project} --discovery")
         print(f"     ./studio design {project} --scope journey|core-views")
         status = load_status(project)
         hg = status.get("human_gates", {})
         if hg.get("0", {}).get("status") == "approved" and hg.get("1", {}).get("status") != "approved":
             return self.cmd_blueprint(project)
-        if hg.get("1", {}).get("status") == "approved":
+        if hg.get("1", {}).get("status") == "approved" and not direction_approved(status):
+            return self.cmd_design(project, discovery=True)
+        if direction_approved(status) and not design_system_approved(status):
             scope = status.get("design_scope") or "core-views"
             return self.cmd_design(project, scope)
         print(f"  Complete gate 0 first: ./studio approve {project} --gate 0")
         return False
 
-    def cmd_revise(self, project: str, gate: int, feedback: str):
+    def cmd_revise(self, project: str, gate, feedback: str):
         """Record feedback and reopen a human gate for iteration."""
-        if gate not in (0, 1, 2):
-            print(f"  ⚠️  revise supports gates 0, 1, 2 only")
+        try:
+            gate_id = parse_cli_gate(str(gate))
+        except ValueError as exc:
+            print(f"  ⚠️  {exc}")
             return False
         if not feedback.strip():
             print(f"  ⚠️  --feedback is required")
             return False
 
         status = load_status(project)
-        rev_file = record_revision(project, gate, feedback)
+        rev_file = record_revision(project, gate_id, feedback)
         hg = status.setdefault("human_gates", {})
-        hg[str(gate)] = {
+        packet = {
             "status": "changes-requested",
             "date": datetime.now().isoformat(),
             "feedback": feedback.strip(),
         }
-        if gate == 0:
+        hg[gate_id] = packet
+        if gate_id == "2b":
+            hg["2"] = packet
+        if gate_id == "0":
             status["phase"] = PHASE_INTAKE
-        elif gate == 1:
+        elif gate_id == "1":
             status["phase"] = PHASE_BLUEPRINT
-        elif gate == 2:
+        else:
             status["phase"] = PHASE_DESIGN
-        status["gate"] = str(gate)
+        status["gate"] = gate_id
         status["gate_status"] = "changes-requested"
         save_status(project, status)
 
-        print_header(f"REVISION RECORDED — gate {gate}")
+        print_header(f"REVISION RECORDED — gate {gate_id}")
         print(f"  Log: {rev_file}")
-        print(f"  Update artifacts, then ./studio approve {project} --gate {gate}")
+        print(f"  Update artifacts, then ./studio approve {project} --gate {gate_id}")
         return True
     
-    def cmd_approve(self, project: str, gate: int):
-        """Approve a human gate (0=intake, 1=architecture, 2=design)."""
+    def cmd_approve(self, project: str, gate):
+        """Approve a human gate (0, 1, 2a direction, 2b project kit)."""
         status = load_status(project)
         if "human_gates" not in status:
             status["human_gates"] = {}
 
-        ok, issues = validate_human_gate(project, gate)
+        try:
+            gate_id = parse_cli_gate(str(gate))
+        except ValueError as exc:
+            print_header(f"GATE {gate} REFUSED — {project}")
+            print(f"\n  {exc}")
+            return False
+
+        ok, issues = validate_human_gate(project, gate_id)
         if not ok:
-            print_header(f"GATE {gate} NOT READY — {project}")
+            print_header(f"GATE {gate_id} NOT READY — {project}")
             print("\n  Fix before approving:")
             for issue in issues:
                 print(f"    • {issue}")
-            print(f"\n  Iteration: ./studio revise {project} --gate {gate} --feedback \"...\"")
+            print(f"\n  Iteration: ./studio revise {project} --gate {gate_id} --feedback \"...\"")
             return False
 
-        blocked = previous_human_gate_block(status, gate)
+        blocked = previous_human_gate_block(status, gate_id)
         if blocked:
-            print_header(f"GATE {gate} BLOCKED — {project}")
+            print_header(f"GATE {gate_id} BLOCKED — {project}")
             print(f"\n  {blocked}")
             return False
 
-        if gate == 0:
-            if status.get("phase") not in (PHASE_INTAKE, "1", "0"):
-                pass  # allow re-approve after revise
+        if gate_id == "0":
             print_header(f"HUMAN GATE 0 APPROVED: {project}")
             status["human_gates"]["0"] = {
                 "status": "approved",
@@ -1610,7 +1685,7 @@ class StudioOrchestrator:
                 print(f"  Next: ./studio blueprint {project}")
             return True
 
-        if gate == 1:
+        if gate_id == "1":
             print_header(f"HUMAN GATE 1 APPROVED: {project}")
             status["human_gates"]["1"] = {
                 "status": "approved",
@@ -1621,26 +1696,43 @@ class StudioOrchestrator:
             status["gate_status"] = "approved"
             save_status(project, status)
             print(f"\n  ✅ Architecture blueprint approved")
-            if status.get("mode") == "adopt":
-                print(f"  Next: fill design truth of existing UI (no new prototype)")
-                print(f"        ./studio design {project} --scope as-built")
-            else:
-                print(f"  Next: ./studio design {project} --scope journey|core-views")
+            print(f"  Next: ./studio design {project} --discovery  (gate 2a — do not scaffold prototype)")
             return True
 
-        if gate == 2:
-            print_header(f"HUMAN GATE 2 APPROVED: {project}")
-            status["human_gates"]["2"] = {
+        if gate_id == "2a":
+            print_header(f"HUMAN GATE 2a APPROVED: {project}")
+            status["human_gates"]["2a"] = {
                 "status": "approved",
                 "date": datetime.now().isoformat(),
             }
+            status["phase"] = PHASE_DESIGN
+            status["gate"] = "2a"
+            status["gate_status"] = "approved"
+            save_status(project, status)
+            print(f"\n  ✅ Design direction signed")
+            print("  Prototype is unblocked. Build the project kit (CSS tokens, coded A/M/O, sticker).")
+            if status.get("mode") == "adopt":
+                print(f"  Next: token-map of what exists — ./studio design {project} --scope as-built")
+            else:
+                print(f"  Next: ./studio design {project} --scope journey|core-views")
+            print(f"        then ./studio approve {project} --gate 2b")
+            return True
+
+        if gate_id == "2b":
+            approved = {
+                "status": "approved",
+                "date": datetime.now().isoformat(),
+            }
+            print_header(f"HUMAN GATE 2b APPROVED: {project}")
+            status["human_gates"]["2b"] = approved
+            status["human_gates"]["2"] = approved
             status["phase"] = PHASE_SPRINT
-            status["gate"] = "2"
+            status["gate"] = "2b"
             status["gate_status"] = "approved"
             save_status(project, status)
 
             if status.get("mode") == "adopt":
-                print(f"\n  ✅ Design of what exists approved")
+                print(f"\n  ✅ Token-map of what exists approved")
                 print("  Do not copy project UI into studio-library.")
                 print(f"  Next: draft docs/phases/ from as-built gap matrix")
                 print(f"        ./studio approve {project} --milestones")
@@ -1650,16 +1742,14 @@ class StudioOrchestrator:
             if not self._run_ticket_manifest(project):
                 return False
 
-            print(f"\n  Promoting base design system to studio-library...")
-            lib = promote_design_to_library(project)
-            for p in lib.get("promoted", []):
-                print(f"    ✓ studio-library/{p}")
+            print("\n  Project look stays in the project. Studio-library is Headless primitives only.")
+            print("  (Do not promote this product's visual system into studio-library.)")
 
-            print(f"\n  ✅ Design approved — tickets created")
+            print(f"\n  ✅ Design system approved — tickets created")
             print(f"  Next: ./studio sprint {project}")
             return True
 
-        print(f"  ⚠️  Unknown gate: {gate} (use 0, 1, or 2)")
+        print(f"  ⚠️  Unknown gate: {gate} (use 0, 1, 2a, or 2b)")
         return False
 
     def cmd_approve_amendment(self, project: str, am_id: str, prd_tier: bool = False) -> bool:
@@ -1850,11 +1940,11 @@ class StudioOrchestrator:
         sprint_phases = {PHASE_SPRINT, PHASE_IMPLEMENT, "4", "5"}
         milestone_phase = phase.isdigit() and int(phase) >= 4
         if phase not in sprint_phases and not milestone_phase:
-            print(f"  ⚠️  Sprint requires design approval (gate 2). Current phase: {phase}")
+            print(f"  ⚠️  Sprint requires design approval (gate 2b). Current phase: {phase}")
             return False
         
-        if status.get("human_gates", {}).get("2", {}).get("status") != "approved":
-            print(f"  ⚠️  Gate 2 (design) must be approved before sprint")
+        if not design_system_approved(status):
+            print(f"  ⚠️  Gate 2b (project kit) must be approved before sprint")
             return False
 
         ok, reason = can_plan_next_sprint(project, status)
@@ -2646,6 +2736,12 @@ class StudioOrchestrator:
     
     def cmd_gate(self, project: str, level: int = 5, anti_slop: bool = False):
         """Run the QA gate."""
+        from studio_status import is_valid_project_slug
+
+        if not is_valid_project_slug(project):
+            print("  Usage: ./studio gate <project> [--level N] [--anti-slop]")
+            print("  --help / flags are not project names.")
+            return False
         
         print_header(f"PHASE 5: QA-GATE — {project} (Level {level})")
 
@@ -3540,7 +3636,7 @@ Commands:
   ./studio library pull <project> auth billing    Copy library → project
   ./studio library promote <project> packages/billing [--force]
   ./studio library suggest <project> <query>      Find assets before coding
-  ./studio promote-library <project> [--force]    Promote design system (gate 2)
+  ./studio promote-library <project> [--force]    Optional Headless/generic kit (not product look)
   ./studio start <project> --mode [core|lean]    Start project
   ./studio status <project>                      Show status
   ./studio board <project>                       Show board
@@ -3553,10 +3649,12 @@ Commands:
   ./studio approve <project> --gate 0            Approve PRD + definitions
   ./studio approve <project> --gate 1            Approve architecture blueprint
 
-  # Phase 3: Design (human gate 2)
+  # Phase 3: Design (human gates 2a then 2b)
+  ./studio design <project> --discovery          2a interview packet (no prototype)
   ./studio design <project> --scope journey|core-views
-  ./studio approve <project> --gate 2            Approve design → generates tickets
-  ./studio revise <project> --gate <0|1|2> --feedback "..."
+  ./studio approve <project> --gate 2a           Approve direction (blocks prototype)
+  ./studio approve <project> --gate 2b           Approve project kit → tickets (no library promote)
+  ./studio revise <project> --gate <0|1|2a|2b> --feedback "..."
 
   # Legacy
   ./studio concept <project>                     → blueprint / design
@@ -3614,7 +3712,8 @@ Examples:
   ./studio blueprint nudge
   ./studio approve nudge --gate 1
   ./studio design nudge --scope journey
-  ./studio approve nudge --gate 2
+  ./studio approve nudge --gate 2a
+  ./studio approve nudge --gate 2b
   ./studio sprint nudge
   ./studio ticket nudge "Button Component" --phase 3 --priority P1
   ./studio move nudge NUDG-0001 implement --reason "Implementation started"
@@ -3622,6 +3721,28 @@ Examples:
   ./studio learn "Gate check takes too long" --signal tooling-gap
   ./studio sync nudge
 """)
+
+
+HELP_FLAGS = frozenset({"-h", "--help"})
+
+
+def cli_wants_help(command: str, args: list) -> bool:
+    """`--help` / `-h` is a flag, never a project slug."""
+    if command in HELP_FLAGS:
+        return True
+    return bool(args) and args[0] in HELP_FLAGS
+
+
+def first_project_arg(args: list) -> str:
+    """First positional that can be a project name; empty if only flags."""
+    from studio_status import is_valid_project_slug
+
+    for arg in args:
+        if arg.startswith("-"):
+            continue
+        return arg if is_valid_project_slug(arg) else ""
+    return ""
+
 
 def main():
     orchestrator = StudioOrchestrator()
@@ -3634,6 +3755,10 @@ def main():
     
     # Parse arguments
     args = sys.argv[2:]
+
+    if cli_wants_help(command, args):
+        print_help()
+        return
 
     if command == "adopt" and len(args) >= 1:
         project = args[0]
@@ -3701,7 +3826,7 @@ def main():
         gate = None
         for i, arg in enumerate(args):
             if arg == "--gate" and i + 1 < len(args):
-                gate = int(args[i + 1])
+                gate = args[i + 1]
         orchestrator.cmd_inform(args[0], gate=gate)
 
     elif command == "veto" and len(args) >= 1:
@@ -3856,18 +3981,19 @@ def main():
     elif command == "design" and len(args) >= 1:
         project = args[0]
         scope = "core-views"
+        discovery = "--discovery" in args
         for i, arg in enumerate(args):
             if arg == "--scope" and i + 1 < len(args):
                 scope = args[i + 1]
-        orchestrator.cmd_design(project, scope)
+        orchestrator.cmd_design(project, scope, discovery=discovery)
 
     elif command == "revise" and len(args) >= 1:
         project = args[0]
-        gate = 0
+        gate = "0"
         feedback = ""
         for i, arg in enumerate(args):
             if arg == "--gate" and i + 1 < len(args):
-                gate = int(args[i + 1])
+                gate = args[i + 1]
             elif arg == "--feedback" and i + 1 < len(args):
                 feedback = args[i + 1]
         orchestrator.cmd_revise(project, gate, feedback)
@@ -3886,7 +4012,7 @@ def main():
         gate = None
         for i, arg in enumerate(args):
             if arg == "--gate" and i + 1 < len(args):
-                gate = int(args[i + 1])
+                gate = args[i + 1]
             elif arg == "--amendment" and i + 1 < len(args):
                 amendment_id = args[i + 1]
             elif arg == "--prd-amendment" and i + 1 < len(args):
@@ -3901,7 +4027,7 @@ def main():
         elif gate is not None:
             orchestrator.cmd_approve(project, gate)
         else:
-            print("  ⚠️  Use --gate 0|1|2, --amendment AM-NNN, --prd-amendment AM-NNN, or --milestones")
+            print("  ⚠️  Use --gate 0|1|2a|2b, --amendment AM-NNN, --prd-amendment AM-NNN, or --milestones")
     
     elif command == "amend" and len(args) >= 2:
         force = "--force" in args
@@ -4069,8 +4195,12 @@ def main():
                 notes = args[i + 1]
         orchestrator.cmd_approve_arch(project, ticket_id, notes=notes)
     
-    elif command == "gate" and len(args) >= 1:
-        project = args[0]
+    elif command == "gate":
+        project = first_project_arg(args)
+        if not project:
+            print("  Usage: ./studio gate <project> [--level N] [--anti-slop]")
+            print("  --help / flags are not project names.")
+            sys.exit(2)
         level = 5
         anti_slop = False
         for i, arg in enumerate(args):
@@ -4105,9 +4235,13 @@ def main():
     elif command == "infusion":
         orchestrator.cmd_infusion()
     
-    elif command == "retro" and len(args) >= 1:
+    elif command == "retro":
         retro_complete = "--complete" in args
-        project = args[0]
+        project = first_project_arg(args)
+        if not project:
+            print("  Usage: ./studio retro <project> [--complete]")
+            print("  --help / flags are not project names.")
+            sys.exit(2)
         orchestrator.cmd_retro(project, complete=retro_complete)
     
     elif command == "update-skills":

@@ -25,7 +25,8 @@ Agent: "Implemented."
 | **Security** | security exceptions, access rights | **Yes** (tech-veto) |
 | **As-built / PRD (gate 0)** | confirm “this is what we have / are building” | **Yes** (`./studio approve --gate 0`) |
 | **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`; refuses if gate 0 pending). Iterate: `./studio revise --gate 1` |
-| **Design track (gate 2)** | direction, design system, stills/mocks or clickable prototype | **Yes** (`./studio approve --gate 2`; refuses if gate 1 pending). Iterate: `./studio revise --gate 2` |
+| **Design direction (gate 2a)** | unanswered questions + signed DESIGN.md (uniqueness, token names) | **Yes** (`./studio approve --gate 2a`; refuses if gate 1 pending). No prototype. |
+| **Design system (gate 2b)** | project CSS kit, coded A/M/O, sticker all-states, live prototype | **Yes** (`./studio approve --gate 2b`; refuses if 2a pending). Iterate: `./studio revise --gate 2b`. Bare `--gate 2` is refused. Do not promote product look into studio-library. |
 | **Release** | production release | **Yes** |
 | **Cadence review** | shipped UI / product after **N implementation sprints** (default 2) | **Yes** (`./studio review`) — feedback goes into **production** tickets, not a silent next implement |
 | **Architecture packet** | ticket-level approach note | **Yes** (`./studio approve-arch`) after `docs/architecture/<TICKET>.md` exists |
@@ -47,9 +48,9 @@ Agent: "Implemented."
 
 ---
 
-## Sprint cadence HITL (after gates 0–2)
+## Sprint cadence HITL (after gates 0–2b)
 
-Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2** (design track: direction, **design system**, stills/mocks or clickable prototype). `approve --gate N` requires gate N-1. All three are HITL. **After the sprint has started**, the human does **not** ACK every ticket. Packet sign-off is **`approve-design` / `approve-arch`** (execute `ACTION: PRODUCTION` writes the files first) or **`./studio env … --approve`**. Cadence **`./studio review`** runs every `cost.human_review_every_sprints` **implementation** sprints (default 2), not after every batch. Tickets `done` via **skill QA on the receipt** (QA / Design skill / Architecture skill), not a human ACK. Hygiene is `./studio sprint --kind hygiene`. Safety valves stay: tech-veto, 3× gate fail, abort, `INFORM cost-cap`.
+Start of a project: **gate 0** (PRD) → **gate 1** (architecture) → **gate 2a** (direction) → **gate 2b** (project kit). `approve --gate 2` is refused. 2a needs 1; 2b needs 2a. Legacy `human_gates.2` still counts as design-complete. **After the sprint has started**, the human does **not** ACK every ticket. Packet sign-off is **`approve-design` / `approve-arch`** (execute `ACTION: PRODUCTION` writes the files first) or **`./studio env … --approve`**. Cadence **`./studio review`** runs every `cost.human_review_every_sprints` **implementation** sprints (default 2), not after every batch. Tickets `done` via **skill QA on the receipt** (QA / Design skill / Architecture skill), not a human ACK. Hygiene is `./studio sprint --kind hygiene`. Safety valves stay: tech-veto, 3× gate fail, abort, `INFORM cost-cap`.
 
 See [milestone-planning.md](milestone-planning.md) for roadmap ceremony.
 
@@ -62,7 +63,7 @@ While sprint tickets are not all `done`:
 | Agent implements non-design sprint tickets in order | Ask “looks good?” after a feature/styling ticket |
 | Agent applies pending migrations when it can reach the DB, then INFORM | Ask the human to run migrate as sprint work |
 | Agent waits for `./studio approve-design` **after spec+mocks exist** | Invent a new component or token in a feature ticket; ask the human to approve a spec that was never written |
-| Stay inside gate-2 design system + library pulls | One-off CSS / hallucinated atoms because “the sprint needs it” |
+| Stay inside the **project** gate-2b kit + Headless library pulls | One-off CSS / hallucinated atoms because “the sprint needs it”; merge product look into studio-library |
 | Agent **ACK-queues** a **product** mid-execute chat (`./studio note`) and resumes ACTION. `HQ-T*`, `LO-NNNN`, `.quinsy-studio`, and “quinsy-studio process” are `studio_meta` (not the product inbox) | Queue studio HQ on the product sprint inbox, or keep product `IMPLEMENT` for an HQ ask |
 | Agent captures design feedback only during UI review | Agent implements design feedback in project code during review |
 | Open LOs spawn `./studio train` in a **HQ chat** | Return `STUDIO_LO` instead of the next `IMPLEMENT` |
@@ -79,7 +80,7 @@ While sprint tickets are not all `done`:
 
 ### Stay on the defined design system
 
-Gate 2 approved the **design system** (tokens, sticker sheet, library components). Non-design tickets **must** use that system: project `ui/tokens`, studio-library / Headless UI primitives, existing project organisms. No one-off hex, new atom, or new interaction pattern inside a feature/bug/`ui-styling` ticket.
+Gate **2b** approved the **project kit** (CSS tokens, coded A/M/O, sticker sheet). Non-design tickets **must** use that kit: project `ui/tokens`, studio-library Headless primitives, existing project organisms. No one-off hex, new atom, or new interaction pattern inside a feature/bug/`ui-styling` ticket.
 
 If something is **missing** (no matching component, token, or IA surface):
 
@@ -90,10 +91,10 @@ If something is **missing** (no matching component, token, or IA surface):
 
 Do not ship a new primitive “so this ticket can finish.” That is a process fail, not a library-first shortcut.
 
-### Post gate 2 — before first sprint
+### Post gate 2b — before first sprint
 
 ```
-Gate 2 approved
+Gate 2b approved
   → Agent drafts docs/phases/ (M0, M1, … outlines)
   → Human approves milestone roadmap
   → Agent writes tickets for active milestone only → product backlog

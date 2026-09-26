@@ -411,6 +411,7 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 
 ## Deltas
 
+- **PB-20260925-001** helpful=0 harmful=0 :: Do not enqueue HQ skill-catalog work on the product sprint inbox. Route it to the studio LO and train queue. Product execute INFORM the open HQ LO count. Infuse those jobs in a HQ session; STUDIO_LO only when the product loop is idle.
 - **PB-20260922-001** helpful=0 harmful=0 :: When a persisted image URL fails reachability, queue public-photo research on the same gold path as persist. Do not wait for a generation vendor.
 - **PB-20260916-005** helpful=0 harmful=0 :: Operator-loop network credentials are per-host rows in api_credentials (encrypted payload) plus sourcing_configs.networks. Do not have the Command Center read process .env publisher tokens for connect/browse.
 - **PB-20260916-004** helpful=5 harmful=0 :: A list GET must return every attribute the inspector is supposed to show. Do not ship a write path whose corresponding list omits those fields.

@@ -45,6 +45,8 @@ HITL_KINDS = (
     "gate-0",
     "gate-1",
     "gate-2",
+    "gate-2a",
+    "gate-2b",
     "design-approve",
     "arch-approve",
     "sprint-review",
@@ -804,6 +806,9 @@ def decide_from_state(
     pending_veto: Optional[str] = None,
     gate1_ready: bool = True,
     gate2_ready: bool = True,
+    gate2a_ready: bool = True,
+    gate2b_ready: Optional[bool] = None,
+    gate2a_phase: Optional[str] = None,
 ) -> ExecuteStep:
     """Pure next-step machine. Disk I/O lives in decide_next_action."""
     step = _decide_from_state_body(
@@ -822,6 +827,9 @@ def decide_from_state(
         pending_veto=pending_veto,
         gate1_ready=gate1_ready,
         gate2_ready=gate2_ready,
+        gate2a_ready=gate2a_ready,
+        gate2b_ready=gate2b_ready,
+        gate2a_phase=gate2a_phase,
     )
     return _attach_lo_inform(step, open_los if open_los is not None else [])
 
@@ -843,8 +851,17 @@ def _decide_from_state_body(
     pending_veto: Optional[str] = None,
     gate1_ready: bool = True,
     gate2_ready: bool = True,
+    gate2a_ready: bool = True,
+    gate2b_ready: Optional[bool] = None,
+    gate2a_phase: Optional[str] = None,
 ) -> ExecuteStep:
+    from pre_impl_workflow import design_system_approved, direction_approved
+
     hg = status.get("human_gates") or {}
+    if gate2b_ready is None:
+        gate2b_ready = gate2_ready
+    if gate2a_phase is None:
+        gate2a_phase = "write_questions" if not gate2a_ready else "hitl"
     open_los = open_los if open_los is not None else []
     log = log or {"entries": []}
     receipts_ok = receipts_ok or {}
@@ -907,26 +924,73 @@ def _decide_from_state_body(
             "human must approve architecture — core start-of-project decision "
             "(stack, persistence, vendors). Iterate with ./studio revise --gate 1",
         )
-    if hg.get("2", {}).get("status") != "approved":
-        if not gate2_ready:
-            adopt_design = (
-                "design of what exists: surface map + DESIGN.md (no fake prototype)"
+    if not design_system_approved(status):
+        if not direction_approved(status):
+            if gate2a_phase == "write_questions":
+                adopt_disc = (
+                    "2a keep vs evolve: unanswered questions in docs/design/discovery.md (no fake prototype)"
+                    if adopt
+                    else "2a design direction: unanswered questions only — do not invent brand, do not scaffold prototype"
+                )
+                return ExecuteStep(
+                    kind="IMPLEMENT",
+                    reason=adopt_disc,
+                    command=f"./studio design {project} --discovery",
+                    read="docs/design/discovery.md",
+                    loop=True,
+                    card={
+                        "id": "GATE-2A",
+                        "title": "Design direction discovery",
+                        "skills": ["UX-001", "UX-004", "UX-006", "UX-008"],
+                        "playbooks": ["design-direction-playbook.md", "ux-research-playbook.md"],
+                    },
+                )
+            if gate2a_phase == "write_direction":
+                return ExecuteStep(
+                    kind="IMPLEMENT",
+                    reason="2a: fill design/DESIGN.md from human discovery answers (uniqueness, token names, no indigo)",
+                    command=f"./studio resume {project}",
+                    read="design/DESIGN.md",
+                    loop=True,
+                    card={
+                        "id": "GATE-2A",
+                        "title": "Signed DESIGN.md",
+                        "skills": ["UX-001", "UX-006", "UX-008"],
+                        "playbooks": ["design-direction-playbook.md"],
+                    },
+                )
+            return _hitl(
+                "gate-2a",
+                project,
+                f"./studio approve {project} --gate 2a",
+                "human must answer discovery and sign DESIGN.md (uniqueness, no indigo stub). "
+                "Do not scaffold prototype until 2a is approved",
+            )
+        if not gate2b_ready:
+            adopt_kit = (
+                "2b token-map of existing UI (no fake prototype)"
                 if adopt
-                else "design track after architecture: direction, design system, stills/mocks or clickable prototype"
+                else "2b project kit: CSS tokens, Tailwind mapped to vars, coded A/M/O, sticker all-states"
             )
             return ExecuteStep(
                 kind="IMPLEMENT",
-                reason=adopt_design,
+                reason=adopt_kit,
                 command=f"./studio design {project}",
                 read="design/",
                 loop=True,
+                card={
+                    "id": "GATE-2B",
+                    "title": "Project design system",
+                    "skills": ["UX-005", "UX-002", "UX-003", "UX-006", "UX-008", "FE-002"],
+                    "playbooks": ["atomic-design-playbook.md", "anti-slop-design-ux.md"],
+                },
             )
         return _hitl(
-            "gate-2",
+            "gate-2b",
             project,
-            f"./studio approve {project} --gate 2",
-            "human must approve design direction + system (iterate with Team 10; "
-            "stills, mockups, or clickable prototype). ./studio revise --gate 2 until approved",
+            f"./studio approve {project} --gate 2b",
+            "human must approve the project kit (live prototype / token-map). "
+            "./studio revise --gate 2b until approved. Do not promote look into studio-library",
         )
 
     abort_notes = [n for n in inbox_open if n.get("abort")]
@@ -962,7 +1026,9 @@ def _decide_from_state_body(
 
     hitl = get_sprint_hitl(status)
     all_done = bool(sprint_tickets) and all(t.get("status") == "done" for t in sprint_tickets)
-    review_ok = hitl.get("review_status") == "approved" or (all_done and backend_only)
+    review_ok = hitl.get("review_status") == "approved" or (
+        all_done and (backend_only or not needs_sprint_review(status))
+    )
     sprint_closed = bool(sprint) and all_done and review_ok
 
     if sprint_closed:
@@ -1246,15 +1312,26 @@ def decide_next_action(project: str) -> ExecuteStep:
         pending_veto = f"{veto.get('decision')}: {veto.get('reason') or 'human tech-veto'}"
 
     adopt = (status.get("mode") or "core") == "adopt"
-    from pre_impl_workflow import validate_human_gate
+    from pre_impl_workflow import (
+        validate_human_gate,
+        design_system_approved,
+        direction_approved,
+        project_dir,
+    )
+    from studio_design_discovery import gate_2a_next
 
     hg = status.get("human_gates") or {}
     gate1_ready = True
-    gate2_ready = True
+    gate2a_ready = True
+    gate2b_ready = True
+    gate2a_phase = "hitl"
     if hg.get("0", {}).get("status") == "approved" and hg.get("1", {}).get("status") != "approved":
         gate1_ready, _ = validate_human_gate(project, 1)
-    if hg.get("1", {}).get("status") == "approved" and hg.get("2", {}).get("status") != "approved":
-        gate2_ready, _ = validate_human_gate(project, 2)
+    if hg.get("1", {}).get("status") == "approved" and not direction_approved(status):
+        gate2a_phase = gate_2a_next(project_dir(project), adopt=adopt)
+        gate2a_ready = gate2a_phase not in ("write_questions", "write_direction")
+    if direction_approved(status) and not design_system_approved(status):
+        gate2b_ready, _ = validate_human_gate(project, "2b")
 
     step = decide_from_state(
         project,
@@ -1271,7 +1348,9 @@ def decide_next_action(project: str) -> ExecuteStep:
         inbox_open=inbox,
         pending_veto=pending_veto,
         gate1_ready=gate1_ready,
-        gate2_ready=gate2_ready,
+        gate2a_ready=gate2a_ready,
+        gate2b_ready=gate2b_ready,
+        gate2a_phase=gate2a_phase,
     )
     if step.kind == "IMPLEMENT" and step.parallel_train:
         for job in step.parallel_train:

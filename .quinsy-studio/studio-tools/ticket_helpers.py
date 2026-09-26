@@ -155,13 +155,17 @@ SKILL_EXTRA_PLAYBOOKS = {
     "UX-001": [
         "knowledge-base/product-ux-playbook.md",
         "knowledge-base/workflow-definition-playbook.md",
+        "knowledge-base/design-direction-playbook.md",
     ],
     "UX-002": [
         "knowledge-base/interaction-ux-playbook.md",
         "knowledge-base/delight-playbook.md",
     ],
     "UX-003": ["knowledge-base/contextual-ia-playbook.md"],
-    "UX-004": ["knowledge-base/ux-research-playbook.md"],
+    "UX-004": [
+        "knowledge-base/ux-research-playbook.md",
+        "knowledge-base/design-direction-playbook.md",
+    ],
     "UX-005": ["knowledge-base/atomic-design-playbook.md"],
     "UX-007": [
         "knowledge-base/visual-storytelling-playbook.md",

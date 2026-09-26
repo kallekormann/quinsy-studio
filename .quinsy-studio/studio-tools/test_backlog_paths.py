@@ -10,6 +10,7 @@ from backlog_paths import (
     migrate_legacy_backlog,
     queue_ticket_paths,
     read_ticket_meta,
+    sprint_tag_is_assigned,
 )
 
 
@@ -54,3 +55,11 @@ def test_read_ticket_meta_empty_sprint_not_next_line():
         assert "sprint" not in meta
     finally:
         path.unlink()
+
+
+def test_sprint_tag_none_is_not_assigned():
+    assert sprint_tag_is_assigned(None) is False
+    assert sprint_tag_is_assigned("") is False
+    assert sprint_tag_is_assigned("none") is False
+    assert sprint_tag_is_assigned("none  # deferred until sellable") is False
+    assert sprint_tag_is_assigned("SPRINT-153") is True

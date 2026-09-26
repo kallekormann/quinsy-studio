@@ -8,10 +8,11 @@ Quinsy Studio uses **two separate gate systems**. Do not conflate them.
 
 | System | CLI | Purpose | Docs |
 |--------|-----|---------|------|
-| **Phase Gates** | `./studio approve --gate N` | Human checkpoints (gate 0 PRD, 1 architecture, 2 design) | This file (Phase Gate 0–2 + milestones) |
+| **Phase Gates** | `./studio approve --gate 0\|1\|2a\|2b` | Human checkpoints (0 PRD, 1 architecture, 2a direction, 2b project kit) | This file (human 2a/2b) + QA Gate 2/3 below |
 | **QA Levels** | `./studio gate --level N` | Automated tooling checks (lint, types, tests, build) | `run_qa_gate.py` |
 
-- **Phase Gate 1** = human approval after concept/design blueprint (`./studio approve --gate 1`)
+- **Human 2a / 2b** = signed design packets (`./studio approve --gate 2a` then `--gate 2b`). Bare `--gate 2` is refused. Legacy `human_gates.2` still counts as design-complete.
+- **Phase Gate 1** = human approval after architecture (`./studio approve --gate 1`)
 - **QA Level 5** = automated full QA run (`./studio gate --level 5`) — not the same as Phase Gate 5
 
 ## Gate philosophy
@@ -23,9 +24,16 @@ Gate = automated check + human confirmation
 - **Automated:** as much as possible is checked by tooling
 - **Human:** irreversible decisions wait for approval
 - **No bypass:** a gate cannot be skipped
-- **Sequential human gates:** `./studio approve --gate N` refuses unless gate N-1 is already approved (re-approving the same gate is allowed). Gate 1 cannot run while gate 0 is pending; gate 2 cannot run while gate 1 is pending.
+- **Sequential human gates:** `./studio approve --gate N` refuses unless the previous human gate is already approved (re-approving the same gate is allowed). Order: **0 → 1 → 2a → 2b**. Gate 1 cannot run while gate 0 is pending; 2a cannot run while 1 is pending; 2b cannot run while 2a is pending.
 
-**Residual UI after a status-only ticket (LO-0174):** If the shipped change only flipped a flag, enum, or CSS class and a flicker/regression remains, open a **new** ticket that changes the render path (mount, effect, animation, layout). Do not treat a second status-only patch as the fix.
+**Human design packets (not QA `--level 2`):**
+
+| Gate | Approves | CLI |
+|------|----------|-----|
+| **2a** | Discovery Q&A + unique `DESIGN.md` (blocks prototype) | `./studio design --discovery` then `./studio approve --gate 2a` |
+| **2b** | Project CSS tokens, coded A/M/O, sticker inventory, mocks on those tokens | `./studio design` then `./studio approve --gate 2b`. Iterate: `./studio revise --gate 2b` |
+
+QA **Gate 2** below is architecture *level* checks. Do not conflate with human 2a/2b. If the shipped change only flipped a flag, enum, or CSS class and a flicker/regression remains, open a **new** ticket that changes the render path (mount, effect, animation, layout). Do not treat a second status-only patch as the fix.
 
 **Prod infra regression after a “fixed” ship (LO-0176):** If realtime, websockets, or similar production plumbing fails again after a claimed fix, the next tickets are **research + instrumentation** (repro, logs, metrics, hypothesis) — not another speculative code patch.
 

@@ -204,3 +204,7 @@ Limits:
 - `.quinsy-studio/process/adr-policy.md` — ADR for API decisions
 - `.quinsy-studio/knowledge-base/backend_playbook.md` — backend rules
 - `studio-library/packages/` — reusable packages
+
+## Deltas
+
+- **PB-20260925-001** helpful=0 harmful=0 :: HQ skill-catalog work is a separate queue from product sprint notes. Do not enqueue HQ LOs on the product sprint inbox. Product execute INFORM the open HQ LO count; the HQ session consumes those jobs.

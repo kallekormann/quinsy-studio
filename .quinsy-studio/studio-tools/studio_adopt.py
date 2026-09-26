@@ -344,8 +344,8 @@ def overlay_studio(root: Path, slug: str, archetype: str = "saas-application") -
             f"3. Human: `./studio approve {slug} --gate 0`\n"
             "4. Blueprint **as-is** + ADRs for existing decisions\n"
             f"5. Human: `./studio approve {slug} --gate 1`\n"
-            "6. Design truth of existing UI — **do not** create `design/prototype/` as a fake app\n"
-            f"7. Human: `./studio approve {slug} --gate 2` then `--milestones`\n"
+            "6. Gate 2a: keep vs evolve (discovery.md) — **do not** create `design/prototype/` as a fake app\n"
+            f"7. Human: `./studio approve {slug} --gate 2a` then 2b token-map (`--gate 2b`) then `--milestones`\n"
             "8. Tickets for active milestone → `./studio execute`\n",
             encoding="utf-8",
         )
@@ -359,7 +359,7 @@ def overlay_studio(root: Path, slug: str, archetype: str = "saas-application") -
             "## As-built\n"
             "Fill `docs/as-built/00-product.md` … `07-implemented-vs-gap.md`.\n\n"
             "## Gates\n"
-            f"`./studio approve {slug} --gate 0|1|2` then `--milestones`.\n\n"
+            f"`./studio approve {slug} --gate 0|1|2a|2b` then `--milestones`.\n\n"
             "## Execute\n"
             f"`./studio execute {slug}` until HITL.\n",
             encoding="utf-8",

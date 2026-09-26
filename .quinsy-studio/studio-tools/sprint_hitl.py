@@ -411,7 +411,10 @@ def can_plan_next_sprint(project: str, status: Dict) -> Tuple[bool, str]:
     hitl = get_sprint_hitl(status)
     review = hitl.get("review_status")
     backend_only = _backend_only_sprint(project, sprint)
-    if review != REVIEW_APPROVED and not (backend_only and review in ("informed", REVIEW_PENDING, None)):
+    off_cadence = review in (None, "informed") and not needs_sprint_review(status)
+    if review != REVIEW_APPROVED and not (
+        (backend_only and review in ("informed", REVIEW_PENDING, None)) or off_cadence
+    ):
         if review == REVIEW_PENDING:
             return (
                 False,

@@ -591,8 +591,9 @@ def resume_amendment_actions(project: str) -> List[str]:
 
 
 def gate2_approved(status: Dict) -> bool:
-    hg = status.get("human_gates", {})
-    if hg.get("2", {}).get("status") == "approved":
+    from pre_impl_workflow import design_system_approved
+
+    if design_system_approved(status):
         return True
     phase = str(status.get("phase", ""))
     return phase in ("4", "5", PHASE_IMPLEMENT, PHASE_SPRINT)  # type: ignore[name-defined]

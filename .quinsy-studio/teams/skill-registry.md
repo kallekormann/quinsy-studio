@@ -137,7 +137,7 @@ Ticket `team` stays **10** when GD is paired. See [design-team-canon-ledger.md](
 
 **External (reference, not duplicated):** `.quinsy-studio/external-skills/design-agent/` → `ux-*`, `taste-skill`, `brandkit`
 
-**Aesthetic presets (studio-owned):** `.quinsy-studio/knowledge-base/aesthetic-presets/` — 17 presets; Team 10 loads via [aesthetic-presets.md](../teams/10-product-design-experience/skills/aesthetic-presets.md)
+**Aesthetic presets (studio-owned, optional):** `.quinsy-studio/knowledge-base/aesthetic-presets/` — 17 presets; Team 10 may footnote via [aesthetic-presets.md](../teams/10-product-design-experience/skills/aesthetic-presets.md). Uniqueness in `design/DESIGN.md` is the source of truth.
 
 #### Backend (Team 02)
 

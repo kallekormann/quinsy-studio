@@ -272,6 +272,34 @@ class DecideTests(unittest.TestCase):
         )
         self.assertEqual(step.kind, "MOVE_DONE")
 
+    def test_decide_off_cadence_after_retro_proposes_sprint(self):
+        with patch("sprint_reuse_review.reuse_gate_message", return_value=None):
+            step = decide_from_state(
+                "demo",
+                _approved_status(
+                    sprint_hitl={
+                        "scope_status": "approved",
+                        "groom_status": "approved",
+                        "review_status": None,
+                        "retro_status": "done",
+                    }
+                ),
+                [
+                    {
+                        "id": "DEMO-0001",
+                        "status": "done",
+                        "deps": [],
+                        "ticket_type": "ui-composition",
+                        "title": "Layout variants",
+                    }
+                ],
+                open_los=[],
+                amendment_actions=[],
+                prd_exists=True,
+            )
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertIn("./studio sprint demo", step.command)
+
     def test_decide_studio_lo_after_closed_sprint_retro(self):
         with patch("sprint_reuse_review.reuse_gate_message", return_value=None):
             step = decide_from_state(
@@ -454,7 +482,7 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "IMPLEMENT")
         self.assertIn("blueprint", step.command)
 
-    def test_decide_gate2_is_hitl_after_architecture(self):
+    def test_decide_gate2a_is_hitl_after_architecture(self):
         step = decide_from_state(
             "demo",
             {
@@ -474,10 +502,10 @@ class DecideTests(unittest.TestCase):
             prd_exists=True,
         )
         self.assertEqual(step.kind, "HITL")
-        self.assertIn("gate-2", step.reason)
+        self.assertIn("gate-2a", step.reason)
         self.assertFalse(step.loop)
 
-    def test_decide_gate2_produce_design_when_not_ready(self):
+    def test_decide_gate2a_produce_discovery_when_not_ready(self):
         step = decide_from_state(
             "demo",
             {
@@ -491,10 +519,10 @@ class DecideTests(unittest.TestCase):
             open_los=[],
             amendment_actions=[],
             prd_exists=True,
-            gate2_ready=False,
+            gate2a_ready=False,
         )
         self.assertEqual(step.kind, "IMPLEMENT")
-        self.assertIn("design", step.command)
+        self.assertIn("--discovery", step.command)
 
     def test_decide_design_track_write_before_hitl(self):
         step = decide_from_state(

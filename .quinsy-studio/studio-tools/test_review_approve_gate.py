@@ -108,6 +108,57 @@ class ReviewApproveGateTests(unittest.TestCase):
 
         self.assertEqual(status["sprint_hitl"]["retro_status"], RETRO_PENDING)
 
+    def test_can_plan_next_sprint_off_cadence_after_retro(self) -> None:
+        from sprint_hitl import RETRO_DONE, can_plan_next_sprint
+
+        status = {
+            "current_sprint": "SPRINT-77",
+            "sprint_hitl": {
+                "review_status": None,
+                "retro_status": RETRO_DONE,
+            },
+        }
+        summary = {
+            "total": 1,
+            "done": 1,
+            "all_done": True,
+            "tickets": [
+                {
+                    "id": "DEMO-0001",
+                    "status": "done",
+                    "title": "Layout variants",
+                    "ticket_type": "ui-composition",
+                }
+            ],
+        }
+        with (
+            patch("sprint_hitl.sprint_ticket_summary", return_value=summary),
+            patch("sprint_hitl._backend_only_sprint", return_value=False),
+        ):
+            ok, reason = can_plan_next_sprint("demo", status)
+        self.assertTrue(ok, reason)
+
+    def test_can_plan_next_sprint_blocks_when_cadence_pending(self) -> None:
+        from sprint_hitl import REVIEW_PENDING, RETRO_DONE, can_plan_next_sprint
+
+        status = {
+            "current_sprint": "SPRINT-77",
+            "sprint_hitl": {
+                "review_status": REVIEW_PENDING,
+                "retro_status": RETRO_DONE,
+            },
+        }
+        summary = {
+            "total": 1,
+            "done": 1,
+            "all_done": True,
+            "tickets": [{"id": "DEMO-0001", "status": "done", "title": "A"}],
+        }
+        with patch("sprint_hitl.sprint_ticket_summary", return_value=summary):
+            ok, reason = can_plan_next_sprint("demo", status)
+        self.assertFalse(ok)
+        self.assertIn("review pending", reason.lower())
+
 
 if __name__ == "__main__":
     unittest.main()

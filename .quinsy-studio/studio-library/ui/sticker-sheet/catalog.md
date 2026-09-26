@@ -1,90 +1,95 @@
 # Studio Library — Sticker Sheet Catalog
 
-Updated: 2026-09-12
+Updated: 2026-09-25
+Gate 2 validated project: `justdone`
 **Components listed are studio-owned generics.**
 
-## Atoms (shadcn kit + icon)
-
-- `aspect-ratio`
-- `avatar`
-- `badge`
-- `button`
-- `checkbox`
-- `icon`
-- `input`
-- `kbd`
-- `label`
-- `native-select`
-- `progress`
-- `separator`
-- `skeleton`
-- `slider`
-- `spinner`
-- `switch`
-- `textarea`
-- `toggle`
-
-## Molecules (shadcn kit)
+## Components
 
 - `accordion`
 - `alert`
 - `alert-dialog`
+- `aspect-ratio`
+- `atoms`
+- `atoms`
+- `atoms`
+- `atoms`
+- `atoms`
 - `attachment`
+- `auth-login`
+- `avatar`
+- `avatar-stack`
+- `badge`
 - `breadcrumb`
 - `bubble`
+- `button`
 - `button-group`
+- `calendar`
 - `card`
+- `carousel`
+- `chart`
+- `checkbox`
+- `checklist-item`
 - `collapsible`
 - `combobox`
+- `command`
+- `context-menu`
 - `dialog`
+- `dialog-shell`
 - `direction`
 - `drawer`
+- `dropdown`
 - `dropdown-menu`
+- `emotion-strip`
 - `empty`
 - `field`
 - `hover-card`
+- `icon`
+- `inline-form`
+- `input`
 - `input-group`
 - `input-otp`
 - `item`
-- `marker`
-- `message`
-- `pagination`
-- `popover`
-- `radio-group`
-- `select`
-- `sheet`
-- `sonner`
-- `tabs`
-- `toggle-group`
-- `tooltip`
-
-## Molecules (Headless compositions / studio patterns)
-
-- `auth-login`
-- `avatar-stack`
-- `checklist-item`
-- `dialog-shell`
-- `dropdown`
-- `emotion-strip`
-- `inline-form`
 - `item-inspector`
-- `palette-strip`
-- `search-command`
-- `segmented-toggle`
-- `soft-card`
-- `studio-rail`
-
-## Organisms
-
-- `calendar`
-- `carousel`
-- `chart`
-- `command`
-- `context-menu`
+- `item-inspector`
+- `kbd`
+- `label`
+- `marker`
 - `menubar`
+- `message`
+- `molecules`
+- `molecules`
+- `molecules`
+- `molecules`
+- `molecules`
+- `molecules`
+- `native-select`
 - `navigation-menu`
 - `pageshell`
+- `pagination`
+- `palette-strip`
+- `popover`
+- `progress`
+- `radio-group`
 - `resizable`
 - `scroll-area`
+- `search-command`
+- `segmented-toggle`
+- `select`
+- `separator`
+- `sheet`
 - `sidebar`
+- `skeleton`
+- `slider`
+- `soft-card`
+- `sonner`
+- `spinner`
+- `studio-rail`
+- `switch`
 - `table`
+- `tabs`
+- `textarea`
+- `toast`
+- `toggle`
+- `toggle-group`
+- `tooltip`

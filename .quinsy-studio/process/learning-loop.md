@@ -227,7 +227,7 @@ Reusable **UI and code** flow from projects into `.quinsy-studio/studio-library/
 | When | Command |
 |------|---------|
 | Before coding | `./studio library pull <project> tokens button …` (not stubs). Kit peers in the app first. |
-| Gate 2 (design) | `./studio approve --gate 2` → `promote-library` |
+| Gate 2b (project kit) | `./studio approve --gate 2b` — look stays in the project; no `promote-library` |
 | After ticket (generic code) | `./studio library promote <project> <path> --ticket <id>` |
 
 Registry: [../studio-library/library_registry.md](../studio-library/library_registry.md)

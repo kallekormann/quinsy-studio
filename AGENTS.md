@@ -29,7 +29,7 @@ This is **studio-core** (`./studio guard`), not a project-local convention.
 
 `./studio resume <project>` still prints a checklist. Prefer **execute**: one machine-readable step (`IMPLEMENT` / `PRODUCTION` / `GATE` / `VERIFY` / `MOVE_DONE` / `INFORM` / `STUDIO_LO` / `HITL`). Read the compact CARD (including **skills + playbooks**), and the full ticket `.md` only when the action is `IMPLEMENT` or `PRODUCTION`. Never dump the backlog into context.
 
-On `HITL`: stop and wait — **gate 0**, **gate 1 architecture**, **gate 2 design system** (sequential), **`approve-design` / `approve-arch`** (after packets exist), **`./studio env … --approve`**, **cadence review** (every N implementation sprints), **tech-veto**, abort, or 3× QA fail. `ACTION: PRODUCTION` writes packets in the same execute loop (not a skipped sidecar). Do **not** wait for a ticket ACK on feature work — receipt skill QA is the done bar. On `MOVE_DONE`, commit the **product** repo (`git -C projects/<p>`). Before cadence review, `./studio ship <p> --to dev`. **Never** auto-push `main` / production — HITL `./studio ship <p> --to main --approve`. Do not implement cadence-review **design** feedback. Reuse and sprint scope are **inform**.
+On `HITL`: stop and wait — **gate 0**, **gate 1 architecture**, **gate 2a direction**, **gate 2b project kit** (sequential; `--gate 2` is refused), **`approve-design` / `approve-arch`** (after packets exist), **`./studio env … --approve`**, **cadence review** (every N implementation sprints), **tech-veto**, abort, or 3× QA fail. `ACTION: PRODUCTION` writes packets in the same execute loop (not a skipped sidecar). Do **not** wait for a ticket ACK on feature work — receipt skill QA is the done bar. On `MOVE_DONE`, commit the **product** repo (`git -C projects/<p>`). Before cadence review, `./studio ship <p> --to dev`. **Never** auto-push `main` / production — HITL `./studio ship <p> --to main --approve`. Do not implement cadence-review **design** feedback. Reuse and sprint scope are **inform**.
 
 **Sibling projects:** `./studio focus <p>` hides other `projects/*` from the agent. Never Read, copy, merge, or `git add` a sibling tree into the active project git. `CROSS_PROJECT` from guard means switch focus — do not pull the other product in.
 
@@ -69,7 +69,7 @@ On `./studio move <project> <ID> implement` you get a library hint.
 
 On `./studio move … done` → warns if registry paths changed without promotion; **requires `./studio gate <project> --level 5` green** and a filled **execution receipt** (`./studio receipt`) with Plan, AC coverage, default-flow (LO-0051), and Skill QA / Design skill / Architecture skill. Level 2 lint-only is not enough.
 
-**Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2. Pull library → adapt brand locally. **New components** go in studio-library first ([component-creation-playbook.md](.quinsy-studio/knowledge-base/component-creation-playbook.md)); Headless UI primitives live under `ui/primitives/headless/`.
+**Studio library is studio-owned:** project tokens/UI are never merged into `.quinsy-studio/studio-library/` on gate 2b. Pull Headless primitives → adapt brand locally. **New behavior primitives** go in studio-library first ([component-creation-playbook.md](.quinsy-studio/knowledge-base/component-creation-playbook.md)); Headless UI primitives live under `ui/primitives/headless/`.
 
 **Sprint HITL:** Never ticket cadence-review **design** ideas directly. Use `./studio feedback` → `clarify` → `ticket --from-feedback` (those tickets enter **production** until packets are signed). **After sprint start:** no per-ticket ACK. **Human stops:** `approve-design` / `approve-arch`, then **cadence review** every N implementation sprints. Backend-only and off-cadence batches inform and continue to retro. Hygiene: `./studio sprint --kind hygiene`. **During review:** capture feedback only. **Sprint planning:** `./studio sprint` → `--approve-scope` (blocked if the ready pipeline is starved) → groom → execute.
 
@@ -89,12 +89,15 @@ On `./studio move … done` → warns if registry paths changed without promotio
 |------|----------|----------|
 | 0 | PRD + definitions (HITL) | No |
 | 1 | Architecture after PRD (HITL) | No — design track starts after this |
-| 2 | Design direction + system + mocks/prototype (HITL) | After approve: tickets / sprints |
-| Milestones | Version plan (`docs/phases/`) | Inform; don’t hard-block backend **after** gates 0–2 |
+| 2a | Design direction: human interview + signed DESIGN.md (HITL). Blocks prototype. | No |
+| 2b | Project kit: CSS tokens, coded A/M/O, sticker all-states (HITL). Look stays in the project. | After approve: tickets / sprints |
+| Milestones | Version plan (`docs/phases/`) | Inform; don’t hard-block backend **after** gates 0–2b |
 | Milestone review | Version complete (M0, M1, …) | Yes — before next milestone backlog |
 
 ```bash
-./studio approve <p> --gate 2    # validates design + refreshes library catalog (no project → library merge)
+./studio approve <p> --gate 2a   # discovery + DESIGN.md (no indigo stub, uniqueness required)
+./studio approve <p> --gate 2b   # project kit; does not promote look into studio-library
+# ./studio approve <p> --gate 2  # refused — use 2a then 2b
 ./studio approve-design <p> <TICKET>   # HITL after spec + all-state mocks exist
 ./studio ia-audit <p> <TICKET>         # IA nav counts before approve-design (ia-navigation)
 ./studio approve-arch <p> <TICKET>     # HITL after docs/architecture/<TICKET>.md exists
@@ -113,7 +116,7 @@ After `--milestones`, agent writes tickets for the active milestone only, then s
 ./studio focus <project> && ./studio resume <project>   # drift recovery
 ```
 
-## Sprint HITL (after gate 2)
+## Sprint HITL (after gate 2b)
 
 **Mid-sprint:** agent implements autonomously — human does not approve ticket-by-ticket. Do not wait for “looks good” after `MOVE_DONE`.
 
@@ -131,7 +134,7 @@ After `--milestones`, agent writes tickets for the active milestone only, then s
 
 See [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md#sprint-cadence-hitl-after-gate-2).
 
-## Amendment intake (strategic direction, post gate 2)
+## Amendment intake (strategic direction, post gate 2b)
 
 **Sprint feedback** = small, concrete ideas. **Amendments** = conceptual direction → milestone + ticket breakdown.
 

@@ -498,7 +498,8 @@ def promote_design_to_library(project: str, force: bool = False, dry_run: bool =
     Gate 2 library sync — validate project design exists; refresh studio sticker catalog.
 
     Studio library tokens and UI are **studio-owned generics** (Tailwind-default).
-    Project gate-2 design (brand tokens, domain components) stays in projects/<name>/ only.
+    Project gate-2b design (brand tokens, domain components) stays in projects/<name>/ only.
+    Approving 2b does **not** merge product look into studio-library.
     """
     project_dir = PROJECTS_DIR / project
     result: Dict[str, Any] = {

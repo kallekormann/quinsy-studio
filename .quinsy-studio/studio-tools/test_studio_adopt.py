@@ -213,6 +213,11 @@ class AdoptGate2Tests(unittest.TestCase):
                     "| Home | `/` via `src/app.py` | shipped |\n",
                     encoding="utf-8",
                 )
+                (dest / "ui" / "tokens").mkdir(parents=True, exist_ok=True)
+                (dest / "ui" / "tokens" / "design-tokens.css").write_text(
+                    ":root {\n  --surface: #faf8f5;\n  --ink: #1a1a1a;\n  --accent: #b45309;\n}\n",
+                    encoding="utf-8",
+                )
                 ok, issues = validate_gate_2("demo")
                 self.assertTrue(ok, issues)
                 self.assertFalse(any("prototype" in i.lower() for i in issues))

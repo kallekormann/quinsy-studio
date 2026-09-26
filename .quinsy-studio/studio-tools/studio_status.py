@@ -18,6 +18,14 @@ GATE_HISTORY_KEEP = 40
 SNAPSHOTS_REL = Path("docs") / "ticket-file-snapshots.json"
 
 
+def is_valid_project_slug(project: str) -> bool:
+    """Refuse CLI flags and hidden names so `./studio gate --help` cannot mkdir projects/--help."""
+    name = (project or "").strip()
+    if not name or name.startswith("-") or name.startswith("."):
+        return False
+    return True
+
+
 def status_path(project: str) -> Path:
     return PROJECTS_DIR / project / "status.json"
 
@@ -113,6 +121,8 @@ def write_status_file(path: Path, status: Dict[str, Any]) -> None:
 
 
 def save_status(project: str, status: Dict[str, Any]) -> None:
+    if not is_valid_project_slug(project):
+        raise ValueError(f"refusing to write status for non-project slug: {project!r}")
     status["last_update"] = datetime.now().strftime("%Y-%m-%d")
     peel_heavy_status_fields(project, status)
     write_status_file(status_path(project), status)

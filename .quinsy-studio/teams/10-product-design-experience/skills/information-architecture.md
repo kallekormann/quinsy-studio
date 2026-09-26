@@ -73,4 +73,5 @@ When a canvas zone owns a kit/inspector rail, the rail follows **current** zone 
 
 ## Deltas
 
+- **PB-20260926-001** helpful=0 harmful=0 :: Keep layout and composition work on the live layout-picker cards. Do not invent a second block-list editor, a second intake inbox, or a one-off product-detail workbench.
 - **PB-20260916-004** helpful=0 harmful=0 :: When a chrome ticket removes or rewires a control, update the gold-path source test in the same change.

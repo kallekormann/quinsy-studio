@@ -198,12 +198,18 @@ def set_ticket_sprint(content: str, sprint_name: str) -> str:
     return content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
 
 
+def sprint_tag_is_assigned(value: object) -> bool:
+    """True when frontmatter `sprint:` names a real sprint (not empty / none)."""
+    text = str(value or "").split("#", 1)[0].strip().lower()
+    return bool(text) and text not in ("none", "null", "-", "n/a")
+
+
 def list_unscheduled_backlog(project: str) -> List[Dict]:
     """Product backlog tickets without a sprint tag."""
     tickets: List[Dict] = []
     for path in queue_ticket_paths(project):
         meta = read_ticket_meta(path)
-        if meta.get("sprint"):
+        if sprint_tag_is_assigned(meta.get("sprint")):
             continue
         status = (meta.get("status") or "backlog").lower()
         if status in ("cancelled", "done", "superseded"):

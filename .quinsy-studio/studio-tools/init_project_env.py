@@ -192,16 +192,17 @@ You run the project `{project}` autonomously through the Quinsy Studio operating
 ## Your mission (pre-implementation)
 1. **Gate 0** — Fill `docs/definitions/` from PRD; user approves: `./studio approve {project} --gate 0`
 2. **Gate 1** — Fill `docs/architecture/` + ADRs; user approves: `./studio approve {project} --gate 1`
-3. **Gate 2** — Build `design/prototype/` (Next.js), tokens, atomic UI, sticker sheet; user picks mock scope (`journey` | `core-views`); user approves: `./studio approve {project} --gate 2`
-4. **Milestones** — Draft `docs/phases/` roadmap; user approves: `./studio approve {project} --milestones`; agent writes tickets for active milestone only
-5. **Then** — Sprint + implementation within current milestone (see `.quinsy-studio/process/milestone-planning.md`)
+3. **Gate 2a** — Unanswered questions in `docs/design/discovery.md`; fill `design/DESIGN.md` from human answers; user approves: `./studio approve {project} --gate 2a` (do **not** scaffold prototype)
+4. **Gate 2b** — Project CSS tokens, coded atoms/molecules/organisms, sticker all-states; user picks mock scope (`journey` | `core-views`); user approves: `./studio approve {project} --gate 2b` (look stays in the project)
+5. **Milestones** — Draft `docs/phases/` roadmap; user approves: `./studio approve {project} --milestones`; agent writes tickets for active milestone only
+6. **Then** — Sprint + implementation within current milestone (see `.quinsy-studio/process/milestone-planning.md`)
 
 ## Iteration
-- User feedback: `./studio revise {project} --gate <0|1|2> --feedback "..."`
+- User feedback: `./studio revise {project} --gate <0|1|2a|2b> --feedback "..."`
 - Log: `docs/phases/revisions.md`
 
 ## Non-negotiable
-- No tickets or production implementation before gate 2.
+- No tickets or production implementation before gate 2b.
 - Mocks live in `design/prototype/` using the target stack (e.g. Next.js).
 - UI kit peers are mandatory in the React app: `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (+ `@headlessui/react`). See `docs/setup/ui-kit.md`.
 - Schema migrations: if you can reach the database (local Compose or documented VPS), **you run them**. Inform the human; do not ask them to migrate as sprint work.
@@ -216,10 +217,10 @@ You run the project `{project}` autonomously through the Quinsy Studio operating
 ## Tools
 - `./studio focus {project}` / `./studio resume {project}` / `./studio guard {project} "..."`
 - `./studio verify-worlds` — studio vs project git must be separate
-- `./studio blueprint {project}` / `./studio design {project} --scope journey|core-views`
-- `./studio approve {project} --gate 0|1|2` — library promotion after gate 2; milestone roadmap after gate 2 (`--milestones`)
-- `./studio promote-library {project}` — re-sync design system to studio-library
-- `./studio revise {project} --gate <n> --feedback "..."` — iteration loop
+- `./studio blueprint {project}` / `./studio design {project} --discovery` / `./studio design {project} --scope journey|core-views`
+- `./studio approve {project} --gate 0|1|2a|2b` — project look stays in the project; milestone roadmap after 2b (`--milestones`)
+- `./studio promote-library {project}` — Headless/generic kit only (not this product's visual system)
+- `./studio revise {project} --gate <0|1|2a|2b> --feedback "..."` — iteration loop
 """
     
     briefing_file = project_dir / "agent-briefing.md"
@@ -242,11 +243,16 @@ Autonomous flow from intake to gate 7. The agent works through this document.
 2. Fill `docs/architecture/`, create ADRs
 3. User approves: `./studio approve {project} --gate 1`
 
-## Phase 3 — Design (HUMAN GATE 2)
+## Phase 3 — Design direction (HUMAN GATE 2a)
+1. `./studio design {project} --discovery`
+2. Human answers `docs/design/discovery.md`; agent fills `design/DESIGN.md` (uniqueness, token names, no indigo)
+3. User approves: `./studio approve {project} --gate 2a`
+
+## Phase 3b — Project kit (HUMAN GATE 2b)
 1. User chooses: `./studio design {project} --scope journey` OR `--scope core-views`
-2. Build Next.js prototype in `design/prototype/`, tokens, atomic components, sticker sheet
+2. Build Next.js prototype in `design/prototype/` on **project** CSS tokens, coded A/M/O, sticker all-states
    - First `npm install` in that app **must** include UI kit peers (`docs/setup/ui-kit.md`)
-3. User approves: `./studio approve {project} --gate 2` → library promotion
+3. User approves: `./studio approve {project} --gate 2b` — tickets; do **not** promote product look into studio-library
 
 ## Execution planning — Milestones (HITL)
 1. Agent drafts `docs/phases/README.md` + M0/M1 outlines from PRD + blueprint

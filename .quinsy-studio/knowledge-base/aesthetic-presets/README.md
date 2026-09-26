@@ -1,7 +1,7 @@
 # Aesthetic presets (Team 10 repertoire)
 
 Studio-owned visual direction skills for **UX-005** (Visual UI Design) and **UX-006** (Brand Guardian).  
-Load one preset per surface in the design spec — combine with project tokens, never override brand without human approval.
+Load one preset per surface **only if it helps** — never instead of product DNA. Combine with project tokens; never override brand without human approval.
 
 Path: `.quinsy-studio/knowledge-base/aesthetic-presets/<slug>/SKILL.md`
 
@@ -9,9 +9,9 @@ Path: `.quinsy-studio/knowledge-base/aesthetic-presets/<slug>/SKILL.md`
 
 | Situation | Preset category |
 |-----------|-----------------|
-| Gate 2 / sticker sheet direction | Pick 1–2 candidates; human approves at gate 2 |
-| UI design spec (`ticket_type: ui-*`) | **Required** section: Aesthetic preset |
-| Marketing / landing (UX-007) | Preset + narrative storyboard |
+| Gate 2a / 2b | Optional footnote after uniqueness is signed; human picks at 2a if useful |
+| UI design spec (`ticket_type: ui-*`) | **Optional** section: Aesthetic preset |
+| Marketing / landing (UX-007) | Preset + narrative storyboard (still optional vs project DNA) |
 | Project already has brand tokens | Preset adapts *layout, motion, elevation* — tokens stay in `ui/tokens/` |
 
 ## Catalog

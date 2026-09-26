@@ -75,19 +75,18 @@ No greenfield stack swap unless the human asked for it.
 
 **HITL:** `./studio approve <p> --gate 1`
 
-### C — Design truth (gate 2)
+### C — Design truth (gates 2a then 2b)
 
 Do **not** build a parallel `design/prototype` as if the product did not exist.
 
-- Surface map + placement of **current** UI (`docs/ia/surface-map.md`, `design/DESIGN.md`)
-- Token/component reality vs studio-library (gaps → LO-*, no auto-copy of project UI)
-- Optional mocks **only** for net-new surfaces in the gap matrix
+**2a:** keep vs evolve — unanswered questions, then unique `DESIGN.md`.
+**2b:** token-map of **what exists** (`ui/tokens/design-tokens.css`). Gaps vs Headless library → LO-*; no auto-copy of project UI.
 
-**HITL:** `./studio approve <p> --gate 2` — “design of what exists + debt,” not “approve a new sticker sheet only.”
+**HITL:** `./studio approve <p> --gate 2a` then `--gate 2b` — “design of what exists + debt,” not “approve a new sticker sheet only.”
 
 ### D — Plan to go further
 
-Same as post–gate 2:
+Same as post–gate 2b:
 
 1. Gap matrix → `docs/phases/` (M0 = stabilize / make as-built honest, then net-new)
 2. Human `./studio approve <p> --milestones`

@@ -2,6 +2,8 @@
 
 Research that changes the spec — not a persona poster. Distilled from Indi Young *Mental Models*, paired with PM-001. Usability inspection still uses Nielsen (see [interaction-ux-playbook.md](interaction-ux-playbook.md)).
 
+Gate **2a** is a **human** interview (`docs/design/discovery.md`), not invented personas. Do not fill `A:` lines yourself. See [design-direction-playbook.md](design-direction-playbook.md).
+
 ## Always
 
 **Do**

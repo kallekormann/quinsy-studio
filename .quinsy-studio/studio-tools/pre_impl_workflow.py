@@ -2,8 +2,9 @@
 """
 Pre-implementation workflow: intake → blueprint → design → tickets.
 
-Human gates 0 (intake), 1 (architecture), 2 (design + mocks).
-Tickets are generated only after gate 2 approval.
+Human gates 0 (intake), 1 (architecture), 2a (direction), 2b (project kit).
+Tickets are generated only after gate 2b approval. Legacy human_gates.2 still
+counts as design-complete. Bare --gate 2 is refused.
 """
 
 from __future__ import annotations
@@ -12,7 +13,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from ui_kit_peers import merge_kit_peers, write_ui_kit_setup
 
@@ -131,75 +132,66 @@ def validate_gate_1(project: str) -> Tuple[bool, List[str]]:
     return len(issues) == 0, issues
 
 
-def validate_gate_2(project: str) -> Tuple[bool, List[str]]:
-    """Design + Next.js prototype mocks ready for human review."""
+def validate_gate_2a(project: str) -> Tuple[bool, List[str]]:
+    """Signed design direction (discovery Q&A + DESIGN.md). Blocks prototype."""
     from studio_adopt import is_adopt_project
+    from studio_design_discovery import gate_2a_issues
 
-    root = project_dir(project)
-    issues: List[str] = []
-    adopt = is_adopt_project(project)
-
-    design = root / "design" / "DESIGN.md"
-    scope = root / "design" / "DESIGN-SCOPE.md"
-    tokens = root / "ui" / "tokens" / "design-tokens.json"
-    prototype_pkg = root / "design" / "prototype" / "package.json"
-    sticker = root / "design" / "prototype" / "app" / "sticker-sheet" / "page.tsx"
-    mocks_dir = root / "design" / "prototype" / "app" / "mocks"
-
-    if not _min_content(design, 100):
-        issues.append("Fill design/DESIGN.md")
-    if not scope.exists() or not _min_content(scope, 40):
-        issues.append(
-            "Fill design/DESIGN-SCOPE.md (as-built existing product)"
-            if adopt
-            else "Fill design/DESIGN-SCOPE.md (journey vs core-views decision)"
-        )
-    elif "scope:" not in _read_text(scope).lower() and "scope" not in _read_text(scope).lower():
-        issues.append("design/DESIGN-SCOPE.md must document mock scope (journey | core-views | as-built)")
-
-    if adopt:
-        surfaces = root / "docs" / "as-built" / "01-surfaces.md"
-        if not _min_content(surfaces, 80):
-            issues.append("Fill docs/as-built/01-surfaces.md (existing routes/screens)")
-        ia = root / "docs" / "ia" / "surface-map.md"
-        if not _min_content(ia, 60):
-            issues.append("Fill docs/ia/surface-map.md from existing UI (no greenfield prototype)")
-        return len(issues) == 0, issues
-
-    if not tokens.exists():
-        issues.append("Missing ui/tokens/design-tokens.json")
-    if not prototype_pkg.exists():
-        issues.append("Missing design/prototype/ Next.js app — run ./studio design <project>")
-    if not sticker.exists():
-        issues.append("Missing design/prototype/app/sticker-sheet/page.tsx")
-    mock_pages = list(mocks_dir.glob("**/page.tsx")) if mocks_dir.exists() else []
-    if not mock_pages:
-        issues.append("No mock pages in design/prototype/app/mocks/ — add at least one page.tsx")
-
-    atoms = root / "ui" / "components" / "atoms"
-    atom_files = [f for f in atoms.glob("*") if f.name != "README.md"] if atoms.exists() else []
-    if not atom_files:
-        issues.append("Add at least one atom component in ui/components/atoms/")
-
+    issues = gate_2a_issues(project_dir(project), adopt=is_adopt_project(project))
     return len(issues) == 0, issues
+
+
+def validate_gate_2b(project: str) -> Tuple[bool, List[str]]:
+    """Project-owned kit: CSS tokens, coded A/M/O, sticker inventory, mocks."""
+    from studio_adopt import is_adopt_project
+    from studio_design_discovery import gate_2b_issues
+
+    issues = gate_2b_issues(project_dir(project), adopt=is_adopt_project(project))
+    return len(issues) == 0, issues
+
+
+def validate_gate_2(project: str) -> Tuple[bool, List[str]]:
+    """Legacy alias — kit check is gate 2b. CLI refuses bare --gate 2."""
+    return validate_gate_2b(project)
 
 
 GATE_VALIDATORS = {
     0: validate_gate_0,
     1: validate_gate_1,
-    2: validate_gate_2,
+    2: validate_gate_2b,
+    "0": validate_gate_0,
+    "1": validate_gate_1,
+    "2a": validate_gate_2a,
+    "2b": validate_gate_2b,
 }
 
 
-def previous_human_gate_block(status: Dict, gate: int) -> Optional[str]:
-    """Refuse gate N until N-1 is approved, unless this gate is already approved (re-approve)."""
+def _gate_id(gate: Union[int, str]) -> str:
+    return str(gate).strip().lower()
+
+
+def previous_human_gate_block(status: Dict, gate: Union[int, str]) -> Optional[str]:
+    """Refuse gate N until the previous human gate is approved (re-approve is allowed)."""
+    from studio_design_discovery import BARE_GATE_2_MSG
+
+    g = _gate_id(gate)
     hg = status.get("human_gates") or {}
-    if gate not in (1, 2):
+    if g == "2":
+        return BARE_GATE_2_MSG
+    if g == "0":
         return None
-    already = (hg.get(str(gate)) or {}).get("status") == "approved"
-    if already:
+    if (hg.get(g) or {}).get("status") == "approved":
         return None
-    prev = str(gate - 1)
+    if g == "1":
+        prev = "0"
+    elif g == "2a":
+        prev = "1"
+    elif g == "2b":
+        prev = "2a"
+        if (hg.get("2") or {}).get("status") == "approved":
+            return None
+    else:
+        return None
     if (hg.get(prev) or {}).get("status") != "approved":
         return (
             f"Gate {prev} is not approved. Run ./studio approve <project> --gate {prev} first."
@@ -207,8 +199,29 @@ def previous_human_gate_block(status: Dict, gate: int) -> Optional[str]:
     return None
 
 
-def validate_human_gate(project: str, gate: int) -> Tuple[bool, List[str]]:
-    validator = GATE_VALIDATORS.get(gate)
+def direction_approved(status: Dict) -> bool:
+    """Gate 2a signed, or legacy full gate 2."""
+    hg = status.get("human_gates") or {}
+    if (hg.get("2a") or {}).get("status") == "approved":
+        return True
+    return (hg.get("2") or {}).get("status") == "approved"
+
+
+def design_system_approved(status: Dict) -> bool:
+    """Gate 2b signed, or legacy human_gates.2."""
+    hg = status.get("human_gates") or {}
+    if (hg.get("2b") or {}).get("status") == "approved":
+        return True
+    return (hg.get("2") or {}).get("status") == "approved"
+
+
+def validate_human_gate(project: str, gate: Union[int, str]) -> Tuple[bool, List[str]]:
+    g = _gate_id(gate)
+    if g == "2":
+        from studio_design_discovery import BARE_GATE_2_MSG
+
+        return False, [BARE_GATE_2_MSG]
+    validator = GATE_VALIDATORS.get(g) or GATE_VALIDATORS.get(gate)  # type: ignore[arg-type]
     if not validator:
         return False, [f"Unknown human gate: {gate}"]
     return validator(project)
@@ -218,6 +231,8 @@ def ensure_pre_impl_dirs(root: Path) -> None:
     dirs = [
         "docs/architecture",
         "docs/architecture/diagrams",
+        "docs/design",
+        "docs/ia",
         "design/prototype/app/mocks",
         "design/prototype/app/sticker-sheet",
         "design/prototype/components",
@@ -230,6 +245,34 @@ def ensure_pre_impl_dirs(root: Path) -> None:
     ]
     for d in dirs:
         (root / d).mkdir(parents=True, exist_ok=True)
+
+
+def scaffold_discovery(project: str) -> List[Path]:
+    """2a packet only — questions + direction template. No prototype, no indigo."""
+    root = project_dir(project)
+    ensure_pre_impl_dirs(root)
+    created: List[Path] = []
+    date = datetime.now().strftime("%Y-%m-%d")
+
+    discovery = root / "docs" / "design" / "discovery.md"
+    if not discovery.exists():
+        tpl = TEMPLATES_DIR / "design_discovery_template.md"
+        body = tpl.read_text() if tpl.exists() else (
+            f"# Design discovery — {project}\n\nQ: What job is done?\nA: _unanswered_\n"
+        )
+        body = body.replace("{{PROJECT}}", project).replace("{{DATE}}", date)
+        discovery.write_text(body)
+        created.append(discovery)
+
+    design = root / "design" / "DESIGN.md"
+    if not design.exists():
+        tpl = TEMPLATES_DIR / "design_direction_template.md"
+        body = tpl.read_text() if tpl.exists() else f"# Design specification — {project}\n"
+        body = body.replace("{{PROJECT}}", project).replace("{{DATE}}", date)
+        design.write_text(body)
+        created.append(design)
+
+    return created
 
 
 def scaffold_blueprint(project: str, archetype: str) -> List[Path]:
@@ -268,7 +311,7 @@ def scaffold_blueprint(project: str, archetype: str) -> List[Path]:
 
 
 def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
-    """Scaffold design docs + Next.js prototype structure. scope: journey | core-views"""
+    """Scaffold project kit after gate 2a. Token names from DESIGN.md — never indigo defaults."""
     root = project_dir(project)
     ensure_pre_impl_dirs(root)
     write_ui_kit_setup(root)
@@ -286,32 +329,36 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
         scope_file.write_text(base)
         created.append(scope_file)
 
-    design = root / "design" / "DESIGN.md"
-    if not design.exists():
-        design.write_text(
-            f"# Design Specification — {project}\n\n"
-            f"> Status: draft (waiting for human gate 2)\n"
-            f"> Mock scope: {scope}\n\n"
-            "## Visual direction\n\n_Describe look & feel from PRD._\n\n"
-            "## Atomic design map\n\n"
-            "- Atoms → `ui/components/atoms/`\n"
-            "- Molecules → `ui/components/molecules/`\n"
-            "- Organisms → `ui/components/organisms/`\n"
-            "- Page types → `ui/page-types/`\n"
-            "- Prototype routes → `design/prototype/app/mocks/`\n\n"
-            "## Sticker sheet\n\n"
-            "Combined tokens + components: `design/prototype/app/sticker-sheet/`\n"
+    created.extend(scaffold_discovery(project))
+
+    css = root / "ui" / "tokens" / "design-tokens.css"
+    if not css.exists():
+        css.write_text(
+            "/* Fill values from signed design/DESIGN.md. Do not paste catalog indigo. */\n"
+            ":root {\n"
+            "  --surface: ;\n"
+            "  --ink: ;\n"
+            "  --accent: ;\n"
+            "  --danger: ;\n"
+            "  --font-sans: ;\n"
+            "  --space-unit: 8px;\n"
+            "}\n"
         )
-        created.append(design)
+        created.append(css)
 
     tokens = root / "ui" / "tokens" / "design-tokens.json"
     if not tokens.exists():
         tokens.write_text(
             json.dumps(
                 {
-                    "color": {"primary": {"500": "#6366f1"}},
-                    "typography": {"fontFamily": {"sans": "system-ui"}},
-                    "spacing": {"unit": 8},
+                    "color": {
+                        "surface": {"token": "--surface"},
+                        "ink": {"token": "--ink"},
+                        "accent": {"token": "--accent"},
+                        "danger": {"token": "--danger"},
+                    },
+                    "typography": {"fontFamily": {"sans": "var(--font-sans)"}},
+                    "spacing": {"unit": "var(--space-unit)"},
                     "shadow": {},
                     "radius": {},
                 },
@@ -325,7 +372,7 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
     if not proto_readme.exists():
         proto_readme.write_text(
             f"# Design prototype — {project}\n\n"
-            "Next.js app for **pre-implementation** mocks (gate 2 approval).\n\n"
+            "Next.js app for **gate 2b** mocks (project tokens — not studio-library look).\n\n"
             "```bash\n"
             "cd design/prototype && npm install && npm run dev\n"
             "```\n\n"
@@ -398,15 +445,24 @@ def _scaffold_next_prototype(root: Path, project: str, scope: str) -> List[Path]
         "next.config.js": "/** @type {import('next').NextConfig} */\nmodule.exports = { reactStrictMode: true };\n",
         "postcss.config.js": "module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } };\n",
         "tailwind.config.ts": (
-            "import type { Config } from 'tailwindcss';\n"
-            "import tokens from '../../ui/tokens/design-tokens.json';\n\n"
+            "import type { Config } from 'tailwindcss';\n\n"
             "const config: Config = {\n"
             "  content: ['./app/**/*.{ts,tsx}', '../../ui/components/**/*.{ts,tsx}'],\n"
-            "  theme: { extend: { colors: tokens.color } },\n"
+            "  theme: {\n"
+            "    extend: {\n"
+            "      colors: {\n"
+            "        surface: 'var(--surface)',\n"
+            "        ink: 'var(--ink)',\n"
+            "        accent: 'var(--accent)',\n"
+            "        danger: 'var(--danger)',\n"
+            "      },\n"
+            "    },\n"
+            "  },\n"
             "  plugins: [],\n"
             "};\nexport default config;\n"
         ),
         "app/globals.css": (
+            "@import '../../ui/tokens/design-tokens.css';\n"
             "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n"
         ),
         "app/layout.tsx": (
@@ -425,33 +481,30 @@ def _scaffold_next_prototype(root: Path, project: str, scope: str) -> List[Path]
             "  return (\n"
             "    <main className=\"mx-auto max-w-2xl p-8 space-y-4\">\n"
             "      <h1 className=\"text-2xl font-bold\">Design prototype</h1>\n"
-            "      <p className=\"text-neutral-600\">Pre-implementation mocks for gate 2 approval.</p>\n"
+            "      <p className=\"text-neutral-600\">Gate 2b mocks — import project tokens, not a second palette.</p>\n"
             "      <ul className=\"list-disc pl-6 space-y-2\">\n"
-            "        <li><Link className=\"text-indigo-600 underline\" href=\"/sticker-sheet\">Sticker sheet</Link></li>\n"
-            "        <li><Link className=\"text-indigo-600 underline\" href=\"/mocks/home\">Mock: home</Link></li>\n"
+            "        <li><Link className=\"underline\" href=\"/sticker-sheet\">Sticker sheet</Link></li>\n"
+            "        <li><Link className=\"underline\" href=\"/mocks/home\">Mock: home</Link></li>\n"
             "      </ul>\n"
             "    </main>\n"
             "  );\n"
             "}\n"
         ),
         "app/sticker-sheet/page.tsx": (
-            "/** Combined token sheet + component inventory for gate 2 approval */\n"
+            "/** Gate 2b sticker: render inventory children with states. Title-only fails. */\n"
             "export default function StickerSheetPage() {\n"
             "  return (\n"
             "    <main className=\"p-8 space-y-12\">\n"
+            "      <h1 className=\"text-2xl font-bold mb-4\">Sticker sheet</h1>\n"
+            "      <p className=\"text-sm text-neutral-600\">Fill from ui/components — atoms, molecules, organisms, all states.</p>\n"
             "      <section>\n"
-            "        <h1 className=\"text-2xl font-bold mb-4\">Sticker sheet</h1>\n"
-            "        <p className=\"text-sm text-neutral-600\">Tokens + components (atoms → organisms). Replace placeholders.</p>\n"
+            "        <h2 className=\"text-lg font-semibold mb-2\">Atoms</h2>\n"
             "      </section>\n"
             "      <section>\n"
-            "        <h2 className=\"text-lg font-semibold mb-2\">Colors</h2>\n"
-            "        <div className=\"flex gap-2\">\n"
-            "          <div className=\"h-12 w-12 rounded bg-indigo-500\" title=\"primary-500\" />\n"
-            "        </div>\n"
+            "        <h2 className=\"text-lg font-semibold mb-2\">Molecules</h2>\n"
             "      </section>\n"
             "      <section>\n"
-            "        <h2 className=\"text-lg font-semibold mb-2\">Buttons</h2>\n"
-            "        <button type=\"button\" className=\"rounded-lg bg-indigo-600 px-4 py-2 text-white\">Primary</button>\n"
+            "        <h2 className=\"text-lg font-semibold mb-2\">Organisms</h2>\n"
             "      </section>\n"
             "    </main>\n"
             "  );\n"
@@ -487,7 +540,7 @@ def _scaffold_next_prototype(root: Path, project: str, scope: str) -> List[Path]
     return created
 
 
-def record_revision(project: str, gate: int, feedback: str) -> Path:
+def record_revision(project: str, gate: Union[int, str], feedback: str) -> Path:
     root = project_dir(project)
     rev_dir = root / "docs" / "phases"
     rev_dir.mkdir(parents=True, exist_ok=True)

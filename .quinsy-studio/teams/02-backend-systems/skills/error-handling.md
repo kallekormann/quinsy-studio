@@ -184,3 +184,7 @@ Examples:
 
 - `.quinsy-studio/knowledge-base/backend_playbook.md` — backend rules
 - `.quinsy-studio/process/gates.md` — error handling in the QA gate
+
+## Deltas
+
+- **PB-20260925-001** helpful=0 harmful=0 :: Open HQ LOs are not a product execute failure. INFORM the count and keep IMPLEMENT. Infuse in a HQ session. STUDIO_LO only when the product loop is idle. Do not steal an in-flight product chat.

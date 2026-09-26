@@ -1,3 +1,88 @@
+## 2026-09-26 — Human design is 2a then 2b; project kit is the handoff (LO-0340–LO-0343)
+
+### Changed
+
+- Split human design into **2a** (discovery interview + signed `DESIGN.md`; blocks prototype) and **2b** (project CSS tokens, coded A/M/O, sticker inventory). `./studio approve --gate 2` is refused. Approving 2b does **not** promote product look into studio-library. Aesthetic presets are optional footnotes. Playbook: `knowledge-base/design-direction-playbook.md`.
+
+## 2026-09-26 — Keep the feature inventory when replacing stacked mocks (LO-0350)
+
+### Changed
+
+- When collapsing stacked mocks into one composition, keep the feature inventory section. A single narrative frame is not permission to delete the inventory. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260926-005**.
+
+## 2026-09-26 — Do not `--approve-scope` blocked tickets (LO-0349)
+
+### Changed
+
+- Do not `--approve-scope` tickets that are blocked (unmet dependencies or not ready). Drop them from `proposed` before approve. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260926-004**.
+
+## 2026-09-26 — Keep public host routing on the original Host (LO-0348)
+
+### Changed
+
+- Keep public host routing on the original Host header without a path-prefix rewrite. Do not restyle a live public site from a docs-only ticket. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260926-003**.
+
+## 2026-09-26 — Keep operator nav and inbox on shipped chrome (LO-0347)
+
+### Changed
+
+- Keep operator nav and inbox work on the shipped chrome. Do not invent a second shell or an in-thread preview frame. Playbook: `knowledge-base/learnings/design/inbox.md` **PB-20260926-002**; skills UX-003 / FE-002.
+
+## 2026-09-26 — Keep composition on the live layout-picker cards (LO-0346)
+
+### Changed
+
+- Keep layout and composition work on the live layout-picker cards. Do not invent a second block-list editor, a second intake inbox, or a one-off product-detail workbench. Playbook: `knowledge-base/learnings/design/inbox.md` **PB-20260926-001**; skills UX-003 / FE-002.
+
+## 2026-09-26 — Do not groom a missing control onto a surface (LO-0345)
+
+### Changed
+
+- Do not groom a control-specific ticket onto a surface that does not already show that control. File a design-track ticket and get the packet signed before the control is in grooming. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260926-002**.
+
+## 2026-09-26 — `sprint: none` is unscheduled (LO-0344)
+
+### Fixed
+
+- Planning treats `sprint: none` (and empty) as no sprint tag, not as already assigned. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260926-001**.
+
+
+
+### Changed
+
+- Ship the shared surface first. Inventory work is its own later ticket. A shell ticket depends only on the shell it renders. Playbook: `knowledge-base/learnings/process/workflow.md` **LO-0343**.
+
+## 2026-09-25 — Off-cadence UI sprints can plan next after retro
+
+### Fixed
+
+- Skill-QA batches (cadence review not due) no longer require `./studio review --approve` before the next sprint. After retro `--complete`, execute proposes `./studio sprint`. Cadence `REVIEW_PENDING` still HITLs.
+
+## 2026-09-25 — Layout sprints must not restyle public magazine chrome or auto-publish (LO-0342)
+
+### Changed
+
+- Layout and composition sprints must not restyle a tenant's public magazine, generate articles, merge properties, or auto-publish. Those actions need their own operator tickets. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260925-002**.
+
+## 2026-09-25 — HQ skill-catalog work stays off the product sprint inbox (LO-0341)
+
+### Changed
+
+- Route HQ skill-catalog jobs to the studio LO/train queue. Product execute INFORM the open HQ LO count and must not enqueue those notes on the product sprint inbox. Infuse in a HQ session; `STUDIO_LO` only when the product loop is idle. Playbook: `knowledge-base/learnings/backend/queues.md` **PB-20260925-001**; `knowledge-base/backend_playbook.md`; skills BE-001 / BE-004.
+
+## 2026-09-25 — Command palette intercept is a live-proof gap (LO-0340)
+
+### Changed
+
+- Do not block MOVE_DONE when an IDE command palette steals the browser automation tab and unit contracts already cover the AC. Record the intercept; cite HTTP/API tests. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260925-001**.
+
+## 2026-09-24 — `--help` is a flag, not a project
+
+### Fixed
+
+- `./studio gate --help` and `./studio retro --help` print usage. They no longer treat `--help` as a project slug or write `projects/--help/`.
+- `save_status` refuses slugs that start with `-` or `.`.
+
 ## 2026-09-24 — HQ skill advancement (LO-0331–0339)
 
 ### Added

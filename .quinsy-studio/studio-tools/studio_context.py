@@ -147,7 +147,7 @@ def build_focus_report(project: str, status: Dict) -> str:
     else:
         hg = status.get("human_gates", {})
         if hg.get("2", {}).get("status") != "approved":
-            lines.append("Pre-implementation: follow gates 0→1→2 (see ./studio resume)")
+            lines.append("Pre-implementation: follow gates 0→1→2a→2b (see ./studio resume)")
         else:
             open_t = _load_open_tickets(project)
             lines.append("Open backlog (top 8):")
@@ -166,8 +166,10 @@ def named_hitl_waiting(status: Dict, project: str = "") -> bool:
     """True when execute would STOP for a named human gate (not a ticket ACK)."""
     from sprint_hitl import needs_sprint_review
 
+    from pre_impl_workflow import design_system_approved
+
     hg = status.get("human_gates") or {}
-    if hg.get("2", {}).get("status") != "approved":
+    if not design_system_approved(status):
         return True
     if needs_sprint_review(status) and not status.get("active_ticket"):
         return True
@@ -210,10 +212,12 @@ def implementation_in_flight(project: str, status: Dict) -> bool:
             tickets = []
         if any(t.get("status") == "implement" for t in tickets):
             return True
+    from pre_impl_workflow import design_system_approved
+
     hg = status.get("human_gates") or {}
     if hg.get("0", {}).get("status") == "approved" and hg.get("1", {}).get("status") != "approved":
         return True
-    if hg.get("1", {}).get("status") == "approved" and hg.get("2", {}).get("status") != "approved":
+    if hg.get("1", {}).get("status") == "approved" and not design_system_approved(status):
         return True
     return False
 
@@ -310,12 +314,14 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
                 "Use LO-* backlog or ./studio learn — not project implementation."
             )
 
+    from pre_impl_workflow import design_system_approved
+
     hg = status.get("human_gates", {})
-    if hg.get("2", {}).get("status") != "approved":
+    if not design_system_approved(status):
         if req_tokens & impl_signals:
             return "pre_impl", (
-                f"Project is pre-gate-2 (phase {status.get('phase')}). "
-                "Complete intake → architecture → design approvals before implementation."
+                f"Project is pre-gate-2b (phase {status.get('phase')}). "
+                "Complete intake → architecture → 2a direction → 2b kit before implementation."
             )
 
     if needs_sprint_review(status):
