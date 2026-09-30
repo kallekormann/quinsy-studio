@@ -111,6 +111,9 @@ Rules:
   - No manual changes in production
   - State backend for Terraform
   - Plan before apply
+  - Desired state is the Compose file or the project IaC. A console-only change is drift: write it back or revert it.
+  - Every long-running service has a health check.
+  - Temp and upload directories have an owner and a cleanup.
 ```
 
 ---

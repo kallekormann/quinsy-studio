@@ -1,3 +1,64 @@
+## 2026-09-30 — Implementation reuse, tokens, story, and receipt lines
+
+### Changed
+
+- UI move-done fails a second Popover, Tooltip, DropdownMenu, Dialog, or Button, a receipt that names no existing component or pulled slug, and a changed file that hardcodes a color or an off-scale space while project tokens exist. A missing role is a new semantic token, then `var(--role)`.
+- Generic components carry a behavior contract (keyboard, focus, viewport, states, reduced motion, tokens). The app shell stays mounted; the content region may morph. Pattern: `studio-library/ui/docs/patterns/app-shell.md`.
+- Marketing, workflow, and commercial composition specs need a filled `## 5. Story` (arc, one CTA, reduced-motion path) before approve-design.
+- `## Design skill` and `## Architecture skill` cannot be `n/a` when the ticket is UI or includes API, auth, data, security, or infrastructure. The architecture section must cover separation, server authorization, parameterized queries, allow-listed bodies, idempotency, no stack traces, rate limit or internal-only, timeouts, structured logs, health checks, temp cleanup, and drift.
+
+## 2026-09-30 — Design baseline and critique before HITL
+
+### Changed
+
+- Gate 2a requires one aesthetic preset as craft substrate plus a product delta, and a separate `design/DIRECTION-CRITIQUE.md`. Execute stays on IMPLEMENT while any rubric line is FAIL. The human signs the identity only after the critique passes.
+- Gate 2b requires the studio-library base kit and a shell around the PRD journey (marketing, auth, settings, empty/loading/error). `internal-tool` skips marketing. `api-service` has no UI prototype.
+- Approving gate 2b copies prototype mocks into the product app and leaves `design/prototype/` as the visual baseline. A silent rewrite of a pulled control fails move-to-done unless the receipt has an `Enhancement:` line.
+
+## 2026-09-29 — Keep account settings on the existing settings surface (LO-0365)
+
+### Changed
+
+- Keep operator account settings on the existing authenticated settings surface. A later IA ticket that sounds like a new page is not a second settings product. Playbook: `knowledge-base/learnings/design/information-architecture.md` **PB-20260929-001**.
+
+
+
+### Changed
+
+- When reuse review flags files under a product `ui/components` kit, record them as project-local. Do not open a studio LO to copy token-bound molecules into studio-library. Playbook: `knowledge-base/learnings/library/components.md` **PB-20260929-001**.
+
+## 2026-09-29 — Catalog AC must not infer design-track; one Postgres per working copy (LO-0361–LO-0362)
+
+### Changed
+
+- When a project has `docs/i18n.md`, catalog AC that mentions a UI string must not infer `ui-composition`. Ticket type stays explicit. Playbook: `knowledge-base/learnings/process/workflow.md` **LO-0361**. Classifier: `design_ticket_helpers.infer_ticket_type` strips that AC before matching `ui`.
+- Do not run `supabase start` beside an existing Compose Postgres in the same working copy. Local session comes from the product API; `auth_user_id` hooks the hosted Auth `sub`. Playbook: `knowledge-base/learnings/backend/data.md` **LO-0362**.
+
+## 2026-09-27 — Keep specifications, schemas, and gates portable (LO-0353–LO-0360)
+
+### Changed
+
+- A PRD rewrite must keep the original specification unchanged and must not drop normative details to fit a length cap. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260927-001**.
+- When a requirement needs a fact the schema cannot store, architecture must add that column instead of shipping the schema alone. Playbook: `knowledge-base/learnings/backend/data.md` **PB-20260927-001**.
+- A SaaS blueprint must include a public marketing route group: home, use-case content files, and legal routes when copy comes later. Playbook: `knowledge-base/learnings/design/visual.md` **PB-20260927-001**.
+- Subscription checkout must use hosted billing while the price id stays empty and must refuse checkout until that id exists. Playbook: `knowledge-base/learnings/library/packages.md` **PB-20260927-001**.
+- A stack and host named in the PRD must win over the archetype default, and that delta must be an ADR. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260927-002**.
+- Execute leases must expire when the holder process is dead so focus is not blocked by a stale lease. Playbook: `knowledge-base/learnings/process/tooling.md` **PB-20260927-001**.
+- Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human gate. Playbook: `knowledge-base/learnings/process/workflow.md` **PB-20260927-003**.
+- Keep the product UI kit in the product repository. Do not promote project look into studio-library. Playbook: `knowledge-base/learnings/library/packages.md` **PB-20260927-002**.
+
+## 2026-09-27 — Verify vendor webhook signatures before any write (LO-0352)
+
+### Changed
+
+- Verify the provider signature on every vendor webhook before any write. A reachable endpoint is normal. An unsigned request must leave stored data unchanged. Playbook: `knowledge-base/learnings/backend/services.md` **PB-20260927-001**.
+
+## 2026-09-26 — Keep the first marketing screen static (LO-0351)
+
+### Changed
+
+- Keep the first marketing screen static: claim, product visual, and primary CTA readable at rest. Do not pin a multi-viewport scroll film as the opening. Playbook: `knowledge-base/learnings/design/visual.md` **PB-20260926-001**.
+
 ## 2026-09-26 — Human design is 2a then 2b; project kit is the handoff (LO-0340–LO-0343)
 
 ### Changed

@@ -16,6 +16,7 @@ from studio_execute import (
     format_execute_step,
     harvest_retro_learn_prompts,
     has_fresh_gate_pass,
+    qa_gate_level,
     pick_next_ticket,
     receipt_issues,
     ExecuteStep,
@@ -703,7 +704,7 @@ class DecideTests(unittest.TestCase):
         text = format_execute_step("demo", step)
         self.assertIn("CONSTITUTION:", text)
         self.assertIn("never Read .env values", text)
-        self.assertIn("not a morning brief", text)
+        self.assertIn("Not a morning brief", text)
 
     def test_implement_informs_open_lo_count_not_studio_lo(self):
         from studio_execute import implementation_in_flight
@@ -737,6 +738,11 @@ class DecideTests(unittest.TestCase):
         text = format_execute_step("demo", step)
         self.assertIn("PACKET:", text)
         self.assertIn("morning-brief", text)
+
+    def test_human_gate_2b_is_not_qa_level_5(self):
+        self.assertEqual(qa_gate_level({"gate": "2b"}), 2)
+        self.assertEqual(qa_gate_level({"gate": "5"}), 5)
+        self.assertEqual(qa_gate_level({"gate": ""}), 0)
 
 
 if __name__ == "__main__":

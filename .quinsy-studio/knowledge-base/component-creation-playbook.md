@@ -37,6 +37,18 @@ Before designing or implementing a new control or chrome pattern:
 | Molecule | `ui/components/<slug>/` kind `ui-molecule` | Composes atoms — **Dropdown/Select** belongs here (Listbox/Menu), never native `<select>` on product surfaces. **SegmentedToggle** for labeled A\|B exclusive choices; **Switch** only for boolean on/off. |
 | Organism | `ui/components/<slug>/` kind `ui-organism` | App chrome sections — e.g. **studio-rail** (icon rail + detail panel) |
 
+## Behavior contract
+
+A generic is finished only when this contract holds. Viewport collision is one line. Fix the contract in `.quinsy-studio/studio-library/` when the generic is added or updated. The next `library pull` inherits it. Do not re-solve the same bug inside each product.
+
+- Keyboard and focus: Escape closes, focus returns to the trigger, and no trap is left behind.
+- Overlays flip, then shift, and stay inside the viewport. They do not paint off-screen.
+- States: rest, hover, pressed, disabled, focus, and the open or closed pair.
+- Motion honors `prefers-reduced-motion`.
+- The control is styled only with tokens. No brand copy and no product hex.
+
+The app shell is the same idea. One persistent shell. The content region changes. A view transition may morph that region. Focus moves to the new heading. Reduced motion cuts the morph. The shell does not remount as a new page. Pattern: `studio-library/ui/docs/patterns/app-shell.md`. Do not add GSAP.
+
 ## Checklist before promote
 
 - [ ] README with pull instructions + a11y notes

@@ -30,8 +30,8 @@ Gate = automated check + human confirmation
 
 | Gate | Approves | CLI |
 |------|----------|-----|
-| **2a** | Discovery Q&A + unique `DESIGN.md` (blocks prototype) | `./studio design --discovery` then `./studio approve --gate 2a` |
-| **2b** | Project CSS tokens, coded A/M/O, sticker inventory, mocks on those tokens | `./studio design` then `./studio approve --gate 2b`. Iterate: `./studio revise --gate 2b` |
+| **2a** | Discovery Q&A + unique `DESIGN.md` + `DIRECTION-CRITIQUE.md` all PASS (blocks prototype) | `./studio design --discovery` then `./studio approve --gate 2a` |
+| **2b** | Pulled library kit, project CSS tokens, shell routes, sticker inventory, mocks on those tokens. Approval copies the prototype into the product app. | `./studio design` then `./studio approve --gate 2b`. Iterate: `./studio revise --gate 2b` |
 
 QA **Gate 2** below is architecture *level* checks. Do not conflate with human 2a/2b. If the shipped change only flipped a flag, enum, or CSS class and a flicker/regression remains, open a **new** ticket that changes the render path (mount, effect, animation, layout). Do not treat a second status-only patch as the fix.
 

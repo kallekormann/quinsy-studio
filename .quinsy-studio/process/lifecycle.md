@@ -101,9 +101,9 @@ CLI: `./studio blueprint <project>`
 
 ## Phase 3: Design direction (2a) then project kit (2b)
 
-**2a goal:** unique signed `design/DESIGN.md` from a human interview. Prototype is blocked.
+**2a goal:** unique signed `design/DESIGN.md` from a human interview, then a UX-008 critique. Prototype is blocked until every critique line is PASS.
 
-**2b goal:** design tokens (CSS + Tailwind), atomic components, Next.js mocks, sticker sheet — **in the project**. No library promote of product look.
+**2b goal:** pulled library kit styled with project tokens, shell routes plus the PRD journey, sticker sheet — **in the project**. Approving 2b copies that prototype into the product app and keeps `design/prototype/` as the baseline. No library promote of product look.
 
 > **Adopted repo:** 2a is keep vs evolve; 2b is token-map of **what exists**. Do **not** scaffold a parallel Next.js prototype. See [brownfield-adopt.md](brownfield-adopt.md).
 
@@ -111,23 +111,27 @@ CLI: `./studio blueprint <project>`
 |--------|------|
 | Discovery | `docs/design/discovery.md` |
 | Design spec | `design/DESIGN.md` |
-| Mock scope | `design/DESIGN-SCOPE.md` (`journey` \| `core-views`) |
-| Prototype | `design/prototype/` (Next.js, after 2a) |
+| Direction critique | `design/DIRECTION-CRITIQUE.md` (UX-008, before gate 2a HITL) |
+| Mock scope | `design/DESIGN-SCOPE.md` (`journey` \| `core-views` plus required shell) |
+| Prototype | `design/prototype/` (Next.js, after 2a). Remains the visual baseline after 2b. |
+| Product app | `app/` — copy of the prototype mocks after `./studio approve --gate 2b` |
+| Baseline note | `docs/design/baseline.md` |
 | CSS tokens | `ui/tokens/design-tokens.css` |
-| Components | `ui/components/atoms|molecules|organisms/` |
+| Components | pulled `ui/components/<slug>/` plus any project atoms/molecules/organisms |
 | Sticker sheet | `design/prototype/app/sticker-sheet/` |
 
 CLI: `./studio design <project> --discovery` then `--scope journey|core-views`
 
 ## ═══════════════ HUMAN GATE 2a — Direction ═══════════════
 
-> User answers discovery and signs visual DNA. Prototype stays blocked.
+> User signs the identity after the critique passes. Prototype stays blocked.
+> The human is not the first person to notice slop. Execute stays IMPLEMENT while `DIRECTION-CRITIQUE.md` has a FAIL.
 > CLI: `./studio approve <project> --gate 2a`
 > Iteration: `./studio revise <project> --gate 2a --feedback "..."`
 
 ## ═══════════════ HUMAN GATE 2b — Project kit ═══════════════
 
-> User approves the live kit. **Do not** merge product look into studio-library; execution backlog is **not** filled until milestone kickoff.
+> User approves the live kit. Approval copies the prototype into the product app and leaves the prototype as the baseline. **Do not** merge product look into studio-library; execution backlog is **not** filled until milestone kickoff.
 > CLI: `./studio approve <project> --gate 2b`
 > Iteration: `./studio revise <project> --gate 2b --feedback "..."`
 

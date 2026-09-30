@@ -117,7 +117,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
-from ticket_helpers import render_ticket_markdown, role_for_skills
+from ticket_helpers import apply_i18n_ticket_rules, render_ticket_markdown, role_for_skills
 from ticket_ids import allocate_ticket_id
 from skill_matcher import match_skills, team_for_skills
 from design_ticket_helpers import (
@@ -140,14 +140,14 @@ from studio_env import (
     compose_argv,
     docker_cli_available,
     docker_install_hint,
-    ensure_host_env_file,
+    ensure_project_env_file,
     inject_summary,
     parse_env_assignments,
     public_command_line,
     redact_output,
     redact_secret_patterns,
     refuse_without_approve,
-    schema_variable_names,
+    merged_schema_names,
     secret_values_for_redaction,
 )
 from pre_impl_workflow import (
@@ -1710,7 +1710,7 @@ class StudioOrchestrator:
             status["gate_status"] = "approved"
             save_status(project, status)
             print(f"\n  ✅ Design direction signed")
-            print("  Prototype is unblocked. Build the project kit (CSS tokens, coded A/M/O, sticker).")
+            print("  Prototype is unblocked. Style the pulled library kit to this direction.")
             if status.get("mode") == "adopt":
                 print(f"  Next: token-map of what exists — ./studio design {project} --scope as-built")
             else:
@@ -1737,6 +1737,17 @@ class StudioOrchestrator:
                 print(f"  Next: draft docs/phases/ from as-built gap matrix")
                 print(f"        ./studio approve {project} --milestones")
                 return True
+
+            from pre_impl_workflow import materialize_baseline
+            from studio_design_discovery import NO_UI_ARCHETYPE, project_archetype
+
+            if project_archetype(PROJECTS_DIR / project) != NO_UI_ARCHETYPE:
+                print("\n  Materializing prototype into the product app (prototype stays the baseline)...")
+                for path in materialize_baseline(project):
+                    try:
+                        print(f"  ✓ {path.relative_to(PROJECTS_DIR / project)}")
+                    except ValueError:
+                        print(f"  ✓ {path}")
 
             print(f"\n  Generating tickets from approved PRD + design...")
             if not self._run_ticket_manifest(project):
@@ -2415,6 +2426,7 @@ class StudioOrchestrator:
             ],
             "dependencies": []
         }
+        ticket = apply_i18n_ticket_rules(ticket, project)
         if design_status != "n/a":
             ticket["ticket_type"] = ticket_type
             ticket["design_status"] = design_status
@@ -3377,14 +3389,14 @@ What does this decision mean for the project?
             print(docker_install_hint())
             return False
 
-        names = schema_variable_names()
-        host_env = ensure_host_env_file(project, names=names)
-        assignments = parse_env_assignments(host_env.read_text(encoding="utf-8"))
+        names = merged_schema_names(project, PROJECTS_DIR)
+        env_file = ensure_project_env_file(project, PROJECTS_DIR, names=names)
+        assignments = parse_env_assignments(env_file.read_text(encoding="utf-8"))
         redaction = secret_values_for_redaction(assignments)
         if inject:
-            print(inject_summary(project, names, host_env))
+            print(inject_summary(project, names, env_file))
 
-        cmd = compose_argv(project, docker_dir, compose_file, host_env, compose_args)
+        cmd = compose_argv(project, docker_dir, compose_file, env_file, compose_args)
         print(f"  → {public_command_line(cmd)}")
         try:
             result = subprocess.run(

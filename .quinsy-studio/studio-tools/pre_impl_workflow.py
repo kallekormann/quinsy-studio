@@ -322,10 +322,17 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
 
     scope_file = root / "design" / "DESIGN-SCOPE.md"
     scope_tpl = TEMPLATES_DIR / "design_scope_template.md"
+    from studio_design_discovery import project_archetype, pull_names_for, shell_routes_for
+
+    archetype = project_archetype(root)
     if not scope_file.exists() or _has_placeholders(_read_text(scope_file)):
         base = scope_tpl.read_text() if scope_tpl.exists() else "# Design Scope\n"
+        shell_lines = "\n".join(f"- `{route}`" for route in shell_routes_for(archetype))
+        if not shell_lines:
+            shell_lines = "_No UI shell — api-service has no prototype._"
         base = base.replace("{{PROJECT}}", project).replace("{{SCOPE}}", scope)
         base = base.replace("{{DATE}}", datetime.now().strftime("%Y-%m-%d"))
+        base = base.replace("{{ARCHETYPE}}", archetype).replace("{{SHELL_ROUTES}}", shell_lines)
         scope_file.write_text(base)
         created.append(scope_file)
 
@@ -368,6 +375,13 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
         )
         created.append(tokens)
 
+    if archetype == "api-service":
+        return created
+
+    from library_manager import pull_assets
+
+    pull_assets(project, pull_names_for(archetype), project_root=root)
+
     proto_readme = root / "design" / "prototype" / "README.md"
     if not proto_readme.exists():
         proto_readme.write_text(
@@ -385,6 +399,66 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
         created.append(proto_readme)
 
     created.extend(_scaffold_next_prototype(root, project, scope))
+    return created
+
+
+def product_app_dir(root: Path) -> Path:
+    src_app = root / "src" / "app"
+    app = root / "app"
+    if src_app.is_dir() and not app.is_dir():
+        return src_app
+    return app
+
+
+def materialize_baseline(project: str) -> List[Path]:
+    """Copy prototype mocks into the product app. Leave design/prototype/ in place.
+
+    The prototype stays the visual baseline. Implementation wires and may enhance
+    those screens. Adopt projects must not call this.
+    """
+    root = project_dir(project)
+    created: List[Path] = []
+    proto_mocks = root / "design" / "prototype" / "app" / "mocks"
+    dest_root = product_app_dir(root)
+    copied: List[str] = []
+    if proto_mocks.exists():
+        for page in sorted(proto_mocks.rglob("page.tsx")):
+            rel = page.relative_to(proto_mocks)
+            parts = rel.parts
+            if parts and parts[0] == "app":
+                rel = Path(*parts[1:])
+            target = dest_root / rel
+            if target.exists():
+                copied.append(f"{rel.as_posix()} (already present)")
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            body = page.read_text(encoding="utf-8")
+            note = (
+                "/** Materialized from design/prototype. "
+                "Wire data here. The prototype remains the visual baseline. */\n"
+            )
+            target.write_text(note + body, encoding="utf-8")
+            created.append(target)
+            copied.append(rel.as_posix())
+
+    baseline = root / "docs" / "design" / "baseline.md"
+    baseline.parent.mkdir(parents=True, exist_ok=True)
+    route_lines = "\n".join(f"- `{item}`" for item in copied) or "- (no mock pages copied)"
+    baseline.write_text(
+        "# Design baseline\n\n"
+        "The prototype at `design/prototype/` is the visual baseline. Reopen it when "
+        "implementation drifts.\n\n"
+        "Gate 2b copied shell and journey mocks into the product app as the first screens. "
+        "They still use mock data and the same `ui/components` and `ui/tokens`.\n\n"
+        "Implementation wires data and may improve UX, IA, structure, and infrastructure. "
+        "A change that leaves this baseline (a new popover, tooltip, dropdown, dialog, or "
+        "app shell) needs an `Enhancement:` line on the receipt, or a design-track ticket "
+        "when it changes tokens, the shell, or a new component.\n\n"
+        "## Materialized routes\n\n"
+        f"{route_lines}\n",
+        encoding="utf-8",
+    )
+    created.append(baseline)
     return created
 
 

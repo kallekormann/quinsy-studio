@@ -11,8 +11,18 @@ follow the same compact format:
 Used by: generate_ticket_manifest.py, studio.py (cmd_ticket, cmd_learn)
 """
 
+import re
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional
+
+I18N_AC = (
+    "Visible copy uses catalogs for de, en, es, fr, it, pt, pl. "
+    "No UI string is hardcoded. See `docs/i18n.md`."
+)
+I18N_CONSTRAINT = (
+    "User-facing strings come from catalogs (`docs/i18n.md`), never hardcoded in components"
+)
 
 # =============================================================================
 # SKILL → DIRECTOR ROLE MAPPING
@@ -169,6 +179,7 @@ SKILL_EXTRA_PLAYBOOKS = {
     "UX-005": ["knowledge-base/atomic-design-playbook.md"],
     "UX-007": [
         "knowledge-base/visual-storytelling-playbook.md",
+        "knowledge-base/delight-playbook.md",
         "knowledge-base/growth-mechanics-playbook.md",
     ],
     "AI-003": ["knowledge-base/ai_automation_playbook.md"],
@@ -217,8 +228,42 @@ def _is_filler_scenario(sc: Dict) -> bool:
     return False
 
 
+def project_from_ticket(ticket: Dict) -> Optional[str]:
+    """Project folder name from ticket file paths."""
+    for field in ("modification_files", "files"):
+        for item in ticket.get(field) or []:
+            match = re.match(r"projects/([^/]+)/", str(item).replace("\\", "/"))
+            if match:
+                return match.group(1)
+    return None
+
+
+def project_has_i18n(project: Optional[str]) -> bool:
+    if not project:
+        return False
+    root = Path(__file__).resolve().parent.parent.parent
+    return (root / "projects" / project / "docs" / "i18n.md").is_file()
+
+
+def apply_i18n_ticket_rules(ticket: Dict, project: Optional[str] = None) -> Dict:
+    """If the project documents i18n, every ticket must carry the catalog AC."""
+    name = project or project_from_ticket(ticket)
+    if not project_has_i18n(name):
+        return ticket
+    criteria = list(ticket.get("acceptance_criteria") or [])
+    if I18N_AC not in criteria:
+        criteria.append(I18N_AC)
+        ticket["acceptance_criteria"] = criteria
+    constraints = list(ticket.get("constraints") or [])
+    if I18N_CONSTRAINT not in constraints:
+        constraints.append(I18N_CONSTRAINT)
+        ticket["constraints"] = constraints
+    return ticket
+
+
 def _compact_ac_lines(ticket: Dict) -> List[str]:
     """Specific AC only — no filler Given/When/Then wrappers."""
+    ticket = apply_i18n_ticket_rules(ticket)
     lines: List[str] = []
     scenarios = ticket.get("scenarios") or []
     real = [sc for sc in scenarios if not _is_filler_scenario(sc)]
@@ -227,11 +272,15 @@ def _compact_ac_lines(ticket: Dict) -> List[str]:
             lines.append(
                 f"- G: {sc.get('given', '').strip()} / W: {sc.get('when', '').strip()} / T: {sc.get('then', '').strip()}"
             )
-        return lines
-    for crit in ticket.get("acceptance_criteria") or []:
-        lines.append(f"- {crit}")
-    if not lines:
-        lines.append("- (add 2+ specific acceptance criteria)")
+    else:
+        for crit in ticket.get("acceptance_criteria") or []:
+            lines.append(f"- {crit}")
+        if not lines:
+            lines.append("- (add 2+ specific acceptance criteria)")
+    if project_has_i18n(project_from_ticket(ticket)):
+        marker = "- " + I18N_AC
+        if marker not in lines and I18N_AC not in "\n".join(lines):
+            lines.append(marker)
     return lines
 
 

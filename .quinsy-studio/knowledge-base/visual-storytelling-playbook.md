@@ -27,6 +27,8 @@ Load on `marketing-page`, `workflow-explainer`, commercial-web — **not** opera
 3. **Resolution** — product as guide
 4. **CTA** — single primary next step
 
+`marketing-page`, `workflow-explainer`, and commercial `ui-composition` specs must include **## 5. Story** with that arc, literal copy, what moves and what stays, and the reduced-motion path. `./studio approve-design` refuses the spec until those lines are filled. Delight stays a layer on the same page. Scroll may reveal. It may not hijack.
+
 ## Marketing page sections (typical)
 
 Hero → social proof → problem → solution → how it works → features → pricing/CTA → FAQ → footer.

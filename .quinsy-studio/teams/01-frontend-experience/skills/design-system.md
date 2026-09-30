@@ -6,7 +6,7 @@ team: 01-frontend-experience
 lead_role: Frontend Engineer
 ```
 
-Apply **already approved** project tokens. Visual language is Team 10 / gate 2.
+Apply **already approved** project tokens to the **pulled** studio-library kit. Visual language is Team 10 / gate 2. The product app starts from the materialized prototype; do not rebuild button, popover, tooltip, dropdown, or dialog beside `ui/components/<slug>/`.
 
 **Playbook:** [frontend_playbook.md](../../../knowledge-base/frontend_playbook.md)
 

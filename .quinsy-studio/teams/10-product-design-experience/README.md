@@ -19,28 +19,28 @@ Owns **what** and **why** for UI/UX. Team 01 implements after the **project kit*
 
 All design specs, mocks, and microcopy follow [anti-slop-design-ux.md](../../knowledge-base/anti-slop-design-ux.md). Skill: [skills/anti-slop-design-ux.md](skills/anti-slop-design-ux.md). Default SaaS indigo is a process fail (U-C2).
 
-## Aesthetic presets (optional footnote)
+## Aesthetic presets (craft substrate)
 
-The catalog is a **repertoire**, not the source of truth. Uniqueness in `design/DESIGN.md` beats a Linear/Stripe clone.
+The catalog locks type, elevation, motion, and density. It is not the product identity.
 
 - Catalog: [knowledge-base/aesthetic-presets/README.md](../../knowledge-base/aesthetic-presets/README.md)
 - Skill: [skills/aesthetic-presets.md](skills/aesthetic-presets.md)
 
-A spec **may** name one preset (or `project-brand-only`) as a footnote mapped onto **project tokens**. It is not required.
+`design/DESIGN.md` names one preset slug and a product delta. UX-008 then writes `design/DIRECTION-CRITIQUE.md`. Gate 2a HITL waits until every rubric line is PASS.
 
 ## Workflow
 
 **Start of a product (before any sprint):**
 
-1. **2a** — CARD: UX-001, UX-004, UX-006, UX-008. Unanswered questions in `docs/design/discovery.md`. HITL until the human answers. Fill `design/DESIGN.md` (uniqueness, token names). `./studio approve --gate 2a`. Do **not** scaffold `design/prototype`. Playbook: [design-direction-playbook.md](../../knowledge-base/design-direction-playbook.md)
-2. **2b** — CARD: UX-005, UX-002, UX-003, UX-006, UX-008, FE-002. Project CSS tokens + Tailwind mapped to those variables, coded atoms / molecules / organisms, sticker sheet with **inventory children** (all states), mocks on those tokens. `./studio revise --gate 2b` until `./studio approve --gate 2b`. Do **not** promote this product’s look into studio-library.
+1. **2a** — CARD: UX-001, UX-004, UX-006, UX-008. Unanswered questions in `docs/design/discovery.md`. HITL until the human answers. Fill `design/DESIGN.md` (preset substrate, product delta, token names). UX-008 writes `design/DIRECTION-CRITIQUE.md` in a second pass. `./studio approve --gate 2a` only after every critique line is PASS. Do **not** scaffold `design/prototype`. Playbook: [design-direction-playbook.md](../../knowledge-base/design-direction-playbook.md)
+2. **2b** — CARD: UX-005, UX-002, UX-003, UX-006, UX-008, FE-002. `./studio design` pulls the library base kit. Style it with project CSS tokens. Shell routes (marketing when the archetype is public, sign-in, register, app shell, settings, empty/loading/error) plus the PRD journey. Sticker sheet renders the pulled controls in all states. `./studio revise --gate 2b` until `./studio approve --gate 2b`, which copies the prototype into the product app and leaves `design/prototype/` as the baseline. Do **not** promote this product’s look into studio-library.
 
 **Per-ticket (after 2b):**
 
 1. `./studio ticket` → design-track tickets get `design_status: pending` and a **stub** at `docs/design-specs/<TICKET>.md`
 2. Team 10 **fills** that spec (remove the stub banner) and writes HTML mocks under `docs/design-specs/mocks/<TICKET>/` using **the same project tokens**, in the **real product view**, **all states**
 3. Human → `./studio approve-design <project> <ticket-id>`
-4. Team 01 → `./studio move … implement` (library-first Headless primitives + this kit)
+4. Team 01 → `./studio move … implement` (style the pulled kit + this baseline; do not redraw popover, tooltip, dropdown, or dialog)
 
 Never paste “please approve `docs/design-specs/…`” unless that file is filled and the mock folder exists.
 

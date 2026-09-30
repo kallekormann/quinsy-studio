@@ -236,8 +236,13 @@ def _project_path_for_kind(kind_id: str, cfg: Dict, name: str) -> Path:
     return Path(name)
 
 
-def pull_assets(project: str, names: List[str], force: bool = False) -> Dict[str, Any]:
-    project_dir = PROJECTS_DIR / project
+def pull_assets(
+    project: str,
+    names: List[str],
+    force: bool = False,
+    project_root: Optional[Path] = None,
+) -> Dict[str, Any]:
+    project_dir = project_root or (PROJECTS_DIR / project)
     if not project_dir.exists():
         return {"error": f"Project not found: {project}", "pulled": []}
 

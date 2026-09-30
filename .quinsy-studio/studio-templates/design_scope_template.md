@@ -34,6 +34,14 @@ _Document the journey from `docs/definitions/03-user-journeys.md` that drives mo
 |---|--------|-------|----------|
 | 1 | Home | `/mocks/home` | Primary entry |
 
+## Required shell
+
+Archetype: `{{ARCHETYPE}}`
+
+The PRD journey is not the whole prototype. These routes are required (`internal-tool` omits marketing and legal; `api-service` has no UI prototype). `core-views` may stub the journey. `journey` links the shell and the core path.
+
+{{SHELL_ROUTES}}
+
 ## Sticker sheet
 
 - Route: `/sticker-sheet`
@@ -44,4 +52,6 @@ _Document the journey from `docs/definitions/03-user-journeys.md` that drives mo
 - [ ] Visual direction matches PRD
 - [ ] Tokens defined in `ui/tokens/design-tokens.json`
 - [ ] Atoms/molecules/organisms scaffolded under `ui/components/`
+- [ ] Shell routes from Required shell exist and use the pulled kit (`auth-login`, sidebar or `studio-rail`)
 - [ ] Prototype runs: `cd design/prototype && npm run dev`
+- [ ] After gate 2b, product `app/` is a copy of this baseline and `design/prototype/` is still there

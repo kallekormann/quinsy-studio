@@ -23,6 +23,19 @@ Every decision is documented.
 
 Durable **agent** workflows (checkpoints, orchestrator) are **AI-003**, not this spine. CI is **PE-002**.
 
+## Receipt lines (API, auth, data, security, infrastructure)
+
+When the ticket skills include `BE-*` or `PE-001`, `## Architecture skill` cannot be `n/a`. The section must state:
+
+- Route, service, and data access are separate. The handler does not embed the query.
+- Authorization is enforced on the server for that object.
+- Queries are parameterized. Bodies are allow-listed.
+- A retried write names an idempotency key, or says why repeat is safe.
+- Errors omit stack traces. The expensive path has a rate limit or quota, or the receipt says it is internal-only.
+- Outbound calls have a timeout.
+- Logs are structured, carry a request id, and omit secrets.
+- Infrastructure is declared (Compose or the project IaC). Every long-running service has a health check. Temp and upload directories have an owner and a cleanup. A console-only change is drift, written back or reverted.
+
 **Handoff:** API contract + error envelope + example payload in `docs/` or OpenAPI — FE must not guess field names (`backend-to-frontend-handoff`).
 
 **Evidence bullets** below are studio scars (Compose, Laravel, Filament). They do not replace the spine.
@@ -418,7 +431,7 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 - **PB-20260916-003** helpful=1 harmful=0 :: Operator-authorized jobs skip the exploration weekly cap. Re-check monthly and kill-switch caps on every LLM complete; do not add a daemon. After the operator raises a limit, the next call picks up available budget.
 - **PB-20260916-002** helpful=0 harmful=0 :: Lifecycle folder queries (awaiting approval, in progress, done) must exclude dismissed rows. Filtering dismissed only on the Dismissed folder still lists trashed items in the other lifecycle views.
 - **PB-20260916-001** helpful=0 harmful=0 :: Empty production pipeline maps activity or trace status to idle, not in_progress. Defaulting unknown or empty rows to in_progress lies to the operator.
-- **PB-20260915-002** helpful=1 harmful=0 :: Bootstrap plans that need catalog items queue research as an operator Inbox request, not a ticket-id hint in the UI.
+- **PB-20260915-002** helpful=2 harmful=0 :: Bootstrap plans that need catalog items queue research as an operator Inbox request, not a ticket-id hint in the UI.
 - **PB-20260915-001** helpful=0 harmful=0 :: Cache-bust after a write belongs on the plane that holds the secret (admin worker, server action, route handler). A client module cannot see admin-only env; Saved can look true while the public host stays stale. Pull write-side-revalidate; never use NEXT_PUBLIC_ as the secret source.
 - **PB-20260914-004** helpful=0 harmful=0 :: Compose worker --queue must list every topology queue jobs are dispatched on; default or a single named queue is not enough.
 - **PB-20260914-003** helpful=0 harmful=0 :: Changing Compose queue-worker command or --queue flags requires recreating that service; up -d of the HTTP process leaves the old worker command running.

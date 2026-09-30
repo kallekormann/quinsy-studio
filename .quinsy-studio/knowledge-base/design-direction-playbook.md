@@ -13,7 +13,7 @@ Interview idea distilled from a design-agent ritual: ask only what the PRD did n
 - Read PRD + definitions first. Write **unanswered** questions to `docs/design/discovery.md` (`Q:` / `A:`).
 - Stop for HITL until the human fills `A:` lines. Do not invent brand, hex, or “Stripe-like”.
 - Then fill `design/DESIGN.md`: goals, posture, visual DNA, uniqueness / what we are not, type, **color roles** (token **names**), voice, motion, anti-patterns.
-- Aesthetic presets are an **optional footnote**, mapped onto those tokens. Uniqueness beats the catalog.
+- Aesthetic presets are a **craft substrate**, not the identity. Name one slug in `design/DESIGN.md` and a product delta (audience job, density, posture, what we are not). Uniqueness beats the catalog. A clone name with no delta still fails. Missing preset also fails.
 
 **Don’t**
 
@@ -28,6 +28,21 @@ Interview idea distilled from a design-agent ritual: ask only what the PRD did n
 - Default indigo / SaaS blue in DESIGN.md.
 - No Uniqueness / Visual DNA / What we are not section — or a clone name (“Linear-like”) with no product constraints.
 - Mood adjective only (no type, color roles, posture, or voice).
+- No aesthetic preset slug, or a preset named with no product delta.
+- Missing `design/DIRECTION-CRITIQUE.md`, or any rubric line marked FAIL.
+
+## Critique before HITL
+
+After `DESIGN.md` is filled, UX-008 writes `design/DIRECTION-CRITIQUE.md` in a **second pass**. Each line is `PASS` or `FAIL`:
+
+- Audience (from the PRD, not an invented persona)
+- Preset (substrate plus product delta)
+- Type (named families)
+- Color (roles, not a dumped indigo palette)
+- Density
+- Banned patterns (blobs, glass, hero type on app chrome, emoji icons, default indigo unless the human wrote it in discovery)
+
+`./studio approve --gate 2a` stays HITL, and only after every line is PASS. Execute stays on IMPLEMENT while the critique fails. Three distinct failing passes are logged in `docs/phases/revisions.md` and `design/critique-log.json`; the next failure stops for a human redirect.
 
 ## Interview order (unanswered only)
 
@@ -42,6 +57,10 @@ Adopt / brownfield: 2a is **keep vs evolve** the existing UI (`docs/ia/surface-m
 
 ## After 2a
 
-`./studio design --scope journey|core-views` (or as-built token-map). Iterate with `./studio revise --gate 2b` until `./studio approve --gate 2b`. Look stays in the **project**. Studio-library stays Headless primitives.
+`./studio design --scope journey|core-views` pulls the studio-library base kit (`button`, `input`, `popover`, `tooltip`, `dropdown-menu`, `dialog`, `sidebar`, `auth-login`, plus `studio-rail` on `saas-application`) and styles it with project tokens. The prototype also includes the shell around the PRD journey: marketing and legal for public products, sign-in, register, app shell, settings, and empty/loading/error. `internal-tool` skips marketing. `api-service` has no UI prototype.
+
+On `./studio approve --gate 2b` the prototype mocks are copied into the product app. `design/prototype/` stays the visual baseline. Implementation wires data and may enhance UX, IA, structure, and infrastructure. A silent rewrite of a pulled control fails move-to-done unless the receipt has an `Enhancement:` line.
+
+Iterate with `./studio revise --gate 2b` until `./studio approve --gate 2b`. Look stays in the **project**. Studio-library stays Headless primitives. Adopt / brownfield does not materialize a parallel app.
 
 See [ux-research-playbook.md](ux-research-playbook.md) (human interview, not invented personas) and [anti-slop-design-ux.md](anti-slop-design-ux.md) U-C2.

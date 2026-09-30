@@ -1,7 +1,7 @@
 # Aesthetic presets (Team 10 repertoire)
 
 Studio-owned visual direction skills for **UX-005** (Visual UI Design) and **UX-006** (Brand Guardian).  
-Load one preset per surface **only if it helps** — never instead of product DNA. Combine with project tokens; never override brand without human approval.
+Load one preset per product as the **craft substrate** (type, elevation, motion, density). It is not the product identity. `design/DESIGN.md` must name the slug and a product delta. Combine with project tokens; never override a signed brand.
 
 Path: `.quinsy-studio/knowledge-base/aesthetic-presets/<slug>/SKILL.md`
 
@@ -9,7 +9,7 @@ Path: `.quinsy-studio/knowledge-base/aesthetic-presets/<slug>/SKILL.md`
 
 | Situation | Preset category |
 |-----------|-----------------|
-| Gate 2a / 2b | Optional footnote after uniqueness is signed; human picks at 2a if useful |
+| Gate 2a / 2b | Required substrate after the human interview. Uniqueness section states the delta. |
 | UI design spec (`ticket_type: ui-*`) | **Optional** section: Aesthetic preset |
 | Marketing / landing (UX-007) | Preset + narrative storyboard (still optional vs project DNA) |
 | Project already has brand tokens | Preset adapts *layout, motion, elevation* — tokens stay in `ui/tokens/` |
@@ -55,8 +55,8 @@ In every Team 10 design spec, add:
 ```markdown
 ## Aesthetic preset
 
-- **Preset:** `stripe-like-ui` (or `project-brand-only`)
-- **Rationale:** Why this preset fits the job + audience
+- **Preset:** `academic-editorial-ui` (one slug from the catalog — craft substrate, not the identity)
+- **Delta:** audience job, density, posture, and what this product is not
 - **Token overrides:** None | list project token mappings
 - **Headless UI notes:** transitions, focus rings, active states from preset SKILL.md
 ```

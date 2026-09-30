@@ -46,9 +46,10 @@ Canon: [frontend-team-canon-ledger.md](../../knowledge-base/frontend-team-canon-
 ## Workflow
 
 1. Design-track: wait for `design_status: approved` (spec + mocks exist).
-2. `./studio library list` → `suggest` → `pull`. Confirm kit peers in `docs/setup/ui-kit.md`.
-3. Stay on project tokens. Missing atom → design-track ticket, not a one-off CSS control.
-4. Receipt + `./studio gate --level 5` before `move … done`.
+2. The gate-2b kit is already pulled (`button`, `input`, `popover`, `tooltip`, `dropdown-menu`, `dialog`, `sidebar`, `auth-login`). Style those files to project tokens. Do not draw a second popover.
+3. Product `app/` starts as the materialized prototype. Wire data and enhance UX, IA, and structure there. `design/prototype/` stays the baseline you can reopen. An `Enhancement:` receipt line is required when a ticket leaves that baseline.
+4. Missing generic → design-track ticket, not a one-off CSS control.
+5. Receipt + `./studio gate --level 5` before `move … done`.
 
 ## References
 

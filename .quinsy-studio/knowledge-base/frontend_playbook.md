@@ -26,7 +26,7 @@ Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-g
 
 | Do | Don’t | Implement-fail |
 |----|-------|----------------|
-| Project `ui/tokens` CSS variables | Parallel palette for “just this page”; **shadcn is not the kit** (Radix + studio-library) | Dark mode unreadable / missing token; raw `#hex` / `rgb()` in `app/` or `src/` when tokens exist (gate 5 warn) |
+| Project `ui/tokens` CSS variables. A missing role is a new semantic token in `ui/tokens/design-tokens.css`, then `var(--role)` at the call site | Parallel palette, raw `#hex` / `rgb()` / `hsl()`, Tailwind palette classes (`bg-indigo-600`), or off-scale `px` at the call site | Move-done fails when changed `tsx`/`css` hardcodes color or space while `design-tokens.css` exists |
 
 ### Performance (FE-003)
 
@@ -42,7 +42,7 @@ Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-g
 
 ### Testing
 
-- **PB-20260915-001** helpful=14 harmful=0 :: Root tsc for the public app must exclude sibling apps. Tests that import another app's path aliases belong in that app's tsconfig or the root exclude list — otherwise gate TypeScript fails on unresolved @/ modules that never ship in the public build.
+- **PB-20260915-001** helpful=16 harmful=0 :: Root tsc for the public app must exclude sibling apps. Tests that import another app's path aliases belong in that app's tsconfig or the root exclude list — otherwise gate TypeScript fails on unresolved @/ modules that never ship in the public build.
  (FE-006)
 
 Follow [qa-gate-playbook.md](qa-gate-playbook.md).
@@ -156,7 +156,7 @@ Badge, Icon       Modal, Dropdown  Sidebar, Nav
 
 **Do not use native `<select>`** on product surfaces (board, dialogs, settings, presentation). OS chrome mixes with brand UI.
 
-Use a **Headless UI Listbox/Menu** molecule (studio-library `dropdown` / project Dropdown) styled like other popovers (e.g. user menu). Keyboard Esc + outside click must dismiss.
+Use a **Headless UI Listbox/Menu** molecule (studio-library `dropdown-menu`, pulled at gate 2b) styled like other popovers. Do not hand-roll a second dropdown, popover, tooltip, or dialog while `ui/components/<slug>/` exists. Keyboard Esc + outside click must dismiss.
 
 **Binary labeled choices** (Selected | Whole board, View | Edit): use studio-library **`SegmentedToggle`** — not a pair of ad-hoc buttons, and not `Switch` (Switch is boolean on/off only). Pull: `./studio library pull <project> segmented-toggle`.
 
@@ -462,4 +462,4 @@ Tickets that claim “no third-party font CDN pre-auth” are not done until **a
 ## Deltas
 
 - **PB-20260916-001** helpful=0 harmful=0 :: Operator review Approve must show a visible outcome next to the action (published, already published, or error). Preview URLs must be the public reader host, not the operator admin sign-in wall.
-- **PB-20260915-002** helpful=0 harmful=0 :: Do not call delivery cache-bust from a use-client module. After a write, revalidate from the server plane that already has the secret. Client-visible env cannot reach admin-only URLs, so the UI can report Saved while the public host stays stale.
+- **PB-20260915-002** helpful=1 harmful=0 :: Do not call delivery cache-bust from a use-client module. After a write, revalidate from the server plane that already has the secret. Client-visible env cannot reach admin-only URLs, so the UI can report Saved while the public host stays stale.

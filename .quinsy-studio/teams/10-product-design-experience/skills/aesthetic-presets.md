@@ -19,7 +19,7 @@ Full catalog: [knowledge-base/aesthetic-presets/README.md](../../../knowledge-ba
 
 ## Selection rules
 
-1. **Optional.** Uniqueness in `design/DESIGN.md` beats a catalog clone. A spec may omit this section.
+1. **Optional only as a second preset.** One primary slug is required on `design/DESIGN.md` as craft substrate. Uniqueness (the product delta) beats a catalog clone.
 2. If used: **one primary preset** (optional secondary for marketing hero only), mapped to **project tokens**.
 3. If project `design/DESIGN.md` names a direction → preset must align or spec explains deviation.
 4. Preset defines **layout, elevation, motion, Headless UI state styling** — not business logic.

@@ -135,13 +135,15 @@ ia_nav: { top: __, depth: __ }
 
 Catalog: `knowledge-base/aesthetic-presets/README.md`
 
-## 5. Storyboard (UX-007 — marketing / workflow)
+## 5. Story (required — marketing-page, workflow-explainer, commercial ui-composition)
 
-| Step | Visual | Copy | CTA |
-|------|--------|------|-----|
-| 1 | Hero | … | … |
+> Arc is setup, tension, resolution, and one CTA. Copy is literal. Name what moves and what stays. The still uses real product chrome (LO-0054). Scroll may reveal. It may not hijack.
 
-Narrative arc: setup → tension → resolution.
+- **Setup:** _fill_
+- **Tension:** _fill_
+- **Resolution:** _fill_
+- **CTA:** _fill_
+- **Motion:** what moves, what stays. Reduced-motion path: _fill_
 
 ## 6. Growth intent (Team 11 — required on commercial surfaces)
 

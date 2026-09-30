@@ -29,6 +29,19 @@ def test_infer_design_brief_title_and_scope():
     )
 
 
+def test_infer_i18n_catalog_ac_stays_feature():
+    blob = (
+        "Authentication & Authorization\n"
+        "Visible copy uses catalogs for de, en, es, fr, it, pt, pl. "
+        "No UI string is hardcoded. See `docs/i18n.md`.\n"
+        "A registered user logs in."
+    )
+    assert infer_ticket_type(blob) == "feature"
+    from design_ticket_helpers import is_commercial_surface
+
+    assert not is_commercial_surface(blob)
+
+
 def test_infer_identity_fixture_stays_feature():
     assert (
         infer_ticket_type(
@@ -343,6 +356,31 @@ def test_infer_checkout_is_composition_not_feature():
     assert skills[0] != "GD-001"
 
 
+def test_marketing_story_requires_arc_and_reduced_motion():
+    from design_ticket_helpers import design_spec_story_error
+
+    missing = design_spec_story_error("## 1. Summary\nHello", "marketing-page")
+    assert missing and "Story" in missing
+    template = """## 5. Story
+- **Setup:** _fill_
+- **Tension:** _fill_
+- **CTA:** _fill_
+- Reduced-motion path: _fill_
+"""
+    assert design_spec_story_error(template, "workflow-explainer")
+    filled = """## 5. Story
+- **Setup:** the operator opens the desk
+- **Tension:** the queue is unsorted
+- **Resolution:** one pass clears it
+- **CTA:** Start the pass
+- Reduced-motion path: the still frame, no scroll morph
+## 6. Growth intent
+"""
+    assert design_spec_story_error(filled, "marketing-page") is None
+    assert design_spec_story_error(filled, "ui-composition", "Checkout guest vs account") is None
+    assert design_spec_story_error("## 1. Summary\nHello", "ui-composition", "Filter the command list") is None
+
+
 def test_marketing_page_requires_growth_intent():
     from design_ticket_helpers import design_spec_growth_intent_error
     assert design_spec_growth_intent_error("## 1. Summary\nHello", "marketing-page")
@@ -357,6 +395,8 @@ def test_playbooks_include_growth_for_gd():
     from ticket_helpers import playbooks_for_skills
     paths = playbooks_for_skills(["UX-007", "GD-001"])
     assert any("growth-mechanics" in p for p in paths)
+    assert any("visual-storytelling" in p for p in paths)
+    assert any("delight-playbook" in p for p in paths)
     assert any("design-science" in p for p in paths)
 
 

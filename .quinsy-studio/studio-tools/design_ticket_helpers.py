@@ -41,7 +41,7 @@ COMMERCIAL_TRIGGERS = (
     "product listing",
     " plp",
     "plp ",
-    "catalog",
+    "product catalog",
     "add to cart",
     "add-to-cart",
 )
@@ -75,8 +75,24 @@ DESIGN_BRIEF_TRIGGERS = (
 )
 
 
+_I18N_AC_NOISE = (
+    "no ui string is hardcoded",
+    "see `docs/i18n.md`",
+    "docs/i18n.md",
+    "visible copy uses catalogs",
+)
+
+
+def _strip_catalog_ac(text: str) -> str:
+    """i18n catalog AC mentions 'UI' and must not infer a design-track type (LO-0361)."""
+    t = text.lower()
+    for noise in _I18N_AC_NOISE:
+        t = t.replace(noise, " ")
+    return t
+
+
 def infer_ticket_type(text: str) -> str:
-    t = text.lower().strip()
+    t = _strip_catalog_ac(text).strip()
     if t.startswith("design:") or t.startswith("design —") or t.startswith("design -"):
         return "ui-composition"
     if any(x in t for x in DESIGN_BRIEF_TRIGGERS):
@@ -353,6 +369,50 @@ def design_spec_growth_intent_error(
     )
 
 
+def design_spec_needs_story(ticket_type: str, ticket_blob: str = "") -> bool:
+    tt = (ticket_type or "").strip()
+    if tt in ("marketing-page", "workflow-explainer"):
+        return True
+    return tt == "ui-composition" and is_commercial_surface(ticket_blob or "")
+
+
+def design_spec_story_error(
+    spec_text: str,
+    ticket_type: str = "",
+    ticket_blob: str = "",
+) -> Optional[str]:
+    """Marketing and workflow specs must carry an arc, one CTA, and a reduced-motion path."""
+    if not design_spec_needs_story(ticket_type, ticket_blob):
+        return None
+    match = re.search(r"^##\s+5\.\s+Story\b.*$", spec_text or "", re.M | re.I)
+    if not match:
+        return (
+            "Marketing or workflow spec needs a ## 5. Story section "
+            "(setup, tension, resolution, one CTA, reduced-motion path)."
+        )
+    rest = spec_text[match.end() :]
+    nxt = re.search(r"^## ", rest, re.M)
+    section = rest[: nxt.start()] if nxt else rest
+    if "_fill_" in section:
+        return (
+            "Story section is still the template. Replace each _fill_ with the arc, "
+            "the CTA, and the reduced-motion path."
+        )
+    missing = []
+    for label, pattern in (
+        ("setup", r"\bsetup\b"),
+        ("tension", r"\btension\b"),
+        ("resolution", r"\bresolution\b"),
+        ("CTA", r"\bCTA\b|call to action"),
+        ("reduced-motion", r"reduced[ -]motion"),
+    ):
+        if not re.search(pattern, section, re.I):
+            missing.append(label)
+    if missing:
+        return "Story section missing: " + ", ".join(missing)
+    return None
+
+
 def design_spec_has_in_context_mocks_section(spec_text: str) -> bool:
     """True if spec includes experienceable / in-context mocks section with substance."""
     patterns = (
@@ -593,6 +653,9 @@ def design_spec_completeness_error(
         growth_err = design_spec_growth_intent_error(text, ticket_type, ticket_blob)
         if growth_err:
             return growth_err
+        story_err = design_spec_story_error(text, ticket_type, ticket_blob)
+        if story_err:
+            return story_err
         from studio_ia_audit import ia_nav_error_for_ticket
 
         ia_err = ia_nav_error_for_ticket(text, ticket_type)

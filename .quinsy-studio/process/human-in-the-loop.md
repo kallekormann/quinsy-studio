@@ -25,8 +25,8 @@ Agent: "Implemented."
 | **Security** | security exceptions, access rights | **Yes** (tech-veto) |
 | **As-built / PRD (gate 0)** | confirm “this is what we have / are building” | **Yes** (`./studio approve --gate 0`) |
 | **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`; refuses if gate 0 pending). Iterate: `./studio revise --gate 1` |
-| **Design direction (gate 2a)** | unanswered questions + signed DESIGN.md (uniqueness, token names) | **Yes** (`./studio approve --gate 2a`; refuses if gate 1 pending). No prototype. |
-| **Design system (gate 2b)** | project CSS kit, coded A/M/O, sticker all-states, live prototype | **Yes** (`./studio approve --gate 2b`; refuses if 2a pending). Iterate: `./studio revise --gate 2b`. Bare `--gate 2` is refused. Do not promote product look into studio-library. |
+| **Design direction (gate 2a)** | critique PASS, then the human signs identity (preference) | **Yes** (`./studio approve --gate 2a`; refuses if gate 1 pending), only after `DIRECTION-CRITIQUE.md` has no FAIL. Execute stays IMPLEMENT while the grader fails. No prototype. |
+| **Design system (gate 2b)** | pulled kit, shell routes, sticker all-states, live prototype | **Yes** (`./studio approve --gate 2b`; refuses if 2a pending). That copies the prototype into the product app. Iterate: `./studio revise --gate 2b`. Bare `--gate 2` is refused. Do not promote product look into studio-library. |
 | **Release** | production release | **Yes** |
 | **Cadence review** | shipped UI / product after **N implementation sprints** (default 2) | **Yes** (`./studio review`) — feedback goes into **production** tickets, not a silent next implement |
 | **Architecture packet** | ticket-level approach note | **Yes** (`./studio approve-arch`) after `docs/architecture/<TICKET>.md` exists |

@@ -58,6 +58,18 @@ HITL_KINDS = (
     "amendment",
 )
 
+def qa_gate_level(status: Dict[str, Any]) -> int:
+    """QA gate is numeric. Human gates such as 2a and 2b are not level 5."""
+    raw = str(status.get("gate", "0") or "0").strip()
+    digits: List[str] = []
+    for char in raw:
+        if char.isdigit():
+            digits.append(char)
+        else:
+            break
+    return int("".join(digits) or "0")
+
+
 RECEIPT_REQUIRED_HEADINGS = (
     ("plan", re.compile(r"^##\s*plan\b", re.I | re.M)),
     ("ac", re.compile(r"^##\s*(ac|acceptance|ac coverage)\b", re.I | re.M)),
@@ -411,6 +423,11 @@ def receipt_is_complete(
     from studio_skill_checks import ai_eval_receipt_issues
 
     issues.extend(ai_eval_receipt_issues(text, blob))
+    from studio_design_discovery import baseline_departure_issues, implementation_receipt_issues
+
+    root = PROJECTS_DIR / project
+    issues.extend(baseline_departure_issues(root, text))
+    issues.extend(implementation_receipt_issues(root, text, blob))
     return not issues
 
 
@@ -948,7 +965,7 @@ def _decide_from_state_body(
             if gate2a_phase == "write_direction":
                 return ExecuteStep(
                     kind="IMPLEMENT",
-                    reason="2a: fill design/DESIGN.md from human discovery answers (uniqueness, token names, no indigo)",
+                    reason="2a: fill design/DESIGN.md from human discovery answers (preset substrate, product delta, token names, no indigo)",
                     command=f"./studio resume {project}",
                     read="design/DESIGN.md",
                     loop=True,
@@ -959,18 +976,46 @@ def _decide_from_state_body(
                         "playbooks": ["design-direction-playbook.md"],
                     },
                 )
+            if gate2a_phase == "write_critique":
+                return ExecuteStep(
+                    kind="IMPLEMENT",
+                    reason=(
+                        "2a: UX-008 second pass — write design/DIRECTION-CRITIQUE.md with PASS or FAIL "
+                        "on audience, preset, type, color, density, banned patterns. "
+                        "Do not ask the human until every line is PASS. "
+                        "Failing lines are appended to docs/phases/revisions.md"
+                    ),
+                    command=f"./studio resume {project}",
+                    read="design/DIRECTION-CRITIQUE.md",
+                    loop=True,
+                    card={
+                        "id": "GATE-2A",
+                        "title": "Direction critique",
+                        "skills": ["UX-008", "UX-006"],
+                        "playbooks": ["anti-slop-design-ux.md", "design-direction-playbook.md"],
+                    },
+                )
+            if gate2a_phase == "critique_budget":
+                return _hitl(
+                    "gate-2a-critique",
+                    project,
+                    f"./studio revise {project} --gate 2a --feedback \"direction critique exhausted\"",
+                    "direction critique failed "
+                    f"{MAX_GATE_RETRIES} distinct passes — human redirects the identity. "
+                    "Read design/critique-log.json. Do not sign a FAIL rubric",
+                )
             return _hitl(
                 "gate-2a",
                 project,
                 f"./studio approve {project} --gate 2a",
-                "human must answer discovery and sign DESIGN.md (uniqueness, no indigo stub). "
+                "critique passed — human signs the identity (preference). "
                 "Do not scaffold prototype until 2a is approved",
             )
         if not gate2b_ready:
             adopt_kit = (
                 "2b token-map of existing UI (no fake prototype)"
                 if adopt
-                else "2b project kit: CSS tokens, Tailwind mapped to vars, coded A/M/O, sticker all-states"
+                else "2b project kit: pull the library base kit, map CSS tokens, sticker all-states, shell plus journey mocks"
             )
             return ExecuteStep(
                 kind="IMPLEMENT",
@@ -989,7 +1034,8 @@ def _decide_from_state_body(
             "gate-2b",
             project,
             f"./studio approve {project} --gate 2b",
-            "human must approve the project kit (live prototype / token-map). "
+            "human must approve the project kit (live prototype baseline). "
+            "Grader already passed shell, library imports, and sticker states. "
             "./studio revise --gate 2b until approved. Do not promote look into studio-library",
         )
 
@@ -1224,7 +1270,7 @@ def _decide_from_state_body(
             loop=True,
         )
 
-    gate_level = int(str(status.get("gate", "0") or "0"))
+    gate_level = qa_gate_level(status)
     gate_passed = status.get("gate_status") == "passed" and gate_level >= 5
     fresh = has_fresh_gate_pass(log, tid)
     log_empty = not log.get("entries")
@@ -1329,7 +1375,17 @@ def decide_next_action(project: str) -> ExecuteStep:
         gate1_ready, _ = validate_human_gate(project, 1)
     if hg.get("1", {}).get("status") == "approved" and not direction_approved(status):
         gate2a_phase = gate_2a_next(project_dir(project), adopt=adopt)
-        gate2a_ready = gate2a_phase not in ("write_questions", "write_direction")
+        if gate2a_phase == "write_critique":
+            from studio_design_discovery import (
+                MAX_CRITIQUE_ATTEMPTS,
+                critique_issues,
+                record_critique_attempt,
+            )
+
+            count = record_critique_attempt(project_dir(project))
+            if count > MAX_CRITIQUE_ATTEMPTS and critique_issues(project_dir(project)):
+                gate2a_phase = "critique_budget"
+        gate2a_ready = gate2a_phase not in ("write_questions", "write_direction", "write_critique")
     if direction_approved(status) and not design_system_approved(status):
         gate2b_ready, _ = validate_human_gate(project, "2b")
 
@@ -1375,7 +1431,9 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
     lines.append("    Worlds: studio HQ vs this product tree only. No sibling Read/copy/git.")
     lines.append("    Secrets: names from env.schema.json — never Read .env values.")
     lines.append(
-        "    HITL: spec/mocks, architecture packet, or ./studio env --approve — not a morning brief."
+        "    HITL: preference and irreversible decisions only "
+        "(signed direction after critique, signed baseline, architecture, env, ship main, cadence). "
+        "Not a morning brief and not a hex check the grader already passed."
     )
     looping = step.kind != "HITL" and step.loop
     lines.append(
@@ -1613,7 +1671,7 @@ def health_report(project: str) -> List[Dict[str, str]]:
                             "fix": f"./studio receipt {project} {t['id']}",
                         }
                     )
-                gate_level = int(str(status.get("gate", "0") or "0"))
+                gate_level = qa_gate_level(status)
                 if status.get("gate_status") != "passed" or gate_level < 5:
                     findings.append(
                         {

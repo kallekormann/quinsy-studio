@@ -40,6 +40,6 @@ _Chrome microcopy rules. Banned phrases from discovery._
 
 _Reduced-motion first. What may move._
 
-## Aesthetic preset (optional footnote)
+## Aesthetic preset
 
-_Not required. If used, map to tokens above — presets are not the source of truth._
+Substrate slug from `knowledge-base/aesthetic-presets/` plus the product delta (audience, density, posture, what we are not). The preset locks type, elevation, motion, and density. It is not the identity.
