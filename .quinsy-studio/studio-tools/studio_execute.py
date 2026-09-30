@@ -398,15 +398,15 @@ def receipt_issues(text: str) -> List[str]:
     return issues
 
 
-def receipt_is_complete(
+def receipt_blocker_messages(
     project: str,
     sprint: str,
     ticket_id: str,
     ticket_text: str | None = None,
-) -> bool:
+) -> List[str]:
     path = receipt_path(project, sprint, ticket_id)
     if not path.exists():
-        return False
+        return [f"receipt missing: {path}"]
     text = path.read_text(encoding="utf-8", errors="ignore")
     issues = receipt_issues(text)
     blob = ticket_text or ""
@@ -428,7 +428,16 @@ def receipt_is_complete(
     root = PROJECTS_DIR / project
     issues.extend(baseline_departure_issues(root, text))
     issues.extend(implementation_receipt_issues(root, text, blob))
-    return not issues
+    return issues
+
+
+def receipt_is_complete(
+    project: str,
+    sprint: str,
+    ticket_id: str,
+    ticket_text: str | None = None,
+) -> bool:
+    return not receipt_blocker_messages(project, sprint, ticket_id, ticket_text)
 
 
 def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional[Dict] = None) -> Path:

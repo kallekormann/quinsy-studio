@@ -5,7 +5,7 @@
 
 ## Rule
 
-**No hallucinated UI.** Every element maps to studio-library or an approved new component in studio-library first. Feature tickets **stay inside** the gate-2 design system (project tokens + pulled components). If a component, token, or pattern is **missing**, stop the feature ticket and open a design-track ticket for a **design sprint** (`approve-design` HITL) — do not invent the primitive to unblock implement.
+**No hallucinated UI.** Every element maps to studio-library or an approved new component in studio-library first. Feature tickets **stay inside** the gate-2b project kit (project tokens + pulled components). If a component, token, or pattern is **missing**, stop the feature ticket and open a design-track ticket for the next **design phase** (`./studio approve-design <p> --phase`) — do not invent the primitive to unblock implement.
 
 ---
 

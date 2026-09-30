@@ -1,6 +1,6 @@
 # Team 10 — Product Design & Experience
 
-Owns **what** and **why** for UI/UX. Team 01 implements after the **project kit** is signed (gates **2a → 2b**) and, later, after per-ticket `approve-design`.
+Owns **what** and **why** for UI/UX. Team 01 implements after the **project kit** is signed (gates **2a → 2b**) and, in later cycles, after the design phase is signed with `./studio approve-design <project> --phase`.
 
 ## Director roles
 
@@ -35,12 +35,13 @@ The catalog locks type, elevation, motion, and density. It is not the product id
 1. **2a** — CARD: UX-001, UX-004, UX-006, UX-008. Unanswered questions in `docs/design/discovery.md`. HITL until the human answers. Fill `design/DESIGN.md` (preset substrate, product delta, token names). UX-008 writes `design/DIRECTION-CRITIQUE.md` in a second pass. `./studio approve --gate 2a` only after every critique line is PASS. Do **not** scaffold `design/prototype`. Playbook: [design-direction-playbook.md](../../knowledge-base/design-direction-playbook.md)
 2. **2b** — CARD: UX-005, UX-002, UX-003, UX-006, UX-008, FE-002. `./studio design` pulls the library base kit. Style it with project CSS tokens. Shell routes (marketing when the archetype is public, sign-in, register, app shell, settings, empty/loading/error) plus the PRD journey. Sticker sheet renders the pulled controls in all states. `./studio revise --gate 2b` until `./studio approve --gate 2b`, which copies the prototype into the product app and leaves `design/prototype/` as the baseline. Do **not** promote this product’s look into studio-library.
 
-**Per-ticket (after 2b):**
+**After gate 2b (the phase train):**
 
-1. `./studio ticket` → design-track tickets get `design_status: pending` and a **stub** at `docs/design-specs/<TICKET>.md`
-2. Team 10 **fills** that spec (remove the stub banner) and writes HTML mocks under `docs/design-specs/mocks/<TICKET>/` using **the same project tokens**, in the **real product view**, **all states**
-3. Human → `./studio approve-design <project> <ticket-id>`
-4. Team 01 → `./studio move … implement` (style the pulled kit + this baseline; do not redraw popover, tooltip, dropdown, or dialog)
+1. A **design phase** holds experience tickets whose `design_status` is `pending`. Polish on the signed kit stays `n/a` and stays out of this phase.
+2. Team 10 **fills** every spec (remove the stub banner) and writes HTML mocks under `docs/design-specs/mocks/<TICKET>/` using **the same project tokens**, in the **real product view**, **all states**. Each ticket states `architecture delta: none` or names the architecture ticket.
+3. Human → `./studio approve-design <project> --phase` once, after every packet in the phase is written.
+4. An **architecture phase** signs the deltas and any boundary tickets. `./studio approve-arch <project> <TICKET> --reject` sends an infeasible design to the next design cycle.
+5. An **implementation phase** builds only tickets whose design and architecture are `approved` or `n/a`. Team 01 styles the pulled kit and this baseline; do not redraw popover, tooltip, dropdown, or dialog.
 
 Never paste “please approve `docs/design-specs/…`” unless that file is filled and the mock folder exists.
 

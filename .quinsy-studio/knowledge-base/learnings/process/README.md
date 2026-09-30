@@ -10,4 +10,5 @@ On IMPLEMENT, Read the topic file that matches the ticket — not `inbox.md`.
 ## Topics
 
 - [canvas](canvas.md) — process / canvas
+- [tooling](tooling.md) — process / tooling
 - [workflow](workflow.md) — process / workflow

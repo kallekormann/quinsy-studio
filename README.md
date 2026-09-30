@@ -27,7 +27,7 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 
 Pick one path. **`execute` is the driver** after that — one next action until HITL. `./studio resume` is only a checklist.
 
-Start-of-project HITL (you, not the agent): **gate 0 PRD/as-built → gate 1 architecture → gate 2 design track** (direction, design system, stills/mocks or clickable prototype). Then sprints.
+Start-of-project HITL (you, not the agent): **gate 0 PRD/as-built → gate 1 architecture → gate 2a direction → gate 2b project kit**. `approve --gate 2` is refused. After the milestone roadmap, each cycle is a design phase, then an architecture phase, then an implementation phase. An empty phase is skipped.
 
 ### New product (PRD)
 
@@ -55,25 +55,27 @@ If a learning is identified mid-sprint, harvest is immediate. Product execute **
 
 Full loop: [GETTING_STARTED — execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) · [learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified)
 
-**Three human gates before implementation, then milestone planning:**
+**Human gates before implementation, then milestone planning:**
 
 | Gate | You approve | Then |
 |------|-------------|------|
 | 0 | PRD + definitions **or** as-built truth (adopt) | `./studio blueprint` |
-| 1 | Architecture + ADRs after PRD (as-is on adopt) | Design track starts — `./studio design` |
-| 2 | Design direction + system + stills/mocks or clickable prototype (adopt: design of what exists) | Library promotion (greenfield only) → milestones |
-| Milestones | Version roadmap (`docs/phases/`) | Tickets for **active milestone** → sprints |
+| 1 | Architecture + ADRs after PRD (as-is on adopt) | Direction interview — `./studio design --discovery` |
+| 2a | Design direction (`design/DESIGN.md` after a passing critique) | `./studio design` |
+| 2b | Project kit: CSS tokens, coded A/M/O, sticker all-states (adopt: token-map, no fake prototype) | Milestones |
+| Milestones | Version roadmap (`docs/phases/`) | Tickets for **active milestone** → the phase train |
 
-You also approve **design/architecture packets** (`approve-design`, `approve-arch`) and a **cadence review** every N implementation sprints (default 2). Ready tickets close via receipt skill QA + gate 5 — no ticket ACK. Sprint scope/groom are agent-owned. Implementation `--approve-scope` waits until enough **ready** tickets exist (`cost.production_ready_min`).
+You also sign a **design phase** (`approve-design --phase`) and an **architecture phase** (`approve-arch --phase`), then a **cadence review** every N implementation phases (default 2). Implementation only scopes tickets whose design and architecture are `approved` or `n/a`. Ready tickets close via receipt skill QA + gate 5 — no ticket ACK. An empty phase is skipped. Hygiene stays outside the train.
 
-Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `package.json`. Adopt merges them into the live app. Schema migrate is agent work when Compose is up — you get an INFORM, not a “please run migrate.” **Docker is required.** Env **names** live in `env.schema.json`; values are injected with `./studio env <p> up --approve` from the host secret store (never Read `.env` values into chat).
+Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `package.json`. Adopt merges them into the live app. Schema migrate is agent work when Compose is up — you get an INFORM, not a “please run migrate.” **Docker is required.** Env **names** live in `env.schema.json`. Desktop values live in gitignored `projects/<p>/.env` and are injected with `./studio env <p> up --approve`. Production values live in Coolify. Never Read `.env` values into chat.
 
 `./studio approve --gate N` refuses unless gate N-1 is already approved (re-approve of the same gate is allowed). Every execute CARD reprints a short **CONSTITUTION** (worlds, secrets-as-names, packet HITL).
 
 ```bash
 ./studio approve my-project --gate 0
 ./studio blueprint my-project && ./studio approve my-project --gate 1
-./studio design my-project --scope core-views && ./studio approve my-project --gate 2
+./studio design my-project --discovery && ./studio approve my-project --gate 2a
+./studio design my-project --scope core-views && ./studio approve my-project --gate 2b
 ./studio approve my-project --milestones    # after agent drafts docs/phases/
 ./studio sprint my-project --approve-scope  # agent-owned; you may override
 ./studio execute my-project                 # until HITL (packet sign-off or cadence review)
@@ -83,14 +85,13 @@ Greenfield `bootstrap` / `init` / `design` put UI kit peers in the prototype `pa
 
 | ACTION | Meaning |
 |--------|---------|
-| `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Sprint: next **ready** ticket (CARD lists skills + playbooks) |
-| `PRODUCTION` | Write unsigned packets (spec + all-state mocks, or `docs/architecture/<TICKET>.md`) — same loop, not a sidecar |
+| `IMPLEMENT` | Adopt: fill `docs/as-built/`. Pre-impl: blueprint or design track. Design or architecture phase: write the open packet. Implementation phase: next **ready** ticket (CARD lists skills + playbooks) |
 | `VERIFY` → `GATE` → `DEBUG` → `MOVE_DONE` | Receipt + QA 5, then `move … done` (product git commit). Cadence: `ship --to dev`. `main` is HITL |
 | `INFORM` | Reuse brief / inbox drain / **open HQ LO count** — loop. **`cost-cap`:** stop; raise the named key |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` only when there is no in-flight product ticket |
-| `HITL` | **You:** gates 0–2 (sequential), packet `approve-design` / `approve-arch`, `./studio env … --approve`, cadence review. Not a morning brief. Not a feature-ticket ACK |
+| `HITL` | **You:** gates 0 → 1 → 2a → 2b, batch `approve-design --phase` / `approve-arch --phase`, `./studio env … --approve`, cadence review. Not a morning brief. Not a feature-ticket ACK |
 
-Priority: adopt as-built (if needed) → HITL gates 0–2 → `PRODUCTION` if the ready pipeline is starved → finish an in-progress ticket → next `IMPLEMENT` (train sidecar if LOs are open). Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
+Priority: adopt as-built (if needed) → HITL gates 0 → 1 → 2a → 2b → the phase train (design, then architecture, then implementation; empty phases skip) → finish an in-progress ticket → next ready `IMPLEMENT`. One unsigned ticket does not freeze a ready sibling. Learnings are harvested automatically (`learn`, retro `--complete`, reuse, 3rd gate fail). Do not let them pile until the next sprint.
 
 If Cursor asks you to **Allow** `./studio move … done`, that is the IDE Auto-review prompt — not studio HITL. See [GETTING_STARTED — Cursor Auto-run](.quinsy-studio/GETTING_STARTED.md#cursor-auto-run-vs-studio-hitl).
 
@@ -117,12 +118,13 @@ Open this repo in Cursor. You approve HITL stops; the agent runs `./studio execu
 | 1b. Existing repo | *"Adopt my-project from this folder and reconstruct as-built."* |
 | 2. Gate 0 ready | *"Approve gate 0"* (as-built truth on adopt, or PRD + definitions) |
 | 3. Architecture ready | *"Approve gate 1"* |
-| 4. Design ready | *"Approve gate 2"* (or *"Design core-views first"*) |
-| 5. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
-| 6. Build | *"Let the sprint run — execute until HITL"* (agent owns scope; you may override) |
-| 7. Cadence | Every N implementation sprints: *"Sprint review"* → *"Approve review"*. Off-cadence: retro without a UI review |
-| 8. Mid-sprint thought | Agent queues `./studio note` and **keeps implementing** — it does not switch to your new message |
-| 9. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
+| 4. Direction ready | *"Approve gate 2a"* |
+| 5. Project kit ready | *"Approve gate 2b"* (or *"Design core-views first"*) |
+| 6. Milestones | *"Draft milestone roadmap"* → *"Approve milestones"* |
+| 7. Build | *"Let the sprint run — execute until HITL"* — design phase, then architecture phase, then implementation. An empty phase is skipped. |
+| 8. Cadence | Every N implementation phases: *"Sprint review"* → *"Approve review"*. Off-cadence: retro without a UI review |
+| 9. Mid-sprint thought | Agent queues `./studio note` and **keeps implementing** — it does not switch to your new message |
+| 10. Strategic pivot | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
 | Drift | *"Execute my-project — back on track"* |
 
 More examples: [GETTING_STARTED — start here](.quinsy-studio/GETTING_STARTED.md#start-here-tell-the-agent) · [prompt cheat sheet](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet) · [execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) · [learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified)
@@ -131,7 +133,7 @@ More examples: [GETTING_STARTED — start here](.quinsy-studio/GETTING_STARTED.m
 
 Open this repo in Cursor. Always-on rules: [`.cursor/rules/quinsy-studio.mdc`](.cursor/rules/quinsy-studio.mdc). Each session: `./studio verify-worlds` → `./studio verify-abstraction` → `./studio settings` → `focus` (isolates siblings) → **`execute`** (loop until HITL). You approve gates; the agent runs `./studio`. See [Using Cursor](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor).
 
-**Other hosts (same `./studio` loop, keys stay in that tool):** [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md). Codex already reads [`AGENTS.md`](AGENTS.md). Product LLM **names** live in `env.schema.json`; **values** are not the coding-agent key and must not be pasted into chat.
+**Other hosts (same `./studio` loop, keys stay in that tool):** [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md). Codex already reads [`AGENTS.md`](AGENTS.md). Product LLM **names** live in `env.schema.json`. Desktop values live in gitignored `projects/<p>/.env`; production values live in Coolify. They are not the coding-agent key and must not be pasted into chat.
 
 ## Cost & token policy (studio load, not Cursor billing)
 

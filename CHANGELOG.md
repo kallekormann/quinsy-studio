@@ -2,6 +2,13 @@
 
 All changes to Quinsy Studio are documented here.
 
+## [Unreleased] — 2026-09-30
+
+- Desktop secrets live in gitignored `projects/<p>/.env`. `./studio env … --approve` passes that file to Compose. Production stays in Coolify.
+- After gate 2b, each cycle is a design phase, then an architecture phase, then an implementation phase. An empty phase is skipped.
+
+Detail: [.quinsy-studio/CHANGELOG.md](.quinsy-studio/CHANGELOG.md) · [.quinsy-studio/GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md)
+
 ## [1.16.0] — 2026-09-22
 
 ### HQ isolation (LO-0314–LO-0326)

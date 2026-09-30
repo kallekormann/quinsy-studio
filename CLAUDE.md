@@ -12,6 +12,6 @@ Keys stay in Claude Code / Anthropic login. Never write API keys into studio set
 
 **Docker is required.** Do not Read `.env` **values** — names only (`env.schema.json`). Inject with `./studio env <p> up|migrate|dev --approve`. One chat per product (`parallel.max_projects`, default 5). `./studio focus` will not clobber a live lease unless `--force`. HQ train is a **separate** session; product execute INFORM open LO counts and must not steal the chat for `STUDIO_LO` mid-project. HITL is packet sign-off or env `--approve`, not a morning brief.
 
-Product LLM **names** belong in `env.schema.json`; **values** in the host secret store, not this file.
+Product LLM **names** belong in `env.schema.json`; **values** belong in gitignored `projects/<p>/.env` on the desktop and in Coolify in production, not in this file.
 
 UI kit peers and agent-run migrations: see `AGENTS.md`.

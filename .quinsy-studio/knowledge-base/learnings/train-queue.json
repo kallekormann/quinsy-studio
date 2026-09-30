@@ -1276,6 +1276,237 @@
       "created": "2026-09-26T14:32:57",
       "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0115. Product execute stays IMPLEMENT.",
       "closed": "2026-09-26T14:38:06"
+    },
+    {
+      "id": "TR-0116",
+      "skill_id": "UX-005",
+      "topic": "Do not pin a 500vh film as the first screen. Keep a static claim + product visua",
+      "source": "lo",
+      "observation": "LO-0351",
+      "status": "done",
+      "created": "2026-09-26T16:02:34",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0116. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:08:59"
+    },
+    {
+      "id": "TR-0117",
+      "skill_id": "UX-001",
+      "topic": "Do not pin a 500vh film as the first screen. Keep a static claim + product visua",
+      "source": "lo",
+      "observation": "LO-0351",
+      "status": "done",
+      "created": "2026-09-26T16:02:34",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0117. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:08:59"
+    },
+    {
+      "id": "TR-0118",
+      "skill_id": "UX-005",
+      "topic": "Keep the first marketing screen static: claim, product visual, and primary CTA visible at rest. Do not pin a multi-viewp",
+      "source": "lo",
+      "observation": "LO-0351",
+      "status": "done",
+      "created": "2026-09-26T16:03:08",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0118. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-26T16:03:26"
+    },
+    {
+      "id": "TR-0119",
+      "skill_id": "BE-001",
+      "topic": "Vendor webhooks must verify the provider signature. A reachable URL is normal. An unsigned writer is never the standard.",
+      "source": "lo",
+      "observation": "LO-0352",
+      "status": "done",
+      "created": "2026-09-26T18:06:27",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0119. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:09:26"
+    },
+    {
+      "id": "TR-0120",
+      "skill_id": "BE-004",
+      "topic": "Vendor webhooks must verify the provider signature. A reachable URL is normal. An unsigned writer is never the standard.",
+      "source": "lo",
+      "observation": "LO-0352",
+      "status": "done",
+      "created": "2026-09-26T18:06:27",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0120. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:08:59"
+    },
+    {
+      "id": "TR-0121",
+      "skill_id": "BE-002",
+      "topic": "When a requirement needs a fact the schema cannot store, architecture must add that column instead of shipping the schem",
+      "source": "lo",
+      "observation": "LO-0354",
+      "status": "done",
+      "created": "2026-09-26T18:06:27",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0121. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:32"
+    },
+    {
+      "id": "TR-0122",
+      "skill_id": "UX-005",
+      "topic": "A SaaS blueprint must include a public marketing route group: home, use-case content files, and legal routes when copy c",
+      "source": "lo",
+      "observation": "LO-0355",
+      "status": "done",
+      "created": "2026-09-26T18:06:28",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0122. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:32"
+    },
+    {
+      "id": "TR-0123",
+      "skill_id": "UX-001",
+      "topic": "A SaaS blueprint must include a public marketing route group: home, use-case content files, and legal routes when copy c",
+      "source": "lo",
+      "observation": "LO-0355",
+      "status": "done",
+      "created": "2026-09-26T18:06:28",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0123. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:27"
+    },
+    {
+      "id": "TR-0124",
+      "skill_id": "SO-001",
+      "topic": "Subscription checkout must use hosted billing while the price id stays empty and must refuse checkout until that id exis",
+      "source": "lo",
+      "observation": "LO-0356",
+      "status": "done",
+      "created": "2026-09-26T18:06:28",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0124. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:32"
+    },
+    {
+      "id": "TR-0125",
+      "skill_id": "BE-001",
+      "topic": "Subscription checkout must use hosted billing while the price id stays empty and must refuse checkout until that id exis",
+      "source": "lo",
+      "observation": "LO-0356",
+      "status": "done",
+      "created": "2026-09-26T18:06:28",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0125. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:27"
+    },
+    {
+      "id": "TR-0126",
+      "skill_id": "SO-001",
+      "topic": "Execute leases must expire when the holder process is dead so focus is not blocked by a stale lease.",
+      "source": "lo",
+      "observation": "LO-0358",
+      "status": "done",
+      "created": "2026-09-26T18:06:28",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0126. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:32"
+    },
+    {
+      "id": "TR-0127",
+      "skill_id": "BE-001",
+      "topic": "Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human",
+      "source": "lo",
+      "observation": "LO-0359",
+      "status": "done",
+      "created": "2026-09-26T18:06:28",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0127. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:27"
+    },
+    {
+      "id": "TR-0128",
+      "skill_id": "BE-004",
+      "topic": "Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human",
+      "source": "lo",
+      "observation": "LO-0359",
+      "status": "done",
+      "created": "2026-09-26T18:06:28",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0128. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:27"
+    },
+    {
+      "id": "TR-0129",
+      "skill_id": "SO-001",
+      "topic": "Keep the product UI kit in the product repository. Do not promote project look into studio-library.",
+      "source": "lo",
+      "observation": "LO-0360",
+      "status": "done",
+      "created": "2026-09-27T10:11:27",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0129. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-27T10:11:32"
+    },
+    {
+      "id": "TR-0130",
+      "skill_id": "BE-002",
+      "topic": "Do not run `supabase start` beside an existing Compose Postgres in the same work",
+      "source": "lo",
+      "observation": "LO-0362",
+      "status": "done",
+      "created": "2026-09-29T08:51:59",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0130. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-29T08:54:12"
+    },
+    {
+      "id": "TR-0131",
+      "skill_id": "UX-005",
+      "topic": "Reuse flagged kit files under `ui/components/` as studio-library LO work. Promot",
+      "source": "lo",
+      "observation": "LO-0363",
+      "status": "done",
+      "created": "2026-09-29T11:24:03",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0131. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-29T11:26:22"
+    },
+    {
+      "id": "TR-0132",
+      "skill_id": "FE-002",
+      "topic": "Reuse flagged kit files under `ui/components/` as studio-library LO work. Promot",
+      "source": "lo",
+      "observation": "LO-0363",
+      "status": "done",
+      "created": "2026-09-29T11:24:03",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0132. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-29T11:26:22"
+    },
+    {
+      "id": "TR-0133",
+      "skill_id": "UX-005",
+      "topic": "Keep the project UI kit in the product repo. Do not open a studio LO to copy tok",
+      "source": "lo",
+      "observation": "LO-0364",
+      "status": "done",
+      "created": "2026-09-29T11:24:03",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0133. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-29T11:26:22"
+    },
+    {
+      "id": "TR-0134",
+      "skill_id": "FE-002",
+      "topic": "Keep the project UI kit in the product repo. Do not open a studio LO to copy tok",
+      "source": "lo",
+      "observation": "LO-0364",
+      "status": "done",
+      "created": "2026-09-29T11:24:03",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0134. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-29T11:26:22"
+    },
+    {
+      "id": "TR-0135",
+      "skill_id": "UX-003",
+      "topic": "Keep settings work on `/settings`. Do not open a second settings product when a",
+      "source": "lo",
+      "observation": "LO-0365",
+      "status": "done",
+      "created": "2026-09-29T13:40:49",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0135. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-29T13:45:20"
+    },
+    {
+      "id": "TR-0136",
+      "skill_id": "UX-003",
+      "topic": "Reuse the signed settings surface. Do not add a second settings product for a later IA ticket.",
+      "source": "lo",
+      "observation": "LO-0365",
+      "status": "done",
+      "created": "2026-09-29T13:43:26",
+      "instruction": "Second agent: research (cited), derive portable principles, then ./studio infusion-delta into the named playbook (no full-file rewrite). Close with ./studio train --done TR-0136. Product execute stays IMPLEMENT.",
+      "closed": "2026-09-29T13:45:20"
     }
   ]
 }

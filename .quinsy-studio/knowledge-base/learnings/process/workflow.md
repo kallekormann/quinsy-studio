@@ -5,6 +5,17 @@ Matching playbook/skill: `process/learning-loop.md`.
 
 ## Principles
 
+- **LO-0361** 2026-09-29 :: When `docs/i18n.md` exists, ticket type must stay explicit (`feature`) so catalog AC does not infer a design-track ticket.
+  - When a project has `docs/i18n.md`, every ticket gets catalog AC. That AC mentions "UI string" and must not flip `infer_ticket_type` to `ui-composition`. Set `ticket_type: feature` (or the real design type) explicitly. Classifier: strip catalog AC before matching the word `ui`.
+- **PB-20260927-003** helpful=0 harmful=0 :: Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human gate.
+- **PB-20260927-002** helpful=1 harmful=0 :: A stack and host named in the PRD must win over the archetype default, and that delta must be an ADR.
+- **PB-20260927-001** helpful=0 harmful=0 :: A PRD rewrite must keep the original specification unchanged and must not drop normative details to fit a length cap.
+- **LO-0359** 2026-09-26 :: Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human gate.
+  - Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human gate.
+- **LO-0357** 2026-09-26 :: A stack and host named in the PRD must win over the archetype default, and that delta must be an ADR.
+  - A stack and host named in the PRD must win over the archetype default, and that delta must be an ADR.
+- **LO-0353** 2026-09-26 :: A PRD rewrite must keep the original specification unchanged and must not drop normative details to fit a length cap.
+  - A PRD rewrite must keep the original specification unchanged and must not drop normative details to fit a length cap.
 - **PB-20260926-005** helpful=0 harmful=0 :: When collapsing stacked mocks into one composition, keep the feature inventory section. A single narrative frame is not permission to delete the inventory.
 - **LO-0350** 2026-09-26 :: Keep the feature inventory when replacing stacked mocks
   - See **PB-20260926-005**. When collapsing stacked mocks into one composition, keep the feature inventory section. A single narrative frame is not permission to delete the inventory.

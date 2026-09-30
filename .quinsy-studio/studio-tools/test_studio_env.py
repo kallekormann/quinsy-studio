@@ -30,6 +30,59 @@ class StudioEnvTests(unittest.TestCase):
         line = studio_env.public_command_line(argv)
         self.assertNotIn("PASSWORD=", line)
 
+    def test_merged_schema_names_adds_product_keys(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            product = root / "arthur"
+            product.mkdir()
+            (product / "env.schema.json").write_text(
+                '{"variables":[{"name":"VERTEX_PROJECT"},{"name":"APP_KEY"}]}',
+                encoding="utf-8",
+            )
+            names = studio_env.merged_schema_names("arthur", root)
+            self.assertIn("VERTEX_PROJECT", names)
+            self.assertIn("APP_KEY", names)
+            self.assertEqual(len(names), len(set(names)))
+
+    def test_ensure_project_env_keeps_existing_values(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "demo").mkdir()
+            path = studio_env.ensure_project_env_file(
+                "demo", root, names=["POSTGRES_PASSWORD", "REDIS_URL"]
+            )
+            path.write_text("POSTGRES_PASSWORD=s3cretvalue\nREDIS_URL=\n", encoding="utf-8")
+            path = studio_env.ensure_project_env_file(
+                "demo", root, names=["POSTGRES_PASSWORD", "REDIS_URL"]
+            )
+            body = path.read_text(encoding="utf-8")
+            self.assertIn("POSTGRES_PASSWORD=s3cretvalue", body)
+            self.assertEqual(path, root / "demo" / ".env")
+
+    def test_ensure_project_env_seeds_defaults_and_keeps_comments(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docker = root / "demo" / "docker"
+            docker.mkdir(parents=True)
+            (docker / ".env.example").write_text(
+                "POSTGRES_HOST_PORT=15432\nPOSTGRES_PASSWORD=\n",
+                encoding="utf-8",
+            )
+            path = studio_env.ensure_project_env_file(
+                "demo", root, names=["POSTGRES_PASSWORD", "REDIS_URL"]
+            )
+            body = path.read_text(encoding="utf-8")
+            self.assertIn("POSTGRES_HOST_PORT=15432", body)
+            self.assertIn("REDIS_URL=", body)
+            path.write_text("# keep me\nPOSTGRES_PASSWORD=s3cretvalue\n", encoding="utf-8")
+            studio_env.ensure_project_env_file(
+                "demo", root, names=["POSTGRES_PASSWORD", "REDIS_URL"]
+            )
+            body = path.read_text(encoding="utf-8")
+            self.assertTrue(body.startswith("# keep me"))
+            self.assertIn("POSTGRES_PASSWORD=s3cretvalue", body)
+            self.assertIn("REDIS_URL=", body)
+
     def test_ensure_host_env_keeps_existing_values(self):
         with tempfile.TemporaryDirectory() as tmp:
             store = Path(tmp) / "secrets" / "demo"

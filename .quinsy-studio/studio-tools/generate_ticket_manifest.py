@@ -22,7 +22,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 
-from ticket_helpers import render_ticket_markdown
+from ticket_helpers import render_ticket_markdown, apply_i18n_ticket_rules
 from skill_matcher import match_skills, team_for_skills
 from ticket_ids import assign_sequential_ids
 
@@ -312,8 +312,7 @@ def generate_tickets_from_features(
     
     # Add dependency links
     tickets = resolve_dependencies(tickets)
-    
-    return tickets
+    return [apply_i18n_ticket_rules(ticket, project) for ticket in tickets]
 
 
 def generate_setup_tickets(project: str, archetype: str) -> List[Dict]:
@@ -552,7 +551,7 @@ def create_ticket_from_feature(
         "then": acceptance_criteria[0] if acceptance_criteria else f"'{title}' works as described"
     }]
     
-    return {
+    ticket = {
         "id": ticket_id,
         "title": title,
         "description": description,
@@ -576,6 +575,7 @@ def create_ticket_from_feature(
         ],
         "dependencies": []
     }
+    return apply_i18n_ticket_rules(ticket, project)
 
 
 def determine_skills_for_feature(text: str) -> List[str]:

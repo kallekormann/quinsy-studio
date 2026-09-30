@@ -19,12 +19,12 @@ the project folder as the foundation and extended there per project.
 ## Running (from quinsy-studio root)
 
 ```bash
-./studio env <project> up --approve   # inject named vars from the host secret store
+./studio env <project> up --approve   # inject named vars from projects/<project>/.env
 ./studio env <project> status
 ./studio env <project> down
 ```
 
-`up`, `migrate`, and `dev` refuse without `--approve`. Compose receives `--env-file` pointing at the host secret store. Logs print **names only**.
+`up`, `migrate`, and `dev` refuse without `--approve`. The first approved `up` creates gitignored `projects/<project>/.env` from `env.schema.json` plus `.env.example` and `docker/.env.example` when those exist. Existing values and comments stay. Compose receives `--env-file` pointing at that file. Logs print **names only**. Production values live in Coolify, not in a project `.env` on the VPS.
 
 Compose file sets `name: <project>` and `container_name: <project>-postgres` so containers are **not** prefixed `docker-`.
 

@@ -1,6 +1,6 @@
 # Quinsy Studio — Getting Started
 
-> Canonical workflow: **new product** (PRD → **architecture HITL** → **design-track HITL**) **or existing codebase** (`./studio adopt` → as-built) → **execute loop** (`IMPLEMENT` / `PRODUCTION` until HITL) → cadence review every N implementation sprints.  
+> Canonical workflow: **new product** (PRD → architecture → direction 2a → project kit 2b) **or existing codebase** (`./studio adopt` → as-built) → **phase train** (design, then architecture, then implementation; an empty phase is skipped) → cadence review every N implementation phases.  
 > Root overview: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md) · Isolation epic: [hq-isolation-sprints.md](process/hq-isolation-sprints.md)
 
 **How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2a (direction)** → **gate 2b (project kit)** — `approve --gate 2` is refused. After that, `INFORM` still loops. Product execute **INFORM**s open HQ learning counts; infuse in a **separate HQ chat** (`./studio train`). `STUDIO_LO` does **not** replace `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks + **CONSTITUTION**), not the whole backlog.
@@ -29,8 +29,9 @@ Open **quinsy-studio** at the repo root (not `projects/<name>/` alone). Cursor r
 | Rule | What to do |
 |------|------------|
 | **Names, not values** | Agents Read `env.schema.json` / `*.env.example`. Do not Read `.env` / `.env.local` values (Cursor ignore: QUINSY-SECRETS). |
-| **Host secret store** | Values live outside the workspace: `~/Library/Application Support/quinsy-studio/secrets/<project>/` (macOS) or `~/.config/quinsy-studio/secrets/<project>/` (Linux). |
-| **Inject** | `./studio env <p> up\|migrate\|dev --approve` passes `--env-file` to Compose. Without `--approve` the command exits non-zero. |
+| **Local dotenv** | Desktop: gitignored `projects/<p>/.env` (copy `.env.example`). `./studio env <p> up --approve` passes it to Compose. |
+| **Production** | Coolify environment variables. No project `.env` on the VPS. |
+| **Inject** | `./studio env <p> up\|migrate\|dev --approve`. Without `--approve` the command exits non-zero. |
 | **Docker** | Required. Install Docker Desktop if the CLI is missing. Gate/QA output is redacted. |
 | **Leases** | `parallel.max_projects: 5` in `.quinsy-studio/studio.settings.yaml`. A sixth `./studio execute` is queued. HITL idle or `./studio execute <p> --release` frees a slot. |
 | **Focus** | `./studio focus` will not rewrite `.cursorignore` while another product holds a lease, unless `--force`. |
@@ -65,7 +66,7 @@ Bootstrap / `init` / `design` install **UI kit peers** in the prototype `package
 Do **not** run `./studio bootstrap` / `init` on a live tree — that scaffolds an empty app. Hand over:
 
 1. The repo (git URL or folder)
-2. How to run it (README / env **names**). Secret **values** stay in the host secret store, not in chat.
+2. How to run it (README / env **names**). Desktop values stay in gitignored `projects/<p>/.env`. Production values stay in Coolify. Do not paste either into chat.
 3. Optional intent: copy [adopt_intent.md](studio-templates/adopt_intent.md) → `intake/<slug>.md`
 
 ```bash
@@ -89,14 +90,14 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 | **Architecture** | *"Continue with blueprint"* | `./studio blueprint` | *"Approve gate 1"* (core stack decision) |
 | **Design direction** | *"Interview me for look and feel"* | `./studio design --discovery` | *"Approve gate 2a"* |
 | **Design kit** | *"Design core views"* / live prototype | `./studio design` + Team 10 iteration | *"Approve gate 2b"* |
-| **Sprint** | *"Let the sprint run"* | agent `--approve-scope` → groom → **`./studio execute` loop** | Override scope if you want; stay out until UI review |
+| **Phase** | *"Let the sprint run"* | `./studio sprint` opens design, then architecture, then implementation, and skips an empty phase → **`./studio execute`** | Sign the phase once when every packet is written |
 | **Milestones** | *"Draft the milestone roadmap"* | Fills `docs/phases/` from gap matrix or PRD | *"Approve milestones"* → agent writes M0 tickets |
-| **Cadence review** | *"Give me a sprint review"* | `./studio review` | Every N implementation sprints: *"Shipped looks good"* → `--approve`. Off-cadence / backend: inform → retro |
+| **Cadence review** | *"Give me a sprint review"* | `./studio review` | Every N implementation phases: *"Shipped looks good"* → `--approve`. Design and architecture phases do not count. Off-cadence / backend: inform → retro |
 | **New idea** | *"I want offline mode"* | `./studio feedback "…"` → clarify → ticket | Confirm clarified ticket before the **next** sprint |
 
 **Sprint feedback** = small, concrete ideas. **Amendments** = strategic direction (vision brief → milestone + ticket breakdown). See [Amendment intake](#amendment-intake-strategic-direction) below.
 
-**No product IMPLEMENT until gates 0, 1, 2a, and 2b are approved.** After PRD, you approve architecture, then direction (2a), then the project kit (2b). **Design-track** tickets need a **written** spec + all-state in-context token mocks, then `./studio approve-design`, then implement. Other tickets compose that system with no ticket ACK. Missing components → design ticket in a **design sprint**.
+**No product IMPLEMENT until gates 0, 1, 2a, and 2b are approved.** After PRD, you approve architecture, then direction (2a), then the project kit (2b). Passing 2b does not mean later screens are designed. After the milestone roadmap, each cycle is a **design phase**, then an **architecture phase**, then an **implementation phase**. A phase with no tickets is skipped and does not open a sprint. Design tickets are written, then signed once with `./studio approve-design <p> --phase`. Each one states `architecture delta: none` or names the architecture ticket. Implementation only builds tickets whose design and architecture are already `approved` or `n/a`. Polish on the signed kit stays `design_status: n/a` and never enters the design phase.
 
 ---
 
@@ -138,8 +139,7 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 | `VERIFY` (ship) | Before cadence HITL: `./studio ship <p> --to dev` when origin is behind `dev` | Agent |
 | `STUDIO_LO <id>` | Idle infusion in `.quinsy-studio/` when there is no in-flight product ticket | Agent (HQ chat) |
 | `INFORM` | Reuse / inbox drain / **N open HQ LOs** — do NEXT, loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key | Agent or **you** |
-| `HITL` | **Stop.** Gates 0 → 1 → 2a → 2b (sequential), **`approve-design` / `approve-arch`** (packets exist), **`env --approve`**, cadence review. Not a morning brief. Not a feature-ticket ACK. | **You** |
-| `PRODUCTION` | Write spec/mocks or architecture note, then loop until HITL. | **Agent** |
+| `HITL` | **Stop.** Gates 0 → 1 → 2a → 2b (sequential), batch **`approve-design --phase` / `approve-arch --phase`** after every packet in that phase is written, **`env --approve`**, cadence review. Not a morning brief. Not a feature-ticket ACK. | **You** |
 
 **What execute picks (in order):**
 
@@ -149,9 +149,10 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 4. **Design direction (gate 2a)** — unanswered questions in `docs/design/discovery.md`, then **HITL** `./studio approve --gate 2a`. Do not scaffold prototype.
 5. **Design kit (gate 2b)** — `IMPLEMENT` `./studio design` (CSS tokens, coded A/M/O, sticker all-states), then **HITL** `./studio approve --gate 2b`. Iterate with `./studio revise --gate 2b`
 6. **Finish in-progress** — a ticket already in `implement` still runs VERIFY → GATE → DEBUG → MOVE_DONE (inbox notes wait)
-7. **`PRODUCTION`** — if ready tickets are below `production_ready_min` and packets are unsigned, write spec/arch notes then HITL `approve-design` / `approve-arch`
-8. **`IMPLEMENT`** — next unblocked **ready** sprint ticket. INFORM open HQ LO count; do **not** `STUDIO_LO` in this chat
-9. **`STUDIO_LO`** — only when idle (`implementation_in_flight` is false)
+7. **Design phase** — write every spec and all-state mock, then one HITL `./studio approve-design <p> --phase`. An empty design backlog skips to architecture in the same turn.
+8. **Architecture phase** — write the notes the design phase filed, plus boundary tickets with no screen, then one HITL `./studio approve-arch <p> --phase`. `./studio approve-arch <p> <TICKET> --reject` sends an infeasible design to the next design cycle. An empty architecture backlog skips to implementation.
+9. **`IMPLEMENT`** — next unblocked ticket whose design and architecture are `approved` or `n/a`. One unsigned ticket does not freeze a ready sibling. INFORM open HQ LO count; do **not** `STUDIO_LO` in this chat
+10. **`STUDIO_LO`** — only when idle (`implementation_in_flight` is false)
 
 ```bash
 ./studio execute <project>           # human-readable (CONSTITUTION + CARD)
@@ -222,7 +223,7 @@ Committed product + HQ defaults are **M (medium)**: session **400k**, implement 
 
 ### What this does not do
 
-Higher budgets do not improve design or code quality. They only delay the stop. `model_hint` is the lever that can change host model cost (the IDE must honor it). Product LLM **names** live in `env.schema.json`; **values** stay in the host secret store — never print `projects/<p>/.env` into chat.
+Higher budgets do not improve design or code quality. They only delay the stop. `model_hint` is the lever that can change host model cost (the IDE must honor it). Product LLM **names** live in `env.schema.json`. Desktop **values** live in gitignored `projects/<p>/.env`; production values live in Coolify. Never print `projects/<p>/.env` into chat.
 
 ```bash
 ./studio settings                         # HQ used vs cap
@@ -316,10 +317,10 @@ Agent runs `./studio approve` or `./studio revise --gate N --feedback "..."`. Mi
 
 | You want | Example message |
 |----------|-----------------|
-| Propose sprint scope | *"Plan the next sprint"* → `./studio sprint &lt;p&gt;` → agent `--approve-scope` (you may override). Design-track tickets need ticket-specific `docs/design-specs/<TICKET>.md` with §2 + §2c first. |
-| Let the sprint run | *"Execute until HITL"* — ready tickets loop; you stop for `approve-design` / `approve-arch` and cadence review |
+| Propose the next phase | *"Plan the next sprint"* → `./studio sprint &lt;p&gt;` opens design, then architecture, then implementation, and skips an empty phase. Agent `--approve-scope` (you may override). |
+| Let the phase run | *"Execute until HITL"* — a design or architecture phase writes every packet, then stops once for `--phase`. An implementation phase loops ready tickets with no ticket ACK. |
 | Compact ticket view | *"Show the card for &lt;ID&gt;"* → `./studio ticket-card` |
-| Work a ticket | Design-track: **write spec+mocks** → `approve-design` → implement. Else: library + tokens → implement (agent migrates if DB reachable) → receipt → gate 5 → done → execute again (no ticket ACK) |
+| Work a ticket | Design phase: write spec+mocks and `architecture delta: none` or a ticket id. Architecture phase: write the note. Implementation: library + tokens (agent migrates if DB reachable) → receipt → gate 5 → done → execute again |
 | Finish ticket | Receipt + gate 5 → `move … done` (commits product git). Cadence HITL: `./studio ship --to dev` first. `main` is HITL `--approve` |
 | Off-sprint idea | *"Can we add X?"* → agent should **not** code silently; uses guard → feedback or ticket |
 
@@ -362,13 +363,14 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 | You want | Example message |
 |----------|-----------------|
 | Design spec for UI ticket | *"Write design spec for &lt;TICKET&gt; — include context and placement"* |
-| Approve design (HITL) | *"Approve design for &lt;TICKET&gt;"* → `./studio approve-design <p> <TICKET>` |
-| Approve architecture (HITL) | *"Approve architecture for &lt;TICKET&gt;"* → `./studio approve-arch <p> <TICKET>` |
+| Approve the design phase (HITL) | *"Approve the design phase"* → `./studio approve-design <p> --phase` |
+| Approve the architecture phase (HITL) | *"Approve the architecture phase"* → `./studio approve-arch <p> --phase` |
+| Send a design back | *"This design cannot be built"* → `./studio approve-arch <p> <TICKET> --reject` |
 | Missing component | *"File a ui-new-component ticket — do not invent it in the feature ticket"* |
 | Cross-surface move | *"Create ia-feature-placement ticket: move X to Y surface"* |
 | Layout-only concern | Agent should ask: *"Is placement correct before we widen the dialog?"* |
 
-**Order:** placement → workflow map → atomic inventory → visual polish. Commercial surfaces (landing, pricing, checkout, PLP, PDP) also load **Team 11** growth intent. Spec path is **ticket-specific** (`docs/design-specs/<TICKET>.md`). The agent **writes** that file and `docs/design-specs/mocks/<TICKET>/` HTML (project tokens, real product chrome, **all states**) before anyone runs `./studio approve-design`. A stub or a path with no file is not reviewable. Lock filled §2 + §2c before `./studio sprint --approve-scope` for design-track types. Spec template: [design-spec-template.md](knowledge-base/design-spec-template.md). Playbooks: [contextual-ia](knowledge-base/contextual-ia-playbook.md) · [workflow-definition](knowledge-base/workflow-definition-playbook.md) · [growth-mechanics](knowledge-base/growth-mechanics-playbook.md) · [canon ledger](knowledge-base/design-team-canon-ledger.md) · [design-system compliance](knowledge-base/design-system-compliance-checklist.md).
+**Order:** placement → workflow map → atomic inventory → visual polish. Commercial surfaces (landing, pricing, checkout, PLP, PDP) also load **Team 11** growth intent. Spec path is **ticket-specific** (`docs/design-specs/<TICKET>.md`). The agent **writes** that file and `docs/design-specs/mocks/<TICKET>/` HTML (project tokens, real product chrome, **all states**) for every ticket in the design phase before anyone runs `./studio approve-design <p> --phase`. A stub or a path with no file is not reviewable. Each design ticket closes with `architecture delta: none` or a filed architecture ticket. Spec template: [design-spec-template.md](knowledge-base/design-spec-template.md). Playbooks: [contextual-ia](knowledge-base/contextual-ia-playbook.md) · [workflow-definition](knowledge-base/workflow-definition-playbook.md) · [growth-mechanics](knowledge-base/growth-mechanics-playbook.md) · [canon ledger](knowledge-base/design-team-canon-ledger.md) · [design-system compliance](knowledge-base/design-system-compliance-checklist.md).
 
 ### Studio / process (not project code)
 
@@ -392,8 +394,9 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 - Pull library **stubs** (`billing`, `feature-gating`) — build in-project, then promote a working generic
 - Leave open LO-* piled for a later human `learn` prompt — harvest immediately; INFORM the count; infuse with `./studio train` in a **HQ** session
 - Treat a mid-execute chat message as a new assignment. Run `./studio guard <p> "<verbatim>"` first. On `INBOX_ACK`, resume the current ACTION. `FEEDBACK_ONLY` / `NEEDS_TICKET` must not preempt an in-flight ticket.
-- Wait for a feature-ticket ACK / “looks good” after `MOVE_DONE` — loop `./studio execute` until HITL (cadence review or `approve-design` / `approve-arch` **after packets exist**)
+- Wait for a feature-ticket ACK / “looks good” after `MOVE_DONE` — loop `./studio execute` until HITL (cadence review, or the batch phase signature **after every packet in that phase exists**)
 - Ask the human to `approve-design` when `docs/design-specs/<TICKET>.md` or all-state token mocks are missing — write them first (execute will say IMPLEMENT, not HITL)
+- Hold a ready implementation ticket behind one unsigned sibling. The unsigned ticket waits for its phase. The ready ticket proceeds.
 - Ask the human to run schema migrate when you can reach the database (Compose via `./studio env <p> migrate --approve`, documented VPS). Apply it yourself, then INFORM. Do not Read `.env` values. Destructive `migrate:fresh` / drop is HITL.
 - Skip UI kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) on scaffold — they belong in the product app `package.json` from day one (`docs/setup/ui-kit.md`)
 - Keep stuffing files after `INFORM cost-cap` — wait for the named key in the **product** or HQ local yaml (`ledger=` on COST)
@@ -409,17 +412,17 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | **After git clone** | `./studio install` · optional `./studio install --with-skills` |
 | Session start | `./studio verify-worlds` · `./studio verify-abstraction` · `./studio settings` · `./studio focus <p>` · **`./studio execute <p>`** |
 | Isolate siblings | `./studio isolate <p>` (also applied by `focus` / `execute` / `verify-worlds`). Focus will not clobber a live execute lease unless `--force`. |
-| Docker / secrets | `./studio env <p> init` · `./studio env <p> up\|migrate\|dev --approve` (names from schema; values from host secret store) |
+| Docker / secrets | `./studio env <p> init` · `./studio env <p> up\|migrate\|dev --approve` (names from schema; values from gitignored `projects/<p>/.env`; production in Coolify) |
 | Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` (gate N needs N-1) · `./studio revise <p> --gate N --feedback "..."` |
 | Checklist | `./studio resume <p>` (optional; execute is the driver) |
 | New project from PRD | `./studio bootstrap <p>` (writes `docs/setup/ui-kit.md`; prototype `package.json` has kit peers) |
 | Existing codebase | `./studio adopt <p> --from <git-url-or-path> [--intent intake/<p>.md]` (same ui-kit note; merge peers into live `package.json` if present) |
-| UI / arch packet HITL | `./studio approve-design <p> <TICKET-ID>` after spec + all-state mocks; `./studio approve-arch <p> <TICKET-ID>` after `docs/architecture/<TICKET>.md` |
+| Phase signature | `./studio approve-design <p> --phase` after every design packet; `./studio approve-arch <p> --phase` after every architecture note. `--reject` sends one design back to the next cycle. |
 | Milestones | `./studio approve <p> --milestones` (after `docs/phases/` drafted) |
 | Architecture | `./studio blueprint <p>` |
 | Design | `./studio design <p> --scope journey\|core-views` |
 | Status / board / health | `./studio status <p>` · `./studio board <p>` · `./studio health <p>` |
-| Sprint | `./studio sprint <p>` · `--kind hygiene` · `--approve-scope` · `./studio execute <p>` · `./studio move <p> <ID> implement\|done` · `./studio ship <p> --to dev` |
+| Sprint | `./studio sprint <p>` (next phase; empty phases skip) · `--kind design\|architecture\|implementation\|hygiene` · `--approve-scope` · `./studio execute <p>` · `./studio move <p> <ID> implement\|done` · `./studio ship <p> --to dev` |
 | Ticket card / receipt | `./studio ticket-card <p> <ID>` · `./studio receipt <p> <ID>` |
 | Mid-execute chat | `./studio guard <p> "…"` → `INBOX_ACK` (queued). Drain: `./studio note <p> --drain` |
 | Library-first | `./studio library suggest <p> "auth button"` · `./studio library pull <p> auth tokens button` (not stubs). Kit peers must already be in the app. |
@@ -452,7 +455,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 
 ## Cursor Auto-run vs studio HITL
 
-Studio HITL is `ACTION: HITL` from `./studio execute` (gates 0 → 1 → 2a → 2b sequential, `approve-design` / `approve-arch`, `./studio env … --approve`, cadence review, tech-veto, abort).
+Studio HITL is `ACTION: HITL` from `./studio execute` (gates 0 → 1 → 2a → 2b sequential, batch `approve-design --phase` / `approve-arch --phase`, `./studio env … --approve`, cadence review, tech-veto, abort).
 
 If Cursor shows **Allow** when the agent runs `./studio move <project> <ID> done`, that is **Cursor Auto-review** (Approvals & Execution), not a studio gate. The CLI already requires a filled receipt and gate 5; you should not also ACK the ticket in chat.
 
@@ -508,7 +511,7 @@ When complexity grows, avoid "layout-first" tickets that polish the wrong surfac
 | 3. Design spec | [design-spec-template.md](knowledge-base/design-spec-template.md) — **write the file**; §2 + §2c + **all-state, in-context, project-token mocks** |
 | 4. Library + tokens | [design-system-compliance-checklist.md](knowledge-base/design-system-compliance-checklist.md) |
 | 5. Implement (on-system) | `./studio library pull` → `./studio move … implement` |
-| 6. Human taste | `approve-design` / `approve-arch` when packets exist; cadence `./studio review` every N implementation sprints |
+| 6. Human taste | `approve-design --phase` / `approve-arch --phase` when every packet in the phase exists; cadence `./studio review` every N implementation phases |
 
 Project IA artifact (3+ surfaces): `projects/<p>/docs/ia/surface-map.md`
 
@@ -693,14 +696,14 @@ On `./studio move … done` → requires gate 5 + receipt; **commits the product
 
 ## Sprint cadence (human in the loop)
 
-After gates **0–2** and the milestone roadmap, the agent runs **ready** tickets autonomously (no ticket ACK; stay on the design system). You join for **`approve-design` / `approve-arch`**, **cadence review** every N implementation sprints (default 2), and rare tech-vetoes. Off-cadence batches go to retro. Hygiene: `./studio sprint --kind hygiene`. Missing UI primitives go to a **design sprint**. Ideas do **not** become tickets blindly.
+After gates **0, 1, 2a, and 2b** and the milestone roadmap, each cycle is a design phase, then an architecture phase, then an implementation phase. An empty phase is skipped. You sign a design phase and an architecture phase once each. Implementation runs ready tickets with no ticket ACK. **Cadence review** counts implementation phases only (default every 2). Hygiene (`./studio sprint --kind hygiene`) stays outside the train. A missing UI primitive is a design-phase ticket. Ideas do **not** become tickets blindly.
 
 | Phase | Who | What |
 |-------|-----|------|
-| Sprint scope | **Agent** (you may override) | `./studio sprint <p> --approve-scope` (blocked if production packets starve the ready pipeline) |
-| Mid-sprint | Agent | `./studio execute` until HITL — `IMPLEMENT` / `PRODUCTION`; `MOVE_DONE` commits product git (no ticket ACK); migrate via `env --approve` when Compose is up; INFORM open HQ LOs |
-| Cadence review | **You** | After `ship --to dev` if needed: try shipped UI → `./studio review <p> --approve` |
-| After review | **You** + agent | Feedback → clarify → ticket (production stream until packets signed); reuse inform; retro → train |
+| Phase scope | **Agent** (you may override) | `./studio sprint <p> --approve-scope`. The next phase is design, then architecture, then implementation. An empty phase does not open a sprint. |
+| During a phase | Agent | `./studio execute` until HITL. Design and architecture write every packet, then stop once. Implementation `MOVE_DONE` commits product git (no ticket ACK). Migrate via `env --approve` when Compose is up. INFORM open HQ LOs. |
+| Cadence review | **You** | After an implementation phase, when the counter is due, and after `ship --to dev` if needed: try shipped UI → `./studio review <p> --approve` |
+| After review | **You** + agent | Feedback → clarify → ticket for the next cycle; reuse inform; retro → train |
 | Milestone done | **You** | Approve milestone complete before next milestone backlog |
 
 | Step | Command |

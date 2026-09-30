@@ -32,7 +32,7 @@ Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-p
 1. Team 10 **writes** `docs/design-specs/<TICKET>.md` (template: `knowledge-base/design-spec-template.md`). Ticket create may drop a **stub**; a stub is not approvable. Never tell the human to review a path that is not filled.
 2. Spec includes **§2 Context & placement** + **§2c in-context mocks** (HTML under `docs/design-specs/mocks/<TICKET>/`, **this project's CSS tokens**, **all states**) + **Atomic Inventory** + **Design Rationale**
 3. Multi-surface: workflow map per `workflow-definition-playbook.md`
-4. Human: `./studio approve-design <project> <ticket-id>` — CLI **fails** if spec/mocks/tokens/states are incomplete. `ia-navigation` also requires `./studio ia-audit` pass (≤7 top-level, depth ≤3).
+4. Human: `./studio approve-design <project> --phase` after every packet in the design phase is written, or `./studio approve-design <project> <ticket-id>` for one ticket. The CLI **fails** if spec/mocks/tokens/states are incomplete, or if a design ticket has no `architecture delta:` line. `ia-navigation` also requires `./studio ia-audit` pass (≤7 top-level, depth ≤3).
 5. `./studio move … implement` is **blocked** until `design_status: approved`
 
 Execute: if the spec or mocks are missing, ACTION is **IMPLEMENT (write deliverables)** — not HITL. HITL `approve-design` only when the files would pass the CLI gate.

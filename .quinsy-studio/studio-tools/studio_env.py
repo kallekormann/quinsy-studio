@@ -1,4 +1,4 @@
-"""Docker env inject — named variables from the host secret store after HITL --approve."""
+"""Docker env inject — named variables from projects/<p>/.env after HITL --approve."""
 
 from __future__ import annotations
 
@@ -60,11 +60,19 @@ def schema_variable_names(schema_path: Path = SCHEMA_PATH) -> List[str]:
     return [str(item["name"]) for item in data.get("variables", []) if item.get("name")]
 
 
+def merged_schema_names(project: str, projects_dir: Path) -> List[str]:
+    names = schema_variable_names()
+    product = projects_dir / project / "env.schema.json"
+    if product.is_file():
+        names = list(dict.fromkeys(names + schema_variable_names(product)))
+    return names
+
+
 def refuse_without_approve(project: str, action: str) -> str:
     return (
         f"  ❌ `{action}` copies named variables into Docker and needs HITL.\n"
         f"  Run: ./studio env {project} {action} --approve\n"
-        f"  Intent: inject schema names from the host secret store into Compose "
+        f"  Intent: inject schema names from projects/{project}/.env into Compose "
         f"(values are never printed)."
     )
 
@@ -83,22 +91,66 @@ def parse_env_assignments(text: str) -> Dict[str, str]:
     return out
 
 
+def project_env_path(project: str, projects_dir: Path) -> Path:
+    return projects_dir / project / ".env"
+
+
+def example_assignments(project: str, projects_dir: Path) -> Dict[str, str]:
+    """Non-secret defaults from committed examples. The product example wins on a shared name."""
+    root = projects_dir / project
+    merged: Dict[str, str] = {}
+    for rel in ("docker/.env.example", ".env.example"):
+        path = root / rel
+        if path.is_file():
+            merged.update(parse_env_assignments(path.read_text(encoding="utf-8")))
+    return merged
+
+
 def host_env_path(project: str) -> Path:
     return host_secret_dir(project) / ".env"
 
 
-def ensure_host_env_file(project: str, names: Optional[Sequence[str]] = None) -> Path:
-    """Create the host store with empty values for missing names. Never prints values."""
-    dest = host_env_path(project)
+def ensure_project_env_file(
+    project: str,
+    projects_dir: Path,
+    names: Optional[Sequence[str]] = None,
+) -> Path:
+    """Create or extend projects/<p>/.env. Never prints values and never rewrites a value already set."""
+    dest = project_env_path(project, projects_dir)
     dest.parent.mkdir(parents=True, exist_ok=True)
+    keys = list(dict.fromkeys(list(names or schema_variable_names())))
+    examples = example_assignments(project, projects_dir)
+    if dest.exists():
+        existing = parse_env_assignments(dest.read_text(encoding="utf-8"))
+        missing = [key for key in list(dict.fromkeys(keys + list(examples))) if key not in existing]
+        if missing:
+            text = dest.read_text(encoding="utf-8")
+            extra = "".join(f"{key}={examples.get(key, '')}\n" for key in missing)
+            prefix = "" if text.endswith("\n") or not text else "\n"
+            dest.write_text(text + prefix + extra, encoding="utf-8")
+    else:
+        ordered = list(dict.fromkeys(keys + list(examples)))
+        lines = [
+            "# Local Docker Desktop. Gitignored. Names in env.schema.json. Production: Coolify.",
+            f"# Project: {project}",
+        ]
+        lines.extend(f"{key}={examples.get(key, '')}" for key in ordered)
+        dest.write_text("\n".join(lines) + "\n", encoding="utf-8")
     try:
-        os.chmod(dest.parent, 0o700)
+        os.chmod(dest, 0o600)
     except OSError:
         pass
+    return dest
+
+
+def ensure_host_env_file(project: str, names: Optional[Sequence[str]] = None) -> Path:
+    """Backward name. Desktop store is the project .env; path is unused by cmd_env."""
+    dest = host_env_path(project)
+    dest.parent.mkdir(parents=True, exist_ok=True)
     existing = parse_env_assignments(dest.read_text(encoding="utf-8")) if dest.exists() else {}
     keys = list(names or schema_variable_names())
     lines = [
-        "# Host secret store — not in the git workspace. Names only in env.schema.json.",
+        "# Unused when projects/<p>/.env exists. Kept for older tests.",
         f"# Project: {project}",
     ]
     for key in keys:
@@ -167,7 +219,7 @@ def inject_summary(project: str, names: Sequence[str], host_env: Path) -> str:
     return (
         f"  ✓ HITL approve: injecting {len(names)} named variable(s) into Compose for {project}\n"
         f"  Names: {listed}\n"
-        f"  Store: {host_env} (values not printed)"
+        f"  File: {host_env} (values not printed)"
     )
 
 

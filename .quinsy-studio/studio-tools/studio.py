@@ -2537,6 +2537,12 @@ class StudioOrchestrator:
                     print(f"     ./studio receipt {project} {ticket_id}")
                     print("     Required sections: Plan, AC coverage, Default flow (LO-0051), Playbook citations")
                     print("     AI-001 / AI-004 tickets also need a filled ## Eval section")
+                    from studio_execute import receipt_blocker_messages
+
+                    for line in receipt_blocker_messages(
+                        project, sprint_pre, ticket_id, rec_text_pre
+                    ):
+                        print(f"     • {line}")
                     return False
 
         if new_status == "implement":

@@ -22,7 +22,7 @@ Before designing or implementing a new control or chrome pattern:
 ## Flow
 
 1. **Team 10** completes design spec with Atomic Inventory (`knowledge-base/design-spec-template.md`) **and** in-context HTML mocks (project tokens, all component states)
-2. Human: `./studio approve-design <project> <ticket-id>` (blocked until spec+mocks exist)
+2. Human: `./studio approve-design <project> --phase` after every packet in the design phase exists (a single `<ticket-id>` still works; both are blocked until spec and mocks exist)
 3. **Studio library first** — add primitive or styled component under `.quinsy-studio/studio-library/`
 4. Register in `manifest.json` + `ui/sticker-sheet/catalog.md` (grouped by atomic level)
 5. **Team 01** pulls: `./studio library pull <project> <name>` — product app must already have kit peers (`docs/setup/ui-kit.md`)

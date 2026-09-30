@@ -64,7 +64,7 @@ Each portable harvest:
 
 `inbox.md` is not the long-term store. Infused/stale rows are archived to `learnings/archive/inbox-YYYY-MM.md`. Find rules with `./studio learn-find "<topic>"` or the CARD's domain README. IMPLEMENT must not Read `inbox.md`.
 
-Then `./studio execute <project>` **continues product IMPLEMENT** (or `PRODUCTION` if the ready pipeline is starved). Open LOs with `train_skills` queue `./studio train` in a **HQ session**. **INFORM** the open HQ LO count on the execute CARD; do **not** infuse playbooks from the product chat. `STUDIO_LO` only when the product loop is idle (`implementation_in_flight` is false). HITL gate 0, `approve-design` / `approve-arch`, and cadence review still win. `./studio train --purge-empty` closes jobs written without an LO observation.
+Then `./studio execute <project>` **continues the current phase**. Open LOs with `train_skills` queue `./studio train` in a **HQ session**. **INFORM** the open HQ LO count on the execute CARD; do **not** infuse playbooks from the product chat. `STUDIO_LO` only when the product loop is idle (`implementation_in_flight` is false). HITL gate 0, the batch `approve-design --phase` / `approve-arch --phase`, and cadence review still win. `./studio train --purge-empty` closes jobs written without an LO observation.
 
 Do **not** copy project UI/tokens into `studio-library/`. Promote reusable assets via `./studio library promote` — learnings are principles/skills, not product dumps.
 

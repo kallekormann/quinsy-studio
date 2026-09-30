@@ -33,8 +33,9 @@ Agent: "Implemented."
 | **Backend-only sprint** | API / data work with no UI | **Inform** — continue to retro |
 | **Reuse** | what was pulled / promoted / now in registry | **Inform brief** — no `--approve` |
 | **Sprint scope / groom** | which tickets this sprint | **Agent-owned** (human may override) |
-| **Design-track ticket** | major UX / UI / IA (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, `ia-navigation`, `ia-feature-placement`) | **Yes** (`./studio approve-design`) **only after** Team 10 has written the spec file + in-context, token-based, all-state mocks — then implement. Asking to approve a missing file is forbidden. |
-| **Design-system gap** | missing component, token, or pattern vs gate-2 system | **Do not invent in a feature ticket.** Open a design-track ticket; work it in a **design sprint**; HITL `approve-design` before anyone composes it |
+| **Design phase** | experience tickets with `design_status: pending` | **Yes**, once, `./studio approve-design <p> --phase`, after every spec and all-state mock in the phase is written. Asking to approve a missing file is forbidden. |
+| **Architecture phase** | deltas from design, plus boundary tickets with no screen | **Yes**, once, `./studio approve-arch <p> --phase`. `--reject` sends an infeasible design to the next design cycle. |
+| **Design-system gap** | missing component, token, or pattern vs the gate-2b kit | **Do not invent in a feature ticket.** Open a design-track ticket for the next design phase. |
 | **Other UI / feature / styling** | assemble approved library + project tokens | **No** ticket ACK — stay inside the defined design system |
 | **Ticket done** | receipt + gate 5 + `MOVE_DONE` | **No** — product **git commit** on that ticket; never ACK in chat |
 | **Push `dev`** | before cadence review, if `origin` exists | **Agent** (`./studio ship <p> --to dev`) — not `main` |
@@ -86,8 +87,8 @@ If something is **missing** (no matching component, token, or IA surface):
 
 1. Stop composing a fake control in the feature ticket
 2. File a design-track ticket (`ui-new-component`, `ia-feature-placement`, …) with `docs/design-specs/<TICKET>.md` **written** (not only a frontmatter path)
-3. Put it in a **design sprint** (or the design slice of scope) — Team 10 spec §2 + §2c, **project-token HTML mocks in the real view, all states**
-4. Human: `./studio approve-design` — **then** implement / pull into the product sprint
+3. Put it in the next **design phase** — Team 10 spec §2 + §2c, **project-token HTML mocks in the real view, all states**, and an `architecture delta:` line
+4. Human: `./studio approve-design <p> --phase` — **then** the architecture phase, then implementation
 
 Do not ship a new primitive “so this ticket can finish.” That is a process fail, not a library-first shortcut.
 

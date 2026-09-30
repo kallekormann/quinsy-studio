@@ -4,7 +4,7 @@
 
 ## Do
 
-- **PB-20260915-002** helpful=11 harmful=0 :: npm_audit @vitest/mocker (moderate path-traversal advisory on the test mocker) is a documented gate-5 soft fail. Record it on the receipt; do not treat it as a done-blocker when RESULT is True.
+- **PB-20260915-002** helpful=15 harmful=0 :: npm_audit @vitest/mocker (moderate path-traversal advisory on the test mocker) is a documented gate-5 soft fail. Record it on the receipt; do not treat it as a done-blocker when RESULT is True.
 - **PB-20260915-001** helpful=3 harmful=0 :: Before MOVE_DONE, run the same Prettier check the gate uses on the product tree. Named constants for 100/1000 must sit on an assignment after equals (anti-slop); do not stack two numeric const lines (redundant-variables).
 - Run `./studio gate <project> --level 5` before `move … done` (build + tests + smoke). Level 2 lint-only is not done.
 - Receipt records **Plan**, **AC coverage**, and **default-flow** (happy path the human will click). UI tickets: browser or documented substitute.

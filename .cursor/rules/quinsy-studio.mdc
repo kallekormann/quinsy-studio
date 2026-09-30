@@ -68,7 +68,7 @@ Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gat
 
 ## Sprint HITL
 
-Autonomous mid-sprint for **ready** tickets (stay on the **project** gate-2b kit; no ticket ACK). Human at **gate 0**, **gate 1**, **gate 2a**, **gate 2b** (sequential; `--gate 2` refused), **`approve-design` / `approve-arch`**, **`env --approve`**, **cadence review** (every N implementation sprints), rare **tech-veto**. `ACTION: PRODUCTION` is first-class. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Missing components → design-track ticket. Scope/groom/reuse are inform. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.** INFORM open HQ LO counts; do not `STUDIO_LO` mid-product.
+After gate 2b, each cycle is a **design** phase, then **architecture**, then **implementation**. An empty phase is skipped and does not open a sprint. Implementation only scopes tickets whose design and architecture are `approved` or `n/a`. One unsigned ticket does not freeze a ready sibling. Human stops: **gate 0**, **gate 1**, **gate 2a**, **gate 2b** (sequential; `--gate 2` refused), the batch `approve-design --phase` / `approve-arch --phase`, **`env --approve`**, **cadence review** (implementation phases only), rare **tech-veto**. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Hygiene stays outside the train. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.** INFORM open HQ LO counts; do not `STUDIO_LO` mid-product.
 
 ## Drift recovery
 

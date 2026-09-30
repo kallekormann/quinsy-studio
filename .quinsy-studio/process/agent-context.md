@@ -15,7 +15,7 @@ Run `./studio guard <project> "<verbatim user message>"` first. While implementa
 1. Read [`AGENTS.md`](../../AGENTS.md)
 2. Run `./studio bootstrap` (new PRD), `./studio adopt <p> --from …` (existing codebase), or `./studio focus <project>`
 3. Run `./studio settings` (HQ train ledger) and `./studio settings <project>` (product execute ledger). Estimates are studio load, not host billing.
-4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`. If `ACTION` is `PRODUCTION`, write the packet (do not implement the product ticket). If the gold path needs an operator click (submit/start a job) and a later unblocked ticket is only notify/revalidate polish, do the click ticket first (LO-0155).
+4. Run `./studio execute <project>` — do the `NEXT` command, then execute again, until `ACTION` is `HITL`. After gate 2b the loop is a design phase, then an architecture phase, then an implementation phase. An empty phase is skipped. Inside a design or architecture phase, write every packet before the batch signature. If the gold path needs an operator click (submit/start a job) and a later unblocked ticket is only notify/revalidate polish, do the click ticket first (LO-0155).
 5. If `ACTION` is `INFORM` (inbox drain / reuse brief), do NEXT and loop — do not wait for a signature. Architecture and design are HITL, not inform.
 6. If `ACTION` is `INFORM` and the reason is `cost-cap`, **stop**. Do not keep stuffing files. Raise the **named** key in product `docs/studio.settings.local.yaml` (or HQ local yaml for train), then execute continues.
 7. If `ACTION` is `STUDIO_LO`, the product loop is idle — infuse in `.quinsy-studio/` now. Mid-sprint gaps: spawn `./studio train` in a **HQ chat** and keep `IMPLEMENT`
@@ -24,7 +24,7 @@ Run `./studio guard <project> "<verbatim user message>"` first. While implementa
 
 Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog. **READ only CARD playbooks.** Never open `knowledge-base/learnings/inbox.md` on IMPLEMENT.
 
-**Docker / secrets:** Docker is required for gate, migrate, and boot. Do not Read `.env` values. `./studio env <p> up|migrate|dev --approve` injects named vars from the host secret store. Before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
+**Docker / secrets:** Docker is required for gate, migrate, and boot. Do not Read `.env` values. `./studio env <p> up|migrate|dev --approve` injects named vars from gitignored `projects/<p>/.env` (seeded from the schema and `.env.example`). Production values live in Coolify. Before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
 
 **Schema migrate:** if you can reach the database, **you run** the project migrate command (sprint work) via Compose `--approve` when that is the path. INFORM the human. Do not HITL “please run migrate.” See [backend_playbook.md](../knowledge-base/backend_playbook.md).
 

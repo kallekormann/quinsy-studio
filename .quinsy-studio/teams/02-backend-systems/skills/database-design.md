@@ -4,6 +4,8 @@
 
 **Playbook:** [backend_playbook.md](../../../knowledge-base/backend_playbook.md) (DB / migrate). Agent runs migrate when reachable.
 
+One working copy, one Postgres. Do not start a second `supabase start` database beside Compose Postgres. Store `auth_user_id` as the hook for the hosted Auth `sub`.
+
 ## Metadata
 
 ```

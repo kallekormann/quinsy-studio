@@ -62,7 +62,7 @@ cd projects/<name> && git remote -v   # → project repo
 
 `./studio focus <project>` (and `./studio isolate <project>`) rewrites a local `.cursorignore` block so sibling project folders are hidden from the IDE agent, and installs a project `pre-commit` hook that refuses escaped paths / symlinks into `projects/`. Those files are gitignored in Studio HQ.
 
-**HQ pre-commit** refuses staging `projects/` in the studio repo. **QUINSY-SECRETS** in `.cursorignore` hides `.env` / `.env.local` values from Read/Grep; names live in `studio-templates/env.schema.json`. `./studio env <p> up --approve` injects from the host secret store. **One chat per product**; `parallel.max_projects` leases executes. Focus will not clobber another live lease unless `--force`.
+**HQ pre-commit** refuses staging `projects/` in the studio repo. **QUINSY-SECRETS** in `.cursorignore` hides `.env` / `.env.local` values from Read/Grep; names live in `studio-templates/env.schema.json` and the product `env.schema.json`. `./studio env <p> up --approve` injects from gitignored `projects/<p>/.env`. Production values live in Coolify. **One chat per product**; `parallel.max_projects` leases executes. Focus will not clobber another live lease unless `--force`.
 
 ## .gitignore (studio root)
 

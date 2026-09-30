@@ -1,3 +1,10 @@
+## 2026-09-30 — Desktop env file and operator guides
+
+### Changed
+
+- `./studio env <p> up|migrate|dev --approve` injects gitignored `projects/<p>/.env`. A missing file is created from the schema plus `.env.example` and `docker/.env.example`. Existing values and comments stay. Production values stay in Coolify.
+- Getting Started, both READMEs, and the agent how-tos now describe gates 2a and 2b and the design → architecture → implementation train.
+
 ## 2026-09-30 — Sprint phase train after gate 2b
 
 ### Changed
