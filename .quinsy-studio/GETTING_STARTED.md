@@ -461,9 +461,9 @@ If Cursor shows **Allow** when the agent runs `./studio move <project> <ID> done
 
 **To let the agent close tickets without that prompt:**
 
-1. **Cursor Settings → Agents → Approvals & Execution.** Keep **Auto-review** (recommended). Add `./studio` to the **terminal allowlist** in the IDE UI (prefix match covers `./studio move … done`).
-2. This repo also ships [`.cursor/permissions.json`](../.cursor/permissions.json) with `autoRun.allow_instructions` so Auto-review’s classifier leans toward allowing the studio CLI, including `move … done`.
-3. Do **not** put a `terminalAllowlist` only in `permissions.json` if you want to stay on Auto-review — a file-based terminal allowlist currently forces Allowlist mode. Prefer the in-app allowlist + the committed `autoRun` hints.
+1. **Cursor Settings → Agents → Approvals & Execution.** Keep **Auto-review**.
+2. [`.cursor/permissions.json`](../.cursor/permissions.json) lists every `./studio` subcommand on `terminalAllowlist`, so those commands start without an Allow card. That file replaces the in-app terminal allowlist. `autoRun` still steers anything not on the list. `./studio ship --to main` and `git push` to `main` stay blocked until you ask.
+3. Studio HITL is unchanged. The CLI still stops for gates, `--phase`, `env … --approve`, cadence review, and `ship --to main --approve`.
 4. **Run Everything** would auto-approve every shell call. That is broader than needed.
 
 Reload the window after changing allowlists. [permissions.json](https://cursor.com/docs/reference/permissions) · [Run modes](https://cursor.com/docs/agent/security/run-modes)
