@@ -1,3 +1,11 @@
+## 2026-09-30 — Sprint phase train after gate 2b
+
+### Changed
+
+- After gate 2b, each cycle is a design phase, then an architecture phase, then an implementation phase. A phase with no tickets is skipped and does not open a sprint.
+- Implementation scope accepts only tickets whose design and architecture are already signed. One unsigned ticket does not block a ready sibling.
+- A design ticket names `architecture delta: none` or a ticket id before the phase can be signed. `./studio approve-arch <p> <TICKET> --reject` sends an infeasible design to the next cycle.
+
 ## 2026-09-30 — Implementation reuse, tokens, story, and receipt lines
 
 ### Changed

@@ -37,7 +37,7 @@ Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-p
 
 Execute: if the spec or mocks are missing, ACTION is **IMPLEMENT (write deliverables)** — not HITL. HITL `approve-design` only when the files would pass the CLI gate.
 
-Prefer a **design sprint** (or a design slice of scope) for these tickets. Do not mix “invent a new atom” into a feature sprint.
+Prefer a **design phase** of the train for these tickets. Do not mix “invent a new atom” into an implementation phase. Each design ticket states `architecture delta: none` or files the architecture ticket the next phase will sign.
 
 **Stay on the system:** `feature`, `bug`, `ui-styling` tickets only compose **already approved** library components and gate-2 tokens. If a component/token/pattern is missing, **split a design-track ticket** — do not one-off CSS.
 

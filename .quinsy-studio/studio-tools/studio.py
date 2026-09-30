@@ -67,7 +67,7 @@ Commands:
   ./studio concept <project>                     → blueprint / design
 
   # Phase 3: Sprint Management
-  ./studio sprint <project> [--kind implementation|hygiene]
+  ./studio sprint <project> [--kind design|architecture|implementation|hygiene]
   ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
@@ -1900,17 +1900,6 @@ class StudioOrchestrator:
             if not sprint:
                 print(f"  ⚠️  No active sprint — run ./studio sprint {project} first")
                 return False
-            kind = (status.get("sprint_kind") or "implementation").strip().lower()
-            if kind == "implementation":
-                from studio_streams import count_production_backlog, count_ready_backlog, production_ready_min
-
-                if count_production_backlog(project) and count_ready_backlog(project) < production_ready_min(project):
-                    print(
-                        f"\n  ❌ Implementation scope blocked — ready pipeline "
-                        f"{count_ready_backlog(project)}/{production_ready_min(project)}. "
-                        "Finish PRODUCTION packets (approve-design / approve-arch) first."
-                    )
-                    return False
             reuse_msg = reuse_gate_message(project, status)
             if reuse_msg:
                 print(f"\n  ⚠️  Cannot approve sprint scope until reuse review is complete.")
@@ -1965,22 +1954,56 @@ class StudioOrchestrator:
             return False
         
         print_header(f"PHASE 3: SPRINT PLANNING — {project}")
-        
+
+        from studio_sprint_train import (
+            advance_cycle,
+            cycle_of,
+            first_schedulable_phase,
+        )
+
+        explicit = (kind or "").strip().lower()
+        cycle = cycle_of(status)
+        skipped: List[str] = []
+        if explicit == "hygiene":
+            chosen = "hygiene"
+        else:
+            if status.get("current_sprint") and (status.get("sprint_kind") or "") == "implementation":
+                cycle = advance_cycle({"n": cycle["n"], "phase": "implementation"})
+            start = explicit if explicit in ("design", "architecture", "implementation") else cycle["phase"]
+            chosen, skipped = first_schedulable_phase(project, start)
+            if not chosen:
+                print("\n  No design, architecture, or implementation tickets to schedule.")
+                if skipped:
+                    print("  Skipped empty phases: " + ", ".join(skipped))
+                return False
+            cycle = {"n": cycle["n"], "phase": chosen}
+            if skipped:
+                print("  Skipped empty phases: " + ", ".join(skipped))
+
         sprints_dir = PROJECTS_DIR / project / "sprints"
         sprints_dir.mkdir(parents=True, exist_ok=True)
-        
+
         existing_sprints = list(sprints_dir.glob("SPRINT-*"))
         if existing_sprints:
             numbers = [int(re.search(r'SPRINT-(\d+)', f.name).group(1)) for f in existing_sprints]
             next_num = max(numbers) + 1
         else:
             next_num = 1
-        
+
         sprint_name = f"SPRINT-{next_num:02d}"
+        proposal = propose_sprint_scope(
+            project,
+            sprint_name,
+            phase="" if chosen == "hygiene" else chosen,
+        )
+        if chosen != "hygiene" and not proposal.get("proposed"):
+            print(f"\n  {chosen} phase has no mature tickets to scope.")
+            for row in proposal.get("deferred_immature") or []:
+                print(f"    • {row.get('id')}: {'; '.join(row.get('questions') or [])}")
+            return False
+
         sprint_dir = sprints_dir / sprint_name
         sprint_dir.mkdir(exist_ok=True)
-        
-        proposal = propose_sprint_scope(project, sprint_name)
         scope_file = write_scope_proposal(project, sprint_name, proposal)
         questions_file = write_planning_questions_report(project, sprint_name, proposal)
         proposed = proposal["proposed"]
@@ -2029,9 +2052,11 @@ class StudioOrchestrator:
             print(f"  Immature tickets: {rel}")
 
         status["current_sprint"] = sprint_name
-        status["sprint_kind"] = (kind or "implementation").strip().lower() or "implementation"
-        if status["sprint_kind"] not in ("implementation", "hygiene"):
+        status["sprint_kind"] = chosen
+        if status["sprint_kind"] not in ("implementation", "hygiene", "design", "architecture"):
             status["sprint_kind"] = "implementation"
+        if chosen in ("design", "architecture", "implementation"):
+            status["cycle"] = cycle
         status["phase"] = PHASE_IMPLEMENT
         hitl = get_sprint_hitl(status)
         hitl["review_status"] = None
@@ -2741,7 +2766,122 @@ class StudioOrchestrator:
         print(f"\n  ✓ Architecture approved for {ticket_id}")
         print(f"    Note: docs/architecture/{ticket_id}.md")
         return True
-    
+
+    def _release_train_phase(self, project: str) -> None:
+        """Untag the current phase and point the cycle at the next one."""
+        from backlog_paths import clear_ticket_sprint, queue_ticket_paths, read_ticket_meta
+        from studio_sprint_train import advance_cycle, cycle_of
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if sprint:
+            for path in queue_ticket_paths(project):
+                meta = read_ticket_meta(path)
+                if meta.get("sprint") != sprint:
+                    continue
+                path.write_text(clear_ticket_sprint(path.read_text(encoding="utf-8")), encoding="utf-8")
+        cycle = cycle_of(status)
+        cycle["phase"] = (status.get("sprint_kind") or cycle["phase"])
+        status["cycle"] = advance_cycle(cycle)
+        status["current_sprint"] = ""
+        save_status(project, status)
+        print(f"  Cycle {status['cycle']['n']} next phase: {status['cycle']['phase']}")
+        print(f"  Next: ./studio sprint {project}")
+
+    def cmd_approve_design_phase(self, project: str) -> bool:
+        """Sign every written design packet in the current phase, then open the next phase."""
+        from sprint_hitl import list_sprint_tickets
+        from studio_sprint_train import architecture_delta
+        from studio_streams import refresh_stream_field
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if not sprint:
+            print("  No current sprint.")
+            return False
+        blocked = []
+        for ticket in list_sprint_tickets(project, sprint):
+            ticket_file, _ = find_project_ticket(project, ticket["id"])
+            if not ticket_file:
+                continue
+            content = ticket_file.read_text(encoding="utf-8")
+            if re.search(r"^design_status:\s*approved\b", content, re.M):
+                continue
+            if not requires_design_approval(content):
+                continue
+            if architecture_delta(content) is None:
+                blocked.append(f"{ticket['id']}: missing architecture delta")
+                continue
+            fields = parse_design_fields(content)
+            spec_match = re.search(r"^design_spec:\s*(.+)$", content, re.MULTILINE)
+            spec_rel = spec_match.group(1).strip() if spec_match else default_design_spec_path(ticket["id"])
+            err = design_spec_completeness_error(
+                PROJECTS_DIR / project / spec_rel,
+                PROJECTS_DIR / project,
+                ticket["id"],
+                fields.get("ticket_type", ""),
+                ticket_blob=content,
+            )
+            if err:
+                blocked.append(f"{ticket['id']}: {err}")
+                continue
+            ticket_file.write_text(refresh_stream_field(set_design_approved(content)), encoding="utf-8")
+            print(f"  ✓ Design approved for {ticket['id']}")
+        if blocked:
+            print("\n  Design phase is not ready to release:")
+            for line in blocked:
+                print(f"    • {line}")
+            return False
+        self._release_train_phase(project)
+        return True
+
+    def cmd_approve_arch_phase(self, project: str) -> bool:
+        """Sign every written architecture note in the current phase, then open the next phase."""
+        from sprint_hitl import list_sprint_tickets
+        from studio_streams import architecture_packet_ready, set_architecture_approved
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if not sprint:
+            print("  No current sprint.")
+            return False
+        blocked = []
+        for ticket in list_sprint_tickets(project, sprint):
+            ticket_file, _ = find_project_ticket(project, ticket["id"])
+            if not ticket_file:
+                continue
+            content = ticket_file.read_text(encoding="utf-8")
+            if not re.search(r"^architecture_status:\s*pending\b", content, re.M):
+                continue
+            if not architecture_packet_ready(project, ticket["id"]):
+                blocked.append(f"{ticket['id']}: architecture note missing")
+                continue
+            ticket_file.write_text(set_architecture_approved(content), encoding="utf-8")
+            print(f"  ✓ Architecture approved for {ticket['id']}")
+        if blocked:
+            print("\n  Architecture phase is not ready to release:")
+            for line in blocked:
+                print(f"    • {line}")
+            return False
+        self._release_train_phase(project)
+        return True
+
+    def cmd_reject_arch(self, project: str, ticket_id: str, reason: str = "") -> bool:
+        """The signed design cannot be built. Send it to the next design cycle."""
+        from studio_sprint_train import mark_architecture_rejected
+
+        ticket_file, _status = find_project_ticket(project, ticket_id)
+        if not ticket_file:
+            print(f"  Ticket {ticket_id} not found in project {project}")
+            return False
+        ticket_file.write_text(
+            mark_architecture_rejected(ticket_file.read_text(encoding="utf-8"), reason),
+            encoding="utf-8",
+        )
+        print(f"\n  ✓ {ticket_id} returned to the next design cycle")
+        print("    It is out of this implementation scope.")
+        return True
+
     # -------------------------------------------------------------------------
     # PHASE 4-5: QA GATE
     # -------------------------------------------------------------------------
@@ -3672,7 +3812,7 @@ Commands:
   ./studio concept <project>                     → blueprint / design
 
   # Phase 3: Sprint Management
-  ./studio sprint <project> [--kind implementation|hygiene]
+  ./studio sprint <project> [--kind design|architecture|implementation|hygiene]
   ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
@@ -4186,12 +4326,15 @@ def main():
 
     elif command == "approve-design" and len(args) >= 2:
         project = args[0]
-        ticket_id = args[1]
-        notes = ""
-        for i, arg in enumerate(args):
-            if arg == "--notes" and i + 1 < len(args):
-                notes = args[i + 1]
-        orchestrator.cmd_approve_design(project, ticket_id, notes=notes)
+        if args[1] == "--phase":
+            orchestrator.cmd_approve_design_phase(project)
+        else:
+            ticket_id = args[1]
+            notes = ""
+            for i, arg in enumerate(args):
+                if arg == "--notes" and i + 1 < len(args):
+                    notes = args[i + 1]
+            orchestrator.cmd_approve_design(project, ticket_id, notes=notes)
 
     elif command == "ia-audit" and len(args) >= 2:
         ok = orchestrator.cmd_ia_audit(args[0], args[1])
@@ -4200,12 +4343,21 @@ def main():
 
     elif command == "approve-arch" and len(args) >= 2:
         project = args[0]
-        ticket_id = args[1]
-        notes = ""
-        for i, arg in enumerate(args):
-            if arg == "--notes" and i + 1 < len(args):
-                notes = args[i + 1]
-        orchestrator.cmd_approve_arch(project, ticket_id, notes=notes)
+        if args[1] == "--phase":
+            orchestrator.cmd_approve_arch_phase(project)
+        elif "--reject" in args:
+            reason = ""
+            for i, arg in enumerate(args):
+                if arg == "--reject" and i + 1 < len(args) and not args[i + 1].startswith("--"):
+                    reason = args[i + 1]
+            orchestrator.cmd_reject_arch(project, args[1], reason=reason)
+        else:
+            ticket_id = args[1]
+            notes = ""
+            for i, arg in enumerate(args):
+                if arg == "--notes" and i + 1 < len(args):
+                    notes = args[i + 1]
+            orchestrator.cmd_approve_arch(project, ticket_id, notes=notes)
     
     elif command == "gate":
         project = first_project_arg(args)

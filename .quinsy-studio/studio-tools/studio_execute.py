@@ -534,11 +534,14 @@ def pick_next_ticket(
     done_ids: Optional[Set[str]] = None,
     *,
     scope_order: Optional[List[str]] = None,
+    prefer_id: Optional[str] = None,
+    skip_ids: Optional[Set[str]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Prefer in-progress; else first unblocked backlog ticket (scope order, then priority, then id)."""
     done_ids = done_ids or {t["id"] for t in tickets if t.get("status") == "done"}
-    in_progress = [t for t in tickets if t.get("status") == "implement"]
-    if in_progress:
+    skip_ids = skip_ids or set()
+    in_progress = [t for t in tickets if t.get("status") == "implement" and t["id"] not in skip_ids]
+    if in_progress and not prefer_id:
         return sorted(in_progress, key=lambda t: t["id"])[0]
     queued = [t for t in tickets if t.get("status") in ("backlog", "open")]
     order_index = {tid: i for i, tid in enumerate(scope_order or [])}
@@ -551,9 +554,20 @@ def pick_next_ticket(
             tid,
         )
 
-    for ticket in sorted(queued, key=sort_key):
+    ordered = sorted(queued, key=sort_key)
+
+    def unblocked(ticket: Dict[str, Any]) -> bool:
+        if ticket["id"] in skip_ids:
+            return False
         deps = ticket.get("deps") or []
-        if all(d in done_ids for d in deps):
+        return all(d in done_ids for d in deps)
+
+    if prefer_id:
+        for ticket in ordered:
+            if ticket["id"] == prefer_id and unblocked(ticket):
+                return ticket
+    for ticket in ordered:
+        if unblocked(ticket):
             return ticket
     return None
 
@@ -826,6 +840,10 @@ def decide_from_state(
     gate2a_ready: bool = True,
     gate2b_ready: Optional[bool] = None,
     gate2a_phase: Optional[str] = None,
+    prefer_ticket_id: Optional[str] = None,
+    skip_ticket_ids: Optional[Set[str]] = None,
+    phase_sign: Optional[str] = None,
+    design_command: Optional[str] = None,
 ) -> ExecuteStep:
     """Pure next-step machine. Disk I/O lives in decide_next_action."""
     step = _decide_from_state_body(
@@ -847,6 +865,10 @@ def decide_from_state(
         gate2a_ready=gate2a_ready,
         gate2b_ready=gate2b_ready,
         gate2a_phase=gate2a_phase,
+        prefer_ticket_id=prefer_ticket_id,
+        skip_ticket_ids=skip_ticket_ids,
+        phase_sign=phase_sign,
+        design_command=design_command,
     )
     return _attach_lo_inform(step, open_los if open_los is not None else [])
 
@@ -871,6 +893,10 @@ def _decide_from_state_body(
     gate2a_ready: bool = True,
     gate2b_ready: Optional[bool] = None,
     gate2a_phase: Optional[str] = None,
+    prefer_ticket_id: Optional[str] = None,
+    skip_ticket_ids: Optional[Set[str]] = None,
+    phase_sign: Optional[str] = None,
+    design_command: Optional[str] = None,
 ) -> ExecuteStep:
     from pre_impl_workflow import design_system_approved, direction_approved
 
@@ -961,6 +987,13 @@ def _decide_from_state_body(
                         "skills": ["UX-001", "UX-004", "UX-006", "UX-008"],
                         "playbooks": ["design-direction-playbook.md", "ux-research-playbook.md"],
                     },
+                )
+            if gate2a_phase == "answer_discovery":
+                return _hitl(
+                    "gate-2a-discovery",
+                    project,
+                    f"Answer docs/design/discovery.md for {project}",
+                    "discovery interview is unanswered — the human answers. Do not invent the brand.",
                 )
             if gate2a_phase == "write_direction":
                 return ExecuteStep(
@@ -1126,26 +1159,17 @@ def _decide_from_state_body(
             loop=True,
         )
 
-    if not _has_in_progress(sprint_tickets):
-        try:
-            from studio_streams import (
-                next_production_ticket,
-                pipeline_starved,
-                production_write_kind,
-            )
-
-            if pipeline_starved(project):
-                prod = next_production_ticket(project)
-                if prod:
-                    return _production_step(project, prod, production_write_kind)
-        except Exception:
-            pass
-
     tickets = sprint_tickets
     # Cross-sprint deps (e.g. MOOD-0629 done last sprint) must count as satisfied.
     done_ids = project_done_ids(project) | {t["id"] for t in tickets if t.get("status") == "done"}
     scope_order = load_scope_order(project, sprint) if sprint else []
-    current = pick_next_ticket(tickets, done_ids, scope_order=scope_order)
+    current = pick_next_ticket(
+        tickets,
+        done_ids,
+        scope_order=scope_order,
+        prefer_id=prefer_ticket_id,
+        skip_ids=skip_ticket_ids,
+    )
     if current is None:
         lo_step = _studio_lo_if_idle(open_los, tickets)
         if lo_step:
@@ -1208,13 +1232,44 @@ def _decide_from_state_body(
                 pending_veto[:160],
                 ticket_id=tid,
             )
+        if phase_sign == "design":
+            return _hitl(
+                "design-approve",
+                project,
+                f"./studio approve-design {project} --phase",
+                design_block or "Sign the design phase",
+                ticket_id=tid,
+                read=f"docs/design-specs/{tid}.md",
+            )
+        if phase_sign == "architecture":
+            return _hitl(
+                "arch-approve",
+                project,
+                f"./studio approve-arch {project} --phase",
+                design_block or "Sign the architecture phase",
+                ticket_id=tid,
+                read=f"docs/architecture/{tid}.md",
+            )
+        if phase_sign in ("release-design", "release-architecture"):
+            command = (
+                f"./studio approve-design {project} --phase"
+                if phase_sign == "release-design"
+                else f"./studio approve-arch {project} --phase"
+            )
+            return ExecuteStep(
+                kind="VERIFY",
+                ticket_id=tid,
+                reason="phase packets are signed — release the phase and open the next one",
+                command=command,
+                loop=True,
+            )
         if design_write:
             spec_hint = f"docs/design-specs/{tid}.md"
             return ExecuteStep(
                 kind="IMPLEMENT",
                 ticket_id=tid,
-                reason="design-track deliverables missing — write spec and all-state mocks first",
-                command=(
+                reason="phase packet is still open — write it before the phase signature",
+                command=design_command or (
                     f"Write {spec_hint} and docs/design-specs/mocks/{tid}/*.html "
                     f"(project tokens, in-context shell, all states). "
                     f"Do not ./studio approve-design {project} {tid} until those files exist."
@@ -1331,6 +1386,10 @@ def decide_next_action(project: str) -> ExecuteStep:
     receipts_ok: Dict[str, bool] = {}
     design_block = None
     design_write = None
+    prefer_ticket_id = None
+    skip_ticket_ids: Set[str] = set()
+    phase_sign = None
+    design_command = None
     if sprint:
         tickets = _enrich_sprint_tickets(project, list_sprint_tickets(project, sprint))
         log = load_execution_log(project, sprint)
@@ -1338,18 +1397,83 @@ def decide_next_action(project: str) -> ExecuteStep:
             receipts_ok[t["id"]] = receipt_is_complete(project, sprint, t["id"])
             if t.get("path"):
                 t["card"] = compact_card(Path(t["path"]))
-        done_ids = project_done_ids(project) | {t["id"] for t in tickets if t.get("status") == "done"}
-        scope_order = load_scope_order(project, sprint)
-        current = pick_next_ticket(tickets, done_ids, scope_order=scope_order)
-        if current and current.get("status") in ("backlog", "open") and current.get("path"):
-            content = Path(current["path"]).read_text(encoding="utf-8", errors="ignore")
-            d_status, d_msg = design_deliverables_status(
-                project_dir, current["id"], content
-            )
-            if d_status == "write":
-                design_write = d_msg
-            elif d_status == "approve":
-                design_block = design_implement_blocked_message(current["id"], content)
+        kind = (status.get("sprint_kind") or (status.get("cycle") or {}).get("phase") or "implementation")
+        if kind == "design":
+            from studio_sprint_train import design_phase_action
+
+            action = design_phase_action(tickets)
+            prefer_ticket_id = action.get("ticket_id") or None
+            if action["mode"] == "write":
+                design_write = action["detail"]
+            elif action["mode"] == "delta":
+                design_write = action["detail"]
+                design_command = action["detail"]
+            elif action["mode"] == "sign":
+                phase_sign = "design"
+                design_block = action["detail"]
+            elif action["mode"] == "done":
+                phase_sign = "release-design"
+        elif kind == "architecture":
+            from studio_sprint_train import architecture_phase_action
+
+            action = architecture_phase_action(project, tickets)
+            prefer_ticket_id = action.get("ticket_id") or None
+            if action["mode"] == "write":
+                design_write = action["detail"]
+                design_command = action["detail"]
+            elif action["mode"] == "sign":
+                phase_sign = "architecture"
+                design_block = action["detail"]
+            elif action["mode"] == "done":
+                phase_sign = "release-architecture"
+        else:
+            from studio_sprint_train import implementation_blocked
+
+            done_ids = project_done_ids(project) | {t["id"] for t in tickets if t.get("status") == "done"}
+            scope_order = load_scope_order(project, sprint)
+            ready_ids: List[str] = []
+            unsigned_ids: List[str] = []
+            ordered = pick_next_ticket(tickets, done_ids, scope_order=scope_order)
+            # Walk every open ticket. A pending packet must not hide a ready sibling.
+            open_rows = [t for t in tickets if t.get("status") in ("backlog", "open")]
+            for row in open_rows:
+                if unmet_deps(row, done_ids):
+                    continue
+                body = ""
+                if row.get("path"):
+                    body = Path(row["path"]).read_text(encoding="utf-8", errors="ignore")
+                meta = {"body": body, "id": row.get("id")}
+                if implementation_blocked(meta):
+                    unsigned_ids.append(row["id"])
+                else:
+                    ready_ids.append(row["id"])
+            if ready_ids and unsigned_ids:
+                skip_ticket_ids = set(unsigned_ids)
+            elif unsigned_ids and not ready_ids:
+                current = ordered if ordered and ordered["id"] in unsigned_ids else None
+                if current is None:
+                    for row in open_rows:
+                        if row["id"] == unsigned_ids[0]:
+                            current = row
+                            break
+                if current and current.get("path"):
+                    content = Path(current["path"]).read_text(encoding="utf-8", errors="ignore")
+                    d_status, d_msg = design_deliverables_status(project_dir, current["id"], content)
+                    prefer_ticket_id = current["id"]
+                    if d_status == "write":
+                        design_write = d_msg
+                    elif d_status == "approve":
+                        design_block = design_implement_blocked_message(current["id"], content)
+                    else:
+                        from studio_streams import architecture_packet_ready
+
+                        if architecture_packet_ready(project, current["id"]):
+                            phase_sign = "architecture"
+                            design_block = f"Sign architecture for {current['id']}"
+                        else:
+                            design_write = f"Write docs/architecture/{current['id']}.md"
+                            design_command = design_write
+            del ordered
 
     inbox = open_notes(project, sprint)
     veto = status.get("tech_veto") or {}
@@ -1407,6 +1531,10 @@ def decide_next_action(project: str) -> ExecuteStep:
         gate2a_ready=gate2a_ready,
         gate2b_ready=gate2b_ready,
         gate2a_phase=gate2a_phase,
+        prefer_ticket_id=prefer_ticket_id,
+        skip_ticket_ids=skip_ticket_ids,
+        phase_sign=phase_sign,
+        design_command=design_command,
     )
     if step.kind == "IMPLEMENT" and step.parallel_train:
         for job in step.parallel_train:
@@ -1502,7 +1630,7 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
     else:
         lines.append("  Loop: do NEXT, then ./studio execute again. Do not ask to continue.")
         if step.kind in ("IMPLEMENT", "VERIFY", "GATE", "DEBUG", "MOVE_DONE"):
-            if "design-track deliverables missing" in (step.reason or ""):
+            if "design-track deliverables missing" in (step.reason or "") or "phase packet is still open" in (step.reason or ""):
                 lines.append(
                     "  DESIGN: write the spec and mocks NOW. Do not ask the human to "
                     "approve-design — there is nothing to review until the files exist."

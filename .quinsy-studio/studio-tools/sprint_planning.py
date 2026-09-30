@@ -89,11 +89,18 @@ def propose_sprint_scope(
     project: str,
     sprint_name: str,
     max_tickets: int = 6,
+    phase: str = "implementation",
 ) -> Dict:
     """
     Assess backlog and build a scope proposal. Does NOT write sprint: tags yet.
-  Human approves via ./studio sprint <p> --approve-scope.
+    Human approves via ./studio sprint <p> --approve-scope.
+
+    phase is design, architecture, or implementation. Hygiene passes phase=""
+    and keeps the implementation filter.
     """
+    from studio_sprint_train import ticket_phase
+
+    train_phase = phase or "implementation"
     candidates = list_unscheduled_backlog(project)
     candidates.sort(
         key=lambda t: (
@@ -145,26 +152,28 @@ def propose_sprint_scope(
             continue
 
         if not mature:
-            deferred_immature.append(
+            if ticket_phase(meta) == train_phase:
+                deferred_immature.append(
+                    {
+                        "id": tid,
+                        "title": meta.get("title", path.stem),
+                        "questions": questions,
+                    },
+                )
+                planning_questions.append(
+                    {"id": tid, "title": meta.get("title", ""), "questions": questions},
+                )
+            continue
+
+        belongs = ticket_phase(meta)
+        if belongs != train_phase:
+            deferred_capacity.append(
                 {
                     "id": tid,
                     "title": meta.get("title", path.stem),
-                    "questions": questions,
+                    "reason": f"belongs to the {belongs or 'unscheduled'} phase",
                 },
             )
-            planning_questions.append(
-                {"id": tid, "title": meta.get("title", ""), "questions": questions},
-            )
-            continue
-
-        from studio_streams import ticket_is_ready
-
-        if not ticket_is_ready(meta):
-            q = "Ticket is on the production stream — design and/or architecture sign-off before implementation sprint."
-            deferred_immature.append(
-                {"id": tid, "title": meta.get("title", path.stem), "questions": [q]},
-            )
-            planning_questions.append({"id": tid, "title": meta.get("title", ""), "questions": [q]})
             continue
 
         if len(proposed) >= max_tickets:
@@ -188,6 +197,7 @@ def propose_sprint_scope(
         "deferred_immature": deferred_immature,
         "deferred_capacity": deferred_capacity,
         "planning_questions": planning_questions,
+        "phase": train_phase,
     }
 
 

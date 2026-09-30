@@ -434,11 +434,11 @@ def gate_2a_issues(root: Path, adopt: bool = False) -> List[str]:
 
 
 def gate_2a_next(root: Path, adopt: bool = False) -> str:
-    """Execute phase for 2a: write_questions | write_direction | write_critique | critique_budget | hitl."""
+    """Execute phase for 2a: write_questions | answer_discovery | write_direction | write_critique | critique_budget | hitl."""
     if not discovery_path(root).exists():
         return "write_questions"
     if discovery_issues(root):
-        return "hitl"
+        return "answer_discovery"
     direction_bad = bool(design_direction_issues(root))
     if adopt:
         ia = root / "docs" / "ia" / "surface-map.md"

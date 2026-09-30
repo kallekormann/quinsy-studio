@@ -22,9 +22,9 @@ Project (execution level)  ──▶  executed by the studio, local loop
 | **Gate 2a** | Design direction (interview + DESIGN.md) | `./studio approve --gate 2a` (refuses if gate 1 pending) |
 | **Gate 2b** | Project kit (tokens, A/M/O, sticker) | `./studio approve --gate 2b` (refuses if 2a pending). Bare `--gate 2` is refused. |
 | **Milestones** | Version plan `docs/phases/` | `./studio approve --milestones` |
-| Sprint setup | Scope + groom; implementation `--approve-scope` blocked if ready pipeline starved | `./studio sprint` → `--approve-scope` → `groom` |
-| **Sprint execute** | Autonomous ready tickets; `PRODUCTION` writes packets; `MOVE_DONE` commits product git | `./studio execute` until HITL |
-| Design / arch packets | Spec + mocks / architecture note, then human | `./studio approve-design` / `approve-arch` |
+| Sprint setup | Scope the current train phase, then groom. An empty phase is skipped | `./studio sprint` → `--approve-scope` → `groom` |
+| Sprint execute | After gate 2b: design phase, then architecture phase, then implementation. Empty phases skip | `./studio sprint` then `./studio execute` |
+| Design / arch packets | Written during that phase, then one batch signature | `./studio approve-design <p> --phase` / `approve-arch <p> --phase` |
 | **QA level 5** | Lint/tests/build/smoke + receipt skill QA (not a human phase gate) | `./studio gate --level 5` before `move … done` |
 | **Cadence review** | Every N implementation sprints (default 2) | `./studio review` → `--approve` |
 | Hygiene | Lint/debt batch after implementation batches | `./studio sprint --kind hygiene` |
@@ -206,7 +206,7 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 | **Output** | implemented code with local tests |
 | **Roles (lead)** | Frontend Engineer, Backend Engineer |
 | **Roles (support)** | Database Specialist, QA Specialist |
-| **Human gate** | No mid-sprint ticket ACK — agent runs ready tickets; **human joins for packet sign-off and cadence review** |
+| **Human gate** | No mid-sprint ticket ACK on an implementation phase. Design and architecture phases sign once at the end. An unsigned ticket does not freeze a ready sibling. |
 
 ### Flow per ticket (9 steps)
 

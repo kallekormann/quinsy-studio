@@ -45,7 +45,7 @@ Product backlog (backlog/*.md, milestone: M0, no sprint tag)
   → milestone review when all M* tickets done → plan next milestone
 ```
 
-**Streams:** tickets with `design_status: pending` or `architecture_status: pending` stay on the **production** stream (`ACTION: PRODUCTION` + HITL). Only **ready** tickets enter an implementation sprint. `cost.production_ready_min` (default 2) blocks implementation `--approve-scope` and steals execute into PRODUCTION when the pipeline is starved.
+**Streams:** after gate 2b the loop is a train. Each cycle is a design phase, then an architecture phase, then an implementation phase. A phase with no tickets is skipped in the same turn and does not get a sprint folder. Only ready tickets (`design_status` and `architecture_status` are `approved` or `n/a`) enter an implementation sprint. Design and architecture phases end in one batch signature (`./studio approve-design <p> --phase`, `./studio approve-arch <p> --phase`). Cadence review counts implementation phases only. Hygiene stays outside the train.
 
 ### Scope proposal
 

@@ -291,7 +291,7 @@ def maybe_flag_sprint_review(project: str, status: Dict) -> bool:
         hitl["review_status"] = "informed"
         hitl["review_pending_since"] = datetime.now().isoformat()
         return False
-    if (status.get("sprint_kind") or "implementation") == "hygiene":
+    if (status.get("sprint_kind") or "implementation") in ("hygiene", "design", "architecture"):
         return False
     from studio_streams import human_review_every_sprints
 

@@ -423,7 +423,7 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "VERIFY")
         self.assertIn("retro", step.command)
 
-    def test_decide_production_when_pipeline_starved(self):
+    def test_ready_sprint_ticket_is_not_stolen_by_a_pending_packet(self):
         with patch("studio_streams.pipeline_starved", return_value=True), patch(
             "studio_streams.next_production_ticket",
             return_value={"id": "DEMO-0099", "design_status": "pending", "path": "backlog/DEMO-0099.md"},
@@ -436,8 +436,8 @@ class DecideTests(unittest.TestCase):
                 amendment_actions=[],
                 prd_exists=True,
             )
-        self.assertEqual(step.kind, "PRODUCTION")
-        self.assertEqual(step.ticket_id, "DEMO-0099")
+        self.assertEqual(step.kind, "IMPLEMENT")
+        self.assertEqual(step.ticket_id, "DEMO-0001")
 
     def test_decide_studio_lo_when_project_ticket_blocked_on_deps(self):
         step = decide_from_state(

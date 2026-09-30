@@ -157,7 +157,11 @@ def ensure_backlog_layout(project: str) -> None:
 def read_ticket_meta(path: Path) -> Dict:
     text = path.read_text(encoding="utf-8")
     meta: Dict = {"path": path, "body": text, "file": path}
-    for key in ("id", "title", "priority", "phase", "estimate", "sprint", "status", "files", "dependencies", "team", "skills", "ticket_type", "design_status"):
+    for key in (
+        "id", "title", "priority", "phase", "estimate", "sprint", "status",
+        "files", "dependencies", "team", "skills", "ticket_type", "type",
+        "design_status", "architecture_status", "cycle_return",
+    ):
         # [ \t]* only — \s would swallow the newline after empty `sprint:` fields
         match = re.search(rf"^{key}:[ \t]*([^\n]*)$", text, re.MULTILINE)
         if match:
@@ -196,6 +200,19 @@ def set_ticket_sprint(content: str, sprint_name: str) -> str:
                 fm = fm.rstrip("\n") + f"\nsprint: {sprint_name}\n"
             return f"---{fm}---{parts[2]}"
     return content.replace("created:", f"sprint: {sprint_name}\ncreated:", 1)
+
+
+def clear_ticket_sprint(content: str) -> str:
+    """Return the ticket to the unscheduled backlog."""
+    if re.search(r"^sprint:[ \t]*.*$", content, re.MULTILINE):
+        return re.sub(
+            r"^sprint:[ \t]*.*$",
+            "sprint: none",
+            content,
+            count=1,
+            flags=re.MULTILINE,
+        )
+    return content
 
 
 def sprint_tag_is_assigned(value: object) -> bool:
