@@ -1,15 +1,18 @@
 # Quinsy Studio — Getting Started
 
-> Canonical workflow: **a direction** (`./studio ideate` → the case → you say yes and that writes the PRD) **or a PRD you already wrote** **or an existing codebase** (`./studio adopt`) → gates 0, 1, 2a, 2b → **phase train** (design, then architecture, then implementation; an empty phase is skipped) → cadence review every N implementation phases → you ship `main`.  
-> The path on one page: [studio-overview.md](process/studio-overview.md) · Root: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md) · Isolation epic: [hq-isolation-sprints.md](process/hq-isolation-sprints.md)
+This is the script. Each section is a situation, the words you type, and what you get back. The story of the whole path is [How Quinsy Studio works](process/studio-overview.md). Every command, in one list, is the [operations manual](README.md). The agent contract is [AGENTS.md](../AGENTS.md).
 
-**How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2a (direction)** → **gate 2b (project kit)** — `approve --gate 2` is refused. After that, `INFORM` still loops. Product execute **INFORM**s open HQ learning counts; infuse in a **separate HQ chat** (`./studio train`). `STUDIO_LO` does **not** replace `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks + **CONSTITUTION**), not the whole backlog.
+You talk. The agent runs `./studio`. You do not type a long chain by hand unless you want to.
+
+The agent does not ask "should I continue?" After a product exists it runs `./studio execute <project>`, does that one next step, and runs execute again, until the action is HITL. HITL means it has stopped for you: a gate, a phase you sign, an env approval, or a cadence review.
+
+The start of a product stops at gate 0 (the product definition), then gate 1 (architecture), then gate 2a (direction), then gate 2b (the project kit). `approve --gate 2` is refused. Sign 2a, then 2b. After that, a note that says INFORM still loops. A lesson is infused in a separate studio chat with `./studio train`. The product chat keeps building. The agent reads one compact card per ticket, not the whole backlog.
 
 ## Start here: tell the agent
 
-**You do not run a long CLI chain by hand.** Open Cursor (default), Claude Code, or Gemini CLI and talk. The agent runs `./studio`; you **approve gates** and **product decisions**. Keys stay in that host — never in studio git.
+Open Cursor, Claude Code, or Gemini CLI on this repo. Keys stay in that host. They are never written into studio git.
 
-Two ways in — both are implemented:
+Pick the row that matches what you have:
 
 | Situation | What you say |
 |-----------|----------------|
@@ -105,9 +108,9 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
 ## Ideation desk
 
-The desk is how a direction becomes the PRD in [the path](process/studio-overview.md). It does not call `execute`, open a sprint, or approve a gate. Use it in its own chat. The product chat starts at bootstrap.
+This is how a direction becomes the product definition. The story is [the path](process/studio-overview.md). The desk does not call `execute`, open a sprint, or sign a gate. Use its own chat. The product chat starts when you bootstrap.
 
-A trigger with no topic asks what to look into before any search. After that brief, the agent researches the web in whatever market the sources live in and explains the case in that same turn. You are not asked to continue between sections. A named market is checked only when an idea is qualified. With no market, ideas are judged globally.
+If you name no topic, the desk asks once and does not search. After your brief, it researches the web in whatever market the sources live in and explains the case in that same turn. You are not asked to start the next section. If you named a market, the desk checks that market when it qualifies an idea. If you named none, ideas are judged globally.
 
 | You say | What you get |
 |---------|----------------|
@@ -192,6 +195,8 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 ```
 
 ## Studio settings (cost / tokens)
+
+This is a load limit, not a bill. When the studio prints `INFORM cost-cap`, raise the key it names, then it can keep going.
 
 These numbers are **not Cursor / Claude / Gemini invoices**. They are a **studio load estimate**: roughly `characters ÷ 4` of the CARD plus the files execute listed for that turn. They stop the agent from stuffing more files (`INFORM cost-cap`). They do **not** make the model smarter.
 
@@ -281,10 +286,11 @@ Portable harvest writes [knowledge-base/learnings/<domain>/<topic>.md](knowledge
 The agent **generalizes** into that path (playbook, process, tooling, or library asset). It does **not** merge project tokens or UI into `studio-library/`.
 
 ```
-learning identified → inbox + classified LO
-→ product chat: ./studio execute  → ACTION IMPLEMENT + INFORM N LOs
-→ HQ chat:      ./studio train SO-001 --from lo --topic "…" --lo LO-NNNN
-→ CHANGELOG + move LO to backlog/done/ (train agent)
+a lesson is seen
+→ the principle is written into the learnings catalog (this is what studio git shares)
+→ the product chat keeps building and reports how many lessons are open
+→ a studio chat runs ./studio train and changes a playbook, a skill, or a tool
+→ the ticket that recorded the lesson stays on this machine
 ```
 
 Details: [learning-loop.md](process/learning-loop.md)
@@ -299,6 +305,7 @@ Use natural language. The agent maps your intent to `./studio` commands.
 
 | You want | Example message |
 |----------|-----------------|
+| A direction, no product | *"Look into …"* The desk explains the case. *"Yes, write the PRD."* writes `intake/<slug>.md` |
 | New project from PRD | *"Bootstrap &lt;project&gt; from intake/&lt;project&gt;.md"* |
 | Existing codebase | *"Adopt &lt;project&gt; from this repo and fill as-built"* |
 | Set context | *"Focus &lt;project&gt;"* |
@@ -438,7 +445,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Session start | `./studio verify-worlds` · `./studio verify-abstraction` · `./studio settings` · `./studio focus <p>` · **`./studio execute <p>`** |
 | Isolate siblings | `./studio isolate <p>` (also applied by `focus` / `execute` / `verify-worlds`). Focus will not clobber a live execute lease unless `--force`. |
 | Docker / secrets | `./studio env <p> init` · `./studio env <p> up\|migrate\|dev --approve` (names from schema; values from gitignored `projects/<p>/.env`; production in Coolify) |
-| Approve / revise gate | `./studio approve <p> --gate 0\|1\|2` (gate N needs N-1) · `./studio revise <p> --gate N --feedback "..."` |
+| Approve / revise gate | `./studio approve <p> --gate 0\|1\|2a\|2b` (gate N needs N-1; bare `--gate 2` is refused) · `./studio revise <p> --gate N --feedback "..."` |
 | Checklist | `./studio resume <p>` (optional; execute is the driver) |
 | New project from PRD | `./studio bootstrap <p>` (writes `docs/setup/ui-kit.md`; prototype `package.json` has kit peers) |
 | Existing codebase | `./studio adopt <p> --from <git-url-or-path> [--intent intake/<p>.md]` (same ui-kit note; merge peers into live `package.json` if present) |
@@ -557,7 +564,7 @@ Draft new extensions in `intake/skills/` (local) → promote to `knowledge-base/
 
 ## Motion (default on)
 
-UI moves unless a human writes `motion: off` in the spec or the ticket. That line sets every `--motion-duration-*` to `0ms` in the **project** token file. The kit classes stay.
+Screens move. You turn that off by writing `motion: off` in the spec or the ticket. That line sets every `--motion-duration-*` to `0ms` in the project token file. The kit classes stay. That line sets every `--motion-duration-*` to `0ms` in the **project** token file. The kit classes stay.
 
 - Skill: [knowledge-base/skill-extensions/motion-transitions.md](knowledge-base/skill-extensions/motion-transitions.md)
 - Tokens: `--motion-duration-*`, `--motion-ease-*`, `--motion-scale-*` in `studio-library/ui/tokens/design-tokens.css`
@@ -567,7 +574,7 @@ UI moves unless a human writes `motion: off` in the spec or the ticket. That lin
 
 ## Four human gates (before coding)
 
-These are the **core start-of-project decisions**. Execute produces the artifacts, then **stops for you**.
+The agent writes a packet. Then it stops. You sign the packet, or you send it back. Nothing is built until all four are signed, in this order.
 
 | Gate | You approve | CLI |
 |------|-------------|-----|
@@ -582,6 +589,8 @@ Tickets for the **active milestone** are written after you approve the roadmap (
 
 ## Milestone roadmap (before first sprint)
 
+A milestone is a version. M0 is the first. The agent writes tickets for that version only, after you sign the roadmap.
+
 1. Agent drafts `docs/phases/README.md` + M0/M1 outlines from PRD + blueprint **or** the as-built gap matrix
 2. You approve: `./studio approve <p> --milestones`
 3. Agent writes **M0 tickets only** → product backlog (`backlog/*.md`, `milestone: M0`)
@@ -595,7 +604,9 @@ See [milestone-planning.md](process/milestone-planning.md) · [amendment-intake.
 
 ## Amendment intake (strategic direction)
 
-**When:** After gate 2, when conceptual product direction changes (e.g. agency positioning, new platform surface) — especially before kicking off the next planned milestone.
+An amendment is a change of direction. A sprint note is a small idea. They use different commands.
+
+**When:** After gate 2b, when the product direction changes — especially before the next milestone.
 
 **Not for:** Sprint-review nits → use `./studio feedback` instead.
 
@@ -647,6 +658,8 @@ See [milestone-planning.md](process/milestone-planning.md) · [amendment-intake.
 Logged in `projects/<p>/docs/phases/revisions.md`.
 
 ## Library-first (UI + code)
+
+Before writing a new screen or a new package, look in the studio library. Pull what is there and adapt it. Do not pull the stubs named `billing` and `feature-gating`.
 
 | Step | Command |
 |------|---------|
@@ -732,7 +745,9 @@ On `./studio move … done` → requires gate 5 + receipt; **commits the product
 
 ## Sprint cadence (human in the loop)
 
-After gates **0, 1, 2a, and 2b** and the milestone roadmap, each cycle is a design phase, then an architecture phase, then an implementation phase. An empty phase is skipped. You sign a design phase and an architecture phase once each. Implementation runs ready tickets with no ticket ACK. **Cadence review** counts implementation phases only (default every 2). Hygiene (`./studio sprint --kind hygiene`) stays outside the train. A missing UI primitive is a design-phase ticket. Ideas do **not** become tickets blindly.
+After the four gates and the roadmap, work comes in three phases: design, then architecture, then building. You sign the first two once each. Building does not stop for a thumbs-up on every ticket. Every few build phases you review what shipped.
+
+An empty phase is skipped and does not open a sprint. **Cadence review** counts implementation phases only (default every 2). Hygiene (`./studio sprint --kind hygiene`) stays outside the train. A missing UI primitive is a design-phase ticket. Ideas do **not** become tickets blindly.
 
 | Phase | Who | What |
 |-------|-----|------|
@@ -763,7 +778,7 @@ When an implementation sprint is `done` and cadence is **not** due, `./studio ex
 
 ## Studio infusion (dual loop)
 
-See **[Learnings: harvest when identified](#learnings-harvest-when-identified)** above. Summary:
+The product keeps building. A separate studio chat writes the lesson into a playbook, a skill, or a tool, so the next product does not repeat it. The words are in [Learnings: harvest when identified](#learnings-harvest-when-identified). Summary:
 
 ```
 learning identified → harvest (inbox + classified LO)
@@ -785,7 +800,9 @@ Full loop: [learning-loop.md](process/learning-loop.md) · [studio-abstraction.m
 
 ## Studio-only improvements
 
-Use **LO-*** tickets in `.quinsy-studio/backlog/` — not project code. Studio docs must stay **project-agnostic** (`<project>`, not a client codename). Product-only incidents belong in the project (`docs/studio-learnings-local.md`), not the HQ backlog.
+A studio lesson is infused into the learnings catalog, a playbook, or a skill. That result is what studio git shares. The LO ticket, the retro, and the train job stay on this machine, under `.quinsy-studio/backlog/`, `retros/`, and `knowledge-base/learnings/train-queue.json`. They are not committed.
+
+Studio docs stay generic. Write `<project>`, not a client name. A note that only matters to one product stays in that product (`docs/studio-learnings-local.md`).
 
 ```bash
 ./studio learn "..." --signal design-gap --source <project>
@@ -794,4 +811,4 @@ Use **LO-*** tickets in `.quinsy-studio/backlog/` — not project code. Studio d
 ./studio infusion   # lists open LOs; does not block product IMPLEMENT
 ```
 
-Recent studio sprint: [sprints/STUDIO-SPRINT-01/README.md](sprints/STUDIO-SPRINT-01/README.md) · Changelog: [CHANGELOG.md](CHANGELOG.md)
+Changelog: [CHANGELOG.md](CHANGELOG.md)

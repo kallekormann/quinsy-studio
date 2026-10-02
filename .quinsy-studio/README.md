@@ -1,9 +1,8 @@
 # Quinsy Studio — Operations Manual
 
-> The Studio HQ: a highly autonomous, self-learning software development and
-> growth agency at Director level. This document describes how to **operate** the
-> studio, how to **extend skills**, how to **optimize the process**, and how the
-> **Dual-Loop** ensures the studio learns from projects.
+> This is the reference book: folders, commands, skills, and the learning loop.
+> The story is [How Quinsy Studio works](process/studio-overview.md).
+> The words you type are in [GETTING_STARTED.md](GETTING_STARTED.md).
 
 ---
 
@@ -27,8 +26,9 @@
 
 ## 1. What is Quinsy Studio?
 
-Quinsy Studio is a **file-system-based operating system for software projects**.
-It consists of:
+Read [the story](process/studio-overview.md) first. This chapter is the map of the folders.
+
+Quinsy Studio is a set of files the agent follows. It consists of:
 
 - **Process Documents** (`process/`) — Lifecycle, Gates, Anti-Slop, Ticket Workflow
 - **Teams & Skills** (`teams/`) — 11 teams (01–09 + Team 10 product design + Team 11 growth design), internal skills + skill registry
@@ -94,11 +94,18 @@ quinsy-studio/
 
 ## 3. Quick Start: Launch a Project
 
-See also: [GETTING_STARTED.md](GETTING_STARTED.md) (canonical) · [`AGENTS.md`](../AGENTS.md) (agent contract).
+The sentences you say are in [GETTING_STARTED.md](GETTING_STARTED.md). This section is the same path as commands, so you can see which command each sentence runs. The story is [studio-overview.md](process/studio-overview.md). The agent contract is [`AGENTS.md`](../AGENTS.md).
 
 ### AI-driven (recommended)
 
-Pick one path. [GETTING_STARTED.md](GETTING_STARTED.md) is canonical.
+Pick one path. [GETTING_STARTED.md](GETTING_STARTED.md) is the script.
+
+**A direction, no product yet** (desk only — this does not start a sprint):
+
+```bash
+./studio ideate "sole traders who already wrote the invoice and still chase the payment"
+# the desk explains the case; you say yes; that writes intake/<slug>.md
+```
 
 **New product** (PRD in `intake/`):
 
@@ -336,7 +343,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 | Studio HQ | `.quinsy-studio/`, `AGENTS.md` | Studio repo root |
 | Project | `projects/<name>/` | **Inside** `projects/<name>/` (separate `.git`) |
 
-`projects/` and `intake/` are gitignored in the studio repo. Run `./studio verify-worlds` if unsure.
+`projects/`, `intake/`, `ideation/`, and the local working notes (`backlog/`, `retros/`, `sprints/`, the learnings archive, and the train queue) are gitignored in the studio repo. Run `./studio verify-worlds` if unsure.
 
 **Several products in one IDE:** `./studio focus` / `execute <project>` assign the loop and rewrite a local `.cursorignore` (including **QUINSY-SECRETS**) plus generated isolation rule so Read/Grep should not see sibling `projects/` trees. They do **not** sandbox Shell. **One chat per product.** `parallel.max_projects` (default 5) leases executes; a sixth is queued. `./studio focus` will not clobber another live lease unless `--force`. Guard returns `CROSS_PROJECT` if the request names a sibling. Product commits: `git -C projects/<name>`. Studio HQ commits: this repo only — HQ pre-commit refuses `projects/`. Env **names** in `env.schema.json`; inject with `./studio env <p> up|migrate|dev --approve`. Plan: [process/hq-isolation-sprints.md](process/hq-isolation-sprints.md).
 
@@ -344,7 +351,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 | You (human) | Agent |
 |-------------|-------|
-| Approve gates **0–2** (sequential), `approve-design` / `approve-arch`, **`env … --approve`**, cadence review, tech-veto, **`ship --to main --approve`** | Fill artifacts; **execute loop** on ready tickets. INFORM open HQ LOs. `MOVE_DONE` commits product git; `ship --to dev` before git-host review |
+| Approve gates **0, then 1, then 2a, then 2b**, `approve-design` / `approve-arch`, **`env … --approve`**, cadence review, tech-veto, **`ship --to main --approve`** | Fill artifacts; **execute loop** on ready tickets. INFORM open HQ LOs. `MOVE_DONE` commits product git; `ship --to dev` before git-host review |
 | Mid-sprint notes (`./studio note`) | ACK and continue; drain after `MOVE_DONE` |
 | Review PRs / mocks / shipped UI | Library pull before coding (not stubs); compact cards; receipts + gate 5 before `done` |
 | Final product decisions | `./studio train` in a **HQ session** when LOs are open (product chat stays IMPLEMENT) |
@@ -379,8 +386,8 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 | **Docker (project-specific)** | `projects/<name>/docker/` |
 | **Docker Base Template** | `.quinsy-studio/studio-templates/docker/` |
 | **Status (Phase/Gate)** | `projects/<name>/status.json` |
-| **Studio Learning Items** | `.quinsy-studio/backlog/open/LO-*.md` (portable HQ only; project incidents stay in the project) |
-| **Retros** | `.quinsy-studio/retros/` |
+| **Studio learning tickets** | `.quinsy-studio/backlog/open/LO-*.md` — local only. The shared result is `knowledge-base/learnings/` |
+| **Retros** | `.quinsy-studio/retros/` — local only |
 | **Studio Library** | `.quinsy-studio/studio-library/` |
 
 ---
@@ -661,7 +668,7 @@ These do **not** influence how the studio operates in other projects.
 
 Universally applicable insights are **harvested the moment they are identified** and **trained in a HQ session** (`./studio train`). They do **not** replace the next product `IMPLEMENT`:
 
-1. **Harvest** — learn / retro `--complete` / reuse / 3rd gate fail → inbox + classified LO
+1. **Harvest** — learn / retro `--complete` / reuse / 3rd gate fail → the principle goes in `knowledge-base/learnings/` (that file is what studio git shares). The LO ticket stays on this machine.
 2. **Train in a HQ session** — `./studio train` (product execute INFORM the count). `STUDIO_LO` only when idle
 3. **Check** — `./studio infusion` lists open LOs (does **not** block IMPLEMENT or `./studio sprint`)
 4. **Project kit (gate 2b)** → `./studio approve --gate 2b` copies the prototype into the product app. The product look stays in the project.
@@ -763,7 +770,7 @@ See [library_registry.md](studio-library/library_registry.md).
 
 ## Further Documentation
 
-- `process/studio-overview.md` — direction → shortlist → PRD → gates → phase train → production
+- `process/studio-overview.md` — the story: direction → case → yes writes the PRD → gates → phase train → production
 - `GETTING_STARTED.md` — Execute loop, **ideation desk**, **learnings / harvest**, **studio load caps (S–XL)**, **secrets / Docker / leases**, **motion**, prompts, session ritual
 - `process/hq-isolation-sprints.md` — HQ isolation epic (`LO-0314`–`LO-0326`)
 - `process/lifecycle.md` — 7-phase lifecycle
