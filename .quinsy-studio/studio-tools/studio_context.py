@@ -418,15 +418,12 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     return "in_scope", "Pre-implementation phase — align with ./studio resume next steps."
 
 
-_INTAKE_EXAMPLE_RE = re.compile(
-    r"^intake/amendments/[^/]+/amendment_[^/]+\.example\.md$"
-)
 _CLI_JUNK_PROJECT_RE = re.compile(r"^(LO-\d+|testproj)$")
 
 
-def _is_allowed_tracked_intake(path: str) -> bool:
-    """Committed generic amendment templates — not a worlds leak."""
-    return bool(_INTAKE_EXAMPLE_RE.match(path.replace("\\", "/")))
+def _is_allowed_tracked_intake(_path: str) -> bool:
+    """Intake stays local. Nothing under intake/ belongs in studio git."""
+    return False
 
 
 def _looks_like_real_project(child: Path) -> bool:

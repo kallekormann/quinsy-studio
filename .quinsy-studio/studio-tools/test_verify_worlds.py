@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""verify-worlds: allow example intake templates; skip leftover project dirs."""
+"""verify-worlds: intake stays untracked; skip leftover project dirs."""
 
 from __future__ import annotations
 
@@ -10,8 +10,8 @@ from studio_context import _is_allowed_tracked_intake, _looks_like_real_project,
 
 
 class IntakeAllowlistTests(unittest.TestCase):
-    def test_example_amendment_is_allowed(self):
-        self.assertTrue(
+    def test_no_intake_path_is_allowed(self):
+        self.assertFalse(
             _is_allowed_tracked_intake("intake/amendments/acme/amendment_01.example.md")
         )
 
