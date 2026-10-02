@@ -116,6 +116,8 @@ without an explicit GDPR approval (human-in-the-loop).
 | Bright Data `web-data/scrape` | vendor scrape MCP | secrets-as-names / zero-data | **❌** not a studio default |
 | catalog `shadcn` as kit | shadcn/ui as source of truth | studio-library + Radix | **❌** not pullable as kit (LO-0334) |
 | `theme-factory` Ocean Depths hex | paste pack into `app/` CSS | aesthetic presets + tokens | HITL pick → one preset / `project-brand-only` → tokens |
+| Page-wide enter or 3D tilt as the kit default | ceremony on every surface | motion skill + LO-0119 | Opt-in in §2d only. Kit default is small open/close/hover |
+| HITL `motion: off` | strip animations per screen in product code | one token override | Project `--motion-duration-*` all `0ms`. Kit classes stay |
 
 ---
 
@@ -124,4 +126,4 @@ without an explicit GDPR approval (human-in-the-loop).
 - Check the matrix after every `./studio update-skills` (add new sources).
 - A new source WITHOUT a row in this matrix is NOT activated (SO-002 Process Guard).
 - Conflicts are reported as learning items (`./studio learn ... --signal conflict`).
-- After adding `superpowers` or `anthropic_docs`, re-run `./studio update-skills <name>` and confirm `external-skills/INDEX.md`.
+- After adding `superpowers` or `anthropic_docs`, re-run `./studio update-skills <name>` and confirm `external-skills/INDEX.md`. Motion is an internal skill (`knowledge-base/skill-extensions/motion-transitions.md`), not an external subscription.

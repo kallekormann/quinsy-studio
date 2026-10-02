@@ -38,8 +38,11 @@ It consists of:
 - **Studio Library** (`studio-library/`) — Reusable assets (UI, Packages, Tokens)
 - **External Skills** (`external-skills/`) — Imported best-in-class skill packages
 
+A direction becomes a product on the path in [studio-overview.md](process/studio-overview.md): ideation, a PRD, the gates, the phase train, then you ship `main`.
+
 The studio operates in **Dual-Speed mode**:
-- **CORE** — new platforms from a PRD. HITL: **gate 0 PRD → gate 1 architecture → gate 2a direction → gate 2b project kit**, then milestones and the phase train
+- **IDEATE** — no product yet. `./studio ideate` researches and, after you approve and promote, writes `intake/<slug>.md`
+- **CORE** — new platforms from that PRD, or from a PRD you wrote. HITL: **gate 0 PRD → gate 1 architecture → gate 2a direction → gate 2b project kit**, then milestones and the phase train
 - **ADOPT** — existing codebase (`./studio adopt`); as-built reconstruction, then the same gates
 - **LEAN** — iterations & features on a studio-managed project (4 phases)
 
@@ -73,7 +76,8 @@ quinsy-studio/
 │   └── skill-dependencies.json     # Subscribed external skill sources
 ├── projects/                       # ALL client projects (each with own backlog, Docker)
 │   └── <project>/                  # status.json, docs/, backlog/, sprints/, docker/, design/
-├── intake/                         # Raw project ideas (Markdown)
+├── ideation/                       # Research desk (gitignored): problems, ideas, shortlist
+├── intake/                         # PRDs from promote, or a PRD you wrote (gitignored)
 ├── studio                          # CLI wrapper (delegates to .quinsy-studio/studio-tools/)
 ├── README.md                       # Project README (this file is .quinsy-studio/README.md)
 └── CHANGELOG.md
@@ -82,7 +86,7 @@ quinsy-studio/
 **Important separation:**
 - **Studio World** (`.quinsy-studio/`) — Process, skills, templates, library, LO-* backlog. **This git repo.**
 - **Project World** (`projects/<name>/`) — Tickets, code, design, docker. **Each project has its own `.git`.**
-- **`intake/`** and **`projects/`** are gitignored in the studio repo. See [process/worlds.md](process/worlds.md).
+- **`ideation/`**, **`intake/`**, and **`projects/`** are gitignored in the studio repo. See [process/worlds.md](process/worlds.md).
 
 **IDE agents:** read [`AGENTS.md`](../AGENTS.md) + [process/agent-context.md](process/agent-context.md). Session driver: `./studio execute <project>` until HITL.
 
@@ -383,6 +387,10 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 
 ## 6. The Studio Process (Dual-Speed)
 
+### Before a PRD exists
+
+[studio-overview.md](process/studio-overview.md) is the map. You name a direction. `./studio ideate` presents a shortlist. You approve, then promote. Promote writes `intake/<slug>.md`. Bootstrap reads that file. The desk does not run `./studio execute`.
+
 ### CORE / ADOPT (human gates 0, 1, 2a, 2b, then milestones)
 
 Same gate sequence. **CORE** starts from a PRD. **ADOPT** (`./studio adopt`) reconstructs as-built first, then synthesizes a PRD. Do not empty-init a live tree. **No product IMPLEMENT until gates 0, 1, 2a, and 2b are approved.**
@@ -530,6 +538,8 @@ The agent assigns matching skills to each ticket via trigger words
 1. Create file `teams/<team>/skills/<name>.md` (copy schema from existing skills)
 2. Register skill in `skill-registry.md` (trigger words, phases, archetype)
 3. Run test: `python3 .quinsy-studio/studio-tools/test_skill_matching.py`
+
+Motion is an internal skill, not an external subscription. [knowledge-base/skill-extensions/motion-transitions.md](knowledge-base/skill-extensions/motion-transitions.md) is loaded by UX-002, UX-005, FE-001, and FE-002. Every UI spec has **§2d Motion**. The kit uses `--motion-*` in `studio-library/ui/tokens/design-tokens.css`. HITL `motion: off` sets those durations to `0ms` in the project token file.
 
 ### External Skills (Skill Package Manager)
 
@@ -696,6 +706,7 @@ studio-library/
 - **UI kit peers** (product app, on setup): `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (+ `@headlessui/react`) — `docs/setup/ui-kit.md`
 - **Host `packages/ui`:** product-local at reuse; do not treat it as an unpromoted studio-library path
 - **Project kit** (gate 2b): `./studio approve --gate 2b`. Do not promote the product look into studio-library.
+- **Motion:** dialogs, menus, tooltips, sheets, buttons, and the other interactive controls already animate from `--motion-*`. Pull them. Do not add a second fade. Pattern: [studio-library/ui/docs/patterns/transitions.md](studio-library/ui/docs/patterns/transitions.md).
 - **Promote code**: only if the generic asset improved — `./studio library promote <project> <path> --ticket <id>`
 - No secrets or client branding in library assets
 
@@ -752,7 +763,8 @@ See [library_registry.md](studio-library/library_registry.md).
 
 ## Further Documentation
 
-- `GETTING_STARTED.md` — Execute loop, **learnings / harvest**, **studio load caps (S–XL)**, **secrets / Docker / leases**, prompts, session ritual
+- `process/studio-overview.md` — direction → shortlist → PRD → gates → phase train → production
+- `GETTING_STARTED.md` — Execute loop, **ideation desk**, **learnings / harvest**, **studio load caps (S–XL)**, **secrets / Docker / leases**, **motion**, prompts, session ritual
 - `process/hq-isolation-sprints.md` — HQ isolation epic (`LO-0314`–`LO-0326`)
 - `process/lifecycle.md` — 7-phase lifecycle
 - `process/agent-context.md` — Session start + execute until HITL

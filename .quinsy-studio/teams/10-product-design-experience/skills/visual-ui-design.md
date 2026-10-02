@@ -10,6 +10,8 @@ Typography, color, layout, Gestalt, golden ratio. All values calculable in desig
 
 **Aesthetic preset:** load [aesthetic-presets.md](aesthetic-presets.md) + one preset from `knowledge-base/aesthetic-presets/<slug>/SKILL.md`. **Theme-factory** is a HITL picker ritual — not a second CSS kit.
 
+**Studio extension:** [motion-transitions.md](../../../knowledge-base/skill-extensions/motion-transitions.md) — name motion in §2d. The kit already animates. `motion: off` is the HITL opt-out.
+
 **Studio extension:** [figma-token-handoff.md](../../../knowledge-base/skill-extensions/figma-token-handoff.md)
 
 **External:** `ux-visual-design`, `ux-typography`, `ux-color-theory`, `taste-skill`

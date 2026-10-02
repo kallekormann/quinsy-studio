@@ -49,6 +49,13 @@ STUDIO_HQ_RE = re.compile(
 )
 
 
+def is_ideate_request(text: str) -> bool:
+    """True when the bubble is the ideation desk and not a product-build request."""
+    from studio_ideate import is_ideate_request as _is_ideate
+
+    return _is_ideate(text)
+
+
 def is_studio_hq_request(text: str) -> bool:
     """True when the bubble is studio process, not a product-sprint note."""
     return bool(STUDIO_HQ_RE.search(text or ""))
@@ -68,6 +75,12 @@ def should_queue_as_note(text: str, *, named_hitl_waiting: bool = True) -> bool:
     if HITL_REPLY_RE.search(t):
         return False
     if is_studio_hq_request(t):
+        return False
+    if is_ideate_request(t):
+        return False
+    from studio_ideate import is_desk_continuation, session_is_open
+
+    if is_desk_continuation(t, session_is_open()):
         return False
     if SHORT_HITL_RE.match(t):
         return not named_hitl_waiting

@@ -1,7 +1,7 @@
 # Quinsy Studio — Getting Started
 
-> Canonical workflow: **new product** (PRD → architecture → direction 2a → project kit 2b) **or existing codebase** (`./studio adopt` → as-built) → **phase train** (design, then architecture, then implementation; an empty phase is skipped) → cadence review every N implementation phases.  
-> Root overview: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md) · Isolation epic: [hq-isolation-sprints.md](process/hq-isolation-sprints.md)
+> Canonical workflow: **a direction** (`./studio ideate` → you approve → promote writes the PRD) **or a PRD you already wrote** **or an existing codebase** (`./studio adopt`) → gates 0, 1, 2a, 2b → **phase train** (design, then architecture, then implementation; an empty phase is skipped) → cadence review every N implementation phases → you ship `main`.  
+> The path on one page: [studio-overview.md](process/studio-overview.md) · Root: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md) · Isolation epic: [hq-isolation-sprints.md](process/hq-isolation-sprints.md)
 
 **How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2a (direction)** → **gate 2b (project kit)** — `approve --gate 2` is refused. After that, `INFORM` still loops. Product execute **INFORM**s open HQ learning counts; infuse in a **separate HQ chat** (`./studio train`). `STUDIO_LO` does **not** replace `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks + **CONSTITUTION**), not the whole backlog.
 
@@ -13,6 +13,7 @@ Two ways in — both are implemented:
 
 | Situation | What you say |
 |-----------|----------------|
+| **No product yet** | *"Look into …"* The desk presents a shortlist. Then *"Approve I-001"* and *"Promote I-001"*. |
 | **New product** | *"I added `intake/my-project.md`. Bootstrap my-project and walk me through the next human gate."* |
 | **Existing codebase** | *"Adopt this repo into my-project and reconstruct as-built state."* |
 | **Same session, continue** | *"Focus my-project and execute — loop until HITL."* |
@@ -85,6 +86,8 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
 | Phase | You say | Agent does | You approve |
 |-------|---------|------------|-------------|
+| **Ideation** | *"Look into …"* | `./studio ideate` through the shortlist | *"Approve I-001"* or reject or park |
+| **PRD** | *"Promote I-001"* | Writes `intake/<slug>.md` with scope modules | Read the PRD. Bootstrap is the next sentence |
 | **Adopt** | *"Adopt my-project from this folder and reconstruct as-built"* | `./studio adopt` → fills `docs/as-built/` + PRD | *"This is what we have — approve gate 0"* |
 | **or new product** | *"Bootstrap my-project from intake/my-project.md"* | `./studio bootstrap` → fills `docs/definitions/` | *"Gate 0 looks good — approve"* |
 | **Architecture** | *"Continue with blueprint"* | `./studio blueprint` | *"Approve gate 1"* (core stack decision) |
@@ -98,6 +101,27 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 **Sprint feedback** = small, concrete ideas. **Amendments** = strategic direction (vision brief → milestone + ticket breakdown). See [Amendment intake](#amendment-intake-strategic-direction) below.
 
 **No product IMPLEMENT until gates 0, 1, 2a, and 2b are approved.** After PRD, you approve architecture, then direction (2a), then the project kit (2b). Passing 2b does not mean later screens are designed. After the milestone roadmap, each cycle is a **design phase**, then an **architecture phase**, then an **implementation phase**. A phase with no tickets is skipped and does not open a sprint. Design tickets are written, then signed once with `./studio approve-design <p> --phase`. Each one states `architecture delta: none` or names the architecture ticket. Implementation only builds tickets whose design and architecture are already `approved` or `n/a`. Polish on the signed kit stays `design_status: n/a` and never enters the design phase.
+
+## Ideation desk
+
+The desk is how a direction becomes the PRD in [the path](process/studio-overview.md). It does not call `execute`, open a sprint, or approve a gate. Use it in its own chat. The product chat starts at bootstrap.
+
+A trigger with no topic asks what to look into before any search. After that brief, the agent researches the web in whatever market the sources live in and returns `ideation/shortlist/YYYY-MM-DD.md` in that same turn. You are not asked to continue between sections. A named market is checked only when an idea is qualified. With no market, ideas are judged globally.
+
+| You say | What you get |
+|---------|----------------|
+| *"Look into …"* | Research through the shortlist: problem, competitors, the full steps, the first chunk, and the later chunks |
+| *"Show I-001"* | `./studio ideate show I-001` prints the idea and its path |
+| *"Approve I-001"* | The idea is the one to take forward. Ranked if you name more than one |
+| *"Reject I-001 because …"* | The reason blocks that problem from coming back |
+| *"Park I-001 because …"* | Stored, not promoted |
+| *"Promote"* | `intake/<slug>.md` — user tasks, system tasks, backend, infrastructure, and scope modules |
+
+Promote runs only after you approved, and only when the idea passes the rubric. It refuses a thin brief. The first scope module is what bootstrap builds. Later modules stay in the PRD. Bootstrap is still the command that starts the product loop. Method for the agent: [ideation-desk.md](teams/09-studio-operations-evolution/skills/ideation-desk.md).
+
+The agent follows `.quinsy-studio/teams/09-studio-operations-evolution/skills/ideation-desk.md` through present, including the shape step: the problem space, the solution space, and the architecture and experience for that audience. It does not run `approve`, `reject`, `park`, or `promote` unless you ask in that conversation. A sign-off run uses `--budget normal`.
+
+Builder time is not a ceiling. One solo builder, with AI agents for coding and design, ships in chunks of about two months. Each chunk is a full web app, big enough for that builder and those agents. The first chunk is the MVP. Later chunks stay in the idea. A longer full solution is not a reason to drop it. Medicine and clinical care are out of reach (`./studio ideate idea --domain clinical` cannot validate). Other trades stay in reach when the activity is allowed and the job is software.
 
 ---
 
@@ -508,7 +532,7 @@ When complexity grows, avoid "layout-first" tickets that polish the wrong surfac
 |------|----------------|
 | 1. Where does this live? | [contextual-ia-playbook.md](knowledge-base/contextual-ia-playbook.md) — surface map, `ia-feature-placement` |
 | 2. End-to-end flow | [workflow-definition-playbook.md](knowledge-base/workflow-definition-playbook.md) |
-| 3. Design spec | [design-spec-template.md](knowledge-base/design-spec-template.md) — **write the file**; §2 + §2c + **all-state, in-context, project-token mocks** |
+| 3. Design spec | [design-spec-template.md](knowledge-base/design-spec-template.md) — **write the file**; §2 + §2c + **§2d Motion** + **all-state, in-context, project-token mocks** |
 | 4. Library + tokens | [design-system-compliance-checklist.md](knowledge-base/design-system-compliance-checklist.md) |
 | 5. Implement (on-system) | `./studio library pull` → `./studio move … implement` |
 | 6. Human taste | `approve-design --phase` / `approve-arch --phase` when every packet in the phase exists; cadence `./studio review` every N implementation phases |
@@ -522,12 +546,23 @@ Deep, codebase-aware playbooks extend internal skills (no new ticket IDs). Catal
 | Area | Extends | Examples |
 |------|---------|----------|
 | UX delight | UX-002 | Empty states, micro-interactions, milestone celebration |
+| Motion | UX-002, UX-005, FE-001, FE-002 | Open/close scales, mock transitions, `motion: off` |
 | Growth / PLG | GM-003, PS-001 | Share watermarks, activation funnels, usage paywalls |
 | Email | GM-003, UX-007 | Transactional HTML, Outlook-safe tables, CTA copy |
 | Compliance | CL-001–003 | Privacy audit, cookie CMP, ToS from codebase |
 | Security | PE-003 | Frontend XSS/CSP + backend BOLA/SSRF checklists |
 
 Draft new extensions in `intake/skills/` (local) → promote to `knowledge-base/skill-extensions/` after review.
+
+## Motion (default on)
+
+UI moves unless a human writes `motion: off` in the spec or the ticket. That line sets every `--motion-duration-*` to `0ms` in the **project** token file. The kit classes stay.
+
+- Skill: [knowledge-base/skill-extensions/motion-transitions.md](knowledge-base/skill-extensions/motion-transitions.md)
+- Tokens: `--motion-duration-*`, `--motion-ease-*`, `--motion-scale-*` in `studio-library/ui/tokens/design-tokens.css`
+- Spec: **§2d Motion** in [design-spec-template.md](knowledge-base/design-spec-template.md). The HTML mock shows closed and open with those tokens.
+- Kit: dialogs, menus, and tooltips already scale on open and close. Pull them. Do not add a second fade.
+- Reduced motion is always on: same content, durations at `0ms`.
 
 ## Four human gates (before coding)
 
@@ -681,7 +716,7 @@ Run prototype: `cd projects/<p>/design/prototype && npm install && npm run dev`
 
 ## External skills (optional)
 
-Subscribe to best-in-class skill packages (design, marketing, gamedev, compliance, **superpowers**, **anthropic_docs**). Do **not** `npx claude-code-templates` the whole tree. Do **not** import `executing-plans`.
+Subscribe to best-in-class skill packages (design, marketing, gamedev, compliance, **superpowers**, **anthropic_docs**). Do **not** `npx claude-code-templates` the whole tree. Do **not** import `executing-plans`. Motion is the internal skill `knowledge-base/skill-extensions/motion-transitions.md` and the `--motion-*` tokens on the kit. Every UI spec names it in §2d unless HITL writes `motion: off`.
 
 ```bash
 ./studio update-skills --list

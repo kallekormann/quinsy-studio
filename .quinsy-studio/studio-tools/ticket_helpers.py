@@ -141,8 +141,12 @@ SKILL_EXTRA_PLAYBOOKS = {
     "FE-001": [
         "knowledge-base/frontend_playbook.md",
         "knowledge-base/atomic-design-playbook.md",
+        "knowledge-base/skill-extensions/motion-transitions.md",
     ],
-    "FE-002": ["knowledge-base/frontend_playbook.md"],
+    "FE-002": [
+        "knowledge-base/frontend_playbook.md",
+        "knowledge-base/skill-extensions/motion-transitions.md",
+    ],
     "FE-003": ["knowledge-base/frontend_playbook.md"],
     "FE-004": ["knowledge-base/frontend_playbook.md", "knowledge-base/qa-gate-playbook.md"],
     "FE-005": ["knowledge-base/frontend_playbook.md"],
@@ -170,13 +174,17 @@ SKILL_EXTRA_PLAYBOOKS = {
     "UX-002": [
         "knowledge-base/interaction-ux-playbook.md",
         "knowledge-base/delight-playbook.md",
+        "knowledge-base/skill-extensions/motion-transitions.md",
     ],
     "UX-003": ["knowledge-base/contextual-ia-playbook.md"],
     "UX-004": [
         "knowledge-base/ux-research-playbook.md",
         "knowledge-base/design-direction-playbook.md",
     ],
-    "UX-005": ["knowledge-base/atomic-design-playbook.md"],
+    "UX-005": [
+        "knowledge-base/atomic-design-playbook.md",
+        "knowledge-base/skill-extensions/motion-transitions.md",
+    ],
     "UX-007": [
         "knowledge-base/visual-storytelling-playbook.md",
         "knowledge-base/delight-playbook.md",

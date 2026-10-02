@@ -99,6 +99,36 @@
   --sidebar-accent-foreground: var(--color-text);
   --sidebar-border: var(--color-border);
   --sidebar-ring: var(--color-primary-500);
+
+  /* Motion scale. HITL `motion: off` sets every --motion-duration-* to 0ms
+     in the project token file. Overlays set --tw-enter-scale and --tw-exit-scale
+     from the scale tokens. The enter/exit animation already reads those variables
+     and keeps translate, so a centered dialog does not jump. */
+  --motion-duration-stagger: 40ms;
+  --motion-duration-micro: 80ms;
+  --motion-duration-quick: 150ms;
+  --motion-duration-fast: 250ms;
+  --motion-duration-medium: 350ms;
+  --motion-duration-slow: 400ms;
+  --motion-duration-very-slow: 500ms;
+  --motion-ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-in-out: ease-in-out;
+  --motion-ease-out: ease-out;
+  --motion-ease-linear: linear;
+  --motion-ease-bounce: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --motion-ease-bounce-strong: cubic-bezier(0.34, 3.85, 0.64, 1);
+  --motion-distance-micro: 4px;
+  --motion-distance-small: 6px;
+  --motion-distance-base: 8px;
+  --motion-distance-medium: 12px;
+  --motion-distance-large: 30px;
+  --motion-scale-large: 0.96;
+  --motion-scale-medium: 0.97;
+  --motion-scale-small: 0.98;
+  --motion-scale-tiny: 0.99;
+  --motion-blur-small: 2px;
+  --motion-blur-medium: 3px;
+  --motion-blur-large: 8px;
 }
 
 [data-theme="dark"] {
@@ -215,4 +245,60 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Reduced motion collapses the scale. Content stays; only time goes away. */
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme="light"],
+  [data-theme="dark"] {
+    --motion-duration-stagger: 0ms;
+    --motion-duration-micro: 0ms;
+    --motion-duration-quick: 0ms;
+    --motion-duration-fast: 0ms;
+    --motion-duration-medium: 0ms;
+    --motion-duration-slow: 0ms;
+    --motion-duration-very-slow: 0ms;
+  }
+
+  [data-slot="skeleton"] {
+    animation: none;
+  }
+}
+
+@keyframes motion-accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes motion-accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+@keyframes motion-check-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+[data-slot="accordion-content"][data-state="open"] {
+  animation: motion-accordion-down var(--motion-duration-fast) var(--motion-ease-smooth-out);
+}
+
+[data-slot="accordion-content"][data-state="closed"] {
+  animation: motion-accordion-up var(--motion-duration-fast) var(--motion-ease-smooth-out);
+}
+
+[data-slot="checkbox-indicator"] {
+  animation: motion-check-in var(--motion-duration-quick) var(--motion-ease-in-out);
+}
+
+[data-sonner-toast][data-mounted="true"] {
+  animation-duration: var(--motion-duration-slow);
+  animation-timing-function: var(--motion-ease-smooth-out);
+}
+
+[data-sonner-toast][data-removed="true"] {
+  animation-duration: var(--motion-duration-medium);
+  animation-timing-function: var(--motion-ease-smooth-out);
 }

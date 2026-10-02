@@ -16,6 +16,10 @@ intake/*
 intake/amendments/**
 !intake/amendments/**/amendment_*.example.md
 
+# Ideation desk notes stay local, like intake PRDs.
+# The seed templates live in .quinsy-studio/studio-templates/ideation/ and are committed.
+/ideation/
+
 # Externe Skills: geklonte Repos (65MB+, regenerierbar via `./studio update-skills`)
 # Nur die skill-dependencies.json ist die Source of Truth.
 .quinsy-studio/external-skills/

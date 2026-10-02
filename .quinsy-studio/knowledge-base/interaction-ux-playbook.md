@@ -13,6 +13,7 @@ Checkout / paid forms also use [growth-mechanics-playbook.md](growth-mechanics-p
 - **User control:** cancel, back, and escape from a transient UI; don’t trap focus in a fake modal.
 - Match **user language** on labels (Krug: self-evident). Literal verbs: Save, Add, Delete — not “Let’s go.”
 - Mock **rest, hover, pressed, disabled, focus**; disclosure **open/closed**; surfaces **empty/loading/error**.
+- **Motion is on** unless the spec says `motion: off`. Open is an invitation (about 250ms); close gets out of the way (about 150ms). Name it in §2d. Extension: [skill-extensions/motion-transitions.md](skill-extensions/motion-transitions.md).
 - After a hard job, **peak–end**: show what was made + next step (delight-playbook). Joke loaders are forbidden.
 
 **Don’t**
@@ -26,6 +27,7 @@ Checkout / paid forms also use [growth-mechanics-playbook.md](growth-mechanics-p
 **Spec / mock fail**
 
 - Interactive control with only a rest frame.
+- Interactive UI with no §2d Motion and no `motion: off`.
 - Error copy that says “Something went wrong” with no field or next step (Nielsen: recover).
 - Form that reloads blank after a validation error.
 - Marketing/story scroll that cannot be read with reduced motion or without a pointer wheel.

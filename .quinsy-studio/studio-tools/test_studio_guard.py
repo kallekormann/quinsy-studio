@@ -158,6 +158,72 @@ class GuardInboxAckTests(unittest.TestCase):
         self.assertEqual(verdict, "cross_project")
         self.assertIn("other-app", msg)
 
+    def test_ideate_is_not_queued_while_in_flight(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context.implementation_in_flight", return_value=True), patch(
+            "studio_context._ack_inbox"
+        ) as ack:
+            verdict, msg = guard_request("demo", "please ideate a tool for parents", status)
+        ack.assert_not_called()
+        self.assertEqual(verdict, "ideate")
+        self.assertIn("ideation desk", msg)
+
+    def test_ideation_department_is_not_a_product_ticket(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context.implementation_in_flight", return_value=True), patch(
+            "studio_context._ack_inbox"
+        ) as ack:
+            verdict, _msg = guard_request(
+                "demo",
+                "ARTH has nothing to do with ideation department. how can we now proceed?",
+                status,
+            )
+        ack.assert_not_called()
+        self.assertEqual(verdict, "ideate")
+
+    def test_build_upon_research_stays_on_the_desk(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context.implementation_in_flight", return_value=True), patch(
+            "studio_context._ack_inbox"
+        ) as ack:
+            verdict, _msg = guard_request(
+                "demo",
+                "can the Ideation Department use ideas I build upon their research findings",
+                status,
+            )
+        ack.assert_not_called()
+        self.assertEqual(verdict, "ideate")
+
+    def test_ideate_plus_build_stays_on_the_product_guard(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context.implementation_in_flight", return_value=True), patch(
+            "studio_context._ack_inbox",
+            return_value=("inbox_ack", "ACK queued N-001"),
+        ) as ack:
+            verdict, _msg = guard_request(
+                "demo", "ideate and implement the signup form", status
+            )
+        ack.assert_called()
+        self.assertEqual(verdict, "inbox_ack")
+
+    def test_open_session_dimension_stays_on_the_desk(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context.implementation_in_flight", return_value=True), patch(
+            "studio_ideate.session_is_open", return_value=True
+        ), patch("studio_context._ack_inbox") as ack:
+            verdict, msg = guard_request("demo", "frequency", status)
+        ack.assert_not_called()
+        self.assertEqual(verdict, "ideate")
+        self.assertIn("present", msg)
+
+    def test_dimension_without_a_session_is_not_the_desk(self):
+        status = _review_pending_status()
+        with patch("studio_ideate.session_is_open", return_value=False), patch(
+            "studio_context.implementation_in_flight", return_value=False
+        ):
+            verdict, _msg = guard_request("demo", "frequency", status)
+        self.assertNotEqual(verdict, "ideate")
+
 
 if __name__ == "__main__":
     unittest.main()

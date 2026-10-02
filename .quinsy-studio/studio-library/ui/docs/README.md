@@ -75,6 +75,7 @@ Table, Command, Menubar, Navigation Menu, Context Menu, Sidebar, Calendar, Carou
 ## Enforcement (tickets)
 
 - **Team 01** FE-001 / FE-002: load this index before implement
+- **Motion is on** — use the pulled kit and `--motion-*`. Specs include §2d. `motion: off` is the only skip. See [patterns/transitions.md](./patterns/transitions.md).
 - **No custom overlay** without Dialog primitive **or** `dialog` / `sheet` kit
 - **No raw `<select>` styling** — use `select` kit or Listbox / `native-select`
 - External reference: [Tailwind docs](https://tailwindcss.com/docs/) for utility classes

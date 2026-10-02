@@ -31,24 +31,20 @@ export type DropdownProps<T extends string | number = string> = {
 };
 
 const labelClassName =
-  "mb-1 block text-[11px] font-medium uppercase leading-none tracking-[0.1em] text-[color:var(--color-muted,var(--color-text-muted))] font-[family-name:var(--font-ui,var(--font-sans))]";
+  "mb-1 block font-sans text-[11px] font-medium uppercase leading-none tracking-[0.1em] text-muted-foreground";
 
 const buttonClass =
-  "relative flex h-[34px] w-full items-center justify-between gap-2 rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-background,var(--color-surface))] px-3 text-left text-sm text-[color:var(--color-foreground,var(--color-text))] font-[family-name:var(--font-ui,var(--font-sans))] transition-[border-color,background-color] hover:bg-[color:var(--color-surface-muted,var(--color-surface))] focus-visible:border-[color:var(--color-accent,var(--color-primary-500))] focus-visible:outline-none data-[open]:border-[color:var(--color-accent,var(--color-primary-500))] disabled:cursor-not-allowed disabled:opacity-45";
+  "relative flex h-[34px] w-full items-center justify-between gap-2 rounded-full border border-border bg-surface px-3 text-left font-sans text-sm text-ink transition-[border-color,background-color] hover:bg-surface-hover focus-visible:border-ring focus-visible:outline-none data-[open]:border-ring disabled:cursor-not-allowed disabled:opacity-45";
 
 const panelClass =
-  "z-[9999] mt-1 max-h-60 w-[var(--button-width)] overflow-auto rounded-md border border-[color:var(--color-border)] bg-[color:var(--color-background,var(--color-surface))] py-1 shadow-md font-[family-name:var(--font-ui,var(--font-sans))]";
+  "z-[9999] mt-1 max-h-60 w-[var(--button-width)] overflow-auto rounded-2xl border border-border bg-surface py-1 font-sans shadow-md";
 
 function optionClass(focus: boolean, selected: boolean, disabled?: boolean) {
   return [
-    "flex w-full cursor-default px-2.5 py-2 text-left text-sm text-[color:var(--color-foreground,var(--color-text))]",
+    "flex w-full cursor-default px-2.5 py-2 text-left text-sm text-ink data-[focus]:bg-surface-selected data-[focus]:text-ink",
     disabled ? "opacity-40" : "",
-    focus
-      ? "bg-[color:var(--color-surface-muted,var(--color-neutral-100))]"
-      : "",
-    selected
-      ? "font-medium text-[color:var(--color-accent,var(--color-primary-500))]"
-      : "",
+    focus ? "bg-surface-selected" : "",
+    selected && !focus ? "font-medium text-accent" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -91,6 +87,7 @@ export function Dropdown<T extends string | number = string>({
           {options.map((opt) => (
             <ListboxOption
               key={String(opt.value)}
+              data-slot="listbox-option"
               value={opt.value}
               disabled={opt.disabled}
               className={({ focus, selected: isSelected }) =>

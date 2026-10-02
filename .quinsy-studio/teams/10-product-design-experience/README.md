@@ -38,7 +38,7 @@ The catalog locks type, elevation, motion, and density. It is not the product id
 **After gate 2b (the phase train):**
 
 1. A **design phase** holds experience tickets whose `design_status` is `pending`. Polish on the signed kit stays `n/a` and stays out of this phase.
-2. Team 10 **fills** every spec (remove the stub banner) and writes HTML mocks under `docs/design-specs/mocks/<TICKET>/` using **the same project tokens**, in the **real product view**, **all states**. Each ticket states `architecture delta: none` or names the architecture ticket.
+2. Team 10 **fills** every spec (remove the stub banner) and writes HTML mocks under `docs/design-specs/mocks/<TICKET>/` using **the same project tokens**, in the **real product view**, **all states**. Each ticket states `architecture delta: none` or names the architecture ticket. **§2d Motion** is required. The only skip is the line `motion: off` from HITL.
 3. Human → `./studio approve-design <project> --phase` once, after every packet in the phase is written.
 4. An **architecture phase** signs the deltas and any boundary tickets. `./studio approve-arch <project> <TICKET> --reject` sends an infeasible design to the next design cycle.
 5. An **implementation phase** builds only tickets whose design and architecture are `approved` or `n/a`. Team 01 styles the pulled kit and this baseline; do not redraw popover, tooltip, dropdown, or dialog.
@@ -63,9 +63,10 @@ See `agents/` — Brand Guardian, Visual Storyteller, UX Researcher.
 - `knowledge-base/atomic-design-playbook.md`
 - `knowledge-base/visual-storytelling-playbook.md`
 - `knowledge-base/delight-playbook.md` — visceral / behavioral / reflective; **no new skill**
+- `knowledge-base/skill-extensions/motion-transitions.md` — §2d Motion; kit open/close scales
 - `knowledge-base/brand-guardian-checklist.md`
 - `knowledge-base/aesthetic-presets/README.md` — optional footnote
 
 ## Studio skill extensions
 
-See [knowledge-base/skill-extensions/README.md](../../knowledge-base/skill-extensions/README.md) — compliance, PLG, delight UX, security (extend existing CL/GM/UX/PE skills).
+See [knowledge-base/skill-extensions/README.md](../../knowledge-base/skill-extensions/README.md) — motion, compliance, PLG, delight UX, security (extend existing CL/GM/UX/PE skills).

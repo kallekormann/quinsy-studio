@@ -1,0 +1,41 @@
+# Session budgets. The CLI enforces these. Confirm before changing a tier.
+competitor_file_bytes: 25600
+problem_file_bytes: 25600
+idea_file_bytes: 25600
+empty_searches_to_close: 2
+
+small:
+  searches: 8
+  fetches: 15
+  iterations_per_dimension: 1
+  reclusters: 1
+  minutes: 20
+  session_log_bytes: 30720
+  shortlist_n: 3
+  near_misses: 2
+  competitor_profiles: 3
+  neighboring_listings: 5
+
+normal:
+  searches: 24
+  fetches: 40
+  iterations_per_dimension: 2
+  reclusters: 2
+  minutes: 45
+  session_log_bytes: 61440
+  shortlist_n: 5
+  near_misses: 3
+  competitor_profiles: 6
+  neighboring_listings: 5
+
+large:
+  searches: 48
+  fetches: 80
+  iterations_per_dimension: 3
+  reclusters: 3
+  minutes: 90
+  session_log_bytes: 102400
+  shortlist_n: 5
+  near_misses: 3
+  competitor_profiles: 10
+  neighboring_listings: 8

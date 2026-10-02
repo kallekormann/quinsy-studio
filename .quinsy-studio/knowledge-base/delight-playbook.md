@@ -42,7 +42,7 @@ Then **performance** (faster, clearer, fewer steps). Then **excitement** (small,
 **Do**
 
 - Feedback that the action *took* (checked state, count, new row) within ~100ms perceived.
-- Motion that explains (open, close, what’s new) — 150–250ms, interruptible, reduced-motion alternative.
+- Motion that explains (open, close, what’s new) — kit tokens, interruptible, reduced-motion alternative. Default is on. HITL writes `motion: off` to turn it off. See [skill-extensions/motion-transitions.md](skill-extensions/motion-transitions.md).
 - Hover/focus that clarifies the target (library states), not a character that performs.
 
 **Don’t**

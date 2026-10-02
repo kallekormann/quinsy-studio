@@ -10,10 +10,12 @@ Interaction patterns, states, microcopy, error flows, forms. Load for forms, mod
 
 **Playbook:** [interaction-ux-playbook.md](../../../knowledge-base/interaction-ux-playbook.md) · [delight-playbook.md](../../../knowledge-base/delight-playbook.md)
 
+**Studio extension:** [motion-transitions.md](../../../knowledge-base/skill-extensions/motion-transitions.md) — motion is the default on every UI spec (§2d). HITL opt-out is the line `motion: off`.
+
 **Studio extension:** [figma-token-handoff.md](../../../knowledge-base/skill-extensions/figma-token-handoff.md) when the ticket cites Figma.
 
 **Studio extension:** [delight-micro-interactions.md](../../../knowledge-base/skill-extensions/delight-micro-interactions.md) — audit empty/wait/milestone only; **no** joke loaders or confetti-on-save.
 
 **External (optional):** `ux-interaction-patterns`, `ux-form-design`
 
-**Deliverables:** state matrix (empty/loading/error/success), form/label notes, interaction notes in design spec, delight audit table when reviewing flows.
+**Deliverables:** state matrix (empty/loading/error/success), form/label notes, interaction notes in design spec, **§2d Motion** (or `motion: off`), delight audit table when reviewing flows.

@@ -5,11 +5,12 @@
 
 ## What it is
 
-Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects** (client code, each with its own git repo). An IDE agent reads [`AGENTS.md`](AGENTS.md) and runs the `./studio` CLI.
+Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects** (client code, each with its own git repo). An IDE agent reads [`AGENTS.md`](AGENTS.md) and runs the `./studio` CLI. A direction becomes a product on [How Quinsy Studio works](.quinsy-studio/process/studio-overview.md): research, a PRD, the gates, the build, then you ship.
 
 | Layer | Path | In studio git? |
 |-------|------|----------------|
 | **Studio HQ** | `.quinsy-studio/`, `studio`, `AGENTS.md` | Yes |
+| **Ideation** | `ideation/` | No — local research desk |
 | **Projects** | `projects/<name>/` | No — separate repo per project |
 | **Intake** | `intake/*.md` | No — local PRDs and optional adopt intent |
 | **Amendment briefs** | `intake/amendments/<project>/` | No — local only |
@@ -25,13 +26,27 @@ Quinsy Studio separates **Studio HQ** (process, tools, library) from **projects*
 ./studio verify-abstraction         # studio docs/tools use <project>, not a client name
 ```
 
-Pick one path. **`execute` is the driver** after that — one next action until HITL. `./studio resume` is only a checklist.
+The whole path, from a direction to production, is [How Quinsy Studio works](.quinsy-studio/process/studio-overview.md).
+
+Pick one path. **`execute` is the driver** after a product exists — one next action until HITL. `./studio resume` is only a checklist.
 
 Start-of-project HITL (you, not the agent): **gate 0 PRD/as-built → gate 1 architecture → gate 2a direction → gate 2b project kit**. `approve --gate 2` is refused. After the milestone roadmap, each cycle is a design phase, then an architecture phase, then an implementation phase. An empty phase is skipped.
 
+### Ideation, then a PRD
+
+Say what to look into. The desk researches and presents a shortlist. You approve one idea, then promote it. Promote writes `intake/<slug>.md`: the full solution, cut into scope modules. The first module is what bootstrap builds.
+
+```text
+Look into <direction>.
+Approve I-001.
+Promote I-001.
+```
+
+Detail: [studio-overview.md](.quinsy-studio/process/studio-overview.md) · [GETTING_STARTED § ideation](.quinsy-studio/GETTING_STARTED.md#ideation-desk)
+
 ### New product (PRD)
 
-Add `intake/<project>.md` → *"Bootstrap &lt;project&gt; and walk me through gate 0"*.
+Add `intake/<project>.md` yourself, or use the file promote just wrote → *"Bootstrap &lt;project&gt; and walk me through gate 0"*.
 
 ```bash
 ./studio bootstrap my-project     # from intake/<prd>.md
@@ -114,6 +129,7 @@ Open this repo in Cursor. You approve HITL stops; the agent runs `./studio execu
 
 | Step | You say |
 |------|---------|
+| 0. A direction, no product yet | *"Look into …"* → *"Approve I-001"* → *"Promote I-001"* |
 | 1a. New product — PRD in `intake/my-project.md` | *"Bootstrap my-project and walk me through the next gate."* |
 | 1b. Existing repo | *"Adopt my-project from this folder and reconstruct as-built."* |
 | 2. Gate 0 ready | *"Approve gate 0"* (as-built truth on adopt, or PRD + definitions) |
@@ -179,7 +195,7 @@ Registry: [`.quinsy-studio/studio-library/library_registry.md`](.quinsy-studio/s
 
 **Team 10 aesthetic presets:** [`.quinsy-studio/knowledge-base/aesthetic-presets/README.md`](.quinsy-studio/knowledge-base/aesthetic-presets/README.md) — required in UI design specs (stripe-like, apple-like, soft-ui, …).
 
-**Design discipline (placement before layout):** The agent **writes** `docs/design-specs/<TICKET>.md` and in-context HTML mocks that use **project CSS tokens** and show **all states**. Do not ask a human to approve a spec that is not on disk. See [design-spec-template](.quinsy-studio/knowledge-base/design-spec-template.md).
+**Design discipline (placement before layout):** The agent **writes** `docs/design-specs/<TICKET>.md` and in-context HTML mocks that use **project CSS tokens** and show **all states**. Every UI spec includes **§2d Motion**. The kit already animates with `--motion-*` tokens. The only off switch is HITL `motion: off`. Do not ask a human to approve a spec that is not on disk. See [design-spec-template](.quinsy-studio/knowledge-base/design-spec-template.md) and [motion-transitions](.quinsy-studio/knowledge-base/skill-extensions/motion-transitions.md).
 
 **Studio skill extensions:** [`.quinsy-studio/knowledge-base/skill-extensions/README.md`](.quinsy-studio/knowledge-base/skill-extensions/README.md) — deep playbooks for compliance, PLG, delight UX, security audits (extend CL/GM/UX/PE skills, no new ticket IDs).
 
@@ -212,6 +228,7 @@ quinsy-studio/
 │   ├── knowledge-base/
 │   │   └── learnings/            # domain/topic catalog + inbox.md (open queue) + archive/
 │   └── backlog/              # LO-* studio improvements only
+├── ideation/                 # Research desk (gitignored): problems, ideas, shortlist
 ├── intake/                   # Raw PRDs + amendment briefs (gitignored)
 ├── projects/                 # Client projects (gitignored, own .git each)
 └── studio                    # CLI entrypoint
@@ -221,6 +238,8 @@ quinsy-studio/
 
 | Topic | Document |
 |-------|----------|
+| The path: direction → PRD → gates → production | [process/studio-overview.md](.quinsy-studio/process/studio-overview.md) |
+| Ideation desk | [GETTING_STARTED § ideation](.quinsy-studio/GETTING_STARTED.md#ideation-desk) · [ideation-desk.md](.quinsy-studio/teams/09-studio-operations-evolution/skills/ideation-desk.md) |
 | Execute loop (agentic sprint) | [GETTING_STARTED § execute loop](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) |
 | HQ isolation (Docker, secrets, leases) | [process/hq-isolation-sprints.md](.quinsy-studio/process/hq-isolation-sprints.md) |
 | Immediate harvest + HQ train session | [GETTING_STARTED § learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified) |
@@ -230,6 +249,7 @@ quinsy-studio/
 | Prompt cheat sheet | [GETTING_STARTED § talk to the agent](.quinsy-studio/GETTING_STARTED.md#talk-to-the-agent--prompt-cheat-sheet) |
 | Using in Cursor | [.quinsy-studio/README.md §4](.quinsy-studio/README.md#4-using-quinsy-studio-in-cursor) |
 | External skills | [.quinsy-studio/README.md §8](.quinsy-studio/README.md#8-managing-skills) |
+| Motion (default on) | [GETTING_STARTED § motion](.quinsy-studio/GETTING_STARTED.md#motion-default-on) · [motion-transitions](.quinsy-studio/knowledge-base/skill-extensions/motion-transitions.md) |
 | Lifecycle | [process/lifecycle.md](.quinsy-studio/process/lifecycle.md) |
 | Milestone planning | [process/milestone-planning.md](.quinsy-studio/process/milestone-planning.md) |
 | Amendment intake | [process/amendment-intake.md](.quinsy-studio/process/amendment-intake.md) |
@@ -257,7 +277,7 @@ quinsy-studio/
 5. **Sprint HITL** — no feature-ticket ACK; `PRODUCTION` then `approve-design` / `approve-arch`; cadence review every N implementation sprints. Hygiene: `./studio sprint --kind hygiene` (see [HITL](.quinsy-studio/process/human-in-the-loop.md))
 6. **Milestones** — roadmap after gate 2; milestone review before next version backlog
 7. **Amendments** — strategic direction after gate 2 → analysis → revised roadmap → tickets (see [amendment-intake](.quinsy-studio/process/amendment-intake.md))
-8. **Placement before layout** — Team 10 writes the spec file (§2 + §2c); mocks use project tokens, sit in the real view, and cover all states; `ia-feature-placement` for cross-surface moves
+8. **Placement before layout** — Team 10 writes the spec file (§2 + §2c + §2d Motion); mocks use project tokens, sit in the real view, and cover all states; `ia-feature-placement` for cross-surface moves. Motion is on unless the spec says `motion: off`.
 9. **Immediate harvest** — classify + inbox + LO when a learning is identified; product chat **INFORM**s; `./studio train` in a HQ session
 10. **Two git worlds** — never commit `projects/` to this repo; product commits from `projects/<name>/` on each `MOVE_DONE`. Cadence review may push **`origin/dev`**. `main` / production is HITL `./studio ship --to main --approve`. Studio HQ stays project-agnostic (`./studio verify-abstraction`).
 11. **Isolation** — one chat per product; `./studio focus` / `isolate`; guard `CROSS_PROJECT`; focus does not clobber a live execute lease unless `--force`. Not a kernel jail.

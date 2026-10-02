@@ -49,10 +49,11 @@ Canon: [frontend-team-canon-ledger.md](../../knowledge-base/frontend-team-canon-
 2. The gate-2b kit is already pulled (`button`, `input`, `popover`, `tooltip`, `dropdown-menu`, `dialog`, `sidebar`, `auth-login`). Style those files to project tokens. Do not draw a second popover.
 3. Product `app/` starts as the materialized prototype. Wire data and enhance UX, IA, and structure there. `design/prototype/` stays the baseline you can reopen. An `Enhancement:` receipt line is required when a ticket leaves that baseline.
 4. Missing generic → design-track ticket, not a one-off CSS control.
-5. Receipt + `./studio gate --level 5` before `move … done`.
+5. Receipt + `./studio gate --level 5` before `move … done`. Pulled kit motion stays. Do not re-time Dialog, Menu, or Button in the product. `motion: off` is a human command, then project `--motion-duration-*` at `0ms`.
 
 ## References
 
 - `.quinsy-studio/process/ticket-team-allocation.md`
 - `.quinsy-studio/studio-library/ui/`
+- `.quinsy-studio/knowledge-base/skill-extensions/motion-transitions.md`
 - `./studio library pull <project> …`

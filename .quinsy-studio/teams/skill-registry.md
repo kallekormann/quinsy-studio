@@ -90,6 +90,7 @@ They **do not add new internal IDs** — they extend existing skills:
 | tos-architect | CL-003 | 03 |
 | compliance-orchestrator | CL-001/002/003 (audit index) | 03 |
 | figma-token-handoff | UX-002, UX-005 | 10 |
+| motion-transitions | UX-002, UX-005, FE-001, FE-002 | 10, 01 |
 | frontend-security-auditor | PE-003, FE-007 | 08, 01 |
 | backend-security-auditor | PE-003 | 08, 02 |
 

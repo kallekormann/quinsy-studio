@@ -35,6 +35,27 @@
     "./studio init",
     "./studio install",
     "./studio intake",
+    "./studio ideate",
+    "./studio ideate status",
+    "./studio ideate search",
+    "./studio ideate fetch",
+    "./studio ideate checkpoint",
+    "./studio ideate recluster",
+    "./studio ideate problem",
+    "./studio ideate deepen",
+    "./studio ideate idea",
+    "./studio ideate competitor",
+    "./studio ideate field",
+    "./studio ideate score",
+    "./studio ideate qualify",
+    "./studio ideate matrix",
+    "./studio ideate pricing",
+    "./studio ideate crowd",
+    "./studio ideate present",
+    "./studio ideate show",
+    "./studio ideate stop",
+    "./studio ideate discard",
+    "./studio ideate propose",
     "./studio isolate",
     "./studio learn",
     "./studio learn-compact",
@@ -73,11 +94,13 @@
   ],
   "autoRun": {
     "allow_instructions": [
-      "Allow every repo-root ./studio subcommand: adopt, adr, amend, amendments, approve, approve-arch, approve-design, blueprint, board, bootstrap, cite, clarify, concept, decide, decisions, design, env, execute, feedback, feedback-list, focus, gate, groom, guard, health, ia-audit, inform, infusion, infusion-delta, init, install, intake, isolate, learn, learn-compact, learn-find, learn-list, library (list, suggest, pull, promote, promote-design), move, note, promote, promote-library, receipt, repo, resume, retro, reuse, review, revise, settings, sprint, start, status, sync, ticket, ticket-card, train, update-skills, verify-abstraction, verify-worlds, veto.",
+      "Allow every repo-root ./studio subcommand: adopt, adr, amend, amendments, approve, approve-arch, approve-design, blueprint, board, bootstrap, cite, clarify, concept, decide, decisions, design, env, execute, feedback, feedback-list, focus, gate, groom, guard, health, ia-audit, ideate, inform, infusion, infusion-delta, init, install, intake, isolate, learn, learn-compact, learn-find, learn-list, library (list, suggest, pull, promote, promote-design), move, note, promote, promote-library, receipt, repo, resume, retro, reuse, review, revise, settings, sprint, start, status, sync, ticket, ticket-card, train, update-skills, verify-abstraction, verify-worlds, veto.",
+      "Allow ./studio ideate status, search, fetch, checkpoint, recluster, problem, deepen, idea, competitor, field, score, matrix, pricing, crowd, present, show, stop, discard, and propose. The ideation desk records research and writes the shortlist without an approval card.",
       "Allow ./studio ship <project> --to dev before cadence review.",
       "Allow git -C projects/<name> commit and git push to origin/dev for product ticket close and cadence review."
     ],
     "block_instructions": [
+      "Block ./studio ideate approve, reject, park, promote, and apply-rubric unless the human already asked in this conversation. Sign-off is a studio HITL stop.",
       "Block ./studio ship <project> --to main unless the human already asked for it with --approve. Production is a studio HITL stop.",
       "Never treat git push origin main, or git push to main, as auto-approved."
     ]

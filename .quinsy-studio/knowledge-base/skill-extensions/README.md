@@ -25,6 +25,7 @@
 | [frontend-security-auditor.md](frontend-security-auditor.md) | **PE-003**, **FE-007**, FE-004 | 08, 01 | XSS, CSP, client auth, CSRF, secrets in FE |
 | [backend-security-auditor.md](backend-security-auditor.md) | **PE-003**, BE-003 | 08, 02 | BOLA, injection, SSRF, mass assignment, rate limits |
 | [figma-token-handoff.md](figma-token-handoff.md) | **UX-002**, **UX-005** | 10 | Figma file cited — map to tokens, not a new UX ID |
+| [motion-transitions.md](motion-transitions.md) | **UX-002**, **UX-005**, **FE-001**, **FE-002** | 10, 01 | UI motion is on unless the spec says `motion: off` |
 
 ## Intake staging
 

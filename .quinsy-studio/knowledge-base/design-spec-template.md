@@ -79,6 +79,29 @@ Surfaces / compositions (lists, boards, settings, marketing, IA): **empty**, **l
 
 Put states in this table **and** in the mock files (separate HTML, headings, or `data-state="hover"`). One rest-state frame is not approval.
 
+## 2d. Motion (required)
+
+> **Gate:** `./studio approve-design` blocks when this section is missing, unless the spec or the ticket says `motion: off`.
+> Motion is the default. Skill: `knowledge-base/skill-extensions/motion-transitions.md`.
+> `prefers-reduced-motion` still shows the same content with durations at `0ms`.
+
+| Surface | Enter | Leave | Scale | Token |
+|---------|-------|-------|-------|-------|
+| e.g. filter menu | 250ms, ease smooth-out | 150ms, same ease | open 0.97, close 0.99 | `--motion-scale-medium` / `--motion-scale-tiny` |
+
+The HTML mock imports project `ui/tokens/design-tokens.css` and shows `data-state="closed"` and `data-state="open"`. The open frame transitions opacity and transform with the tokens above. A dialog uses `--motion-scale-large` and `transform-origin: center`. A menu originates at its trigger.
+
+- Reduced motion: same layout and copy, durations at `0ms`.
+- Kit components already animate. Name a field shake, text swap, icon swap, number update, skeleton reveal, or success mark here only when this screen needs it. Use the tokens in the skill. Do not add a second transition catalog.
+
+HITL opt-out (the only off switch):
+
+```
+motion: off
+```
+
+That line means the project token file sets every `--motion-duration-*` to `0ms`. It does not mean a hand-rolled static fork of Dialog or Button.
+
 ## 3. Atomic inventory
 
 | Level | Name | Library source | New? |

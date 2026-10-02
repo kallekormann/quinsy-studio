@@ -50,6 +50,7 @@ Commands:
 
   # Phase 1: Intake (human gate 0)
   ./studio intake <project> <input-file>         Process intake (no tickets yet)
+  ./studio ideate [focus] --budget small|normal|large   Shortlist only; promote after approve
 
   # Phase 2: Architecture (human gate 1)
   ./studio blueprint <project>                   Scaffold architecture docs
@@ -1154,6 +1155,7 @@ class StudioOrchestrator:
             "autonomous_sprint": "🤖",
             "feedback_only": "📝",
             "studio_meta": "🏢",
+            "ideate": "💡",
             "cross_project": "🚧",
             "unclear": "❓",
         }
@@ -1164,6 +1166,8 @@ class StudioOrchestrator:
             print(f"  Continue the current ACTION — do not start a new task.")
         if verdict == "cross_project":
             print("  Stay in this project tree. Switch products with ./studio focus <other>.")
+        if verdict == "ideate":
+            print("  Do not queue this on the product sprint. Follow the printed ./studio ideate section.")
         return verdict in {"in_scope", "inbox_ack"}
 
     def cmd_verify_worlds(self):
@@ -3801,6 +3805,7 @@ Commands:
 
   # Phase 1: Intake (human gate 0)
   ./studio intake <project> <input-file>         Process intake (no tickets yet)
+  ./studio ideate [focus] --budget small|normal|large   Shortlist only; promote after approve
 
   # Phase 2: Architecture (human gate 1)
   ./studio blueprint <project>                   Scaffold architecture docs
@@ -3885,7 +3890,9 @@ HELP_FLAGS = frozenset({"-h", "--help"})
 
 
 def cli_wants_help(command: str, args: list) -> bool:
-    """`--help` / `-h` is a flag, never a project slug."""
+    """`--help` / `-h` is a flag, never a project slug. `ideate` prints its own usage."""
+    if command == "ideate":
+        return False
     if command in HELP_FLAGS:
         return True
     return bool(args) and args[0] in HELP_FLAGS
@@ -4092,6 +4099,14 @@ def main():
 
     elif command == "guard" and len(args) >= 2:
         orchestrator.cmd_guard(args[0], " ".join(args[1:]))
+
+    elif command == "ideate":
+        from studio_ideate import dispatch as ideate_dispatch
+
+        code, message = ideate_dispatch(args)
+        print(message)
+        if code != 0:
+            sys.exit(code)
 
     elif command == "verify-worlds":
         orchestrator.cmd_verify_worlds()

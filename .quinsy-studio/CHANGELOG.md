@@ -1,3 +1,31 @@
+## 2026-10-02 — Motion skill is internal
+
+### Changed
+
+- Motion no longer depends on an external subscription. The skill is `knowledge-base/skill-extensions/motion-transitions.md`. Dialogs, menus, and tooltips scale with `--motion-scale-*` on open and close.
+- `transitions_dev` is removed from `skill-dependencies.json`.
+
+## 2026-10-02 — Motion is the default on UI specs and the studio kit
+
+### Changed
+
+- Subscribed [transitions.dev](https://github.com/Jakubantalik/transitions.dev/tree/main/skills) as `transitions_dev` for Teams 10 and 01. The doctrine is distilled into `knowledge-base/skill-extensions/motion-transitions.md`. The `t-*` recipe collection stays in the subscribed clone. It is not a second kit.
+- Design specs need **§2d Motion** before approve-design. The only off switch is HITL `motion: off`, which sets project `--motion-duration-*` to `0ms`.
+- Studio-library tokens and core controls (button, menus, dialog, sheet, tooltip, tabs, switch, checkbox, accordion, toast) use that scale so implementation does not re-time them per project.
+
+## 2026-10-01 — Arbitrary Tailwind size classes on added diff lines (LO-0368)
+
+### Changed
+
+- UI receipts scan added `tsx`/`css` lines. Re-emitting an existing `text-[Npx]` className on a rewritten control fails the token check. Leave the original className line untouched, or use a scale class / token (`PB-20261001-001`).
+
+## 2026-09-30 — Mixed-sprint architecture tags and design-spec iframes
+
+### Changed
+
+- Mixed-sprint architecture phase sign-off must not untag tickets that still need implementation (`PB-20260930-002`).
+- Design-spec iframe catalogs need the product app listening; connection refused is a stopped server (`PB-20260930-001`).
+
 ## 2026-09-30 — Desktop env file and operator guides
 
 ### Changed

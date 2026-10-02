@@ -248,7 +248,7 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
     Core mid-execute rule (every project): if work is in flight, queue the
     verbatim chat as an inbox note and tell the agent to resume ACTION.
     verdict: inbox_ack | abort | cross_project | in_scope | needs_ticket | pre_impl | sprint_review |
-             sprint_closed | autonomous_sprint | feedback_only | studio_meta | unclear
+             sprint_closed | autonomous_sprint | feedback_only | studio_meta | ideate | unclear
     """
     from studio_human_inbox import (
         ABORT_RE,
@@ -275,6 +275,20 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
             f"Request names sibling project '{sibling}'. Stay in projects/{project}/. "
             f"Do not Read, copy, or git '{sibling}' into this repo. "
             f"Switch with ./studio focus {sibling} in a separate session.",
+        )
+
+    from studio_human_inbox import is_ideate_request
+
+    from studio_ideate import FEASIBILITY_BAR, is_desk_continuation, session_is_open
+
+    if is_ideate_request(request or "") or is_desk_continuation(request or "", session_is_open()):
+        return (
+            "ideate",
+            "This is the ideation desk, not the product sprint. "
+            "If the session is waiting for a brief, ask once and do not search. "
+            "After a brief, run ./studio ideate through present in this turn. Do not ask the human to continue. "
+            "Do not call execute. Do not approve, reject, park, or promote unless the human asked in this conversation. "
+            + FEASIBILITY_BAR,
         )
 
     if is_studio_hq_request(request or ""):

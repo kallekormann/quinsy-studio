@@ -45,6 +45,8 @@ Pull studio tokens:
 
 Wire `ui/tokens/tailwind.preset.ts` into your Tailwind config so `primary-*`, `surface`, `neutral-*` resolve to project brand CSS variables.
 
+`design-tokens.css` also defines `--motion-duration-*`, `--motion-ease-*`, and `--motion-scale-*`. Pulled overlays read those. A human opt-out is `motion: off`, which sets the duration tokens to `0ms` in the project file.
+
 ## 2. Headless UI (projects)
 
 Required when pulling **primitives** or Headless molecules (`dialog-shell`, `search-command`, `dropdown` Listbox, `segmented-toggle`):

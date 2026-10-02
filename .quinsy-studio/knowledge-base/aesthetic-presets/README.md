@@ -58,7 +58,7 @@ In every Team 10 design spec, add:
 - **Preset:** `academic-editorial-ui` (one slug from the catalog — craft substrate, not the identity)
 - **Delta:** audience job, density, posture, and what this product is not
 - **Token overrides:** None | list project token mappings
-- **Headless UI notes:** transitions, focus rings, active states from preset SKILL.md
+- **Headless UI notes:** focus rings and active states from the preset SKILL.md. Motion timing stays on `--motion-*` unless the signed direction names a delta.
 ```
 
 ## Agents & skills

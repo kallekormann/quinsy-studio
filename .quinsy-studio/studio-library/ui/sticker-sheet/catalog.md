@@ -43,6 +43,7 @@ Gate 2 validated project: `justdone`
 - `emotion-strip`
 - `empty`
 - `field`
+- `file-preview`
 - `hover-card`
 - `icon`
 - `inline-form`
@@ -70,6 +71,7 @@ Gate 2 validated project: `justdone`
 - `palette-strip`
 - `popover`
 - `progress`
+- `usage-meter`
 - `radio-group`
 - `resizable`
 - `scroll-area`
@@ -84,6 +86,7 @@ Gate 2 validated project: `justdone`
 - `soft-card`
 - `sonner`
 - `spinner`
+- `split-flap`
 - `studio-rail`
 - `switch`
 - `table`

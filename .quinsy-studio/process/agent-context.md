@@ -8,7 +8,7 @@
 
 ## Every turn (before session start)
 
-Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit **gate / approve-design / approve-arch / cadence review** when execute already says `STOP`. Mid-sprint “looks good” on a **feature** ticket is not HITL.
+Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit **gate / approve-design / approve-arch / cadence review** when execute already says `STOP`; `IDEATE` (`ideate`, `incubate`, `ideation`, or a section or dimension name while a session is open) which asks once when the session is waiting for a brief, and otherwise runs `./studio ideate` through present in that turn, including the shape step (problem space, solution space, architecture, and experience), and does not call `execute`. Builder time is not a ceiling: one solo builder, with AI agents for coding and design, ships in chunks of about two months. The first chunk is the MVP. Later chunks stay in the idea. Medicine and clinical care are out of reach. Other trades stay in reach. Do not ask the human to continue between sections. Mid-sprint “looks good” on a **feature** ticket is not HITL.
 
 ## Session start
 

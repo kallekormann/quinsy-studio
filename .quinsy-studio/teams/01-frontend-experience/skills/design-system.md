@@ -10,7 +10,9 @@ Apply **already approved** project tokens to the **pulled** studio-library kit. 
 
 **Playbook:** [frontend_playbook.md](../../../knowledge-base/frontend_playbook.md)
 
-**Don’t:** a second palette. **shadcn is not the kit.** **Implement-fail:** dark mode that ignores tokens; raw hex in product UI when tokens exist (gate 5 warn).
+**Don’t:** a second palette. **shadcn is not the kit.** **Implement-fail:** dark mode that ignores tokens; raw hex in product UI when tokens exist (gate 5 warn); a second motion scale beside `--motion-*`.
+
+**Extension:** [motion-transitions.md](../../../knowledge-base/skill-extensions/motion-transitions.md).
 
 Zone-sourced kit rails reassemble from current children; do not rematch a stale stored palette after add/delete (LO-0290).
 

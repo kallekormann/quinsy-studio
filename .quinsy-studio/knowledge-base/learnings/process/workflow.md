@@ -5,6 +5,16 @@ Matching playbook/skill: `process/learning-loop.md`.
 
 ## Principles
 
+- **PB-20261002-003** helpful=0 harmful=0 :: An ideation PRD states the full solution: user tasks, system tasks, backend, infrastructure, and scope modules. The first module is what bootstrap builds. Later modules stay in the PRD. Promote refuses a thin brief.
+- **PB-20261002-002** helpful=0 harmful=0 :: Ideation builder time is not a ceiling. One solo builder, with AI agents for coding and design, ships in chunks of about two months. Each chunk is a full web app, big enough for that builder and those agents. The first chunk is the MVP. Later chunks stay in the idea. A longer full solution is not scored as too slow.
+- **PB-20261002-001** helpful=0 harmful=0 :: Ideation records the problem space, the solution space, and the architecture and experience for that audience before the shortlist. The solution space says how the person's existing tool connects and which steps run, including a letter or a collection-firm hand-off when the audience needs them. The app stays attached to the tool they already use. A collection firm receives a file. The app does not become the collector.
+- **PB-20261001-001** helpful=0 harmful=0 :: Ideation feasibility is a full web app in about two months by one person. Medicine and clinical care are out of reach and cannot validate. Other trades stay in reach when the activity is allowed and the job is software. A two-month web app is not scored as too slow.
+- **PB-20260930-002** helpful=0 harmful=0 :: In a mixed sprint, architecture phase sign-off must not untag tickets that still need implementation. Keep the sprint tag until MOVE_DONE of the last ticket.
+- **PB-20260930-001** helpful=0 harmful=0 :: Design-spec iframe catalogs need the product app listening. Connection refused on the mock origin is a stopped dev server, not a broken spec.
+- **LO-0367** 2026-09-30 :: Mixed-sprint architecture `--phase` must not untag remaining implementation tickets
+  - In a mixed sprint, `approve-arch --phase` must not clear sprint tags while implementation tickets remain. Keep the tag until MOVE_DONE of the last ticket.
+- **LO-0366** 2026-09-30 :: Design-spec iframes need the product app listening
+  - Connection refused on the mock origin is a stopped dev server, not a broken spec. Start the product app before reviewing iframe catalogs.
 - **LO-0361** 2026-09-29 :: When `docs/i18n.md` exists, ticket type must stay explicit (`feature`) so catalog AC does not infer a design-track ticket.
   - When a project has `docs/i18n.md`, every ticket gets catalog AC. That AC mentions "UI string" and must not flip `infer_ticket_type` to `ui-composition`. Set `ticket_type: feature` (or the real design type) explicitly. Classifier: strip catalog AC before matching the word `ui`.
 - **PB-20260927-003** helpful=0 harmful=0 :: Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human gate.

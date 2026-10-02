@@ -26,7 +26,15 @@ Canon: [frontend-team-canon-ledger.md](frontend-team-canon-ledger.md). QA: [qa-g
 
 | Do | Don’t | Implement-fail |
 |----|-------|----------------|
-| Project `ui/tokens` CSS variables. A missing role is a new semantic token in `ui/tokens/design-tokens.css`, then `var(--role)` at the call site | Parallel palette, raw `#hex` / `rgb()` / `hsl()`, Tailwind palette classes (`bg-indigo-600`), or off-scale `px` at the call site | Move-done fails when changed `tsx`/`css` hardcodes color or space while `design-tokens.css` exists |
+| Project `ui/tokens` CSS variables. A missing role is a new semantic token in `ui/tokens/design-tokens.css`, then `var(--role)` at the call site. Leave existing arbitrary `text-[Npx]` className lines untouched | Parallel palette, raw `#hex` / `rgb()` / `hsl()`, Tailwind palette classes (`bg-indigo-600`), off-scale `px` at the call site, or re-emitting those arbitrary classes on newly added diff lines | Move-done fails when changed `tsx`/`css` hardcodes color or space while `design-tokens.css` exists |
+
+### Motion (FE-001 / UX-002)
+
+| Do | Don’t | Implement-fail |
+|----|-------|----------------|
+| Use the pulled kit. Durations are `--motion-duration-*` in `design-tokens.css`. Spec §2d names them. | A second fade, `duration-100` on a new overlay, Framer/GSAP to redo Button or Dialog | Hand-rolled open/close when the kit already animates. `motion: off` is HITL, then project tokens at `0ms` — not a fork of the components |
+
+Extension: [skill-extensions/motion-transitions.md](skill-extensions/motion-transitions.md).
 
 ### Performance (FE-003)
 
@@ -461,5 +469,6 @@ Tickets that claim “no third-party font CDN pre-auth” are not done until **a
 
 ## Deltas
 
+- **PB-20261001-001** helpful=0 harmful=0 :: When wrapping or extending a kit control, do not copy an existing arbitrary Tailwind size class (text-[Npx], h-[Npx]) onto a newly added className line. The UI receipt scans added lines. Leave the original className untouched, or replace with a scale class (text-xs) or a token.
 - **PB-20260916-001** helpful=0 harmful=0 :: Operator review Approve must show a visible outcome next to the action (published, already published, or error). Preview URLs must be the public reader host, not the operator admin sign-in wall.
 - **PB-20260915-002** helpful=1 harmful=0 :: Do not call delivery cache-bust from a use-client module. After a write, revalidate from the server plane that already has the secret. Client-visible env cannot reach admin-only URLs, so the UI can report Saved while the public host stays stale.

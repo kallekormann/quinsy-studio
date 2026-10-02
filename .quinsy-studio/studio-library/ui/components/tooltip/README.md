@@ -27,3 +27,5 @@ import { Tooltip } from '@ui/components/tooltip';
 ## A11y
 
 Keep `aria-label` on the control. Tip sets `role="tooltip"` + `aria-describedby` while open.
+
+Motion: uses the studio `--motion-*` tokens (duration, easing, and scale). Do not add a second duration or fade. `motion: off` is a project token override, not a fork of this file.

@@ -623,6 +623,36 @@ def design_mocks_states_error(
     )
 
 
+_MOTION_OFF_RE = re.compile(
+    r"\bmotion\s*:\s*off\b|\btransitions\s*:\s*off\b",
+    re.I,
+)
+_MOTION_HEADING_RE = re.compile(
+    r"(?:##\s*2d\.[^\n]*\bmotion\b|##\s+Motion\b)[^\n]*\n([\s\S]*?)(?=\n##\s|\Z)",
+    re.I,
+)
+
+
+def design_spec_motion_error(spec_text: str, ticket_blob: str = "") -> Optional[str]:
+    """UI specs name motion. HITL opt-out is the line `motion: off`."""
+    blob = f"{spec_text}\n{ticket_blob or ''}"
+    if _MOTION_OFF_RE.search(blob):
+        return None
+    match = _MOTION_HEADING_RE.search(spec_text)
+    if not match:
+        return (
+            "Design spec missing §2d Motion. Name the transitions (open/close, hover, reveal) "
+            "and a reduced-motion path. The only opt-out is the line `motion: off` from HITL. "
+            "See knowledge-base/skill-extensions/motion-transitions.md."
+        )
+    body = match.group(1)
+    if not re.search(r"reduced[ -]motion", body, re.I):
+        return "§2d Motion must name a reduced-motion path (same content, durations at 0ms)."
+    if not re.search(r"\b(transition|duration|animation|ease|motion-duration)\b", body, re.I):
+        return "§2d Motion must name at least one transition, duration, or easing."
+    return None
+
+
 def design_spec_completeness_error(
     spec_path: Path,
     project_root: Path,
@@ -656,6 +686,9 @@ def design_spec_completeness_error(
         story_err = design_spec_story_error(text, ticket_type, ticket_blob)
         if story_err:
             return story_err
+        motion_err = design_spec_motion_error(text, ticket_blob)
+        if motion_err:
+            return motion_err
         from studio_ia_audit import ia_nav_error_for_ticket
 
         ia_err = ia_nav_error_for_ticket(text, ticket_type)

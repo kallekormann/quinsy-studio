@@ -15,4 +15,6 @@ Projects mirror atoms/molecules/organisms under `ui/components/atoms|molecules|o
 
 Styled kit slugs (button, dialog, sidebar, …) are shadcn-style. Atomic `kind` is in `manifest.json`. See [shadcn-coverage.md](../shadcn-coverage.md).
 
+Interactive kit controls ship with motion (`--motion-*` in `tokens/design-tokens.css`). Pull them as they are. See [patterns/transitions.md](../patterns/transitions.md).
+
 See [atomic-design-playbook.md](../../../../knowledge-base/atomic-design-playbook.md).

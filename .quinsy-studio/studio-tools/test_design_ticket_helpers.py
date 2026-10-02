@@ -162,6 +162,11 @@ Ship the filter bar on the command list.
 | **Anti-orphan check** | Sidebar and list header visible in the mock |
 | **Project tokens** | ui/tokens/design-tokens.css |
 
+## 2d. Motion
+
+Filter menu opens in 250ms and closes in 150ms (`--motion-duration-fast` / `--motion-duration-quick`), ease smooth-out.
+Reduced-motion: same menu, durations at 0ms.
+
 ## 3. Atomic inventory
 
 | Level | Name | Library source | New? |
@@ -413,5 +418,22 @@ def test_playbooks_fe001_not_team10_canon():
     paths = playbooks_for_skills(["FE-001"])
     blob = " ".join(paths)
     assert "frontend_playbook" in blob
+    assert "motion-transitions" in blob
     assert "product-ux-playbook" not in blob
     assert "design-science-playbook" not in blob
+
+
+def test_motion_section_required_unless_hitl_off():
+    from design_ticket_helpers import design_spec_motion_error
+
+    bare = "## 1. Summary\nA filter bar.\n"
+    assert design_spec_motion_error(bare)
+    assert design_spec_motion_error(bare, "motion: off") is None
+    named = """
+## 2d. Motion
+Dropdown opens at duration fast and closes quicker. Ease smooth-out.
+Reduced-motion keeps the same menu.
+"""
+    assert design_spec_motion_error(named) is None
+    thin = "## 2d. Motion\nIt moves.\n"
+    assert design_spec_motion_error(thin)

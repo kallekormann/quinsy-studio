@@ -525,6 +525,14 @@
       "title": "progress (shadcn themable)"
     },
     {
+      "name": "usage-meter",
+      "kind": "ui-molecule",
+      "path": "ui/components/usage-meter/",
+      "version": "0.1.0",
+      "source_project": "studio",
+      "title": "usage meter"
+    },
+    {
       "name": "capture-types",
       "kind": "package",
       "path": "packages/capture-types/",
@@ -877,6 +885,14 @@
       "promoted": "2026-09-12"
     },
     {
+      "name": "file-preview",
+      "kind": "ui-molecule",
+      "path": "ui/components/file-preview/",
+      "version": "0.1.0",
+      "source_project": "studio",
+      "title": "file preview"
+    },
+    {
       "name": "slider",
       "kind": "ui-atom",
       "path": "ui/components/slider/",
@@ -902,6 +918,14 @@
       "source_project": "studio",
       "title": "spinner (shadcn themable)",
       "promoted": "2026-09-12"
+    },
+    {
+      "name": "split-flap",
+      "kind": "ui-molecule",
+      "path": "ui/components/split-flap/",
+      "version": "0.1.0",
+      "source_project": "studio",
+      "title": "split flap"
     },
     {
       "name": "table",
