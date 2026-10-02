@@ -4,11 +4,17 @@ Human map of where this desk sits: [studio-overview.md](../../../process/studio-
 
 A trigger with no topic is a valid start. Ask once what to look into. A market is optional. Do not search in that turn.
 
-After the human answers, run signals, cluster, ideas, compete, shape, score, and present in that same turn. Research wherever the sources are. Do not ask the human to continue, and do not stop between sections. The next human stop is the shortlist. Then they approve, reject, or dismiss.
+After the human answers, run signals, cluster, ideas, compete, shape, score, and present in that same turn. Research wherever the sources are. Do not ask the human to continue, and do not stop between sections.
+
+Ask a question only when a fact only the human knows would change the problem.
+
+When more than one idea remains, stop and ask which problem or idea to focus on. Give each one a short paragraph. When one idea remains, do not ask. Write the build for that idea, run `./studio ideate case`, and explain that case in the chat.
+
+The case states the problem and the evidence, the idea, the solution vision, the full feature set, and the scope. The last line asks whether this should become the intake PRD. On yes, run approve and promote. On no, run reject or park. The human does not name those commands. Do not write the PRD before they say yes. Bootstrap stays a separate command.
 
 Search the web and fetch the pages. The CLI does not search. Record every search with `./studio ideate search` and every fetch with `./studio ideate fetch` before a paraphrase. A session with no recorded search cannot finish. Do not search from memory. Record every file change through `./studio ideate`.
 
-Do not run `approve`, `reject`, `park`, or `promote` unless the human asked in the current conversation. Do not edit `rubric.md`. Propose changes with `./studio ideate propose`. Do not write into `projects/`. Do not copy outside skill files into this desk.
+Do not write the intake PRD until the human says yes. On yes, run `approve` and `promote`. On no, run `reject` or `park`. Do not edit `rubric.md`. Propose changes with `./studio ideate propose`. Do not write into `projects/`. Do not copy outside skill files into this desk.
 
 A medium run uses `--budget normal`.
 
@@ -109,11 +115,13 @@ Fit does not drop because one person is building it. Score 0 for medicine, clini
 
 If the brief named a market, each idea is `applies` or `outside`. `applies` means the sourced lines show the problem in that market. `outside` means they do not, and that idea is not a shortlist winner. If no market was named, every idea is `global`. Do not stamp a country onto it.
 
-`./studio ideate present` writes `ideation/shortlist/YYYY-MM-DD.md` and closes the session. A finished shortlist has recorded searches. When a market was stated, every idea in the session has a market check. The shortlist holds the ideas the funnel produced. It does not write a PRD and it does not ask for a decision inside the session log. Then stop.
+`./studio ideate present` writes `ideation/shortlist/YYYY-MM-DD.md` and closes the session. A finished shortlist has recorded searches. When a market was stated, every idea in the session has a market check. The shortlist is the record. It is not the human stop, and it does not write a PRD.
 
-## prd
+If several ideas remain, ask which one to focus on. If one remains, continue to the case in this same turn.
 
-After the human approves, and before promote, write the build. Promote refuses a thin PRD.
+## case
+
+Write the build before the case. The case is the document the human reads. It is not the intake file.
 
 `./studio ideate build I-001 --user "..." --system "..." --backend "..." --infrastructure "..." --modules "..."`
 
@@ -122,6 +130,12 @@ After the human approves, and before promote, write the build. Promote refuses a
 - Backend: the records and the rules. Name them.
 - Infrastructure: the running pieces. Name them.
 - Modules: the full solution cut into scope modules. The first line of the first module says `Bootstrap focuses on` that module. Every module says `Not in this module` for the work that waits. The final module is the finished product. Later modules are part of the product.
+
+`./studio ideate case I-001` prints the problem and the evidence, the idea, the solution vision, every step, and the scope. It refuses a thin idea. It does not write `intake/`. Explain that case in the chat. The last line asks whether this should become the intake PRD.
+
+## prd
+
+On yes, write the PRD. Promote refuses a thin brief and refuses an idea that is not approved. Saying yes is the approval. The human does not have to say the word approve.
 
 `./studio ideate prd I-001` writes `intake/<slug>.md` in the Rhodes shape: problem, audience, the full steps, user tasks, system tasks, backend, infrastructure, and scope modules. The first module is the focus. The later modules stay in the PRD. `./studio ideate promote` writes that same PRD and refuses when any of those parts is missing. Bootstrap is still a separate command.
 

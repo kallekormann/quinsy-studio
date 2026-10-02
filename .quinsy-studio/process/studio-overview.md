@@ -16,9 +16,10 @@ Read this page for the path. The linked pages are the detail for each step.
 
 ```
 You name a direction
-    → ideation researches and presents a shortlist
-    → you approve one idea
-    → promote writes the PRD (intake/<slug>.md)
+    → ideation researches
+    → you pick an idea only when more than one remains
+    → the desk explains the case
+    → you say yes, and that writes the PRD (intake/<slug>.md)
     → bootstrap starts the product
     → you sign gate 0, gate 1, gate 2a, gate 2b
     → the phase train designs, specifies architecture, and implements
@@ -41,9 +42,9 @@ Look into sole traders who already wrote the invoice and still chase the payment
 
 The desk is `./studio ideate`. The method is [ideation-desk.md](../teams/09-studio-operations-evolution/skills/ideation-desk.md). Notes stay in `ideation/` on this machine. That folder is not the product and it is not studio git.
 
-## 2. The desk researches and presents
+## 2. The desk researches
 
-After your brief, the same turn runs through the shortlist. You are not asked to continue between sections.
+After your brief, the same turn runs through the research. You are not asked to continue between sections. You answer a question only when a fact only you know would change the problem.
 
 | Section | What it settles |
 |---------|-----------------|
@@ -53,22 +54,19 @@ After your brief, the same turn runs through the shortlist. You are not asked to
 | Compete | What already exists, how it connects, and what it costs |
 | Shape | Problem, solution, architecture, experience, every step, the first two-month chunk, and the later chunks |
 | Score | Ten dimensions. An empty dimension is not a guess |
-| Present | `ideation/shortlist/YYYY-MM-DD.md` |
+| Present | `ideation/shortlist/YYYY-MM-DD.md`, the record of what the research kept |
 
 Builder time is not a ceiling. One person, with AI agents for coding and design, ships in chunks of about two months. Each chunk is a full web app. The first chunk is the MVP. Later chunks stay in the idea. Medicine and clinical care are out of reach. Other trades stay in reach when the work is software and the activity is allowed.
 
-You then say one of: **approve** the idea, **reject** it with a reason, or **park** it with a note.
+When more than one idea remains, the desk stops and asks which problem or idea to focus on. When one remains, it does not ask.
 
-## 3. Promote writes the PRD
+## 3. The case, then the PRD
 
-Approve is not the PRD. Promote is.
+The desk writes the case and explains it: the problem and the evidence, the idea, the solution vision, every step, and the scope. The scope names the first two-month chunk, the later chunks, and the scope modules.
 
-```bash
-./studio ideate approve I-001
-./studio ideate promote
-```
+The last line asks whether this should become the intake PRD. Yes writes `intake/<slug>.md`. No leaves intake untouched. Reject or park dismisses the idea. The desk runs approve and promote from that yes.
 
-Promote writes `intake/<slug>.md`. That file is the product definition the rest of the studio reads. It states the full solution: user tasks, system tasks, backend, infrastructure, and scope modules. The module that says bootstrap focuses on it is the first build. Later modules stay in the PRD so the final goal is written down. Promote refuses a thin brief.
+The PRD is the product definition the rest of the studio reads. It states the full solution: user tasks, system tasks, backend, infrastructure, and scope modules. The module that says bootstrap focuses on it is the first build. Later modules stay in the PRD so the final goal is written down. A thin case is refused.
 
 `intake/` is local. It is not committed in studio git.
 
@@ -164,8 +162,8 @@ Studio improvements are `LO-*` tickets in `.quinsy-studio/backlog/`. They are no
 | Step | You say |
 |------|---------|
 | Direction | *"Look into …"* |
-| Shortlist | *"Approve I-001"* or *"Reject I-001 because …"* or *"Park I-001 because …"* |
-| PRD | *"Promote I-001"* |
+| A choice, only when several ideas remain | *"Focus on the chase."* |
+| The PRD | *"Yes, write the PRD."* or *"No."* |
 | Product | *"Bootstrap <project> from intake/<slug>.md and walk me through gate 0."* |
 | Gates | *"Approve gate 0"* then 1, then 2a, then 2b |
 | Build | *"Let the sprint run — execute until HITL."* |

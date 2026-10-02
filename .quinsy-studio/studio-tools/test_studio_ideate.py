@@ -47,6 +47,8 @@ class IdeationDeskTests(unittest.TestCase):
     def test_seed_and_duplicate_from_index_keywords(self):
         message = self.desk.start("nl parents", "small", {}, False)
         self.assertIn("SECTION: signals", message)
+        self.assertIn("write the case", message)
+        self.assertNotIn("Waiting for approve", message)
         self.assertTrue((self.root / "ideation" / "rubric.md").exists())
         created = self.desk.add_problem(
             {
@@ -149,6 +151,16 @@ class IdeationDeskTests(unittest.TestCase):
         )
         self.assertEqual(code, 2)
         self.assertIn("PRD is missing", message)
+        code, message = dispatch(
+            ["case", "I-001"],
+            root=self.root,
+            templates=self.templates,
+            today=self.now.date(),
+            now=self.now,
+        )
+        self.assertEqual(code, 2)
+        self.assertIn("case is missing", message)
+        self.assertFalse((self.root / "intake").exists())
         self.desk.shape(
             "I-001",
             {
@@ -175,6 +187,19 @@ class IdeationDeskTests(unittest.TestCase):
                 ),
             },
         )
+        code, message = dispatch(
+            ["case", "I-001"],
+            root=self.root,
+            templates=self.templates,
+            today=self.now.date(),
+            now=self.now,
+        )
+        self.assertEqual(code, 0, message)
+        self.assertIn("Families pay a freelancer", message)
+        self.assertIn("## Solution vision", message)
+        self.assertIn("## Scope", message)
+        self.assertIn("Should this become the intake PRD?", message)
+        self.assertFalse((self.root / "intake" / "form-file-listing.md").exists())
         code, message = dispatch(
             ["promote"],
             root=self.root,
@@ -318,12 +343,17 @@ class IdeationDeskTests(unittest.TestCase):
         message = self.desk.present()
         self.assertIn("Incomplete", message)
         self.assertIn("shape missing: I-001", message)
+        self.assertIn("One idea remains: I-001", message)
+        self.assertIn("Write the case", message)
+        self.assertNotIn("Waiting for approve", message)
 
     def test_present_without_research_is_incomplete(self):
         self.desk.start("nl parents", "normal", {}, True)
         message = self.desk.present()
         self.assertIn("Incomplete", message)
         self.assertIn("no searches recorded", message)
+        self.assertIn("No idea remains", message)
+        self.assertNotIn("Waiting for approve", message)
         text = (self.root / "ideation" / "shortlist" / "2026-10-01.md").read_text(encoding="utf-8")
         self.assertIn("incomplete:", text)
         self.assertIn("judged globally", text.lower())
@@ -381,6 +411,9 @@ class IdeationDeskTests(unittest.TestCase):
             )
         message = self.desk.present()
         self.assertNotIn("Incomplete", message)
+        self.assertIn("Several ideas remain", message)
+        self.assertIn("Ask which", message)
+        self.assertNotIn("Waiting for approve", message)
         text = (self.root / "ideation" / "shortlist" / "2026-10-01.md").read_text(encoding="utf-8")
         self.assertNotIn("incomplete:", text)
 
@@ -520,6 +553,8 @@ class IdeationDeskTests(unittest.TestCase):
         self.desk.search("hn", "new")
         message = self.desk.present()
         self.assertNotIn("Incomplete", message)
+        self.assertIn("One idea remains: I-001", message)
+        self.assertNotIn("Waiting for approve", message)
         text = (self.root / "ideation" / "shortlist" / "2026-10-01.md").read_text(encoding="utf-8")
         self.assertIn("Stated market: France", text)
         self.assertIn("does not apply", text)

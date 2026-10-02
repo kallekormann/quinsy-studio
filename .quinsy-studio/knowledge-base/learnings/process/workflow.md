@@ -5,6 +5,7 @@ Matching playbook/skill: `process/learning-loop.md`.
 
 ## Principles
 
+- **PB-20261002-004** helpful=0 harmful=0 :: On the ideation desk the human answers a question, picks an idea when more than one remains, and says yes or no to the intake PRD. They do not advance the desk by naming the next section. The case is explained before that yes. The PRD is written only after the yes.
 - **PB-20261002-003** helpful=0 harmful=0 :: An ideation PRD states the full solution: user tasks, system tasks, backend, infrastructure, and scope modules. The first module is what bootstrap builds. Later modules stay in the PRD. Promote refuses a thin brief.
 - **PB-20261002-002** helpful=0 harmful=0 :: Ideation builder time is not a ceiling. One solo builder, with AI agents for coding and design, ships in chunks of about two months. Each chunk is a full web app, big enough for that builder and those agents. The first chunk is the MVP. Later chunks stay in the idea. A longer full solution is not scored as too slow.
 - **PB-20261002-001** helpful=0 harmful=0 :: Ideation records the problem space, the solution space, and the architecture and experience for that audience before the shortlist. The solution space says how the person's existing tool connects and which steps run, including a letter or a collection-firm hand-off when the audience needs them. The app stays attached to the tool they already use. A collection firm receives a file. The app does not become the collector.

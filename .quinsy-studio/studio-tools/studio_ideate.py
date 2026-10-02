@@ -41,6 +41,13 @@ FEASIBILITY_BAR = (
     "Medicine and clinical care are out of reach. Other trades stay in reach "
     "when the activity is allowed and the job is software."
 )
+HUMAN_STOPS = (
+    "Ask a question only when a fact only the human knows would change the problem. "
+    "If several ideas remain, ask which one to focus on. "
+    "If one remains, write the case and ask whether it should become the intake PRD. "
+    "Do not write the PRD until they say yes. On yes, run approve and promote. On no, reject or park. "
+    "Do not ask them to name the next section."
+)
 CLINICAL_DOMAINS = {"clinical", "medicine"}
 IDEA_DOMAINS = {"trade", "life", "clinical"}
 SECTIONS = ("brief", "signals", "cluster", "ideas", "compete", "shape", "score", "present", "learn")
@@ -562,10 +569,11 @@ class Desk:
             next_step = (
                 f"Market to check at qualification: {stated}. Research wherever the sources are. "
                 "Run signals, cluster, ideas, compete, shape, score, and present in this turn. "
-                "Do not ask the human to continue. "
+                "Do not ask the human to continue between sections. "
                 "Search the web, then record each search with ./studio ideate search and each fetch with ./studio ideate fetch. "
                 "The CLI does not search. "
-                "Qualify each idea against the stated market, or as global when none was stated."
+                "Qualify each idea against the stated market, or as global when none was stated. "
+                + HUMAN_STOPS
             )
         return (
             f"ACTION: IDEATE\n"
@@ -578,7 +586,7 @@ class Desk:
             f"MARKET: {stated}\n"
             f"GAP: {meta.get('focus')}\n"
             f"{'Resumed the open session.' if resumed else 'Opened a session.'} {next_step}\n"
-            "Do not run approve, reject, park, or promote unless the human asked in this conversation."
+            "Do not write the intake PRD until the human says yes."
         )
 
     def status(self) -> str:
@@ -1343,16 +1351,43 @@ class Desk:
         meta["shortlist_written"] = "yes"
         meta["status"] = "closed"
         meta["section"] = "present"
-        body += "\n## Checkpoint\n\nShortlist written. Session stopped. Do not write a PRD.\n"
+        nxt = self._after_research(meta)
+        body += f"\n## Checkpoint\n\nShortlist written. {nxt} Do not write the intake PRD until the human says yes.\n"
         self._write(path, meta, body, int(meta["limit_session_log_bytes"]))
         self._clear_scratch()
         name = f"{self.today.isoformat()}.md"
         if incomplete:
+            return f"Shortlist: ideation/shortlist/{name}. Incomplete ({'; '.join(notes)}). {nxt}"
+        return f"Shortlist: ideation/shortlist/{name}. {nxt}"
+
+    def _session_idea_ids(self, meta: Dict[str, str]) -> List[str]:
+        return [item.strip() for item in meta.get("session_ideas", "").split(",") if item.strip()]
+
+    def _open_idea_ids(self, meta: Dict[str, str]) -> List[str]:
+        kept = []
+        for iid in self._session_idea_ids(meta):
+            ipath = self.ideation / "ideas" / f"{iid}.md"
+            if not ipath.exists():
+                continue
+            imeta, _body = self._read(ipath)
+            if imeta.get("status") == "discarded":
+                continue
+            kept.append(iid)
+        return kept
+
+    def _after_research(self, meta: Dict[str, str]) -> str:
+        ids = self._open_idea_ids(meta)
+        if len(ids) > 1:
             return (
-                f"Shortlist: ideation/shortlist/{name}. Incomplete ({'; '.join(notes)}). "
-                "Session stopped. Waiting for approve, reject, or park."
+                f"Several ideas remain: {', '.join(ids)}. "
+                "Ask which problem or idea to focus on. Do not write the case until they pick."
             )
-        return f"Shortlist: ideation/shortlist/{name}. Session stopped. Waiting for approve, reject, or park."
+        if len(ids) == 1:
+            return (
+                f"One idea remains: {ids[0]}. "
+                "Write the case and ask whether it should become the intake PRD."
+            )
+        return "No idea remains. Do not write a PRD."
 
     def _write_shortlist(self, session_meta: Dict[str, str], incomplete: bool, notes: Optional[List[str]] = None) -> None:
         n = int(session_meta.get("limit_shortlist_n", "5"))
@@ -1624,6 +1659,71 @@ class Desk:
         body = body.rstrip() + "\n" + block
         self._write(path, meta, body, self._cap("idea"))
         return f"Build stored on {meta['id']}."
+
+    def case(self, idea_id: str) -> str:
+        path, kind = self._entity_path(idea_id)
+        if kind != "ideas":
+            raise DeskError("case applies to an idea.")
+        meta, body = self._read(path)
+        gaps = self.prd_gaps(body)
+        if gaps:
+            raise DeskError(
+                f"{idea_id} case is missing: {', '.join(gaps)}. "
+                "Write the full solution before the case."
+            )
+        return self._case_text(meta, body)
+
+    def _case_text(self, meta: Dict[str, str], body: str) -> str:
+        sections = {title: self._h3(body, title) for title in (
+            "Problem", "Solution", "Architecture", "Experience", "Steps",
+            "First chunk", "Later chunks", *BUILD_HEADINGS,
+        )}
+        problems = []
+        evidence_bits = []
+        for pid in [p.strip() for p in meta.get("problems", "").split(",") if p.strip()]:
+            ppath = self.ideation / "problems" / f"{pid}.md"
+            if not ppath.exists():
+                continue
+            pmeta, pbody = self._read(ppath)
+            problems.append(pmeta.get("sentence") or pid)
+            for line in self.evidence_lines(pbody):
+                if line["verified"] == "yes":
+                    evidence_bits.append(
+                        f"{line['source']} {line['url']} ({line['date']}): {line['paraphrase']}"
+                    )
+        evidence = "\n".join("- " + bit for bit in evidence_bits) or "- No verified line."
+        problem_text = "\n\n".join(part for part in [" ".join(problems), sections["Problem"]] if part)
+        return (
+            f"# Case — {meta.get('title')}\n\n"
+            "## Problem\n\n"
+            f"{problem_text}\n\n"
+            "Evidence:\n\n"
+            f"{evidence}\n\n"
+            "## Idea\n\n"
+            f"{meta.get('pitch') or meta.get('title')}\n\n"
+            "## Solution vision\n\n"
+            f"{sections['Solution']}\n\n"
+            f"{sections['Experience']}\n\n"
+            f"{sections['Architecture']}\n\n"
+            "## Full feature set\n\n"
+            f"{sections['Steps']}\n\n"
+            "## Scope\n\n"
+            "### First chunk\n\n"
+            f"{sections['First chunk']}\n\n"
+            "### Later chunks\n\n"
+            f"{sections['Later chunks']}\n\n"
+            "### User tasks\n\n"
+            f"{sections['User tasks']}\n\n"
+            "### System tasks\n\n"
+            f"{sections['System tasks']}\n\n"
+            "### Backend\n\n"
+            f"{sections['Backend']}\n\n"
+            "### Infrastructure\n\n"
+            f"{sections['Infrastructure']}\n\n"
+            "### Modules\n\n"
+            f"{sections['Modules']}\n\n"
+            "Should this become the intake PRD?\n"
+        )
 
     def write_prd(self, idea_id: str) -> str:
         path, kind = self._entity_path(idea_id)
@@ -2015,6 +2115,7 @@ def dispatch(argv: List[str], root: Optional[Path] = None, templates: Optional[P
             "  ./studio ideate show <I-id>\n"
             "  ./studio ideate stop --reason \"...\"\n"
             "  ./studio ideate present\n"
+            "  ./studio ideate case <I-id>\n"
             "  ./studio ideate approve <I-id> [<I-id> ...]\n"
             "  ./studio ideate reject <I-id> --reason \"...\"\n"
             "  ./studio ideate park <I-id> --note \"...\"\n"
@@ -2047,6 +2148,7 @@ def dispatch(argv: List[str], root: Optional[Path] = None, templates: Optional[P
             "shape",
             "crowd",
             "present",
+            "case",
             "approve",
             "reject",
             "park",
@@ -2117,6 +2219,10 @@ def dispatch(argv: List[str], root: Optional[Path] = None, templates: Optional[P
             message = desk.set_crowd(rest[0], {k: str(v) for k, v in flags.items()})
         elif command == "present":
             message = desk.present()
+        elif command == "case":
+            if not rest:
+                raise DeskError("case needs an idea id.")
+            message = desk.case(rest[0])
         elif command == "approve":
             message = desk.approve(rest)
         elif command == "reject":

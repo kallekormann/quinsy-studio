@@ -73,7 +73,10 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         data-align-trigger={position === "item-aligned"}
-        className={cn("relative z-50 max-h-60 min-w-36 overflow-x-hidden overflow-y-auto rounded-2xl border border-border bg-surface py-1 text-ink shadow-md", className )}
+        className={cn(
+        "relative z-50 max-h-60 min-w-36 overflow-x-hidden overflow-y-auto rounded-2xl border border-border bg-surface text-ink shadow-md outline-none",
+        className,
+      )}
         position={position}
         align={align}
         {...props}
@@ -116,7 +119,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex w-full cursor-default items-center gap-1.5 px-2.5 py-2 text-sm text-ink outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:font-medium data-[state=checked]:text-accent [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex w-full cursor-default items-center gap-1.5 px-2.5 py-2 text-sm text-ink outline-none select-none first:rounded-t-[calc(1rem-1px)] last:rounded-b-[calc(1rem-1px)] data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-selected data-[highlighted]:text-ink data-[state=checked]:font-medium data-[state=checked]:text-accent [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

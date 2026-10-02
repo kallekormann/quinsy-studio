@@ -41,7 +41,7 @@ It consists of:
 A direction becomes a product on the path in [studio-overview.md](process/studio-overview.md): ideation, a PRD, the gates, the phase train, then you ship `main`.
 
 The studio operates in **Dual-Speed mode**:
-- **IDEATE** — no product yet. `./studio ideate` researches and, after you approve and promote, writes `intake/<slug>.md`
+- **IDEATE** — no product yet. `./studio ideate` researches, explains the case, and writes `intake/<slug>.md` when you say yes
 - **CORE** — new platforms from that PRD, or from a PRD you wrote. HITL: **gate 0 PRD → gate 1 architecture → gate 2a direction → gate 2b project kit**, then milestones and the phase train
 - **ADOPT** — existing codebase (`./studio adopt`); as-built reconstruction, then the same gates
 - **LEAN** — iterations & features on a studio-managed project (4 phases)
@@ -389,7 +389,7 @@ See [GETTING_STARTED.md](GETTING_STARTED.md) for the full gate + library workflo
 
 ### Before a PRD exists
 
-[studio-overview.md](process/studio-overview.md) is the map. You name a direction. `./studio ideate` presents a shortlist. You approve, then promote. Promote writes `intake/<slug>.md`. Bootstrap reads that file. The desk does not run `./studio execute`.
+[studio-overview.md](process/studio-overview.md) is the map. You name a direction. `./studio ideate` researches and explains the case. You pick an idea only when several remain, then say yes or no to the PRD. Yes writes `intake/<slug>.md`. Bootstrap reads that file. The desk does not run `./studio execute`.
 
 ### CORE / ADOPT (human gates 0, 1, 2a, 2b, then milestones)
 

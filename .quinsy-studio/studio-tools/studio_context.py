@@ -279,15 +279,17 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
 
     from studio_human_inbox import is_ideate_request
 
-    from studio_ideate import FEASIBILITY_BAR, is_desk_continuation, session_is_open
+    from studio_ideate import FEASIBILITY_BAR, HUMAN_STOPS, is_desk_continuation, session_is_open
 
     if is_ideate_request(request or "") or is_desk_continuation(request or "", session_is_open()):
         return (
             "ideate",
             "This is the ideation desk, not the product sprint. "
             "If the session is waiting for a brief, ask once and do not search. "
-            "After a brief, run ./studio ideate through present in this turn. Do not ask the human to continue. "
-            "Do not call execute. Do not approve, reject, park, or promote unless the human asked in this conversation. "
+            "After a brief, run ./studio ideate through the case in this turn. Do not ask the human to continue between sections. "
+            "Do not call execute. "
+            + HUMAN_STOPS
+            + " "
             + FEASIBILITY_BAR,
         )
 

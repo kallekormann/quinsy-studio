@@ -1,6 +1,6 @@
 # Quinsy Studio — Getting Started
 
-> Canonical workflow: **a direction** (`./studio ideate` → you approve → promote writes the PRD) **or a PRD you already wrote** **or an existing codebase** (`./studio adopt`) → gates 0, 1, 2a, 2b → **phase train** (design, then architecture, then implementation; an empty phase is skipped) → cadence review every N implementation phases → you ship `main`.  
+> Canonical workflow: **a direction** (`./studio ideate` → the case → you say yes and that writes the PRD) **or a PRD you already wrote** **or an existing codebase** (`./studio adopt`) → gates 0, 1, 2a, 2b → **phase train** (design, then architecture, then implementation; an empty phase is skipped) → cadence review every N implementation phases → you ship `main`.  
 > The path on one page: [studio-overview.md](process/studio-overview.md) · Root: [`README.md`](../README.md) · Agent: [`AGENTS.md`](../AGENTS.md) · Operations: [`README.md`](README.md) · Isolation epic: [hq-isolation-sprints.md](process/hq-isolation-sprints.md)
 
 **How the studio runs:** the agent does **not** wait for “continue.” It runs `./studio execute <project>`, does the `NEXT` command, then execute again, until `ACTION` is `HITL` (you). Start of a project is HITL at **gate 0 (PRD)** → **gate 1 (architecture)** → **gate 2a (direction)** → **gate 2b (project kit)** — `approve --gate 2` is refused. After that, `INFORM` still loops. Product execute **INFORM**s open HQ learning counts; infuse in a **separate HQ chat** (`./studio train`). `STUDIO_LO` does **not** replace `IMPLEMENT`. Markdown tickets stay the source of truth; the agent loads a **compact card** (skills + playbooks + **CONSTITUTION**), not the whole backlog.
@@ -13,7 +13,7 @@ Two ways in — both are implemented:
 
 | Situation | What you say |
 |-----------|----------------|
-| **No product yet** | *"Look into …"* The desk presents a shortlist. Then *"Approve I-001"* and *"Promote I-001"*. |
+| **No product yet** | *"Look into …"* The desk researches, explains the case, and asks whether to write the PRD. |
 | **New product** | *"I added `intake/my-project.md`. Bootstrap my-project and walk me through the next human gate."* |
 | **Existing codebase** | *"Adopt this repo into my-project and reconstruct as-built state."* |
 | **Same session, continue** | *"Focus my-project and execute — loop until HITL."* |
@@ -86,8 +86,9 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
 | Phase | You say | Agent does | You approve |
 |-------|---------|------------|-------------|
-| **Ideation** | *"Look into …"* | `./studio ideate` through the shortlist | *"Approve I-001"* or reject or park |
-| **PRD** | *"Promote I-001"* | Writes `intake/<slug>.md` with scope modules | Read the PRD. Bootstrap is the next sentence |
+| **Ideation** | *"Look into …"* | Researches, and asks which idea only when several remain | Answer the question, or pick the idea |
+| **Case** | Read the case | Explains the problem, the idea, the vision, and the full scope | *"Yes, write the PRD."* or *"No."* |
+| **PRD** | *"Yes, write the PRD."* | Writes `intake/<slug>.md` with scope modules | Read the PRD. Bootstrap is the next sentence |
 | **Adopt** | *"Adopt my-project from this folder and reconstruct as-built"* | `./studio adopt` → fills `docs/as-built/` + PRD | *"This is what we have — approve gate 0"* |
 | **or new product** | *"Bootstrap my-project from intake/my-project.md"* | `./studio bootstrap` → fills `docs/definitions/` | *"Gate 0 looks good — approve"* |
 | **Architecture** | *"Continue with blueprint"* | `./studio blueprint` | *"Approve gate 1"* (core stack decision) |
@@ -106,20 +107,20 @@ Full process: [brownfield-adopt.md](process/brownfield-adopt.md)
 
 The desk is how a direction becomes the PRD in [the path](process/studio-overview.md). It does not call `execute`, open a sprint, or approve a gate. Use it in its own chat. The product chat starts at bootstrap.
 
-A trigger with no topic asks what to look into before any search. After that brief, the agent researches the web in whatever market the sources live in and returns `ideation/shortlist/YYYY-MM-DD.md` in that same turn. You are not asked to continue between sections. A named market is checked only when an idea is qualified. With no market, ideas are judged globally.
+A trigger with no topic asks what to look into before any search. After that brief, the agent researches the web in whatever market the sources live in and explains the case in that same turn. You are not asked to continue between sections. A named market is checked only when an idea is qualified. With no market, ideas are judged globally.
 
 | You say | What you get |
 |---------|----------------|
-| *"Look into …"* | Research through the shortlist: problem, competitors, the full steps, the first chunk, and the later chunks |
+| *"Look into …"* | Research, then the case: the problem, the idea, the solution vision, every step, and the scope |
+| A fact only you know | The desk asks, then keeps going |
+| *"Focus on …"* | Only when several ideas remain. The desk then writes that case |
 | *"Show I-001"* | `./studio ideate show I-001` prints the idea and its path |
-| *"Approve I-001"* | The idea is the one to take forward. Ranked if you name more than one |
-| *"Reject I-001 because …"* | The reason blocks that problem from coming back |
-| *"Park I-001 because …"* | Stored, not promoted |
-| *"Promote"* | `intake/<slug>.md` — user tasks, system tasks, backend, infrastructure, and scope modules |
+| *"Yes, write the PRD."* | `intake/<slug>.md` — user tasks, system tasks, backend, infrastructure, and scope modules |
+| *"No"* / *"Reject … because …"* / *"Park …"* | Nothing is written to intake |
 
-Promote runs only after you approved, and only when the idea passes the rubric. It refuses a thin brief. The first scope module is what bootstrap builds. Later modules stay in the PRD. Bootstrap is still the command that starts the product loop. Method for the agent: [ideation-desk.md](teams/09-studio-operations-evolution/skills/ideation-desk.md).
+The PRD is written only after you say yes, and only when the case is complete. It refuses a thin brief. The first scope module is what bootstrap builds. Later modules stay in the PRD. Bootstrap is still the command that starts the product loop. Method for the agent: [ideation-desk.md](teams/09-studio-operations-evolution/skills/ideation-desk.md).
 
-The agent follows `.quinsy-studio/teams/09-studio-operations-evolution/skills/ideation-desk.md` through present, including the shape step: the problem space, the solution space, and the architecture and experience for that audience. It does not run `approve`, `reject`, `park`, or `promote` unless you ask in that conversation. A sign-off run uses `--budget normal`.
+The agent follows `.quinsy-studio/teams/09-studio-operations-evolution/skills/ideation-desk.md` through the case: the problem space, the solution space, the architecture and experience, and the full scope. It writes the PRD when you say yes. A sign-off run uses `--budget normal`.
 
 Builder time is not a ceiling. One solo builder, with AI agents for coding and design, ships in chunks of about two months. Each chunk is a full web app, big enough for that builder and those agents. The first chunk is the MVP. Later chunks stay in the idea. A longer full solution is not a reason to drop it. Medicine and clinical care are out of reach (`./studio ideate idea --domain clinical` cannot validate). Other trades stay in reach when the activity is allowed and the job is software.
 

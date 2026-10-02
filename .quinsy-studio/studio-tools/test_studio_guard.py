@@ -214,7 +214,8 @@ class GuardInboxAckTests(unittest.TestCase):
             verdict, msg = guard_request("demo", "frequency", status)
         ack.assert_not_called()
         self.assertEqual(verdict, "ideate")
-        self.assertIn("present", msg)
+        self.assertIn("write the case", msg)
+        self.assertIn("intake PRD", msg)
 
     def test_dimension_without_a_session_is_not_the_desk(self):
         status = _review_pending_status()

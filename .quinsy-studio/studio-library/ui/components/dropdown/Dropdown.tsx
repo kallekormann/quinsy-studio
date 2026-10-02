@@ -37,11 +37,25 @@ const buttonClass =
   "relative flex h-[34px] w-full items-center justify-between gap-2 rounded-full border border-border bg-surface px-3 text-left font-sans text-sm text-ink transition-[border-color,background-color] hover:bg-surface-hover focus-visible:border-ring focus-visible:outline-none data-[open]:border-ring disabled:cursor-not-allowed disabled:opacity-45";
 
 const panelClass =
-  "z-[9999] mt-1 max-h-60 w-[var(--button-width)] overflow-auto rounded-2xl border border-border bg-surface py-1 font-sans shadow-md";
+  "z-[9999] mt-1 max-h-60 w-[var(--button-width)] overflow-auto rounded-2xl border border-border bg-surface font-sans shadow-md outline-none";
 
-function optionClass(focus: boolean, selected: boolean, disabled?: boolean) {
+function optionClass(
+  focus: boolean,
+  selected: boolean,
+  place: "only" | "first" | "last" | "mid",
+  disabled?: boolean,
+) {
+  const radius =
+    place === "only"
+      ? "rounded-[calc(1rem-1px)]"
+      : place === "first"
+        ? "rounded-t-[calc(1rem-1px)]"
+        : place === "last"
+          ? "rounded-b-[calc(1rem-1px)]"
+          : "";
   return [
     "flex w-full cursor-default px-2.5 py-2 text-left text-sm text-ink data-[focus]:bg-surface-selected data-[focus]:text-ink",
+    radius,
     disabled ? "opacity-40" : "",
     focus ? "bg-surface-selected" : "",
     selected && !focus ? "font-medium text-accent" : "",
@@ -83,20 +97,24 @@ export function Dropdown<T extends string | number = string>({
             aria-hidden
           />
         </ListboxButton>
-        <ListboxOptions portal anchor="bottom start" className={panelClass}>
-          {options.map((opt) => (
-            <ListboxOption
-              key={String(opt.value)}
-              data-slot="listbox-option"
-              value={opt.value}
-              disabled={opt.disabled}
-              className={({ focus, selected: isSelected }) =>
-                optionClass(focus, isSelected, opt.disabled)
-              }
-            >
-              {opt.label}
-            </ListboxOption>
-          ))}
+        <ListboxOptions portal anchor="bottom start" data-slot="listbox-options" className={panelClass}>
+          {options.map((opt, index) => {
+            const place =
+              options.length === 1 ? "only" : index === 0 ? "first" : index === options.length - 1 ? "last" : "mid";
+            return (
+              <ListboxOption
+                key={String(opt.value)}
+                data-slot="listbox-option"
+                value={opt.value}
+                disabled={opt.disabled}
+                className={({ focus, selected: isSelected }) =>
+                  optionClass(focus, isSelected, place, opt.disabled)
+                }
+              >
+                {opt.label}
+              </ListboxOption>
+            );
+          })}
         </ListboxOptions>
       </Listbox>
     </div>

@@ -34,7 +34,7 @@ Start-of-project HITL (you, not the agent): **gate 0 PRD/as-built → gate 1 arc
 
 ### Ideation, then a PRD
 
-Say what to look into. The desk researches and presents a shortlist. You approve one idea, then promote it. Promote writes `intake/<slug>.md`: the full solution, cut into scope modules. The first module is what bootstrap builds.
+Say what to look into. The desk researches and explains the case: the problem, the idea, the solution vision, and the full scope. You pick an idea only when several remain. You say yes, and that writes `intake/<slug>.md`. The first scope module is what bootstrap builds.
 
 ```text
 Look into <direction>.
