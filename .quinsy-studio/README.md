@@ -71,8 +71,8 @@ quinsy-studio/
 │   ├── studio-templates/           # PRD, Ticket, ADR, Docker base, Learning logs
 │   ├── studio-library/             # Reusable assets (ui/, packages/, tokens)
 │   ├── external-skills/            # Imported skill packages (hallmark, marketing, ...)
-│   ├── backlog/                    # Studio improvements only (LO-*)
-│   ├── retros/                     # Retrospectives & audits
+│   ├── backlog/                    # LO tickets (gitignored; local only)
+│   ├── retros/                     # Meta-retros (gitignored; local only)
 │   └── skill-dependencies.json     # Subscribed external skill sources
 ├── projects/                       # ALL client projects (each with own backlog, Docker)
 │   └── <project>/                  # status.json, docs/, backlog/, sprints/, docker/, design/
@@ -84,9 +84,9 @@ quinsy-studio/
 ```
 
 **Important separation:**
-- **Studio World** (`.quinsy-studio/`) — Process, skills, templates, library, LO-* backlog. **This git repo.**
+- **Studio World** (`.quinsy-studio/`) — Process, skills, templates, library, and the learnings catalog. **This git repo.** Backlog tickets, retros, and sprint notes stay local.
 - **Project World** (`projects/<name>/`) — Tickets, code, design, docker. **Each project has its own `.git`.**
-- **`ideation/`**, **`intake/`**, and **`projects/`** are gitignored in the studio repo. See [process/worlds.md](process/worlds.md).
+- **`ideation/`**, **`intake/`**, **`projects/`**, and the local working notes **`backlog/`**, **`retros/`**, **`sprints/`** are gitignored. The shared result is the process, the skills, the learnings catalog, and the library. See [process/worlds.md](process/worlds.md).
 
 **IDE agents:** read [`AGENTS.md`](../AGENTS.md) + [process/agent-context.md](process/agent-context.md). Session driver: `./studio execute <project>` until HITL.
 

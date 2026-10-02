@@ -252,15 +252,33 @@ done < "$tmp"
     return hook
 
 
+_LOCAL_ONLY_PREFIXES = (
+    "projects/",
+    "intake/",
+    "ideation/",
+    ".quinsy-studio/backlog/",
+    ".quinsy-studio/retros/",
+    ".quinsy-studio/sprints/",
+    ".quinsy-studio/knowledge-base/learnings/archive/",
+)
+
+
 def hq_commit_blocked(staged: List[str]) -> Optional[str]:
-    """Studio HQ git must never contain a product tree."""
+    """Studio HQ git keeps the skilled result, not working notes or product trees."""
     for raw in staged:
-        norm = str(raw).replace("\\", "/").lstrip("./")
+        norm = str(raw).replace("\\", "/")
+        while norm.startswith("./"):
+            norm = norm[2:]
         if norm == "projects" or norm.startswith("projects/"):
             return (
                 f"quinsy HQ: refuse staging product path {raw}. "
                 "Product git lives inside projects/<name>/ — never the studio index."
             )
+        if norm == ".quinsy-studio/knowledge-base/learnings/train-queue.json":
+            return f"quinsy HQ: refuse staging the train queue {raw}."
+        for prefix in _LOCAL_ONLY_PREFIXES:
+            if norm == prefix.rstrip("/") or norm.startswith(prefix):
+                return f"quinsy HQ: refuse staging local working notes {raw}."
     return None
 
 

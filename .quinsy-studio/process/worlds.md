@@ -6,12 +6,15 @@ Quinsy Studio enforces **strict separation** between meta-studio and client proj
 
 | Path | Committed? |
 |------|------------|
-| `.quinsy-studio/` | Yes |
+| Process, teams, skills, knowledge-base catalog, studio-library, templates | Yes |
 | `studio`, `AGENTS.md`, `README.md` | Yes |
 | `projects/` | **Never** |
 | `intake/` | **Never** |
+| `ideation/` | **Never** — the empty seed is `studio-templates/ideation/` |
+| `.quinsy-studio/backlog/`, `retros/`, `sprints/` | **Never** — local working notes |
+| `knowledge-base/learnings/archive/` and `train-queue.json` | **Never** |
 
-Studio improvements use **LO-*** tickets in `.quinsy-studio/backlog/`.
+A lesson is infused into the learnings catalog, a playbook, or a skill. That result is what the repo shares. The ticket, the retro, and the train job stay on the machine that did the work.
 
 ## World B — Project (own git repo)
 

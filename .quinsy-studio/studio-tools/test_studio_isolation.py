@@ -121,6 +121,11 @@ class IsolationTests(unittest.TestCase):
         msg = hq_commit_blocked(["projects/foo/src/a.ts"])
         self.assertIsNotNone(msg)
         self.assertIn("projects/foo", msg)
+        self.assertIsNotNone(hq_commit_blocked(["ideation/ideas/I-001.md"]))
+        self.assertIsNotNone(hq_commit_blocked([".quinsy-studio/backlog/done/LO-0001.md"]))
+        self.assertIsNotNone(hq_commit_blocked([".quinsy-studio/retros/meta-retro-2026-10-01.md"]))
+        self.assertIsNone(hq_commit_blocked([".quinsy-studio/studio-templates/ideation/rubric.md"]))
+        self.assertIsNone(hq_commit_blocked([".quinsy-studio/knowledge-base/learnings/process/workflow.md"]))
 
     def test_install_studio_hq_hook_refuses_projects_in_index(self):
         from studio_isolation import HQ_HOOK_MARKER, install_studio_hq_git_hook

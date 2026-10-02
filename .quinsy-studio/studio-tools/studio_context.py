@@ -444,7 +444,17 @@ def verify_worlds() -> Tuple[bool, List[str]]:
         issues.append("Studio root is not a git repo (expected for Quinsy Studio HQ)")
     else:
         tracked = subprocess.run(
-            ["git", "ls-files", "projects/", "intake/"],
+            [
+                "git", "ls-files",
+                "projects/",
+                "intake/",
+                "ideation/",
+                ".quinsy-studio/backlog/",
+                ".quinsy-studio/retros/",
+                ".quinsy-studio/sprints/",
+                ".quinsy-studio/knowledge-base/learnings/archive/",
+                ".quinsy-studio/knowledge-base/learnings/train-queue.json",
+            ],
             cwd=str(STUDIO_ROOT),
             capture_output=True,
             text=True,

@@ -226,8 +226,8 @@ quinsy-studio/
 │   ├── studio-tools/         # Python CLI (studio.py)
 │   ├── studio-templates/
 │   ├── knowledge-base/
-│   │   └── learnings/            # domain/topic catalog + inbox.md (open queue) + archive/
-│   └── backlog/              # LO-* studio improvements only
+│   │   └── learnings/            # domain/topic catalog (archive and train queue stay local)
+│   └── backlog/              # LO tickets (gitignored). The infused lesson is in knowledge-base/learnings/
 ├── ideation/                 # Research desk (gitignored): problems, ideas, shortlist
 ├── intake/                   # Raw PRDs + amendment briefs (gitignored)
 ├── projects/                 # Client projects (gitignored, own .git each)
