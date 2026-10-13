@@ -6,11 +6,11 @@ Read this page once. The other pages are the words you type, and the command lis
 
 | You want | Read |
 |----------|------|
-| The manual (setup, loops, commands, the path) | [docs/README.md](../docs/README.md) |
+| The reference | [docs/README.md](../docs/README.md) |
 | This story | This file |
-| The words you type | [GETTING_STARTED.md](../GETTING_STARTED.md) |
-| Every command, skill, and folder | [Operations manual](../README.md) |
-| The front door of the repo | [README.md](../../README.md) |
+| The words you type | [What you say](../docs/15-what-you-say.md) |
+| Every command | [Commands](../docs/05-commands.md) |
+| Teams and skills | [Teams](../docs/10-teams.md) |
 | What the agent must do | [AGENTS.md](../../AGENTS.md) |
 
 ## The path
@@ -191,8 +191,8 @@ The catalog is `knowledge-base/learnings/`. That file is what other people recei
 
 - [learning-loop.md](learning-loop.md) — harvest, what may be shared, infusion
 - [agentic-loop-playbook.md](../knowledge-base/agentic-loop-playbook.md) — a lesson lands as a small change, not a rewritten file
-- [Operations manual §10](../README.md#10-the-dual-loop) — the product loop and the studio loop
-- [GETTING_STARTED § learnings](../GETTING_STARTED.md#learnings-harvest-when-identified) — what you see in chat
+- [The three loops](../docs/02-three-loops.md) — ideation, the product, and studio learning
+- [Studio learning](../docs/09-hq-learning.md) — what you see in chat, and why a training session exists
 
 ## Where things live
 

@@ -2,95 +2,54 @@
 
 You name a direction. The studio researches it, writes the product down, and builds it. You stop at named gates. Between those gates the agent keeps going.
 
-The book is the [manual](.quinsy-studio/docs/README.md): setup, the three loops, several products in one window, the path from a direction to a lesson, and what each command does. The story, in order, is [How Quinsy Studio works](.quinsy-studio/process/studio-overview.md). The words you type are in [Getting Started](.quinsy-studio/GETTING_STARTED.md). Every command flag is in the [operations manual](.quinsy-studio/README.md). The agent contract is [AGENTS.md](AGENTS.md).
+The reference is the [manual](.quinsy-studio/docs/README.md). Start with [the concept](.quinsy-studio/docs/07-concept.md), then [the three loops](.quinsy-studio/docs/02-three-loops.md).
 
 ## What is in this repo
 
-Studio git holds the skilled studio: process, teams, skills, the learnings catalog, the library, and the templates. A clone does not contain your products, your research notes, or the tickets that produced a lesson.
+Studio git holds the method: process, teams, skills, the learnings catalog, the library, and the templates. A clone does not contain your products, your research notes, or the tickets that produced a lesson.
 
 | Layer | Path | In studio git? |
 |-------|------|----------------|
 | Studio HQ | `.quinsy-studio/`, `studio`, `AGENTS.md` | Yes |
+| This manual | `.quinsy-studio/docs/` | Yes |
 | Learnings catalog | `knowledge-base/learnings/<domain>/` | Yes — the principle |
-| Ideation seed | `.quinsy-studio/studio-templates/ideation/` | Yes — empty desk |
 | Ideation notes | `ideation/` | No |
 | Products | `projects/<name>/` | No — each product has its own git repo |
-| Product definition before bootstrap | `intake/*.md` | No |
-| Amendment briefs | `intake/amendments/<project>/` | No |
-| Amendment template | `.quinsy-studio/studio-templates/amendment_01.example.md` | Yes |
-| Tickets, retros, sprint notes, train queue | `.quinsy-studio/backlog/`, `retros/`, `sprints/`, `learnings/train-queue.json`, `learnings/archive/` | No |
-
-The commit hook refuses to add the local rows. See [worlds.md](.quinsy-studio/process/worlds.md).
+| Product definition before bootstrap | `intake/` | No |
+| Tickets, retros, train queue | `.quinsy-studio/backlog/`, `retros/`, `sprints/`, `learnings/` | No |
 
 ## After you clone
 
 ```bash
-./studio install                    # once: Tailwind and Headless UI
-./studio verify-worlds              # studio git is not product git
-./studio verify-abstraction         # studio docs say <project>, not a client name
+./studio install
+./studio verify-worlds
+./studio verify-abstraction
 ```
 
-Node.js 20 or newer. `node_modules/` is not committed. Optional skill packages: `./studio install --with-skills`.
+Node.js 20 or newer. Docker Desktop is required to boot, migrate, and pass a gate. Open this repo at the root. You talk. The agent runs `./studio`.
 
-Open this repo in Cursor, Claude Code, or Gemini CLI. You talk. The agent runs `./studio`. Keys stay in that host.
+| You have | You say | Read |
+|----------|---------|------|
+| A direction, no product | *"Look into …"* | [The path](.quinsy-studio/docs/04-the-path.md) |
+| A definition in `intake/` | *"Bootstrap `<project>` and walk me through gate 0."* | [The product loop](.quinsy-studio/docs/08-product-loop.md) |
+| Code that already runs | *"Adopt `<project>` from this folder."* | [The product loop](.quinsy-studio/docs/08-product-loop.md) |
 
-## Three ways to start
+## The manual
 
-| You have | You say |
-|----------|---------|
-| A direction, no product | *"Look into …"* The desk explains the case. You say *"Yes, write the PRD."* |
-| A product definition in `intake/<project>.md`, or a folder `intake/<project>/` with several PRDs, notes and PDFs | *"Bootstrap <project> and walk me through gate 0."* |
-| Code that already runs | *"Adopt <project> from this folder and reconstruct as-built."* |
+| Topic | Chapter |
+|-------|---------|
+| Setup | [01-setup.md](.quinsy-studio/docs/01-setup.md) |
+| Concept and rules | [07-concept.md](.quinsy-studio/docs/07-concept.md) |
+| The three loops | [02-three-loops.md](.quinsy-studio/docs/02-three-loops.md) |
+| The path | [04-the-path.md](.quinsy-studio/docs/04-the-path.md) |
+| What you say | [15-what-you-say.md](.quinsy-studio/docs/15-what-you-say.md) |
+| Gates and how you work the build | [08-product-loop.md](.quinsy-studio/docs/08-product-loop.md) |
+| Several products in one window | [03-several-products.md](.quinsy-studio/docs/03-several-products.md) |
+| Payload, secrets, production | [13-foundation.md](.quinsy-studio/docs/13-foundation.md) |
+| Library | [12-library.md](.quinsy-studio/docs/12-library.md) |
+| Why training sessions exist | [09-hq-learning.md](.quinsy-studio/docs/09-hq-learning.md) |
+| Teams and skills | [10-teams.md](.quinsy-studio/docs/10-teams.md) · [11-skills.md](.quinsy-studio/docs/11-skills.md) |
+| Commands | [05-commands.md](.quinsy-studio/docs/05-commands.md) |
+| When you are stuck | [06-when-you-are-stuck.md](.quinsy-studio/docs/06-when-you-are-stuck.md) |
 
-Then you sign gate 0, gate 1, gate 2a, and gate 2b, in that order. `approve --gate 2` is refused. Gate 1 records `Payload: in` or an ADR that opts out. The next execute writes `apps/web` when Payload is in. After that the agent designs, specifies, and builds until it needs you again. Production is Coolify. `./studio ship <project> --to main --approve` pushes that branch. Coolify builds it.
-
-The foundation how-to is [Getting Started § project foundation](.quinsy-studio/GETTING_STARTED.md#project-foundation) and [payload-playbook.md](.quinsy-studio/knowledge-base/payload-playbook.md).
-
-The walk-through is in [the story](.quinsy-studio/process/studio-overview.md). The full script is in [Getting Started](.quinsy-studio/GETTING_STARTED.md#start-here-tell-the-agent).
-
-## What stays true
-
-1. **Library first.** Suggest and pull before coding. Do not pull the `feature-gating` stub. `billing` is pullable. Promote only when the generic piece got better.
-2. **No product code before the gates.** Gates are 0, then 1, then 2a, then 2b. An existing app uses `./studio adopt`, never an empty init.
-3. **No code without a ticket** after gate 2b.
-4. **Execute until it stops.** `./studio execute` is the driver. `./studio resume` is only a checklist. The agent does not wait for "looks good" on a ticket.
-5. **Done means proven.** A receipt with PASS / FAIL / NOT TESTED lines and real paths, a green gate 5 (including security and quality checks), a QA PASS from a reviewer that has not seen the chat, and on UI tickets a screen that matches the signed mock. Three failed attempts move a ticket to `blocked`; the others continue. Before a cadence review a fresh agent walks the dev build (`./studio reality-check`).
-6. **Every ticket is staffed.** An owner skill plus companions from other teams (security, privacy, accessibility, tests) with reasons. `./studio groom` refuses gaps.
-7. **Mocks are a prototype you can click.** A design mock is a route in the product app, with the real components, working handlers, and the motion the spec names. Screenshots are the record. You review the running route.
-8. **You sign packets, not every ticket.** Design phase, architecture phase, then a cadence review every few implementation phases. Hygiene sits outside that train.
-9. **Milestones** after gate 2b. Finish a milestone review before the next version's tickets.
-10. **Amendments** are a change of direction. Sprint feedback is a small note. They are different commands.
-11. **Placement before layout.** A UI spec is a file on disk, with every state, using the project's tokens. Motion is on unless the spec says `motion: off`.
-12. **A lesson is infused while the product keeps building.** The catalog, the playbook, or the skill is what gets committed. The ticket stays local.
-13. **Two git repos.** Product commits live in `projects/<name>/`. Studio commits never include `projects/`, `intake/`, or `ideation/`.
-14. **One chat per product.** In Cursor, bind that chat (`./studio bind <project>` from the agent — you do not look up an id). Elsewhere, `./studio focus` hides the other products. Five products can execute at once. See [Several products at once](.quinsy-studio/docs/03-several-products.md).
-15. **Load caps** are in `studio.settings.yaml`. On `INFORM cost-cap`, raise the named key. Do not paste more files in.
-16. **Docker is required** to boot, migrate, and pass a gate. Env names live in `env.schema.json`. Values go in with `./studio env … --approve`. Do not read `.env` values into chat.
-
-## Where to read the rest
-
-| Topic | Document |
-|-------|----------|
-| The manual | [docs/README.md](.quinsy-studio/docs/README.md) |
-| The path | [process/studio-overview.md](.quinsy-studio/process/studio-overview.md) |
-| Words you type | [GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
-| Ideation desk | [Getting Started § ideation](.quinsy-studio/GETTING_STARTED.md#ideation-desk) · [ideation-desk.md](.quinsy-studio/teams/09-studio-operations-evolution/skills/ideation-desk.md) |
-| Execute loop and the done bar | [Getting Started § execute](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) |
-| Launching a product | [launch-playbook.md](.quinsy-studio/knowledge-base/launch-playbook.md) |
-| Learnings | [Getting Started § learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified) |
-| Cost and tokens | [Getting Started § settings](.quinsy-studio/GETTING_STARTED.md#studio-settings-cost--tokens) |
-| Motion | [Getting Started § motion](.quinsy-studio/GETTING_STARTED.md#motion-default-on) · [motion-transitions](.quinsy-studio/knowledge-base/skill-extensions/motion-transitions.md) |
-| Cursor, commands, skills | [Operations manual](.quinsy-studio/README.md) |
-| Docker, secrets, leases | [hq-isolation-sprints.md](.quinsy-studio/process/hq-isolation-sprints.md) |
-| Two git worlds | [worlds.md](.quinsy-studio/process/worlds.md) |
-| Gates | [gates.md](.quinsy-studio/process/gates.md) |
-| Human stops | [human-in-the-loop.md](.quinsy-studio/process/human-in-the-loop.md) |
-| Adopt an existing repo | [brownfield-adopt.md](.quinsy-studio/process/brownfield-adopt.md) |
-| Amendments | [amendment-intake.md](.quinsy-studio/process/amendment-intake.md) |
-| Milestones | [milestone-planning.md](.quinsy-studio/process/milestone-planning.md) |
-| Library | [library_registry.md](.quinsy-studio/studio-library/library_registry.md) |
-| Learning loop | [learning-loop.md](.quinsy-studio/process/learning-loop.md) |
-| No client names in HQ | [studio-abstraction.md](.quinsy-studio/process/studio-abstraction.md) |
-| Changelog | [CHANGELOG.md](CHANGELOG.md) · [studio changelog](.quinsy-studio/CHANGELOG.md) |
-
-Other hosts use the same `./studio` loop: [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md).
+The agent contract is [AGENTS.md](AGENTS.md). Other hosts: [Claude Code](CLAUDE.md) · [Gemini CLI](GEMINI.md) · [Hosts](.quinsy-studio/docs/16-hosts.md).

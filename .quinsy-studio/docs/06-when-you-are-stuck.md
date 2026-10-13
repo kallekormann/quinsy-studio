@@ -33,4 +33,4 @@ The agent is supposed to stop only for the rows below. If it asks "should I cont
 
 **A lesson mentions a client name.** It stays in the product. Only a generic rule is infused into the studio.
 
-**You want the long version.** [Getting Started](../GETTING_STARTED.md) is the script. [Operations manual](../README.md) is every flag. This folder is the map.
+**You want the long version.** This folder is the reference. Start at [the manual](README.md). The sentences are [What you say](15-what-you-say.md). The commands are [Commands](05-commands.md).

@@ -22,6 +22,11 @@ A sentence can move from one loop to the next only at a named door: you say yes 
 
 **When you are done.** You say yes. That writes the intake the product loop can bootstrap. Or you reject or park the case.
 
+| | |
+|--|--|
+| **Input** | A direction you can say in one or two sentences. A market is optional. |
+| **Output** | A case under `ideation/`. On yes, a product definition in `intake/`. |
+
 Stay in the ideation chat for the research. Open a **new** chat when the product exists.
 
 ## 2. The product — build one product
@@ -38,6 +43,13 @@ Stay in the ideation chat for the research. Open a **new** chat when the product
 
 **One chat, one product.** A second product gets its own chat. See [Several products at once](03-several-products.md).
 
+How you work this loop, gate by gate, is [The product loop](08-product-loop.md).
+
+| | |
+|--|--|
+| **Input** | A product definition in `intake/`, or a repo you already have. |
+| **Output** | A product in `projects/<name>/`, with its own git, shipped when you say so. |
+
 ## 3. Studio learning — make the next product easier
 
 **Use it when** a ticket taught something that would help a different product. A rule, a trap, a better default.
@@ -47,6 +59,13 @@ Stay in the ideation chat for the research. Open a **new** chat when the product
 **What it does not do.** It does not pause the product. The product chat keeps building. Learning runs in a **separate** chat, or the product chat only records the lesson and tells you the count.
 
 **Where the files go.** The durable text is under `.quinsy-studio/knowledge-base/`. The open learning tickets are under `.quinsy-studio/backlog/` and are not pushed as the lesson itself.
+
+Why this loop exists, and why a training chat is worth opening, is [Studio learning](09-hq-learning.md).
+
+| | |
+|--|--|
+| **Input** | A portable rule: something the next product would still need, with the client name taken out. |
+| **Output** | A change to a playbook, a skill, or the learnings catalog, committed in the studio repo. |
 
 ## Which chat am I in?
 

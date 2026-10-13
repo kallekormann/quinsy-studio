@@ -154,6 +154,7 @@ Agent produces `projects/<p>/docs/amendments/AM-NNN-*/` (vision, requirements, U
 
 ## Reference
 
-- [GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md)
+- [Manual](.quinsy-studio/docs/README.md) — the user reference
+- [GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) — door into that manual
 - `projects/<p>/docs/library-usage.json` — what was pulled
 - `projects/<p>/docs/library-promotions.json` — what was promoted

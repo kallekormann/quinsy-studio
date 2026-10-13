@@ -1,3 +1,7 @@
+## 2026-10-13 — The manual is the reference
+
+`.quinsy-studio/docs/` now covers the concept, the three loops (reason, input, output), the product loop and its gates, studio learning and why a training chat exists, every command, and all eleven teams with their skills. The repo README, `.quinsy-studio/README.md`, and Getting Started point at those chapters. The process specs stay where the agent reads them.
+
 ## 2026-10-13 — User manual
 
 `.quinsy-studio/docs/` is the book: setup, the three loops, how to bind a Cursor chat without looking up an id, the path from a direction to a studio lesson, what each command does, and what to do when the agent stops. The repo README, Getting Started, the operations manual, and the studio overview point at it.

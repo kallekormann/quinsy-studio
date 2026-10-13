@@ -93,4 +93,32 @@ You rarely type these. The agent does. This page says what each one does so you 
 | `./studio settings` | Shows the studio load caps. Not your model bill. |
 | `./studio settings <project>` | The same caps for that product's execute loop. |
 
-On `INFORM cost-cap`, raise the named key in the local settings file. Do not keep stuffing files into the chat.
+On `INFORM cost-cap`, raise the named key in the local settings file. Do not keep stuffing files into the chat. What the numbers mean is [Load caps](14-settings.md).
+
+## Also on the command line
+
+| Command | What it does |
+|---------|----------------|
+| `./studio init <project> --archetype <type>` | Scaffolds an empty product. Do not use this on code that already runs. Use `adopt`. |
+| `./studio intake <project> <file>` | Reads a definition you dropped in `intake/`. |
+| `./studio blueprint <project>` | Writes the architecture packet for gate 1. |
+| `./studio design <project> --scope journey\|core-views` | Writes the project kit for gate 2b. `as-built` maps an adopted UI and does not invent a prototype. |
+| `./studio revise <project> --gate N --feedback "…"` | Sends a gate packet back with your note. |
+| `./studio ticket-card <project> <ticket>` | The compact card the agent reads. Not the whole backlog. |
+| `./studio receipt <project> <ticket>` | The proof sheet a ticket needs before it can close. |
+| `./studio health <project>` | Whether the loop is well formed: gates, skills, worlds. |
+| `./studio adr <project> "title"` | Records an architecture decision. |
+| `./studio veto <project> --decision … --reason …` | Your tech veto. Stops that approach. |
+| `./studio inform <project> …` | An agent-run notice. It does not sign a gate. |
+| `./studio env <project> down` | Stops the local Docker stack. |
+| `./studio env <project> status` | Whether that stack is up. |
+| `./studio repo <project> create\|status` | The product's own git remote. |
+| `./studio learn-list` | Open studio lessons. |
+| `./studio learn-find "topic"` | Finds a rule already in the catalog. |
+| `./studio infusion` | Lists lessons waiting to be infused. Does not stop the product. |
+| `./studio train --purge-empty` | Closes training jobs that have no observation. |
+| `./studio lint-skills` | Checks skill lists and templates still match. |
+| `./studio update-skills` | Refreshes an imported skill package. Internal skills stay in charge. |
+| `./studio install --with-skills` | Also installs the optional external skill packages. |
+
+`<project>` in every row is the folder name, not a client brand. Studio docs stay generic on purpose. See [The concept](07-concept.md).
