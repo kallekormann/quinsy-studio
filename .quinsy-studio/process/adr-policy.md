@@ -201,7 +201,7 @@ Every ADR is reviewed at least once:
 
 # Good:
 ## Alternatives
-### A: Next.js - Pros: SSR, React ecosystem, Vercel integration
+### A: Next.js + Payload - Pros: SSR, one server for content and auth, Coolify deploy
 ### B: Remix - Pros: web standards, simple loader model
 ### C: Astro - Pros: island architecture, performance
 ## Decision: Next.js (because of SSR + large-scale features)

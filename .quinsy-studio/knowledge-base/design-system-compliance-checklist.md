@@ -35,7 +35,9 @@ Canonical: [anti-slop-design-ux.md](anti-slop-design-ux.md) · Team 10 skill UX-
 - [ ] 8pt grid; semantic color; ≤2 type families; operational screens ≠ marketing hero scale
 - [ ] Mock copy uses **literal CTAs** — no banned fluff vocabulary (§2.1) or placeholders (`Lorem`, `Feature 1`, `Primary action`)
 - [ ] **Spec file exists and is filled** — not a missing path, not a stub. Do not ask for `approve-design` until `projects/<p>/docs/design-specs/<TICKET>.md` is on disk.
-- [ ] **§2 + §2c filled** — mock HTML alone does not pass `approve-design` (LO-0038)
+- [ ] **§2 + §2c filled** — mocks alone do not pass `approve-design` (LO-0038)
+- [ ] **Real UI** — mocks are `(design-mocks)` routes in the product app that render its own views and components; no standalone HTML, inline styles, or hex colours
+- [ ] **Interactive** — the mock is a running prototype: wired handlers, scenario states reachable via `mock-scenario-panel` (`?state=`), §2d transitions moving; §2e walkthrough written; `./studio mock <p> <T>` green
 - [ ] **Mocks use project CSS tokens** (`ui/tokens`, `var(--…)`) — not a parallel hex palette
 - [ ] **In-context** — component shown in the product view it ships in (chrome/nav/neighbors visible)
 - [ ] **All states mocked** — rest/hover/pressed/disabled/focus; open/closed for menus; empty/loading/error for surfaces

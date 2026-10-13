@@ -60,6 +60,7 @@ Safe for five harvest/train/promote writers.
 
 ## Out of scope (later)
 
+- Same-window parallel agents (one chat per product inside one Cursor root). Specified in [hq-session-binding.md](hq-session-binding.md) (`LO-0419`–`LO-0424`). Until that epic is done, this document's rule stands: one isolation surface per workspace.
 - Full compose lifecycle (spin down on idle).
 - Moving the Cursor IDE itself into Docker.
 - Morning-brief dashboards.

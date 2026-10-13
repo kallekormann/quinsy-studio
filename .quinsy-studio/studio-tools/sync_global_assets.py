@@ -7,8 +7,8 @@ into the global studio library.
 
 Usage:
   python3 sync_global_assets.py <project> [--dry-run]
-  python3 sync_global_assets.py nudge
-  python3 sync_global_assets.py nudge --dry-run
+  python3 sync_global_assets.py demo
+  python3 sync_global_assets.py demo --dry-run
 
 Output:
   studio-library/ui/components/    — UI components
@@ -284,15 +284,13 @@ def update_manifest(project: str, scan_result: Dict, extracted_count: int):
                 manifest["assets"].append({
                     "name": Path(asset["path"]).stem,
                     "kind": asset["type"],
-                    "source_project": project,
                     "source_path": asset["path"],
                     "promoted": datetime.now().strftime("%Y-%m-%d"),
                     "reusability_score": asset["analysis"]["score"],
-                    "title": f"{Path(asset['path']).stem} (promoted from {project})"
+                    "title": Path(asset["path"]).stem,
                 })
     
     manifest["last_sync"] = datetime.now().isoformat()
-    manifest["last_project"] = project
     
     manifest_file.write_text(json.dumps(manifest, indent=2, ensure_ascii=False))
 

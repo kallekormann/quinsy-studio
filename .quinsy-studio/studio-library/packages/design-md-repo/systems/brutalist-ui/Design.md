@@ -2,7 +2,7 @@
 schema_version: '1.0'
 id: brutalist-ui
 name: Brutalist UI
-description: Raw high-contrast editorial — contrast demo core, not Moody product skin.
+description: Raw high-contrast editorial — the contrast core.
 style_dna_affinity:
   - Bold
   - Editorial
@@ -125,8 +125,8 @@ modes:
 
 # Brutalist UI
 
-Raw high-contrast editorial — contrast demo core, not Moody product skin.
+Raw high-contrast editorial — the contrast core.
 
 _Source: aesthetic-presets/brutalist-ui/SKILL.md_
 
-_Grammar only — Style DNA / board supplies values at generate time. Does not restyle Moody product chrome._
+_Grammar only — Style DNA / board supplies values at generate time. Does not restyle the product's own chrome._

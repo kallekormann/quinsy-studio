@@ -17,7 +17,7 @@ Pull: `./studio library pull <project> segmented-toggle`
 
 Built on Headless UI `RadioGroup` — arrow keys move selection; focus ring on `data-focus`.
 
-Visual SoT: MOOD-0413 mock `.seg` (`07-components.html`) — `p-[3px]` track, 26×12px segments, selected `shadow-seg` on `bg-surface`.
+Visual: `p-[3px]` track, 26×12px segments, selected `shadow-seg` on `bg-surface`.
 
 ## Example
 

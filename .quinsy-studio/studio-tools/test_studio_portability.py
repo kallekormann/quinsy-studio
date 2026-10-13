@@ -25,12 +25,36 @@ class PortabilityTests(unittest.TestCase):
         self.assertNotIn("openverse", out.lower())
         self.assertIn("stock-media", out.lower())
 
-    def test_moody_incident_not_portable(self):
-        v = portability_verdict(
-            "Moody Suggested tab empty for Caziro board",
-            observation="board xyz",
-        )
+    def test_product_incident_not_portable(self):
+        with patch.object(studio_portability, "list_project_names", lambda: ["acme-app"]):
+            v = portability_verdict(
+                "acme-app Suggested tab empty for one board",
+                observation="board xyz",
+            )
         self.assertFalse(v["portable"])
+
+    def test_product_surface_names_come_from_the_product_repo(self):
+        with tempfile.TemporaryDirectory() as raw:
+            projects = Path(raw)
+            docs = projects / "acme-app" / "docs"
+            docs.mkdir(parents=True)
+            (docs / "portability-nouns.txt").write_text("# surfaces\nlaunchpad\n", encoding="utf-8")
+            with patch.object(studio_portability, "PROJECTS_DIR", projects), patch.object(
+                studio_portability, "list_project_names", lambda: ["acme-app"]
+            ):
+                v = portability_verdict(
+                    "Diagnose delivery for the published Launchpad before the next demo must not wait"
+                )
+                out = studio_portability.sanitize_observation("Launchpad broke in acme-app")
+        self.assertFalse(v["portable"])
+        self.assertNotIn("launchpad", out.lower())
+        self.assertNotIn("acme-app", out.lower())
+
+    def test_names_glued_to_hyphens_are_found(self):
+        find = studio_portability.find_product_nouns_in_hq_text
+        for text in (".acme-spark { }", "bg-[var(--acme)]", "data-acme-style"):
+            self.assertEqual([hit[1] for hit in find(text, nouns=("acme",), prefixes=())], ["acme"], text)
+        self.assertEqual(find("acmeware and macme", nouns=("acme",), prefixes=()), [])
 
     def test_generic_adapter_principle_portable(self):
         v = portability_verdict(
@@ -45,16 +69,16 @@ class PortabilityTests(unittest.TestCase):
     def test_product_ticket_and_vendor_incidents_are_not_principles(self):
         self.assertFalse(
             looks_like_principle(
-                "Do not put AFFI-0007-0010 in a sprint until Awin has approved a live corpus"
+                "Do not put ACME-0007-0010 in a sprint until the vendor has approved a live corpus"
             )
         )
         self.assertFalse(
             looks_like_principle(
-                "SPRINT-03 originally still had Awin ingest and agent-loop tickets"
+                "SPRINT-03 originally still had vendor ingest and agent-loop tickets"
             )
         )
         v = portability_verdict(
-            "Do not put AFFI-0007-0010 in a sprint until Awin has approved a live corpus"
+            "Do not put ACME-0007-0010 in a sprint until the vendor has approved a live corpus"
         )
         self.assertFalse(v["portable"])
 
@@ -66,19 +90,15 @@ class PortabilityTests(unittest.TestCase):
         )
         v = portability_verdict(
             "canonicalHost trusted the raw Host header while Chrome used the forwarded public host",
-            observation="layout disagreed on im-sucher.com",
+            observation="layout disagreed on shop.example.com",
         )
         self.assertFalse(v["portable"])
-        v2 = portability_verdict(
-            "Diagnose delivery loadPublishedPage for the published Ratgeber before the next demo"
-        )
-        self.assertFalse(v2["portable"])
 
     def test_sanitize_strips_hosts(self):
         from studio_portability import sanitize_observation
 
-        out = sanitize_observation("stuck on im-sucher.com after AFFI-0276")
-        self.assertNotIn("im-sucher.com", out.lower())
+        out = sanitize_observation("stuck on shop.example.com after ACME-0276")
+        self.assertNotIn("shop.example.com", out.lower())
         self.assertIn("<host>", out)
 
     def test_long_incident_sentence_is_not_a_principle(self):
@@ -104,7 +124,7 @@ class HarvestPortabilityTests(unittest.TestCase):
             done_dir = tmp / "done"
             blocked = tmp / "blocked"
             learnings = tmp / "learnings"
-            projects = tmp / "projects" / "moody" / "docs"
+            projects = tmp / "projects" / "acme-app" / "docs"
             for d in (open_dir, done_dir, blocked, learnings, projects):
                 d.mkdir(parents=True)
             with patch.multiple(
@@ -115,17 +135,17 @@ class HarvestPortabilityTests(unittest.TestCase):
                 LEARNINGS_DIR=learnings,
                 INBOX_PATH=learnings / "inbox.md",
             ), patch.object(studio_portability, "PROJECTS_DIR", tmp / "projects"), patch.object(
-                studio_portability, "list_project_names", lambda: ["moody"]
+                studio_portability, "list_project_names", lambda: ["acme-app"]
             ):
                 result = harvest_identified_learning(
-                    "Moody Mood Direction Suggested empty for Caziro",
-                    source="moody/SPRINT-120",
+                    "acme-app Suggested panel empty for one board",
+                    source="acme-app/SPRINT-120",
                     observation="pixelated lead on review screenshot",
                 )
                 self.assertTrue(result.get("dropped"))
                 self.assertFalse(result.get("created"))
                 self.assertEqual(len(list(open_dir.glob("LO-*.md"))), 0)
-                local = tmp / "projects" / "moody" / "docs" / "studio-learnings-local.md"
+                local = tmp / "projects" / "acme-app" / "docs" / "studio-learnings-local.md"
                 self.assertTrue(local.exists())
 
 

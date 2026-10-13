@@ -53,19 +53,16 @@ activation_triggers:
 
 ```markdown
 Framework:
-  - Next.js (React SSR/ISR) → standard for web
-  - Laravel (PHP) → for enterprise/PHP legacy
-  - Supabase → as database/backend (fast)
+  - Next.js + Payload → standard for web
+  - Opt out of Payload only with an ADR
 
 Database:
-  - PostgreSQL (Supabase) → standard
-  - Redis → cache, queues, sessions
-  - SQLite → embedded, testing
+  - PostgreSQL via Payload → standard
+  - Redis → optional cache or the Python queue (Compose profile)
 
 Deployment:
-  - Vercel → standard for Next.js
-  - Docker → for complex setups
-  - Railway / Fly.io → for backends
+  - Coolify on a VPS → production
+  - Docker Desktop → local
 
 Decision criteria:
   1. Team competence
@@ -91,7 +88,8 @@ Buy when:
   - Support & maintenance needed
 
 Examples:
-  ✅ Buy: auth (Supabase Auth), payment (Stripe), email (Resend)
+  ✅ Buy: payment (Stripe or Lemon Squeezy), email (Resend)
+  ✅ Use Payload: auth, content, jobs
   ✅ Build: core features, UI, business logic
 ```
 

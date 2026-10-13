@@ -1,6 +1,6 @@
 /**
  * Bloom soft card elevation — neutral border + shadow only (no coral glow, no translate/scale).
- * Mirrors MOOD-0413 `.board-card` / `.control-card` (studio.css).
+ * Soft surface for board and control cards.
  */
 
 /** Static surface card (settings panels, motif demos) */

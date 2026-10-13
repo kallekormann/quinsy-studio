@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://moody.app/schemas/design-md-1.0.json",
-  "title": "Moody Design.md frontmatter",
+  "$id": "urn:quinsy-studio:design-md:1.0",
+  "title": "Design.md frontmatter",
   "type": "object",
   "additionalProperties": true,
   "required": [

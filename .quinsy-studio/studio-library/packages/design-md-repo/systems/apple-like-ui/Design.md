@@ -123,4 +123,4 @@ Cupertino glass, system hierarchy.
 
 _Source: aesthetic-presets/apple-like-ui/SKILL.md_
 
-_Grammar only — Style DNA / board supplies values at generate time. Does not restyle Moody product chrome._
+_Grammar only — Style DNA / board supplies values at generate time. Does not restyle the product's own chrome._

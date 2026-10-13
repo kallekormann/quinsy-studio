@@ -27,11 +27,16 @@ Commands:
   ./studio train --done TR-NNNN                  Mark train job infused
   ./studio train --purge-empty                 Close open jobs with blank observation
   ./studio approve-design <p> <TICKET>         After spec + all-state mocks exist
+  ./studio mock <p> <TICKET>                   verify interactive mock + print review script
   ./studio ia-audit <p> <TICKET>               IA nav counts (≤7 top, depth ≤3)
   ./studio approve-arch <p> <TICKET>           After docs/architecture/<TICKET>.md exists
   ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
+  ./studio qa <project> <id> [--verdict PASS|FAIL]  Independent QA review before done
+  ./studio qa <project> <id> --finish [PASS|HOLD]  UX-009: shipped screen vs signed mock
+  ./studio lint-skills [--strict]                  Skill lists in sync (matcher, roles, files, registry)
+  ./studio reality-check <project> [--check]      Dev-build journey check before cadence review
   ./studio health <project>                      Sprint state-graph check
   ./studio focus <project>                       Set active project + isolate siblings
   ./studio isolate <project>                     Hide sibling projects/ from the agent
@@ -40,7 +45,7 @@ Commands:
   ./studio verify-abstraction                    Scan studio HQ for project-name leaks
   ./studio install [--with-skills]               npm deps after git clone (+ optional skills)
   ./studio library list                           List studio-library assets
-  ./studio library pull <project> auth billing    Copy library → project
+  ./studio library pull <project> billing auth-login    Copy library → project
   ./studio library promote <project> packages/billing [--force]
   ./studio library suggest <project> <query>      Find assets before coding
   ./studio promote-library <project> [--force]    Optional Headless/generic kit (not product look)
@@ -72,7 +77,7 @@ Commands:
   ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
-  ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
+  ./studio clarify <project> FB-001 [--severity blocker|major|minor|polish] [--verbatim "..."] [--approve]  Clarify feedback → executable draft
   ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
@@ -83,6 +88,8 @@ Commands:
   ./studio amendments <project>                  List amendments + status
   ./studio approve <project> --amendment AM-001  Human sign-off on amendment
   ./studio approve <project> --milestones        Approve revised milestone roadmap
+  ./studio whoami                                 Print this context's id (QUINSY_CONTEXT_ID) for QA reviewer lines
+  ./studio milestone <project> [plan [--next] | review | --approve [--notes "..."]]  PM milestone ownership (plan tickets, review state, HITL sign)
   ./studio approve <project> --prd-amendment AM-001  PRD tier change (class C)
 
   # Phase 4: Implementation
@@ -103,9 +110,13 @@ Commands:
   # Tools
   ./studio adr <project> "Title"                 Create ADR
   ./studio decide <project> "Title"              Create decision record
+  ./studio decisions <project>                   Show decision records
   ./studio env <project> init|up|down|status [--approve]
+  ./studio env <project> prod --explain           Production names (.env.local) and what each is for
+  ./studio ops <project> readiness|deploy|logs|status|migrate --prod|db|cleanup [--approve]
   ./studio repo <project> create|status          GitHub repo
   ./studio promote <project> <asset>             Promote asset to library
+  ./studio update-skills                         Subscribe/update external skill packages
 """
 
 import sys
@@ -118,9 +129,14 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
-from ticket_helpers import apply_i18n_ticket_rules, render_ticket_markdown, role_for_skills
+from ticket_helpers import (
+    apply_i18n_ticket_rules,
+    render_staffing_section,
+    render_ticket_markdown,
+    role_for_skills,
+)
 from ticket_ids import allocate_ticket_id
-from skill_matcher import match_skills, team_for_skills
+from skill_matcher import match_skills, staff_skills, team_for_skills
 from design_ticket_helpers import (
     default_design_spec_path,
     design_deliverables_status,
@@ -129,6 +145,7 @@ from design_ticket_helpers import (
     design_mocks_emoji_icon_warning,
     enrich_design_skills,
     infer_ticket_type,
+    mock_review_block,
     parse_design_fields,
     requires_design_approval,
     set_design_approved,
@@ -248,14 +265,19 @@ from studio_execute import (
     append_execution_event,
     count_gate_fails,
     decide_next_action,
+    escalation_path,
     existing_gate_fail_lo,
+    failure_signature,
     format_execute_step,
     format_health,
     health_report,
     load_execution_log,
     receipt_is_complete,
     receipt_path,
+    repeated_failure,
+    should_escalate,
     ticket_card_for,
+    write_escalation,
     write_receipt_stub,
 )
 from amendment_intake import (
@@ -327,6 +349,11 @@ def find_project_ticket(project: str, ticket_id: str) -> tuple:
         return path, status
     return None, None
 
+def explicit_kind_is_not_hygiene(kind: str) -> bool:
+    """Hygiene sprints sit outside the milestone train."""
+    return (kind or "").strip().lower() != "hygiene"
+
+
 def load_status(project: str) -> Dict:
     """Load project status.json (snapshots live in docs/ticket-file-snapshots.json)."""
     from studio_status import load_status as _load_status
@@ -351,6 +378,12 @@ def resolve_intake_file(project: str, intake_file: Optional[str] = None) -> Opti
         return None
 
     slug = slugify(project)
+    folder = INTAKE_DIR / slug
+    if folder.is_dir():
+        return folder
+    named = INTAKE_DIR / project
+    if named.is_dir():
+        return named
     for candidate in INTAKE_DIR.glob("*.md"):
         if candidate.name.lower() in {"readme.md", "index.md"}:
             continue
@@ -400,9 +433,9 @@ def design_stack_hints(project: str, archetype: str) -> Dict[str, str]:
         "frontend": "Next.js App Router + TypeScript",
         "styling": "Tailwind CSS + design tokens",
         "animation": "Framer Motion",
-        "backend": "Supabase (optional cloud sync)",
-        "storage": "Local-first (IndexedDB) + optional Supabase",
-        "deployment": "Vercel",
+        "backend": "Payload on Next.js (Postgres). Opt out only with an ADR.",
+        "storage": "Postgres via Payload. Uploads: local disk in dev, Cloudflare R2 in production.",
+        "deployment": "Coolify on a VPS. Local boot is Docker Desktop.",
     }
     if "pwa" in prd or "progressive web app" in prd:
         hints["frontend"] = "Next.js PWA + TypeScript"
@@ -475,8 +508,9 @@ class StudioOrchestrator:
     def _print_bootstrap_discovery(self):
         """List intake PRDs and existing projects for AI/human discovery."""
         print_header("QUINSY STUDIO — BOOTSTRAP")
-        print("\n  Place a PRD in intake/, then run:")
+        print("\n  Place a file or a folder in intake/, then run:")
         print("    ./studio bootstrap <project>")
+        print("    ./studio bootstrap <project> intake/<project>/")
         print("    ./studio bootstrap <project> intake/<file>.md")
         print("\n  Existing codebase (do not empty-init):")
         print("    ./studio adopt <project> --from <git-url-or-path>")
@@ -820,6 +854,11 @@ class StudioOrchestrator:
             return False
 
         apply_project_isolation(project)
+        from payload_foundation import scaffold_needed, scaffold_payload_app
+
+        if scaffold_needed(project):
+            created = scaffold_payload_app(project)
+            print(f"  Payload app written ({len(created)} files) under projects/{project}/apps/web")
         status = load_status(project)
         step = decide_next_action(project)
         if step.kind in RUNTIME_EXECUTE_KINDS and not docker_cli_available():
@@ -874,7 +913,8 @@ class StudioOrchestrator:
         path = write_receipt_stub(project, sprint, ticket_id, card)
         print_header(f"RECEIPT {ticket_id}")
         print(f"  {path.relative_to(STUDIO_ROOT)}")
-        print("  Fill Plan, AC coverage, Default flow (LO-0051), and Playbook citations, then ./studio execute")
+        print("  Replace every template line. Tick each AC with its proof. Evidence and API proof lines say PASS / FAIL / NOT TESTED.")
+        print("  Named screenshots and test files must exist. Then ./studio execute")
         return True
 
     def cmd_health(self, project: str):
@@ -1237,6 +1277,13 @@ class StudioOrchestrator:
         if hq_hook:
             print(f"  HQ pre-commit: {hq_hook} (refuses projects/ in the studio index)")
 
+        from payload_foundation import skill_present
+
+        if not skill_present():
+            print("\n  ❌ Payload skill missing: teams/02-backend-systems/skills/payload/SKILL.md")
+            return False
+        print("  Payload skill: teams/02-backend-systems/skills/payload/SKILL.md")
+
         if with_skills:
             print("\n  Importing external skill packages…")
             self.cmd_update_skills([])
@@ -1334,7 +1381,7 @@ class StudioOrchestrator:
         print("Usage:")
         print("  ./studio library list")
         print("  ./studio library suggest <project> <query>")
-        print("  ./studio library pull <project> auth billing tokens [button...]")
+        print("  ./studio library pull <project> billing auth-login tokens [button...]")
         print("  ./studio library promote <project> packages/billing [--force] [--ticket ID]")
         print("  ./studio library promote-design <project> [--force]")
         return False
@@ -1793,8 +1840,154 @@ class StudioOrchestrator:
                 "status": "approved",
                 "date": datetime.now().isoformat(),
             }
+            from studio_milestones import activate_next, active_milestone
+
+            if not active_milestone(project, status):
+                activate_next(project, status)
+            elif not (status.get("milestones") or {}).get("active"):
+                activate_next(project, status)
             save_status(project, status)
+            print(f"  Active milestone: {(status.get('milestones') or {}).get('active')}")
         return ok
+
+    def cmd_milestone(self, project: str, action: str = "", notes: str = "", next_: bool = False) -> bool:
+        """Milestone ownership: plan | review | --approve | plan --next (PM-002)."""
+        from studio_milestones import (
+            activate_next,
+            active_milestone,
+            approve_review,
+            coverage_issues,
+            list_milestones,
+            milestone_complete,
+            milestone_tickets,
+            planned_ticket_lines,
+            pm_card_lines,
+            replace_plan_line,
+            roadmap_approved,
+            review_state,
+            stamp_milestone,
+            write_review,
+        )
+
+        status = load_status(project)
+        if not (PROJECTS_DIR / project).exists():
+            print(f"\n  ❌ Project '{project}' not found.")
+            return False
+        rows = list_milestones(project)
+        if not action:
+            print_header(f"MILESTONES — {project}")
+            if not rows:
+                print("  No M<n>-*.md in docs/phases/. Draft from studio-templates/phases/milestone.md.")
+            for row in rows:
+                tickets = milestone_tickets(project, row["id"])
+                done = sum(1 for t in tickets if t["status"] == "done")
+                print(f"  {row['id']:4} {row['status']:8} {row['title'][:48]:48} tickets {done}/{len(tickets)}")
+            print(f"\n  Roadmap approved: {'yes' if roadmap_approved(status) else 'no'}  active: {active_milestone(project, status) or '-'}")
+            missing = coverage_issues(project)
+            if missing:
+                print("  Coverage gaps:")
+                for m in missing:
+                    print(f"    - {m}")
+            return True
+
+        if not roadmap_approved(status):
+            print(f"\n  ❌ Roadmap not approved. Draft docs/phases/ and run ./studio approve {project} --milestones")
+            return False
+
+        if action == "approve":
+            mid = active_milestone(project, status)
+            if not mid:
+                print("\n  ❌ No active milestone to approve.")
+                return False
+            ok, messages = approve_review(project, status, mid, notes=notes)
+            for m in messages:
+                print(f"  {m}")
+            if not ok:
+                return False
+            save_status(project, status)
+            print(f"\n  ✅ {mid} approved as done.")
+            print(f"  Next: ./studio milestone {project} plan --next")
+            return True
+
+        if action == "review":
+            mid = active_milestone(project, status)
+            if not mid:
+                print("\n  ❌ No active milestone.")
+                return False
+            if not milestone_complete(project, mid):
+                open_rows = [t for t in milestone_tickets(project, mid) if t["status"] not in ("done", "cancelled")]
+                print(f"\n  ❌ {mid} still has {len(open_rows)} open ticket(s) — review runs when every ticket is done or cancelled.")
+                return False
+            print_header(f"MILESTONE REVIEW — {project} {mid}")
+            for line in pm_card_lines("review"):
+                print(line)
+            path = write_review(project, status, mid)
+            save_status(project, status)
+            print(f"\n  Review written: {path.relative_to(PROJECTS_DIR / project)}")
+            print("  Fill `## Roadmap changes` and `## Catalog applied`, edit M<n>-*.md if the order changes, then HITL:")
+            print(f"  ./studio milestone {project} --approve --notes \"...\"")
+            return True
+
+        if action == "plan":
+            if next_:
+                current = active_milestone(project, status)
+                if current and review_state(project, status, current) != "approved":
+                    print(f"\n  ❌ {current} is not approved. Run review, then --approve, before plan --next.")
+                    return False
+                mid = activate_next(project, status)
+                if not mid:
+                    print("\n  ✅ Every milestone is done. The roadmap is complete.")
+                    save_status(project, status)
+                    return True
+                save_status(project, status)
+                print(f"  Activated {mid}.")
+            mid = active_milestone(project, status)
+            if not mid:
+                print("\n  ❌ No active milestone. Use plan --next.")
+                return False
+            row = next((r for r in rows if r["id"] == mid), None)
+            if not row:
+                print(f"\n  ❌ {mid} has no file in docs/phases/.")
+                return False
+            print_header(f"MILESTONE PLAN — {project} {mid}")
+            for line in pm_card_lines("plan"):
+                print(line)
+            text = row["file"].read_text(encoding="utf-8")
+            lines = planned_ticket_lines(text)
+            if not lines:
+                existing = milestone_tickets(project, mid)
+                if existing:
+                    print(f"\n  {mid} already has {len(existing)} ticket(s); nothing new under ## Tickets.")
+                else:
+                    print(f"\n  No `- <title> :: <scope>` lines under ## Tickets in {row['file'].name}. Write them, then rerun.")
+                print(f"  Then: ./studio groom {project} && ./studio sprint {project}")
+                return bool(existing)
+            created = 0
+            for title, scope in lines:
+                before = set(p.name for p in (PROJECTS_DIR / project / "backlog" / "open").glob("*.md")) if (PROJECTS_DIR / project / "backlog" / "open").exists() else set()
+                ok = self.cmd_ticket(project, f"{title}. {scope}".strip(". ") if scope else title)
+                if not ok:
+                    continue
+                after = (PROJECTS_DIR / project / "backlog" / "open").glob("*.md")
+                new = [p for p in after if p.name not in before]
+                if not new:
+                    continue
+                ticket_path = sorted(new)[-1]
+                content = ticket_path.read_text(encoding="utf-8")
+                ticket_path.write_text(stamp_milestone(content, mid), encoding="utf-8")
+                tid = re.match(r"^([A-Z]+-\d+)", ticket_path.name).group(1)
+                text = replace_plan_line(text, title, tid)
+                created += 1
+            row["file"].write_text(text, encoding="utf-8")
+            from studio_milestones import set_milestone_status
+
+            set_milestone_status(row["file"], "active")
+            print(f"\n  ✅ {created} ticket(s) created and stamped milestone: {mid}")
+            print(f"  Next: ./studio groom {project} && ./studio sprint {project}")
+            return True
+
+        print("  ⚠️  Use: ./studio milestone <p> [plan [--next] | review | --approve [--notes \"...\"]]")
+        return False
 
     def cmd_amend(self, project: str, input_file: str, force: bool = False) -> bool:
         """Scaffold amendment analysis artifacts from intake brief."""
@@ -1875,7 +2068,18 @@ class StudioOrchestrator:
             print(f"  {msg}")
             return ok
         if refuse_prod_push(dest) and approve_prod:
+            from ship_checks import pre_ship_main_issues
             from studio_product_git import product_git_dir
+
+            from studio_ops import readiness_blockers
+
+            blockers = pre_ship_main_issues(PROJECTS_DIR / project, product_git_dir(project))
+            blockers.extend(readiness_blockers(PROJECTS_DIR / project))
+            if blockers:
+                print(f"  ❌ Not shipping to {dest}:")
+                for line in blockers:
+                    print(f"     • {line}")
+                return False
 
             r = subprocess.run(
                 ["git", "-C", str(product_git_dir(project)), "push", "-u", "origin", f"HEAD:{dest}"],
@@ -1890,7 +2094,7 @@ class StudioOrchestrator:
         print(f"  ⚠️  Unknown branch {dest} — use --to dev or --to main --approve")
         return False
 
-    def cmd_sprint(self, project: str, approve_scope: bool = False, kind: str = ""):
+    def cmd_sprint(self, project: str, approve_scope: bool = False, kind: str = ""):  # noqa: C901
         """Propose or approve sprint scope from product backlog."""
         
         status = load_status(project)
@@ -1950,6 +2154,16 @@ class StudioOrchestrator:
         if not design_system_approved(status):
             print(f"  ⚠️  Gate 2b (project kit) must be approved before sprint")
             return False
+
+        if explicit_kind_is_not_hygiene(kind):
+            from studio_milestones import active_milestone, roadmap_approved
+
+            if not roadmap_approved(status):
+                print(f"  ⚠️  Milestone roadmap not approved. Draft docs/phases/ then ./studio approve {project} --milestones")
+                return False
+            if not active_milestone(project, status):
+                print(f"  ⚠️  No active milestone. Run ./studio milestone {project} plan --next")
+                return False
 
         ok, reason = can_plan_next_sprint(project, status)
         if not ok:
@@ -2086,8 +2300,8 @@ class StudioOrchestrator:
         return True
     
     def cmd_review(self, project: str, approve: bool = False, reject: bool = False,
-                   notes: str = "", reason: str = ""):
-        """Prepare or complete a human sprint review."""
+                   notes: str = "", reason: str = "", inform: bool = False):
+        """Prepare or complete a sprint review. `--inform` writes the brief and closes the cadence stop (HQ autonomy)."""
         status = load_status(project)
         sprint = status.get("current_sprint")
         if not sprint:
@@ -2095,6 +2309,27 @@ class StudioOrchestrator:
             return False
 
         print_header(f"SPRINT REVIEW — {project} ({sprint})")
+
+        if inform:
+            summary = sprint_ticket_summary(project, sprint)
+            if summary["total"] == 0 or not summary["all_done"]:
+                print(f"\n  ❌ Cannot close the cadence review — sprint tickets are not all done ({summary['done']}/{summary['total']}).")
+                return False
+            brief = prepare_review(project, sprint, status)
+            approve_review(
+                project, sprint, status,
+                "Cadence review closed by the agent (HQ autonomy). Human feedback is asynchronous: "
+                "./studio feedback / clarify / ticket --from-feedback. Design feedback waits for the next design phase.",
+            )
+            hitl = get_sprint_hitl(status)
+            hitl["review_mode"] = "inform"
+            save_status(project, status)
+            print("\n  ℹ️  INFORM: cadence review brief is ready; the train continues.")
+            if brief:
+                print(f"     Brief: {brief}")
+            print(f"     Feedback any time: ./studio feedback {project} \"…\" [--design-reason <code>]")
+            print(f"  Next: ./studio reuse {project} → ./studio retro {project} → ./studio sprint {project}")
+            return True
 
         if approve:
             summary = sprint_ticket_summary(project, sprint)
@@ -2259,8 +2494,16 @@ class StudioOrchestrator:
         print(f"  Inform only — no ./studio reuse --approve required.")
         return True
 
-    def cmd_feedback(self, project: str, text: str, source: str = "sprint-review", force: bool = False):
+    def cmd_feedback(self, project: str, text: str, source: str = "sprint-review", force: bool = False, design_reason: str = ""):
         """Capture raw human feedback — does not create a ticket."""
+        if design_reason:
+            from design_feedback import record_pushback, validate_reason
+
+            err = validate_reason(design_reason)
+            if err:
+                print(f"  ❌ {err}")
+                return False
+            record_pushback(project, PROJECTS_DIR / project, "sprint-review", design_reason.strip().lower(), text, "feedback")
         status = load_status(project)
         sprint = status.get("current_sprint")
         if not sprint:
@@ -2311,8 +2554,19 @@ class StudioOrchestrator:
         out_of_scope: str = "",
         acceptance: Optional[List[str]] = None,
         approve: bool = False,
+        severity: str = "",
+        verbatim: Optional[List[str]] = None,
+        design_reason: str = "",
     ):
         """Clarify raw feedback into an executable ticket draft."""
+        if design_reason:
+            from design_feedback import record_pushback, validate_reason
+
+            err = validate_reason(design_reason)
+            if err:
+                print(f"  ❌ {err}")
+                return False
+            record_pushback(project, PROJECTS_DIR / project, fb_id, design_reason.strip().lower(), title or scope, "clarify")
         status = load_status(project)
         sprint = status.get("current_sprint")
         if not sprint:
@@ -2328,6 +2582,8 @@ class StudioOrchestrator:
                 out_of_scope=out_of_scope,
                 acceptance=acceptance or [],
                 approve=approve,
+                severity=severity,
+                verbatim=verbatim or [],
             )
         except ValueError as e:
             print(f"  ⚠️  {e}")
@@ -2338,6 +2594,9 @@ class StudioOrchestrator:
             return False
 
         print(f"\n  Status: {item['status']}")
+        print(f"  Severity: {item.get('severity') or 'not set'}")
+        if item.get("recurring"):
+            print(f"  Recurring: raised before in {', '.join(item['recurring'])}")
         print(f"  Draft: {clarify_file}")
         if item["status"] == "ready":
             print(f"\n  ✅ Ready for ticket:")
@@ -2401,6 +2660,14 @@ class StudioOrchestrator:
         design_status = "pending" if requires_design_approval(
             f"ticket_type: {ticket_type}\n{infer_blob}"
         ) else "n/a"
+        staffing = staff_skills(
+            title,
+            "\n".join(["## Scope", infer_blob]),
+            skills=skills,
+            ticket_type=ticket_type,
+            design_status=design_status,
+        )
+        skills = list(staffing["skills"])
         design_spec = default_design_spec_path(ticket_id) if design_status == "pending" else ""
 
         acceptance = [
@@ -2415,9 +2682,18 @@ class StudioOrchestrator:
             acceptance = fb_item.get("draft_acceptance") or acceptance
             draft_scope = (fb_item.get("draft_scope") or "").strip()
             draft_oos = (fb_item.get("draft_out_of_scope") or "").strip()
+            from sprint_hitl import SEVERITY_PRIORITY
+
+            severity = fb_item.get("severity") or ""
+            if priority == "P1" and severity in SEVERITY_PRIORITY:
+                priority = SEVERITY_PRIORITY[severity]
+            quotes = fb_item.get("verbatim") or [fb_item.get("raw", "")]
+            recurring = fb_item.get("recurring") or []
             rationale_extra = (
                 f"\n\n## Source feedback\n"
-                f"- **{from_feedback.upper()}:** {fb_item.get('raw', '')}\n"
+                f"- **{from_feedback.upper()}** · severity: {severity or 'unset'} · "
+                f"recurring: {', '.join(recurring) if recurring else 'first time'}\n"
+                + "".join(f"> {q}\n" for q in quotes if q)
             )
         
         ticket = {
@@ -2472,6 +2748,7 @@ class StudioOrchestrator:
         )
         
         content = render_ticket_markdown(ticket)
+        content += render_staffing_section(staffing)
         if rationale_extra:
             content += rationale_extra
         ticket_file.write_text(content)
@@ -2486,7 +2763,11 @@ class StudioOrchestrator:
             print(f"  Backlog: unscheduled (no sprint tag) — assigned at ./studio sprint {project}")
         print(f"  Role: {role}")
         print(f"  Team: {team}")
-        print(f"  Skills: {', '.join(skills) if skills else '(auto-match)'}")
+        print(f"  Skills: {', '.join(skills) if skills else '(none matched — PM must staff at groom)'}")
+        for skill_id, reason in staffing["added"]:
+            print(f"    + {skill_id}: {reason}")
+        for skill_id, reason in staffing["dropped"]:
+            print(f"    ⚠️  over {len(skills)} skills, not added: {skill_id} ({reason}) — split or waive at groom")
         if design_status == "pending":
             spec_file = write_design_spec_stub(
                 PROJECTS_DIR / project, ticket_id, design_spec
@@ -2530,7 +2811,13 @@ class StudioOrchestrator:
             content_pre = ticket_file.read_text()
             sprint_match = re.search(r"^sprint:\s*(\S+)", content_pre, re.MULTILINE)
             ticket_sprint = sprint_match.group(1) if sprint_match else None
-            if sprint_pre and ticket_sprint == sprint_pre:
+            # LO-0399: the done bar applies to every ticket, not only the current sprint.
+            sprint_pre = ticket_sprint or sprint_pre
+            if not sprint_pre:
+                print(f"\n  ❌ Cannot mark {ticket_id} done: the ticket carries no sprint, so it has no receipt, QA or finish record.")
+                print(f"     Tag it through ./studio sprint {project} --approve-scope, then run the ticket through execute.")
+                return False
+            if True:
                 rec_text_pre = ticket_file.read_text()
                 if not receipt_is_complete(
                     project, sprint_pre, ticket_id, ticket_text=rec_text_pre
@@ -2539,14 +2826,28 @@ class StudioOrchestrator:
                     print(f"\n  ❌ Cannot mark {ticket_id} done without an execution receipt.")
                     print(f"     Fill: {rec.relative_to(STUDIO_ROOT)}")
                     print(f"     ./studio receipt {project} {ticket_id}")
-                    print("     Required sections: Plan, AC coverage, Default flow (LO-0051), Playbook citations")
-                    print("     AI-001 / AI-004 tickets also need a filled ## Eval section")
+                    print("     Required: Plan, AC coverage, Default flow, Playbook citations, Skill QA, Security, Scope,")
+                    print("     plus Evidence/A11y (UI), API proof (BE-001/003/007), Risk & rollback, Threat delta, Eval when they apply")
                     from studio_execute import receipt_blocker_messages
 
                     for line in receipt_blocker_messages(
                         project, sprint_pre, ticket_id, rec_text_pre
                     ):
                         print(f"     • {line}")
+                    return False
+                from qa_review import qa_state
+
+                if qa_state(load_execution_log(project, sprint_pre), ticket_id) != "pass":
+                    print(f"\n  ❌ Cannot mark {ticket_id} done without a QA PASS after the last green gate.")
+                    print(f"     ./studio qa {project} {ticket_id}  (fresh-context reviewer writes the verdict)")
+                    return False
+                from qa_review import finish_state, needs_finish_gate
+
+                if needs_finish_gate(PROJECTS_DIR / project, ticket_id) and finish_state(
+                    load_execution_log(project, sprint_pre), ticket_id
+                ) != "pass":
+                    print(f"\n  ❌ Cannot mark {ticket_id} done before the UX-009 finish gate passes.")
+                    print(f"     ./studio qa {project} {ticket_id} --finish  (shipped screen vs signed mock)")
                     return False
 
         if new_status == "implement":
@@ -2555,6 +2856,10 @@ class StudioOrchestrator:
             if blocked:
                 print(blocked)
                 return False
+            if status_pre.get("current_sprint"):
+                from qa_review import context_id
+
+                append_execution_event(project, status_pre["current_sprint"], "implement-start", ticket_id, note=context_id())
             content_pre = ticket_file.read_text()
             d_status, d_msg = design_deliverables_status(
                 PROJECTS_DIR / project, ticket_id, content_pre
@@ -2689,6 +2994,36 @@ class StudioOrchestrator:
         
         return True
 
+    def cmd_reject_design(self, project: str, ticket_id: str, reason: str, notes: str = "") -> bool:
+        """HITL push-back on a design packet: coded reason, logged, harvested, ticket back to pending."""
+        from design_feedback import reason_help, record_pushback, set_design_rejected, validate_reason
+
+        err = validate_reason(reason)
+        if err:
+            print(f"  ❌ {err}")
+            print(reason_help())
+            return False
+        ticket_file, _status = find_project_ticket(project, ticket_id)
+        if not ticket_file:
+            print(f"  Ticket {ticket_id} not found in project {project}")
+            return False
+        content = ticket_file.read_text(encoding="utf-8")
+        updated = set_design_rejected(content)
+        updated += (
+            f"\n\n## Design rejection\n- **Rejected:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
+            f"- **Reason:** {reason.strip().lower()}\n- **Notes:** {notes or '-'}\n"
+        )
+        ticket_file.write_text(updated, encoding="utf-8")
+        result = record_pushback(project, PROJECTS_DIR / project, ticket_id, reason.strip().lower(), notes, "reject")
+        print(f"\n  ↩ Design rejected for {ticket_id} ({reason.strip().lower()}) — design_status back to pending")
+        print(f"    Log: {Path(str(result['log'])).relative_to(STUDIO_ROOT)}")
+        if result.get("created"):
+            print(f"    Learning: {result.get('lo_id')} harvested to studio HQ")
+        elif result.get("local_log"):
+            print(f"    Project-local note: {result.get('local_log')}")
+        print(f"  Next: Team 10 revises the spec and mocks in the next design phase; re-sign with ./studio approve-design {project} --phase")
+        return True
+
     def cmd_approve_design(self, project: str, ticket_id: str, notes: str = ""):
         """HITL: approve Team 10 spec for design-track (major UX/UI/IA) before FE implement."""
         ticket_file, _status = find_project_ticket(project, ticket_id)
@@ -2721,6 +3056,9 @@ class StudioOrchestrator:
         emoji_warn = design_mocks_emoji_icon_warning(PROJECTS_DIR / project, ticket_id)
         if emoji_warn:
             print(f"\n  ⚠️  {emoji_warn}")
+        spec_text = spec_path.read_text(encoding="utf-8", errors="ignore") if spec_path.exists() else ""
+        print()
+        print(mock_review_block(PROJECTS_DIR / project, ticket_id, spec_text).replace("<project>", project))
         updated = set_design_approved(content)
         from studio_streams import refresh_stream_field
 
@@ -2731,6 +3069,31 @@ class StudioOrchestrator:
         print(f"\n  ✓ Design approved for {ticket_id}")
         print(f"    Spec: {spec_rel}")
         print(f"  Next: implement only after stream is ready (approve-arch if required)")
+        return True
+
+    def cmd_mock(self, project: str, ticket_id: str) -> bool:
+        """Verify the interactive mock packet and print the human review script (route + §2e)."""
+        ticket_file, _status = find_project_ticket(project, ticket_id)
+        if not ticket_file:
+            print(f"  Ticket {ticket_id} not found in project {project}")
+            return False
+        content = ticket_file.read_text()
+        fields = parse_design_fields(content)
+        spec_rel = fields.get("design_spec") or default_design_spec_path(ticket_id)
+        project_root = PROJECTS_DIR / project
+        spec_path = project_root / spec_rel
+        tt = fields.get("ticket_type") or infer_ticket_type(content)
+        err = design_spec_completeness_error(
+            spec_path, project_root, ticket_id, tt, ticket_blob=content
+        )
+        if err:
+            print(f"\n  ❌ Mock packet incomplete for {ticket_id}:")
+            print(f"     {err}")
+            return False
+        spec_text = spec_path.read_text(encoding="utf-8", errors="ignore")
+        print(f"\n  ✓ Interactive mock packet complete for {ticket_id}")
+        print(mock_review_block(project_root, ticket_id, spec_text).replace("<project>", project))
+        print(f"\n  Next: HITL ./studio approve-design {project} {ticket_id}")
         return True
 
     def cmd_ia_audit(self, project: str, ticket_id: str):
@@ -2766,8 +3129,11 @@ class StudioOrchestrator:
         if not re.search(r"^architecture_status:\s*pending", content, re.M):
             print(f"  Ticket {ticket_id} does not need architecture sign-off.")
             return True
-        if not architecture_packet_ready(project, ticket_id):
-            print(f"\n  ❌ Cannot approve-arch — write docs/architecture/{ticket_id}.md first (not a stub).")
+        packet_issues = architecture_packet_issues(project, ticket_id)
+        if packet_issues:
+            print(f"\n  ❌ Cannot approve-arch {ticket_id}:")
+            for line in packet_issues:
+                print(f"     • {line}")
             return False
         updated = set_architecture_approved(content)
         if notes:
@@ -2848,7 +3214,7 @@ class StudioOrchestrator:
     def cmd_approve_arch_phase(self, project: str) -> bool:
         """Sign every written architecture note in the current phase, then open the next phase."""
         from sprint_hitl import list_sprint_tickets
-        from studio_streams import architecture_packet_ready, set_architecture_approved
+        from studio_streams import architecture_packet_issues, set_architecture_approved
 
         status = load_status(project)
         sprint = status.get("current_sprint") or ""
@@ -2863,8 +3229,9 @@ class StudioOrchestrator:
             content = ticket_file.read_text(encoding="utf-8")
             if not re.search(r"^architecture_status:\s*pending\b", content, re.M):
                 continue
-            if not architecture_packet_ready(project, ticket["id"]):
-                blocked.append(f"{ticket['id']}: architecture note missing")
+            packet_issues = architecture_packet_issues(project, ticket["id"])
+            if packet_issues:
+                blocked.append(f"{ticket['id']}: " + "; ".join(packet_issues))
                 continue
             ticket_file.write_text(set_architecture_approved(content), encoding="utf-8")
             print(f"  ✓ Architecture approved for {ticket['id']}")
@@ -2873,6 +3240,11 @@ class StudioOrchestrator:
             for line in blocked:
                 print(f"    • {line}")
             return False
+        status = load_status(project)
+        status["arch_auto_signed"] = {"sprint": sprint, "at": datetime.now().isoformat(), "by": "agent"}
+        save_status(project, status)
+        print("\n  ℹ️  INFORM: architecture phase signed by the agent (HQ autonomy).")
+        print(f"     Tech-veto window: ./studio veto {project} --decision <TICKET> --reason \"…\" stops execute at the next IMPLEMENT boundary.")
         self._release_train_phase(project)
         return True
 
@@ -2958,16 +3330,21 @@ class StudioOrchestrator:
             if result.returncode == 0:
                 append_execution_event(project, sprint, "gate-pass", ticket_id)
             else:
-                log = load_execution_log(project, sprint)
-                fails = count_gate_fails(log, ticket_id) + 1
-                append_execution_event(project, sprint, "gate-fail", ticket_id, "gate red")
-                dbg = append_debug_attempt(
-                    project, sprint, ticket_id, fails, f"QA gate level {level} failed", excerpt
+                from receipt_checks import latest_qa_report
+                from run_qa_gate import SOFT_CHECKS
+
+                report = latest_qa_report(PROJECTS_DIR / project) or {}
+                failed = [
+                    r for r in report.get("results") or []
+                    if not r.get("passed") and r.get("check") not in SOFT_CHECKS
+                ]
+                signature = failure_signature(failed)
+                fails = self._record_failure(
+                    project, sprint, ticket_id, "gate-fail",
+                    f"gate red: {signature}" if signature else "gate red",
+                    symptom=f"QA gate level {level} failed", excerpt=excerpt, failed_checks=failed,
                 )
-                print(f"\n  Debug log: {dbg.relative_to(STUDIO_ROOT)}")
-                print(f"  Retry {fails}/{MAX_GATE_RETRIES}: fix from hypotheses, then ./studio gate {project} --level 5")
                 if fails >= MAX_GATE_RETRIES:
-                    print(f"  Exhausted retries — ./studio move {project} {ticket_id} blocked")
                     if not existing_gate_fail_lo(project):
                         lo_id = self.cmd_learn(
                             f"Gate fail retry exhausted ({ticket_id})",
@@ -2977,6 +3354,214 @@ class StudioOrchestrator:
                         print(f"  Auto-harvested {lo_id} — spawn ./studio train beside product execute")
 
         return result.returncode == 0
+
+    def _record_failure(
+        self,
+        project: str,
+        sprint: str,
+        ticket_id: str,
+        event: str,
+        note: str,
+        *,
+        symptom: str,
+        excerpt: str = "",
+        failed_checks=None,
+        findings: str = "",
+    ) -> int:
+        """Log a red gate or QA FAIL, write the structured debug attempt, escalate when due."""
+        append_execution_event(project, sprint, event, ticket_id, note)
+        log = load_execution_log(project, sprint)
+        fails = count_gate_fails(log, ticket_id)
+        repeated = repeated_failure(log, ticket_id)
+        dbg = append_debug_attempt(
+            project, sprint, ticket_id, fails, symptom, excerpt,
+            failed_checks=failed_checks, findings=findings, repeated=repeated,
+        )
+        print(f"\n  Debug log: {dbg.relative_to(STUDIO_ROOT)}")
+        if should_escalate(log, ticket_id):
+            why = f"failed {fails} times" if fails >= MAX_GATE_RETRIES else "failed twice the same way"
+            esc = write_escalation(project, sprint, ticket_id, why)
+            print(f"  Escalate: {why}. Packet: {esc.relative_to(STUDIO_ROOT)}")
+            print(f"  ./studio move {project} {ticket_id} blocked — independent tickets continue")
+        else:
+            print(f"  Retry {fails}/{MAX_GATE_RETRIES}: fix only the listed issues, then ./studio gate {project} --level 5")
+        return fails
+
+    def cmd_reality_check(self, project: str, check: bool = False):
+        """Release reality check (L11, SO-005): write the brief + template, or validate the report."""
+        from reality_check import brief, head_sha, report_issues, report_path, template
+        from sprint_hitl import list_sprint_tickets, sprint_directory
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if not sprint:
+            print("  No current sprint.")
+            return False
+        sdir = sprint_directory(project, sprint)
+        path = report_path(sdir)
+        rel = str(path.relative_to(STUDIO_ROOT))
+        print_header(f"REALITY CHECK {project} {sprint}")
+        if check:
+            if not path.exists():
+                print(f"  ❌ {rel} missing — run ./studio reality-check {project}")
+                return False
+            issues = report_issues(path.read_text(encoding="utf-8"), sdir)
+            if issues:
+                for line in issues:
+                    print(f"  • {line}")
+                return False
+            print(f"  ✓ {rel} is complete. ./studio execute {project}")
+            return True
+        if not path.exists():
+            done = [t["id"] for t in list_sprint_tickets(project, sprint) if t.get("status") == "done"]
+            (sdir / "reality-check").mkdir(parents=True, exist_ok=True)
+            path.write_text(template(sprint, head_sha(PROJECTS_DIR / project) or "", done), encoding="utf-8")
+        print(brief(project, sprint, rel))
+        return True
+
+    def cmd_qa_finish(self, project: str, ticket_id: str, decision: str = ""):
+        """UX-009 finish gate (L9): shipped screen vs signed mock. HOLD is a QA fail."""
+        from qa_review import (
+            finish_file_issues,
+            finish_path,
+            finish_template,
+            mock_shots,
+            qa_state,
+        )
+        from sprint_hitl import sprint_directory
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if not sprint:
+            print("  No current sprint — the finish gate runs on sprint tickets.")
+            return False
+        project_root = PROJECTS_DIR / project
+        shots = mock_shots(project_root, ticket_id)
+        if not shots:
+            print(f"  {ticket_id} has no signed mock screenshots — no finish gate needed.")
+            return True
+        sprint_dir = sprint_directory(project, sprint)
+        path = finish_path(sprint_dir, ticket_id)
+        print_header(f"UI FINISH GATE {ticket_id}")
+        if decision in ("", "BRIEF"):
+            if qa_state(load_execution_log(project, sprint), ticket_id) != "pass":
+                print(f"  ❌ Run the QA review first: ./studio qa {project} {ticket_id}")
+                return False
+            path.parent.mkdir(parents=True, exist_ok=True)
+            (sprint_dir / "qa" / f"{ticket_id}-finish").mkdir(parents=True, exist_ok=True)
+            if not path.exists():
+                path.write_text(finish_template(ticket_id, sprint, shots), encoding="utf-8")
+            print(f"  Skill: teams/10-product-design-experience/skills/ui-finish-gate.md (UX-009)")
+            print(f"  Mock:  projects/{project}/docs/design-specs/mocks/{ticket_id}/ ({len(shots)} shots)")
+            print(f"  Capture the shipped route with Playwright under the same names into")
+            print(f"         {(sprint_dir / 'qa' / (ticket_id + '-finish')).relative_to(STUDIO_ROOT)}/")
+            print(f"  Fill:  {path.relative_to(STUDIO_ROOT)}  (Comparison, Keep, Required before PASS)")
+            print("  Any visible difference is HOLD, even one that looks better.")
+            print(f"  Then: ./studio qa {project} {ticket_id} --finish PASS|HOLD")
+            return True
+        if decision not in ("PASS", "HOLD"):
+            print("  --finish must be PASS or HOLD")
+            return False
+        if not path.exists():
+            print(f"  ❌ {path.relative_to(STUDIO_ROOT)} missing — run ./studio qa {project} {ticket_id} --finish first")
+            return False
+        text = path.read_text(encoding="utf-8")
+        issues = finish_file_issues(text, decision, sprint_dir, project_root, ticket_id)
+        if issues:
+            print("  ❌ The finish-gate file does not back this decision:")
+            for line in issues:
+                print(f"     • {line}")
+            return False
+        if decision == "PASS":
+            append_execution_event(project, sprint, "finish-pass", ticket_id)
+            print(f"  ✅ Finish gate PASS recorded. Next: ./studio execute {project}")
+            return True
+        from receipt_checks import section as _section
+
+        required = (_section(text, "Required before PASS") or "").strip()
+        first = re.search(r"^\s*\d+\.\s*([^\n]+)", required, re.M)
+        keep = (_section(text, "Keep") or "").strip()
+        from design_feedback import finish_hold_code, record_pushback
+
+        hold_note = first.group(1).strip() if first else "finish gate HOLD"
+        record_pushback(project, project_root, ticket_id, finish_hold_code(text), hold_note, "finish-hold")
+        self._record_failure(
+            project, sprint, ticket_id, "qa-fail",
+            f"finish hold: {first.group(1).strip()[:80]}" if first else "finish hold",
+            symptom="UX-009 finish gate HOLD",
+            findings=f"{required}\n\nKeep (do not regress):\n{keep}",
+        )
+        return True
+
+    def cmd_qa(self, project: str, ticket_id: str, verdict: str = ""):
+        """Independent QA review (L2): print the reviewer brief, or record its verdict."""
+        from qa_review import (
+            findings_for_debug,
+            qa_path,
+            qa_template,
+            reviewer_brief,
+            verdict_file_issues,
+        )
+        from sprint_hitl import sprint_directory
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        if not sprint:
+            print("  No current sprint — QA review runs on sprint tickets.")
+            return False
+        card = ticket_card_for(project, ticket_id)
+        if not card:
+            print(f"  Ticket not found: {ticket_id}")
+            return False
+        path = qa_path(sprint_directory(project, sprint), ticket_id)
+        receipt = receipt_path(project, sprint, ticket_id)
+        print_header(f"QA REVIEW {ticket_id}")
+        if not verdict:
+            log = load_execution_log(project, sprint)
+            from studio_execute import has_fresh_gate_pass
+
+            if not has_fresh_gate_pass(log, ticket_id):
+                print(f"  ❌ No fresh green gate for {ticket_id}. Run ./studio gate {project} --level 5 first.")
+                return False
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(qa_template(ticket_id, card.get("ac") or []), encoding="utf-8")
+            print(reviewer_brief(
+                project, ticket_id, card,
+                receipt_rel=str(receipt.relative_to(STUDIO_ROOT)),
+                qa_rel=str(path.relative_to(STUDIO_ROOT)),
+                ticket_rel=str(card.get("path") or ""),
+            ))
+            print(f"  Then: ./studio qa {project} {ticket_id} --verdict PASS|FAIL")
+            return True
+        verdict = verdict.upper()
+        if verdict not in ("PASS", "FAIL"):
+            print("  --verdict must be PASS or FAIL")
+            return False
+        if not path.exists():
+            print(f"  ❌ {path.relative_to(STUDIO_ROOT)} missing — run ./studio qa {project} {ticket_id} first")
+            return False
+        text = path.read_text(encoding="utf-8")
+        from qa_review import implementer_id, reviewer_identity_issues
+
+        issues = verdict_file_issues(text, verdict)
+        issues += reviewer_identity_issues(text, implementer_id(load_execution_log(project, sprint), ticket_id))
+        if issues:
+            print("  ❌ The verdict file does not back this verdict:")
+            for line in issues:
+                print(f"     • {line}")
+            return False
+        if verdict == "PASS":
+            append_execution_event(project, sprint, "qa-pass", ticket_id)
+            print(f"  ✅ QA PASS recorded. Next: ./studio execute {project}")
+            return True
+        findings = findings_for_debug(text)
+        first = re.search(r"Issue\s*:\s*([^\n]+)", findings)
+        self._record_failure(
+            project, sprint, ticket_id, "qa-fail",
+            f"qa fail: {first.group(1).strip()[:80]}" if first else "qa fail",
+            symptom="QA reviewer FAIL", findings=findings,
+        )
+        return True
     
     # -------------------------------------------------------------------------
     # PHASE 6: LEARNING
@@ -3182,7 +3767,7 @@ class StudioOrchestrator:
             print(f"\n  ⚠️  Portability: {len(hq_hits)} HQ markdown hit(s) with project folder names:")
             for h in hq_hits[:10]:
                 print(f"    • {h['path']}:{h['line']} ({h['noun']}) {h['snippet'][:70]}")
-            print("    Confine project names to provenance/`source:` lines, or replace with <project>.")
+            print("    Replace product names and ticket IDs with <project> / <ticket>; HQ has no provenance exception.")
         print("\n  Infusion targets:")
         print("    knowledge-base/learnings/<domain>/ · process/ · teams/*/skills/ · playbooks · studio-library/")
         print("\n  Product: ./studio execute <project>  → IMPLEMENT")
@@ -3198,7 +3783,19 @@ class StudioOrchestrator:
     
     def cmd_update_skills(self, extra_args=None):
         """Subscribe/update the external skill dependencies (agent-as-a-dependency)."""
-        
+        if extra_args and extra_args[0] == "payload":
+            from payload_foundation import refresh_payload_skills
+
+            print_header("PAYLOAD SKILL")
+            ok, detail = refresh_payload_skills()
+            if ok:
+                print("\n  Refreshed from https://github.com/payloadcms/skills")
+                print("  teams/02-backend-systems/skills/payload/")
+                print("  teams/02-backend-systems/skills/cms-migration/")
+                return True
+            print(f"\n  ❌ Payload skill refresh failed: {detail}")
+            return False
+
         print_header("EXTERNAL SKILLS UPDATE")
         print(f"\n  Loading external skill dependencies from skill-dependencies.json...")
         
@@ -3546,7 +4143,18 @@ What does this decision mean for the project?
         if inject:
             print(inject_summary(project, names, env_file))
 
-        cmd = compose_argv(project, docker_dir, compose_file, env_file, compose_args)
+        from payload_foundation import compose_extras
+
+        extra_files, profiles = compose_extras(project, getattr(self, "_env_profiles", ()))
+        cmd = compose_argv(
+            project,
+            docker_dir,
+            compose_file,
+            env_file,
+            compose_args,
+            extra_files=extra_files,
+            profiles=profiles,
+        )
         print(f"  → {public_command_line(cmd)}")
         try:
             result = subprocess.run(
@@ -3570,16 +4178,26 @@ What does this decision mean for the project?
             print("  Install Docker Desktop: https://docs.docker.com/get-docker/")
             return False
 
-    def cmd_env(self, project: str, action: str, approve: bool = False):
+    def cmd_env(self, project: str, action: str, approve: bool = False, profiles: list | None = None):
         """Manage the Docker environment (runs docker compose -p <project>)."""
-        
+        self._env_profiles = list(profiles or [])
         docker_dir = self._docker_dir(project)
         
         print_header(f"DOCKER ENV: {project}")
 
-        if action in INJECT_ACTIONS and not approve:
-            print(refuse_without_approve(project, action))
-            return False
+        if action == "prod":
+            from studio_ops import ensure_prod_env_file, explain_prod_env
+
+            root = PROJECTS_DIR / project
+            ensure_prod_env_file(project, root)
+            print()
+            print(explain_prod_env(project, root))
+            return True
+
+        if action in INJECT_ACTIONS:
+            from studio_env import inform_local_inject
+
+            print(inform_local_inject(project, action))
         
         if action == "init":
             docker_dir.mkdir(parents=True, exist_ok=True)
@@ -3592,9 +4210,12 @@ What does this decision mean for the project?
             
             for f in template_dir.iterdir():
                 if f.is_file():
+                    target = docker_dir / f.name
+                    if target.exists():
+                        continue
                     content = f.read_text()
                     content = content.replace("{{PROJECT_NAME}}", project)
-                    (docker_dir / f.name).write_text(content)
+                    target.write_text(content)
             
             print(f"\n  Docker environment initialized: {docker_dir}")
             print(f"  Base template: {template_dir}")
@@ -3605,26 +4226,31 @@ What does this decision mean for the project?
             print(f"    ./studio env {project} up --approve")
         
         elif action == "up":
-            print(f"\n  Starting backing services (Postgres, Redis, …) as project **{project}**…")
+            print(f"\n  Starting the local stack for **{project}** (Postgres, and the Payload app when it exists)…")
             if not self._run_docker_compose(project, "up", "-d", inject=True):
                 return False
             print(f"\n  Status:")
             self._run_docker_compose(project, "ps")
-            print(f"\n  Next: ./studio env {project} migrate --approve  (or product boot — LO-0316)")
+            print(f"\n  Next: ./studio env {project} migrate --approve")
             return True
 
         elif action == "migrate":
-            print(f"\n  Injecting named variables, then bringing Compose up for **{project}** migrate…")
+            print(f"\n  Bringing Compose up, then running payload migrate for **{project}**…")
             if not self._run_docker_compose(project, "up", "-d", inject=True):
                 return False
-            print("  Compose has the named variables. Product migrate commands are LO-0316.")
-            return True
+            override = docker_dir / "payload-app.compose.yml"
+            if not override.exists():
+                print("  No Payload app yet. Sign gate 1 with `Payload: in`, then ./studio execute.")
+                return True
+            return self._run_docker_compose(
+                project, "exec", "-T", "app", "npm", "run", "migrate"
+            )
 
         elif action == "dev":
-            print(f"\n  Injecting named variables for **{project}** dev boot…")
+            print(f"\n  Starting the same local stack as up for **{project}**…")
             if not self._run_docker_compose(project, "up", "-d", inject=True):
                 return False
-            print("  Compose has the named variables. Product server boot is LO-0316.")
+            print("  App container runs next dev. Open the published APP_HOST_PORT.")
             return True
         
         elif action == "down":
@@ -3657,7 +4283,7 @@ What does this decision mean for the project?
         if action == "link":
             if not url.strip():
                 print(f"\n  Usage: ./studio repo {project} link <git-url>")
-                print(f"  Example: ./studio repo {project} link https://github.com/kallekormann/nudge.git")
+                print(f"  Example: ./studio repo {project} link https://github.com/<owner>/{project}.git")
                 return False
 
             git_dir = project_dir / ".git"
@@ -3733,9 +4359,8 @@ What does this decision mean for the project?
         asset_entry = {
             "name": asset_name,
             "kind": "component" if "components" in asset_path else "package" if "packages" in asset_path else "page-type" if "page-types" in asset_path else "other",
-            "source_project": project,
             "promoted": datetime.now().strftime("%Y-%m-%d"),
-            "title": f"{asset_name} (promoted from {project})"
+            "title": asset_name,
         }
         
         existing = [a for a in manifest["assets"] if a["name"] == asset_name]
@@ -3782,11 +4407,16 @@ Commands:
   ./studio train --done TR-NNNN                  Mark train job infused
   ./studio train --purge-empty                 Close open jobs with blank observation
   ./studio approve-design <p> <TICKET>         After spec + all-state mocks exist
+  ./studio mock <p> <TICKET>                   verify interactive mock + print review script
   ./studio ia-audit <p> <TICKET>               IA nav counts (≤7 top, depth ≤3)
   ./studio approve-arch <p> <TICKET>           After docs/architecture/<TICKET>.md exists
   ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio ticket-card <project> <id>            Compact ticket card
   ./studio receipt <project> <id>                Scaffold execution receipt
+  ./studio qa <project> <id> [--verdict PASS|FAIL]  Independent QA review before done
+  ./studio qa <project> <id> --finish [PASS|HOLD]  UX-009: shipped screen vs signed mock
+  ./studio lint-skills [--strict]                  Skill lists in sync (matcher, roles, files, registry)
+  ./studio reality-check <project> [--check]      Dev-build journey check before cadence review
   ./studio health <project>                      Sprint state-graph check
   ./studio focus <project>                       Set active project + isolate siblings
   ./studio isolate <project>                     Hide sibling projects/ from the agent
@@ -3795,7 +4425,7 @@ Commands:
   ./studio verify-abstraction                    Scan studio HQ for project-name leaks
   ./studio install [--with-skills]               npm deps after git clone (+ optional skills)
   ./studio library list                           List studio-library assets
-  ./studio library pull <project> auth billing    Copy library → project
+  ./studio library pull <project> billing auth-login    Copy library → project
   ./studio library promote <project> packages/billing [--force]
   ./studio library suggest <project> <query>      Find assets before coding
   ./studio promote-library <project> [--force]    Optional Headless/generic kit (not product look)
@@ -3827,7 +4457,7 @@ Commands:
   ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
   ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
-  ./studio clarify <project> FB-001 [--approve]  Clarify feedback → executable draft
+  ./studio clarify <project> FB-001 [--severity blocker|major|minor|polish] [--verbatim "..."] [--approve]  Clarify feedback → executable draft
   ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
@@ -3838,6 +4468,8 @@ Commands:
   ./studio amendments <project>                  List amendments + status
   ./studio approve <project> --amendment AM-001  Human sign-off on amendment
   ./studio approve <project> --milestones        Approve revised milestone roadmap
+  ./studio whoami                                 Print this context's id (QUINSY_CONTEXT_ID) for QA reviewer lines
+  ./studio milestone <project> [plan [--next] | review | --approve [--notes "..."]]  PM milestone ownership (plan tickets, review state, HITL sign)
   ./studio approve <project> --prd-amendment AM-001  PRD tier change (class C)
 
   # Phase 4-5: QA
@@ -3861,6 +4493,8 @@ Commands:
   ./studio decide <project> "Title"              Create decision record
   ./studio decisions <project>                   Show decision records
   ./studio env <project> init|up|down|status [--approve] (base template)
+  ./studio env <project> prod --explain           Production names (.env.local) and what each is for
+  ./studio ops <project> readiness|deploy|logs|status|migrate --prod|db|cleanup [--approve]
   ./studio repo <project> create|status          GitHub repo
   ./studio promote <project> <asset>             Promote asset to library
 
@@ -3870,19 +4504,19 @@ Dual-Speed Operating Model:
 
 Examples:
   ./studio bootstrap                              List intake PRDs + projects
-  ./studio bootstrap nudge
-  ./studio approve nudge --gate 0
-  ./studio blueprint nudge
-  ./studio approve nudge --gate 1
-  ./studio design nudge --scope journey
-  ./studio approve nudge --gate 2a
-  ./studio approve nudge --gate 2b
-  ./studio sprint nudge
-  ./studio ticket nudge "Button Component" --phase 3 --priority P1
-  ./studio move nudge NUDG-0001 implement --reason "Implementation started"
-  ./studio gate nudge --level 5
+  ./studio bootstrap demo
+  ./studio approve demo --gate 0
+  ./studio blueprint demo
+  ./studio approve demo --gate 1
+  ./studio design demo --scope journey
+  ./studio approve demo --gate 2a
+  ./studio approve demo --gate 2b
+  ./studio sprint demo
+  ./studio ticket demo "Button Component" --phase 3 --priority P1
+  ./studio move demo DEMO-0001 implement --reason "Implementation started"
+  ./studio gate demo --level 5
   ./studio learn "Gate check takes too long" --signal tooling-gap
-  ./studio sync nudge
+  ./studio sync demo
 """)
 
 
@@ -4081,6 +4715,29 @@ def main():
     elif command == "receipt" and len(args) >= 2:
         orchestrator.cmd_receipt(args[0], args[1])
 
+    elif command == "reality-check" and len(args) >= 1:
+        ok = orchestrator.cmd_reality_check(args[0], check="--check" in args)
+        sys.exit(0 if ok else 1)
+
+    elif command == "qa" and len(args) >= 2:
+        verdict = ""
+        if "--finish" in args:
+            idx = args.index("--finish")
+            nxt = args[idx + 1] if idx + 1 < len(args) else ""
+            decision = nxt.upper() if nxt and not nxt.startswith("--") else "BRIEF"
+            ok = orchestrator.cmd_qa_finish(args[0], args[1], decision)
+            sys.exit(0 if ok else 1)
+        if "--verdict" in args:
+            idx = args.index("--verdict")
+            verdict = args[idx + 1] if idx + 1 < len(args) else "?"
+        ok = orchestrator.cmd_qa(args[0], args[1], verdict)
+        sys.exit(0 if ok else 1)
+
+    elif command == "lint-skills":
+        from lint_skills import main as lint_skills_main
+
+        sys.exit(lint_skills_main(args))
+
     elif command == "health" and len(args) >= 1:
         orchestrator.cmd_health(args[0])
 
@@ -4202,6 +4859,36 @@ def main():
         else:
             print("  ⚠️  Use --gate 0|1|2a|2b, --amendment AM-NNN, --prd-amendment AM-NNN, or --milestones")
     
+    elif command == "ops" and len(args) >= 2:
+        from studio_ops import run_op
+
+        project = args[0]
+        action = args[1]
+        flags = [a for a in args[2:] if a.startswith("--") and a not in ("--approve", "--dry-run")]
+        print_header(f"OPS: {project} {action}")
+        ok, text = run_op(project, PROJECTS_DIR / project, action, flags, approve="--approve" in args, dry_run="--dry-run" in args)
+        print(text)
+        if not ok:
+            sys.exit(2)
+
+    elif command == "whoami":
+        from qa_review import context_id
+
+        print(context_id())
+
+    elif command == "milestone" and len(args) >= 1:
+        action = ""
+        notes = ""
+        next_ = "--next" in args
+        for i, arg in enumerate(args[1:], start=1):
+            if arg in ("plan", "review"):
+                action = arg
+            elif arg == "--approve":
+                action = "approve"
+            elif arg == "--notes" and i + 1 < len(args):
+                notes = args[i + 1]
+        orchestrator.cmd_milestone(args[0], action=action, notes=notes, next_=next_)
+
     elif command == "amend" and len(args) >= 2:
         force = "--force" in args
         orchestrator.cmd_amend(args[0], args[1], force=force)
@@ -4236,7 +4923,7 @@ def main():
                 notes = args[i + 1]
             elif arg == "--reason" and i + 1 < len(args):
                 reason = args[i + 1]
-        orchestrator.cmd_review(project, approve=approve, reject=reject, notes=notes, reason=reason)
+        orchestrator.cmd_review(project, approve=approve, reject=reject, notes=notes, reason=reason, inform="--inform" in args)
 
     elif command == "reuse" and len(args) >= 1:
         project = args[0]
@@ -4279,10 +4966,13 @@ def main():
         text = args[1]
         source = "sprint-review"
         force = "--force" in args
+        design_reason = ""
         for i, arg in enumerate(args):
             if arg == "--source" and i + 1 < len(args):
                 source = args[i + 1]
-        orchestrator.cmd_feedback(project, text, source=source, force=force)
+            if arg == "--design-reason" and i + 1 < len(args):
+                design_reason = args[i + 1]
+        orchestrator.cmd_feedback(project, text, source=source, force=force, design_reason=design_reason)
 
     elif command == "feedback-list" and len(args) >= 1:
         orchestrator.cmd_feedback_list(args[0])
@@ -4294,6 +4984,9 @@ def main():
         scope = ""
         out_of_scope = ""
         acceptance: List[str] = []
+        severity = ""
+        verbatim: List[str] = []
+        design_reason = ""
         approve = "--approve" in args
         i = 2
         while i < len(args):
@@ -4310,11 +5003,21 @@ def main():
             elif arg == "--acceptance" and i + 1 < len(args):
                 acceptance.append(args[i + 1])
                 i += 2
+            elif arg == "--severity" and i + 1 < len(args):
+                severity = args[i + 1]
+                i += 2
+            elif arg == "--verbatim" and i + 1 < len(args):
+                verbatim.append(args[i + 1])
+                i += 2
+            elif arg == "--design-reason" and i + 1 < len(args):
+                design_reason = args[i + 1]
+                i += 2
             else:
                 i += 1
         orchestrator.cmd_clarify(
             project, fb_id, title=title, scope=scope,
             out_of_scope=out_of_scope, acceptance=acceptance, approve=approve,
+            severity=severity, verbatim=verbatim, design_reason=design_reason,
         )
     
     elif command == "ticket" and len(args) >= 2:
@@ -4352,10 +5055,23 @@ def main():
         else:
             ticket_id = args[1]
             notes = ""
+            reason = ""
             for i, arg in enumerate(args):
                 if arg == "--notes" and i + 1 < len(args):
                     notes = args[i + 1]
-            orchestrator.cmd_approve_design(project, ticket_id, notes=notes)
+                if arg == "--reason" and i + 1 < len(args):
+                    reason = args[i + 1]
+            if "--reject" in args:
+                ok = orchestrator.cmd_reject_design(project, ticket_id, reason, notes=notes)
+                if not ok:
+                    sys.exit(2)
+            else:
+                orchestrator.cmd_approve_design(project, ticket_id, notes=notes)
+
+    elif command == "mock" and len(args) >= 2:
+        ok = orchestrator.cmd_mock(args[0], args[1])
+        if ok is False:
+            sys.exit(2)
 
     elif command == "ia-audit" and len(args) >= 2:
         ok = orchestrator.cmd_ia_audit(args[0], args[1])
@@ -4454,11 +5170,21 @@ def main():
     
     elif command == "env" and len(args) >= 2:
         approve = "--approve" in args
-        positional = [a for a in args if a != "--approve" and not a.startswith("--")]
+        profiles = []
+        skip = set()
+        for i, arg in enumerate(args):
+            if arg == "--profile" and i + 1 < len(args):
+                profiles.append(args[i + 1])
+                skip.add(i + 1)
+        positional = [
+            a
+            for i, a in enumerate(args)
+            if i not in skip and a != "--approve" and not a.startswith("--")
+        ]
         if len(positional) < 2:
-            print("  Usage: ./studio env <project> init|up|down|status|logs|migrate|dev [--approve]")
+            print("  Usage: ./studio env <project> init|up|down|status|logs|migrate|dev [--approve] [--profile name]")
             sys.exit(2)
-        ok = orchestrator.cmd_env(positional[0], positional[1], approve=approve)
+        ok = orchestrator.cmd_env(positional[0], positional[1], approve=approve, profiles=profiles)
         if ok is False:
             sys.exit(2)
     

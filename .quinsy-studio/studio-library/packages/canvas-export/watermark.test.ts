@@ -36,11 +36,11 @@ describe('watermark', () => {
     };
 
     drawWatermarkOnCanvas(ctx as Parameters<typeof drawWatermarkOnCanvas>[0], 800, 600, {
-      text: 'Moody',
+      text: 'Acme',
     });
 
     expect(calls.some((call) => call.method === 'fillText')).toBe(true);
     const fillText = calls.find((call) => call.method === 'fillText');
-    expect(fillText?.args[0]).toBe('Moody');
+    expect(fillText?.args[0]).toBe('Acme');
   });
 });

@@ -1,7 +1,7 @@
 /**
  * Studio Library — themable shadcn-style component.
  * Remap CSS variables in ui/tokens/design-tokens.css ( --primary, --background, … ).
- * Adapted from Command Center / shadcn; no product brand.
+ * Adapted from shadcn; no product brand.
  */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -23,6 +23,8 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        quiet:
+          "border-transparent bg-transparent font-normal text-muted-foreground hover:bg-transparent hover:text-ink aria-pressed:font-medium aria-pressed:text-ink",
       },
       size: {
         default:

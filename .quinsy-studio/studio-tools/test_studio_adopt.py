@@ -158,7 +158,8 @@ class AdoptExecuteTests(unittest.TestCase):
         self.assertEqual(step.kind, "HITL")
         self.assertIn("as-built", step.reason)
 
-    def test_sprint_review_beats_open_lo_on_adopt(self):
+    @patch("studio_execute._reality_step", return_value=None)
+    def test_sprint_review_beats_open_lo_on_adopt(self, _reality):
         step = decide_from_state(
             "demo",
             {
@@ -180,8 +181,8 @@ class AdoptExecuteTests(unittest.TestCase):
             as_built_ready=True,
             prd_exists=True,
         )
-        self.assertEqual(step.kind, "HITL")
-        self.assertIn("sprint-review", step.reason)
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertIn("cadence review brief", step.reason)
 
 
 class AdoptGate2Tests(unittest.TestCase):

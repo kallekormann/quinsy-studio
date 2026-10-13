@@ -40,7 +40,7 @@ Configuration:
 ### 2. Uptime Monitoring
 
 ```markdown
-Tools: UptimeRobot / BetterStack / Vercel Analytics
+Tools: UptimeRobot / BetterStack / Coolify metrics
 
 What to monitor:
   - HTTP endpoints (every 5 min)
@@ -65,7 +65,7 @@ Metrics:
   - Memory/CPU usage
 
 Tools:
-  - Vercel Analytics (frontend)
+  - Coolify metrics (frontend and app)
   - Sentry Performance (backend)
   - Custom metrics (if needed)
 ```
@@ -83,7 +83,7 @@ Structured logging:
 }
 
 Log aggregation:
-  - Vercel Logs
+  - Coolify container logs
   - Sentry Logs
   - stdout for Docker
 ```

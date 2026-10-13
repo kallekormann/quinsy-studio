@@ -1,4 +1,4 @@
-/** Shared spark burst — extension overlay + web Analyze (MOOD-0332 / MOOD-0337). */
+/** Shared spark burst for success moments (overlay or page). */
 
 export const CELEBRATION_SPARK_COLORS = [
   '#8b5cf6',
@@ -25,7 +25,7 @@ export type BurstSparksOptions = {
   liftPx?: number;
 };
 
-const STYLE_ATTR = 'data-moody-celebration-style';
+const STYLE_ATTR = 'data-celebration-style';
 
 function ensureDocumentStyles(doc: Document, durationMs: number): void {
   let style = doc.querySelector(`style[${STYLE_ATTR}]`) as HTMLStyleElement | null;
@@ -35,15 +35,15 @@ function ensureDocumentStyles(doc: Document, durationMs: number): void {
     doc.head.appendChild(style);
   }
   style.textContent = `
-    @keyframes moody-spark {
+    @keyframes celebration-spark {
       0% { opacity: 1; transform: translate(0, 0) scale(1); }
       100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2); }
     }
-    @keyframes moody-celebrate-ring {
+    @keyframes celebration-ring {
       0% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.4); }
       100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
     }
-    .moody-spark {
+    .celebration-spark {
       position: fixed;
       width: 5px;
       height: 5px;
@@ -54,10 +54,10 @@ function ensureDocumentStyles(doc: Document, durationMs: number): void {
       will-change: transform, opacity;
       box-shadow: 0 0 6px rgba(139, 92, 246, 0.45);
     }
-    .moody-spark.go {
-      animation: moody-spark ${durationMs}ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    .celebration-spark.go {
+      animation: celebration-spark ${durationMs}ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
     }
-    .moody-celebrate-ring {
+    .celebration-ring {
       position: fixed;
       width: 96px;
       height: 96px;
@@ -68,12 +68,12 @@ function ensureDocumentStyles(doc: Document, durationMs: number): void {
       z-index: 99998;
       left: 0;
       top: 0;
-      animation: moody-celebrate-ring 1100ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: celebration-ring 1100ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
   `;
 }
 
-/** Radial spark burst at (cx, cy). Matches extension capture celebration feel. */
+/** Radial spark burst at (cx, cy). */
 export function burstSparks(options: BurstSparksOptions): void {
   const {
     host,
@@ -81,7 +81,7 @@ export function burstSparks(options: BurstSparksOptions): void {
     cy,
     count = 8,
     injectStyles = false,
-    className = 'moody-spark',
+    className = 'celebration-spark',
     sizePx = 5,
     durationMs = 640,
     distMin = 18,
@@ -113,7 +113,7 @@ export function burstSparks(options: BurstSparksOptions): void {
 }
 
 export type CelebrationBurstOptions = {
-  /** Louder Analyze success (MOOD-0337). */
+  /** Louder burst for a primary success. */
   intensity?: 'default' | 'loud';
   /** Draw a expanding ring behind sparks. */
   ring?: boolean;
@@ -134,7 +134,7 @@ export function celebrationBurst(
 
   ensureDocumentStyles(document, loud ? 1400 : 640);
 
-  // MOOD-0351: sparks only — no expanding ring (reads as a broken border).
+  // Sparks only — no expanding ring (reads as a broken border).
   burstSparks({
     host: document.body,
     cx,

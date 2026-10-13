@@ -1,0 +1,26 @@
+Oops! Something went wrong.
+Whoops, that didn't work.
+Uh-oh! We hit a snag.
+Yikes! Looks like you're offline.
+Woohoo! Your invoice is out the door.
+Yay, all done!
+Hooray! You did it!
+Hang tight while we work our magic.
+Sit tight, we're crunching the numbers.
+Sprinkling some magic on your data.
+Magic happens here.
+Grab a coffee while we set things up.
+High five! You crushed it.
+Nailed it!
+Invoice sent 🎉
+Something went wrong.
+An unexpected error occurred.
+An error has occurred. Please try again later.
+Error 500
+We're sorry, but we couldn't save your changes.
+You entered an invalid email address.
+Invalid input
+Ups! Da ist etwas schiefgelaufen.
+Hoppla, das hat nicht geklappt.
+Ein Fehler ist aufgetreten.
+Ein unerwarteter Fehler ist aufgetreten.

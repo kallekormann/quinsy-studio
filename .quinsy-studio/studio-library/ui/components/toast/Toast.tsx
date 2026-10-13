@@ -84,7 +84,7 @@ export function Toast({ tone = 'info', children, actions, className = '' }: Toas
 }
 
 /**
- * Fixed viewport host — bottom-center, generous bottom inset (MOOD-0413).
+ * Fixed viewport host — bottom-center, generous bottom inset.
  * pointer-events none on the host; toast surface re-enables interaction.
  */
 export function ToastViewport({

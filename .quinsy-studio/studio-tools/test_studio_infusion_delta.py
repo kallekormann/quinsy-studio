@@ -55,15 +55,22 @@ class InfusionDeltaTests(unittest.TestCase):
         self.assertIn("acme-app", str(ctx.exception))
         self.assertNotIn("Fix the acme-app", self.play.read_text(encoding="utf-8"))
 
-    def test_add_allows_provenance_source_line(self):
+    def test_add_refuses_provenance_source_line(self):
         with patch("studio_portability.list_project_names", return_value=["acme-app"]):
-            result = delta.apply_delta(
-                str(self.play),
-                "add",
-                body="Prefer library buttons. source: acme-app",
-            )
+            with self.assertRaises(ValueError):
+                delta.apply_delta(
+                    str(self.play),
+                    "add",
+                    body="Prefer library buttons. source: acme-app",
+                )
+            result = delta.apply_delta(str(self.play), "add", body="Prefer library buttons.")
         self.assertEqual(result["op"], "add")
         self.assertIn("Prefer library buttons", self.play.read_text(encoding="utf-8"))
+
+    def test_add_refuses_product_ticket_id(self):
+        with patch("studio_portability.list_project_names", return_value=["acme-app"]):
+            with self.assertRaises(ValueError):
+                delta.apply_delta(str(self.play), "add", body="Prefer library buttons (ACME-0413).")
 
 
 if __name__ == "__main__":

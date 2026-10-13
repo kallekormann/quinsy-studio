@@ -5,7 +5,6 @@
       "kind": "ui-token",
       "path": "ui/tokens/",
       "version": "2.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "Tailwind-default design tokens (JSON + CSS + preset)"
     },
@@ -14,7 +13,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/dialog/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "dialog (shadcn themable)",
       "peer_dependencies": [
@@ -26,7 +24,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/menu/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI Menu primitive",
       "peer_dependencies": [
@@ -34,11 +31,18 @@
       ]
     },
     {
+      "name": "mock-scenario-panel",
+      "kind": "ui-atom",
+      "path": "ui/components/mock-scenario-panel/",
+      "version": "1.0.0",
+      "title": "mock-scenario-panel (design-mock state harness, dev-only)",
+      "promoted": "2026-10-13"
+    },
+    {
       "name": "popover",
       "kind": "ui-molecule",
       "path": "ui/components/popover/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "popover (shadcn themable)",
       "peer_dependencies": [
@@ -50,7 +54,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/listbox/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI Listbox primitive",
       "peer_dependencies": [
@@ -62,7 +65,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/combobox/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "combobox (shadcn themable)",
       "peer_dependencies": [
@@ -74,7 +76,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/disclosure/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI Disclosure primitive",
       "peer_dependencies": [
@@ -86,7 +87,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/tabs/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "tabs (shadcn themable)",
       "peer_dependencies": [
@@ -98,7 +98,6 @@
       "kind": "ui-atom",
       "path": "ui/components/button/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "button (shadcn themable)"
     },
@@ -107,7 +106,6 @@
       "kind": "ui-atom",
       "path": "ui/components/input/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "input (shadcn themable)"
     },
@@ -116,7 +114,6 @@
       "kind": "ui-atom",
       "path": "ui/components/badge/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "badge (shadcn themable)"
     },
@@ -125,7 +122,6 @@
       "kind": "ui-atom",
       "path": "ui/components/icon/",
       "version": "2.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "Generic SVG icons"
     },
@@ -134,7 +130,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/inline-form/",
       "version": "2.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "InlineForm (input + button row)"
     },
@@ -143,7 +138,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/dialog-shell/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-26",
       "title": "DialogShell (header / body / footer)",
       "peer_dependencies": [
@@ -155,7 +149,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/dropdown/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-26",
       "title": "Dropdown (Listbox select — not native OS)",
       "peer_dependencies": [
@@ -167,7 +160,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/checklist-item/",
       "version": "2.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "ChecklistItem (toggle row)"
     },
@@ -176,7 +168,6 @@
       "kind": "ui-organism",
       "path": "ui/components/pageshell/",
       "version": "2.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "PageShell (header + content)"
     },
@@ -185,7 +176,6 @@
       "kind": "sticker-sheet",
       "path": "ui/sticker-sheet/",
       "version": "2.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "Studio library sticker sheet"
     },
@@ -194,7 +184,6 @@
       "kind": "ui-page-type",
       "path": "ui/page-types/comparison/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-19",
       "title": "Comparison / alternatives page type"
     },
@@ -203,28 +192,25 @@
       "kind": "package-auth",
       "path": "packages/auth/",
       "version": "2.0.2",
-      "source_project": "moody",
       "promoted": "2026-08-28",
       "promoted_at": "2026-08-28T07:56:50.404993",
-      "title": "auth (promoted from moody)",
-      "ticket_id": "MOOD-0321"
+      "title": "Do not pull. New projects sign in with the Payload Users collection.",
+      "stub": true
     },
     {
       "name": "billing",
       "kind": "package-billing",
       "path": "packages/billing/",
       "version": "1.0.1",
-      "source_project": "studio",
       "promoted": "2026-08-20",
-      "title": "Billing provider stubs (not pullable — build in-project, then promote)",
-      "stub": true
+      "title": "Stripe and Lemon Squeezy checkout (env names only)",
+      "stub": false
     },
     {
       "name": "feature-gating",
       "kind": "package-feature-gating",
       "path": "packages/feature-gating/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-19",
       "title": "Feature gating stub (not pullable — build in-project, then promote)",
       "stub": true
@@ -234,7 +220,6 @@
       "kind": "package-color-extraction",
       "path": "packages/color-extraction/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "Dominant-color palette extraction (browser + test)"
     },
@@ -243,7 +228,6 @@
       "kind": "package-qa-smoke",
       "path": "packages/qa-smoke/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "Playwright smoke-routes runner + JSON template"
     },
@@ -252,7 +236,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/palette-strip/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-20",
       "title": "Horizontal color swatch strip"
     },
@@ -261,7 +244,6 @@
       "kind": "package-item-tags",
       "path": "packages/item-tags/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-20",
       "title": "contentJson tag parse/normalize helpers"
     },
@@ -270,7 +252,6 @@
       "kind": "package-item-search",
       "path": "packages/item-search/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-20",
       "title": "Canvas item metadata search (CMD-K)"
     },
@@ -279,18 +260,15 @@
       "kind": "package-canvas-export",
       "path": "packages/canvas-export/",
       "version": "1.0.3",
-      "source_project": "moody",
       "promoted": "2026-08-28",
       "promoted_at": "2026-08-28T20:16:02.670163",
-      "title": "canvas-export (promoted from moody)",
-      "ticket_id": "MOOD-0357"
+      "title": "canvas-export"
     },
     {
       "name": "search-command",
       "kind": "ui-molecule",
       "path": "ui/components/search-command/",
       "version": "2.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-20",
       "title": "CMD-K search (Dialog + Combobox)"
     },
@@ -299,7 +277,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/auth-login/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-21",
       "title": "Sign-in / sign-up / magic-link form (Supabase)"
     },
@@ -308,7 +285,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/item-inspector/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-20",
       "title": "Selected item metadata / tags panel"
     },
@@ -317,7 +293,6 @@
       "kind": "package-rate-limit",
       "path": "packages/rate-limit/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-22",
       "title": "In-memory failure rate limiter + clientIp helper"
     },
@@ -326,7 +301,6 @@
       "kind": "package-slug",
       "path": "packages/slug/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-22",
       "title": "URL-safe slug helpers"
     },
@@ -335,7 +309,6 @@
       "kind": "package-password-gate",
       "path": "packages/password-gate/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-22",
       "title": "bcrypt password hash + verify cookie helpers"
     },
@@ -344,7 +317,6 @@
       "kind": "package-rect-selection",
       "path": "packages/rect-selection/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-22",
       "title": "Marquee selection geometry for canvas"
     },
@@ -353,7 +325,6 @@
       "kind": "package-viewport-fit",
       "path": "packages/viewport-fit/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-22",
       "title": "Zoom-to-fit viewport math"
     },
@@ -362,18 +333,15 @@
       "kind": "package",
       "path": "packages/write-side-revalidate/",
       "version": "1.0.1",
-      "source_project": "affiliate-platform",
       "promoted": "2026-09-16",
       "promoted_at": "2026-09-16T19:57:14.692302",
-      "title": "write-side-revalidate (promoted from affiliate-platform)",
-      "ticket_id": "AFFI-0304"
+      "title": "write-side-revalidate"
     },
     {
       "name": "checkbox",
       "kind": "ui-atom",
       "path": "ui/components/checkbox/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "checkbox (shadcn themable)",
       "peer_dependencies": [
@@ -385,7 +353,6 @@
       "kind": "ui-atom",
       "path": "ui/components/switch/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "switch (shadcn themable)",
       "peer_dependencies": [
@@ -397,7 +364,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/radio-group/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "radio-group (shadcn themable)",
       "peer_dependencies": [
@@ -409,7 +375,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/field/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "field (shadcn themable)",
       "peer_dependencies": [
@@ -421,7 +386,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/transition/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI transition",
       "peer_dependencies": [
@@ -433,7 +397,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/close-button/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI close-button",
       "peer_dependencies": [
@@ -445,7 +408,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/card/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "card (shadcn themable)"
     },
@@ -454,7 +416,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/dropdown-menu/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "dropdown-menu (shadcn themable)"
     },
@@ -463,7 +424,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/segmented-toggle/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-26",
       "title": "SegmentedToggle — labeled A|B exclusive choices",
       "peer_dependencies": [
@@ -475,7 +435,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/tooltip/",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-31",
       "title": "tooltip (shadcn themable)"
     },
@@ -484,17 +443,9 @@
       "kind": "package",
       "path": "packages/celebration/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-08-28",
       "promoted_at": "2026-08-28T15:35:17.869423",
-      "title": "celebration (promoted from moody)",
-      "ticket_id": "MOOD-0351"
-    },
-    {
-      "name": "emotion-strip",
-      "kind": "ui-molecule",
-      "path": "ui/components/emotion-strip/",
-      "version": "0.1.0"
+      "title": "celebration"
     },
     {
       "name": "soft-card",
@@ -513,7 +464,6 @@
       "kind": "ui-atom",
       "path": "ui/components/separator/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "separator (shadcn themable)"
     },
     {
@@ -521,7 +471,6 @@
       "kind": "ui-atom",
       "path": "ui/components/progress/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "progress (shadcn themable)"
     },
     {
@@ -529,19 +478,7 @@
       "kind": "ui-molecule",
       "path": "ui/components/usage-meter/",
       "version": "0.1.0",
-      "source_project": "studio",
       "title": "usage meter"
-    },
-    {
-      "name": "capture-types",
-      "kind": "package",
-      "path": "packages/capture-types/",
-      "version": "1.0.0",
-      "source_project": "moody",
-      "promoted": "2026-08-31",
-      "promoted_at": "2026-08-31T12:18:33.846982",
-      "title": "capture-types (promoted from moody)",
-      "ticket_id": "MOOD-0424"
     },
     {
       "name": "studio-rail",
@@ -554,18 +491,15 @@
       "kind": "package",
       "path": "packages/design-md-repo/",
       "version": "1.0.0",
-      "source_project": "moody",
       "promoted": "2026-09-01",
       "promoted_at": "2026-09-01T16:04:21.031094",
-      "title": "design-md-repo (promoted from moody)",
-      "ticket_id": "MOOD-0256"
+      "title": "design-md-repo"
     },
     {
       "name": "accordion",
       "kind": "ui-molecule",
       "path": "ui/components/accordion/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "accordion (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -574,7 +508,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/alert-dialog/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "alert-dialog (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -583,7 +516,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/alert/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "alert (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -592,7 +524,6 @@
       "kind": "ui-atom",
       "path": "ui/components/aspect-ratio/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "aspect-ratio (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -601,7 +532,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/attachment/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "attachment (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -610,7 +540,6 @@
       "kind": "ui-atom",
       "path": "ui/components/avatar/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "avatar (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -619,7 +548,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/breadcrumb/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "breadcrumb (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -628,7 +556,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/bubble/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "bubble (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -637,7 +564,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/button-group/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "button-group (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -646,7 +572,6 @@
       "kind": "ui-organism",
       "path": "ui/components/calendar/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "calendar (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -655,7 +580,6 @@
       "kind": "ui-organism",
       "path": "ui/components/carousel/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "carousel (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -664,7 +588,6 @@
       "kind": "ui-organism",
       "path": "ui/components/chart/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "chart (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -673,7 +596,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/collapsible/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "collapsible (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -682,7 +604,6 @@
       "kind": "ui-organism",
       "path": "ui/components/command/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "command (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -691,7 +612,6 @@
       "kind": "ui-organism",
       "path": "ui/components/context-menu/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "context-menu (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -700,7 +620,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/direction/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "direction (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -709,7 +628,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/drawer/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "drawer (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -718,7 +636,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/empty/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "empty (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -727,7 +644,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/hover-card/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "hover-card (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -736,7 +652,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/input-group/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "input-group (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -745,7 +660,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/input-otp/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "input-otp (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -754,7 +668,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/item/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "item (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -763,7 +676,6 @@
       "kind": "ui-atom",
       "path": "ui/components/kbd/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "kbd (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -772,7 +684,6 @@
       "kind": "ui-atom",
       "path": "ui/components/label/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "label (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -781,7 +692,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/marker/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "marker (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -790,7 +700,6 @@
       "kind": "ui-organism",
       "path": "ui/components/menubar/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "menubar (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -799,7 +708,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/message/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "message (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -808,7 +716,6 @@
       "kind": "ui-atom",
       "path": "ui/components/native-select/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "native-select (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -817,7 +724,6 @@
       "kind": "ui-organism",
       "path": "ui/components/navigation-menu/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "navigation-menu (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -826,7 +732,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/pagination/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "pagination (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -835,7 +740,6 @@
       "kind": "ui-organism",
       "path": "ui/components/resizable/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "resizable (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -844,7 +748,6 @@
       "kind": "ui-organism",
       "path": "ui/components/scroll-area/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "scroll-area (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -853,7 +756,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/select/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "select (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -862,7 +764,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/sheet/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "sheet (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -871,7 +772,6 @@
       "kind": "ui-organism",
       "path": "ui/components/sidebar/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "sidebar (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -880,7 +780,6 @@
       "kind": "ui-atom",
       "path": "ui/components/skeleton/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "skeleton (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -889,7 +788,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/file-preview/",
       "version": "0.1.0",
-      "source_project": "studio",
       "title": "file preview"
     },
     {
@@ -897,7 +795,6 @@
       "kind": "ui-atom",
       "path": "ui/components/slider/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "slider (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -906,7 +803,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/sonner/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "sonner (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -915,7 +811,6 @@
       "kind": "ui-atom",
       "path": "ui/components/spinner/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "spinner (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -924,7 +819,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/split-flap/",
       "version": "0.1.0",
-      "source_project": "studio",
       "title": "split flap"
     },
     {
@@ -932,7 +826,6 @@
       "kind": "ui-organism",
       "path": "ui/components/table/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "table (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -941,7 +834,6 @@
       "kind": "ui-atom",
       "path": "ui/components/textarea/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "textarea (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -950,7 +842,6 @@
       "kind": "ui-molecule",
       "path": "ui/components/toggle-group/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "toggle-group (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -959,7 +850,6 @@
       "kind": "ui-atom",
       "path": "ui/components/toggle/",
       "version": "3.0.0",
-      "source_project": "studio",
       "title": "toggle (shadcn themable)",
       "promoted": "2026-09-12"
     },
@@ -968,7 +858,6 @@
       "kind": "ui-hook",
       "path": "ui/utils/cn.ts",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-09-12",
       "title": "cn class merge (clsx + tailwind-merge)"
     },
@@ -977,7 +866,6 @@
       "kind": "ui-hook",
       "path": "ui/hooks/use-mobile.ts",
       "version": "3.0.0",
-      "source_project": "studio",
       "promoted": "2026-09-12",
       "title": "useIsMobile viewport hook"
     },
@@ -986,7 +874,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/dialog/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI dialog primitive",
       "peer_dependencies": [
@@ -998,7 +885,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/popover/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI popover primitive",
       "peer_dependencies": [
@@ -1010,7 +896,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/combobox/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI combobox primitive",
       "peer_dependencies": [
@@ -1022,7 +907,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/tabs/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI tabs primitive",
       "peer_dependencies": [
@@ -1034,7 +918,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/checkbox/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI checkbox primitive",
       "peer_dependencies": [
@@ -1046,7 +929,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/switch/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI switch primitive",
       "peer_dependencies": [
@@ -1058,7 +940,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/radio-group/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI radio-group primitive",
       "peer_dependencies": [
@@ -1070,7 +951,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/field/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI field primitive",
       "peer_dependencies": [
@@ -1082,7 +962,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/select/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI select primitive",
       "peer_dependencies": [
@@ -1094,7 +973,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/input/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI input primitive",
       "peer_dependencies": [
@@ -1106,7 +984,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/textarea/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI textarea primitive",
       "peer_dependencies": [
@@ -1118,7 +995,6 @@
       "kind": "ui-primitive",
       "path": "ui/primitives/headless/button/",
       "version": "1.0.0",
-      "source_project": "studio",
       "promoted": "2026-08-23",
       "title": "Headless UI button primitive",
       "peer_dependencies": [
@@ -1127,7 +1003,6 @@
     }
   ],
   "last_promotion": {
-    "project": "affiliate-platform",
     "at": "2026-09-16T19:57:14.692305"
   },
   "schema_version": 2

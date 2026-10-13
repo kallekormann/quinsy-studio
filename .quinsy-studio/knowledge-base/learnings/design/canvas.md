@@ -5,5 +5,5 @@ Matching playbook/skill: `knowledge-base/design_playbook.md`.
 
 ## Principles
 
-- **LO-0308** 2026-09-16 :: Konva font cards must paint Bloom light/dark hexes; CSS variables and hardcoded #171717 fail in dark mode
-  - Konva font cards must paint Bloom light/dark hexes; CSS variables and hardcoded #171717 fail in dark mode
+- **LO-0308** 2026-09-16 :: Konva font cards must paint theme light/dark hexes; CSS variables and hardcoded #171717 fail in dark mode
+  - Konva font cards must paint theme light/dark hexes; CSS variables and hardcoded #171717 fail in dark mode

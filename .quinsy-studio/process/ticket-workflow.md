@@ -39,6 +39,8 @@ Move during sprint:
 
 **Rule (LO-0175):** When a ticket is **superseded** or **cancelled**, in the **same turn** either clear `sprint:` (and set `sprint_deferred: true` if it stays in backlog) **or** `./studio move … cancelled` so it is not in `implement/` / sprint plan. Do not leave a ghost that `review` / `execute` can still pick. Pair with LO-0060 when the sprint goal itself changes.
 
+**Rule (LO-0383):** Test helpers that stand in for primary keys must match the column type (UUID when the schema is UUID). Design-track and parked tickets stay out of an implementation sprint until that phase is open.
+
 ---
 
 ## Legacy: 9-step workflow (quality gates, not folders)
@@ -242,7 +244,33 @@ pnpm build
 
 **Enforced in CLI:** `./studio move … done` rejects unless `status.json` shows gate level ≥ 5 and `gate_status: passed`.
 
-**On failure:** the ticket goes back to step 4 (implementation)
+**On failure:** the ticket goes back to step 4 (implementation) with `sprints/SPRINT-NN/debug/<TICKET>.md` in Issue / Expected / Actual / Evidence / Fix / Files form. Fix only the listed issues.
+
+Level 2 also runs the security checks (`secret_scan`, `client_env_leak`, `insecure_env_fallback`, `docker_secret_leak`). Level 5 adds `payload_access`, `local_api_override`, `webhook_signature`, `npm_audit_policy`, `a11y_axe`, `e2e_hygiene` and `api_contract`. A check that could not run (no smoke config, registry offline) is NOT TESTED, never a pass. Waive a finding only with a row in `docs/security/exceptions.md` that has an expiry date.
+
+---
+
+### Step 6b: Independent QA review (`QA_REVIEW`)
+
+```bash
+./studio qa <project> <TICKET>                    # writes sprints/SPRINT-NN/qa/<TICKET>.md + reviewer brief
+./studio qa <project> <TICKET> --verdict PASS|FAIL
+```
+
+| Aspect | Description |
+|--------|-------------|
+| **Action** | a fresh-context subagent judges the ticket against its AC |
+| **Input** | the card, the diff, the receipt and the evidence only, not the implementer's chat |
+| **Output** | `qa/<TICKET>.md`: `Verdict:`, a PASS / FAIL / NOT TESTED line per AC, `## Findings` on FAIL |
+| **Responsible** | QA Specialist (reviewer subagent); the implementer never writes its own verdict |
+
+The reviewer defaults to FAIL when proof is missing. PASS is refused while any AC is FAIL or NOT TESTED. A FAIL returns the ticket to step 4 and counts toward the same 3 attempts as a red gate. A new green gate resets the verdict.
+
+**UI finish gate (UX-009).** When `docs/design-specs/mocks/<TICKET>/` holds signed screenshots, run `./studio qa <project> <TICKET> --finish` after the QA PASS. Capture the shipped route in every mock state at 1440 and 390 into `qa/<TICKET>-finish/`, compare them in `qa/<TICKET>-finish-gate.md` with a Keep list, then record `--finish PASS` or `--finish HOLD`. HOLD is a QA fail, not a human stop.
+
+**Escalation.** At 3 failures, or two identical ones, execute writes `sprints/SPRINT-NN/escalations/<TICKET>.md` and moves the ticket to `blocked`. Independent tickets continue. The human is asked only when every remaining ticket is blocked.
+
+**Enforced in CLI:** `./studio move … done` refuses without a QA PASS after the last green gate, and without a finish-gate PASS when the ticket has signed mock shots.
 
 ---
 
@@ -271,7 +299,7 @@ pnpm build
 
 ```bash
 ./studio library suggest <project> "<ticket topic>"
-./studio library pull <project> auth billing button    # before implement
+./studio library pull <project> billing button auth-login    # before implement. Do not pull packages/auth.
 # after ticket — if generic:
 ./studio library promote <project> packages/billing --ticket <ID> [--force]
 ```
@@ -285,15 +313,15 @@ pnpm build
 **Checklist:**
 - [ ] Checked `./studio library list` / `suggest` before coding
 - [ ] Product app has UI kit peers (`docs/setup/ui-kit.md`) before pulling styled components
-- [ ] Pulled relevant library assets (not stubs: `billing`, `feature-gating`)
+- [ ] Pulled relevant library assets (not the `feature-gating` stub)
 - [ ] If this ticket needs schema and the DB is reachable: agent ran migrate and INFORM’d — did not ask the human
 - [ ] Is the **final** solution useful for other projects?
 - [ ] Promoted with `--ticket` if yes; documented in ticket if no
 
 **On promotion:**
 ```bash
-./studio library promote nudge packages/billing --ticket NUDG-0004
-./studio library promote nudge ui/components/atoms/Badge.tsx --ticket NUDG-0002
+./studio library promote demo packages/billing --ticket DEMO-0004
+./studio library promote demo ui/components/atoms/Badge.tsx --ticket DEMO-0002
 ```
 
 Moving to `done` without promotion logs **warns** if `packages/` or `ui/components/` changed.
@@ -398,6 +426,8 @@ When a ticket is blocked:
 
 ## Deltas
 
+- **PB-20261012-001** helpful=0 harmful=0 :: **PB-20261012-002** helpful=0 harmful=0 :: MOVE_DONE flags newly added `[Nrem]` / `[Npx]` classNames. Moving a line counts as added. Use a scale utility or keep the original className line unchanged.
+- **PB-20261008-001** helpful=0 harmful=0 :: Test helpers that stand in for primary keys must match the column type (UUID when the schema is UUID). Design-track and parked tickets stay out of an implementation sprint until that phase is open.
 - **PB-20260916-007** helpful=0 harmful=0 :: After the core entity rename, new tables that store domain_id must foreign-key properties, not the domains view. Constraining domains fails because it is no longer a table.
 - **PB-20260916-006** helpful=0 harmful=0 :: A light presentation island inside a dark (or mixed) theme must pin --ink (and related text tokens) on that island so inherited theme text-ink cannot flip the island pale. Do not rely on a parent html.dark token for type on a forced-light surface.
 - **PB-20260916-005** helpful=0 harmful=0 :: Canvas (non-DOM) paint must follow html.dark the same way HTML chrome does. Resolve theme colors to hex from computed styles before stroke, fill, or title text. CSS variables never reach a canvas 2D API.

@@ -59,7 +59,7 @@ Security:
   - No secrets in the frontend
 ```
 
-### 3. Email (SendGrid/Resend)
+### 3. Email (Resend)
 
 ```markdown
 Architecture:

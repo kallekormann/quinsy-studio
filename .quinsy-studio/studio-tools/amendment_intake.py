@@ -541,10 +541,20 @@ def approve_milestones(project: str) -> Tuple[bool, str]:
             f"complete analysis and ./studio approve {project} --amendment <ID> first",
         )
 
+    from studio_milestones import coverage_issues
+
+    missing = coverage_issues(project)
+    if missing:
+        return False, (
+            "Roadmap does not cover the finished product:\n    - "
+            + "\n    - ".join(missing)
+            + "\n  Add the area to a milestone (knowledge-base/milestone-coverage-checklist.md), then retry."
+        )
+
     return True, (
         f"✅ Milestone roadmap approved for {project}\n"
         f"  Agent may write tickets for the active milestone only.\n"
-        f"  Then: ./studio sprint {project}"
+        f"  Then: ./studio milestone {project} plan"
     )
 
 

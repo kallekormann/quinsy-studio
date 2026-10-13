@@ -5,6 +5,8 @@ export async function sendMailpitEmail(input: {
   subject: string;
   html: string;
   from?: string;
+  /** Sender display name — the product's own name. Omitted when absent. */
+  fromName?: string;
 }): Promise<EmailDeliveryResult> {
   const baseUrl = mailpitInboxUrl() ?? 'http://127.0.0.1:54324';
   const fromEmail = input.from ?? defaultFromAddress();
@@ -15,7 +17,7 @@ export async function sendMailpitEmail(input: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        From: { Email: fromEmail, Name: 'Moody' },
+        From: input.fromName ? { Email: fromEmail, Name: input.fromName } : { Email: fromEmail },
         To: [{ Email: input.to }],
         Subject: input.subject,
         HTML: input.html,
@@ -23,7 +25,7 @@ export async function sendMailpitEmail(input: {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Mailpit unreachable';
-    throw new Error(`${message}. Start Mailpit with ./studio env moody up (inbox: ${baseUrl}).`);
+    throw new Error(`${message}. Start Mailpit with ./studio env <project> up (inbox: ${baseUrl}).`);
   }
 
   if (!response.ok) {

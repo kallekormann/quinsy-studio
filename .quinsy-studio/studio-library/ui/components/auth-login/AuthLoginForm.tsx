@@ -3,25 +3,38 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { Button } from '@ui/components/atoms/Button';
 import { Input } from '@ui/components/atoms/Input';
 
-type AuthMode = 'signin' | 'signup' | 'magic';
+type AuthMode = 'signin' | 'signup' | 'reset';
 
 export interface AuthLoginFormProps {
-  createClient: () => SupabaseClient;
-  isConfigured: () => boolean;
-  welcomeApiPath?: string;
+  loginPath?: string;
+  registerPath?: string;
+  mePath?: string;
+  forgotPath?: string;
   defaultNext?: string;
   homeHref?: string;
   homeLabel?: string;
 }
 
+async function postJson(path: string, body: Record<string, string>): Promise<{ ok: boolean; message: string }> {
+  const response = await fetch(path, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const payload = (await response.json().catch(() => ({}))) as { message?: string; errors?: { message?: string }[] };
+  const message = payload.message || payload.errors?.[0]?.message || response.statusText;
+  return { ok: response.ok, message };
+}
+
 export function AuthLoginForm({
-  createClient,
-  isConfigured,
-  welcomeApiPath = '/api/auth/welcome',
+  loginPath = '/api/users/login',
+  registerPath = '/api/users',
+  mePath = '/api/users/me',
+  forgotPath = '/api/users/forgot-password',
   defaultNext = '/',
   homeHref = '/',
   homeLabel = 'Back',
@@ -45,41 +58,27 @@ export function AuthLoginForm({
   }, [invitedEmail]);
 
   useEffect(() => {
-    if (!isConfigured()) {
-      return;
-    }
     let cancelled = false;
     void (async () => {
       try {
-        const supabase = createClient();
-        const { data } = await supabase.auth.getSession();
-        if (cancelled || !data.session) {
+        const response = await fetch(mePath, { credentials: 'include' });
+        if (!response.ok || cancelled) {
           return;
         }
-        // Already signed in — honor ?next= (Figma plugin connected handoff).
+        const payload = (await response.json()) as { user?: { id?: string } | null };
+        if (!payload.user?.id) {
+          return;
+        }
         router.replace(next);
         router.refresh();
       } catch {
-        // stay on form
+        // stay on the form
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [createClient, isConfigured, next, router]);
-
-  if (!isConfigured()) {
-    return (
-      <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-        <p className="font-medium">Supabase not configured</p>
-        <p className="mt-2">
-          Set <code className="rounded bg-black/5 px-1">NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
-          <code className="rounded bg-black/5 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, then
-          restart the dev server.
-        </p>
-      </div>
-    );
-  }
+  }, [mePath, next, router]);
 
   async function handlePasswordSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -87,21 +86,12 @@ export function AuthLoginForm({
     setError(null);
     setMessage(null);
 
-    const supabase = createClient();
-
     if (mode === 'signup') {
-      const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
-      if (signUpError) {
-        setError(signUpError.message);
+      const created = await postJson(registerPath, { email, password });
+      if (!created.ok) {
+        setError(created.message);
         setLoading(false);
         return;
-      }
-      if (data.user) {
-        await fetch(welcomeApiPath, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
       }
       setMessage('Account created. You can sign in now.');
       setMode('signin');
@@ -109,43 +99,34 @@ export function AuthLoginForm({
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError) {
-      setError(signInError.message);
+    const signedIn = await postJson(loginPath, { email, password });
+    if (!signedIn.ok) {
+      setError(signedIn.message);
       setLoading(false);
       return;
     }
-
     router.push(next);
     router.refresh();
   }
 
-  async function handleMagicLink(event: React.FormEvent) {
+  async function handleReset(event: React.FormEvent) {
     event.preventDefault();
     setLoading(true);
     setError(null);
     setMessage(null);
-
-    const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
-
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectTo },
-    });
-
+    const sent = await postJson(forgotPath, { email });
     setLoading(false);
-    if (otpError) {
-      setError(otpError.message);
+    if (!sent.ok) {
+      setError(sent.message);
       return;
     }
-    setMessage('Check your email for a magic link.');
+    setMessage('Check your email for a reset link.');
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap gap-2">
-        {(['signin', 'signup', 'magic'] as const).map((tab) => (
+        {(['signin', 'signup', 'reset'] as const).map((tab) => (
           <Button
             key={tab}
             type="button"
@@ -157,13 +138,13 @@ export function AuthLoginForm({
               setMessage(null);
             }}
           >
-            {tab === 'signin' ? 'Sign in' : tab === 'signup' ? 'Sign up' : 'Magic link'}
+            {tab === 'signin' ? 'Sign in' : tab === 'signup' ? 'Sign up' : 'Reset'}
           </Button>
         ))}
       </div>
 
-      {mode === 'magic' ? (
-        <form className="space-y-4" onSubmit={(e) => void handleMagicLink(e)}>
+      {mode === 'reset' ? (
+        <form className="space-y-4" onSubmit={(e) => void handleReset(e)}>
           <Input
             type="email"
             placeholder="you@example.com"
@@ -173,7 +154,7 @@ export function AuthLoginForm({
             autoComplete="email"
           />
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? 'Sending…' : 'Email me a link'}
+            {loading ? 'Sending…' : 'Email me a reset link'}
           </Button>
         </form>
       ) : (

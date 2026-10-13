@@ -1,6 +1,16 @@
 # Ticket team allocation
 
-Every backlog ticket must declare **who owns the work** before implementation. Auto-matching from `./studio ticket` is a starting point only — the agent must verify allocation at groom time.
+Every backlog ticket must declare **who owns the work** before implementation. Auto-matching from `./studio ticket` is a starting point only. The Product Manager staffs each ticket with **PM-004** ([ticket-staffing.md](../teams/06-product-management-operating-model/skills/ticket-staffing.md)): one owner skill first, then the companion skills whose rules must hold.
+
+## Staffing is enforced
+
+| Where | What happens |
+|-------|--------------|
+| `./studio ticket` | Matches skills on whole words, adds companions from the ticket text, writes `## Staffing` with a reason per companion |
+| `./studio groom` | `SKILLS_MISSING`, `SKILL_UNKNOWN`, `STAFFING_GAP` are errors and block `--approve`. `STAFFING_SUGGEST` is info |
+| `./studio execute` CARD | Adds a missing required companion (`staffed by PM-004`) and lists the **skill files** to read, not only team playbooks |
+
+Required companions: PE-003 + AI-005 (auth, access, tenants, uploads, webhooks, keys), AI-005 (LLM calls), CL-001 (personal data), CL-002 (tracking), PE-006 (secrets), BE-008 + CL-003 (payments, subscriptions), GM-006 (marketing email), FE-004 + FE-006 (any user-facing UI). Waive with `staffing_waive: [ID]` and a reason under `## Staffing`. At most eight skills; split a ticket that needs more.
 
 ## Principle
 
@@ -15,14 +25,20 @@ Every backlog ticket must declare **who owns the work** before implementation. A
 | **IA / navigation** | UX-003 only; `./studio ia-audit` | — (spec for gate 2 / milestone) |
 | **IA / feature placement** | UX-003, UX-002 | FE-001 after `approve-design` (if UI moves) |
 | **Canvas / interaction** | UX-002 as needed | FE-001, FE-002 |
-| **API / data / auth** | — | `02-backend-systems` BE-001–BE-003 |
+| **API / data / auth** | PE-005 threat delta (architecture phase) | `02-backend-systems` BE-001–BE-003 + PE-003, AI-005; CL-001 when personal data |
 | **Jobs / queues / outbox** | — | BE-006 |
-| **Email / integrations** | — | BE-005 |
-| **AI adapter / eval / RAG** | — | AI-001, AI-004 (`## Eval` on receipt) |
+| **Email / integrations** | — | BE-005; GM-006 for marketing email |
+| **Payments / subscriptions** | PE-005 threat delta | BE-008 + CL-003, PE-003, AI-005 |
+| **Documents / invoices** | — | BE-009 (+ BE-006 job) |
+| **i18n** | — | FE-008 (+ BE-007 localization, GM-001 hreflang) |
+| **AI adapter / eval / RAG** | — | AI-001, AI-004, AI-005 (`## Eval` on receipt) |
 | **Durable agent jobs** | — | AI-003 (not PE-002) |
-| **Legal / privacy** | — | CL-001, CL-003 |
+| **Legal / privacy** | CL-004 data map | CL-001, CL-003 |
+| **Secrets / deploy / ops** | — | PE-006, PE-001, PE-007 |
+| **Release reality check** | — | SO-005 (after `ship --to dev`) |
 | **Architecture / ADR** | — | PS-002 |
 | **Growth / copy** | UX-007 optional; **GD-001** if experiment | GM-003 (SEO/AEO copy); Team 11 for hypothesis |
+| **Launch / community** | — | GM-005 |
 | **Process / studio** | — | SO-002 |
 
 ## Design-track HITL (major UX / UI / IA)
@@ -30,7 +46,7 @@ Every backlog ticket must declare **who owns the work** before implementation. A
 Tickets with `ticket_type` in `ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, `ia-navigation`, `ia-feature-placement`:
 
 1. Team 10 **writes** `docs/design-specs/<TICKET>.md` (template: `knowledge-base/design-spec-template.md`). Ticket create may drop a **stub**; a stub is not approvable. Never tell the human to review a path that is not filled.
-2. Spec includes **§2 Context & placement** + **§2c in-context mocks** (HTML under `docs/design-specs/mocks/<TICKET>/`, **this project's CSS tokens**, **all states**) + **Atomic Inventory** + **Design Rationale**
+2. Spec includes **§2 Context & placement** + **§2c interactive real-UI mocks** (routes in the product app at `app/(design-mocks)/design-mocks/<TICKET>/` that render its own views and components with wired handlers, scenario states and §2d transitions; screenshots of **all states** in `docs/design-specs/mocks/<TICKET>/` as the record) + **§2e Interaction walkthrough** + **Atomic Inventory** + **Design Rationale**
 3. Multi-surface: workflow map per `workflow-definition-playbook.md`
 4. Human: `./studio approve-design <project> --phase` after every packet in the design phase is written, or `./studio approve-design <project> <ticket-id>` for one ticket. The CLI **fails** if spec/mocks/tokens/states are incomplete, or if a design ticket has no `architecture delta:` line. `ia-navigation` also requires `./studio ia-audit` pass (≤7 top-level, depth ≤3).
 5. `./studio move … implement` is **blocked** until `design_status: approved`
@@ -103,7 +119,8 @@ skills: [FE-001, FE-002, FE-004, UX-006, AI-002]
 - [ ] Verify commands are **literal** with expected output (not “tests pass”)
 - [ ] Shared names are **verbatim artifacts**; later tickets quote earlier ones
 - [ ] `executable_by: composer|opus|human` set when a small/fast model will implement
-- [ ] `./studio groom --approve` only after skills are explicit
+- [ ] Every ticket staffed per PM-004: owner first, required companions present or waived with a reason, ≤ 8 skills
+- [ ] `./studio groom --approve` only when validation has no `SKILLS_MISSING` / `SKILL_UNKNOWN` / `STAFFING_GAP`
 
 ## Related
 

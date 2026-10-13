@@ -277,9 +277,22 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
             f"Switch with ./studio focus {sibling} in a separate session.",
         )
 
-    from studio_human_inbox import is_ideate_request
+    from studio_human_inbox import is_ideate_request, is_studio_docs_request
 
     from studio_ideate import FEASIBILITY_BAR, HUMAN_STOPS, is_desk_continuation, session_is_open
+
+    if is_studio_docs_request(request or "") and is_ideate_request(request or ""):
+        return "studio_meta", (
+            "This is about the studio's own guides (.quinsy-studio/), not the ideation desk. "
+            "Edit the docs as HQ work; do not open an ideate session."
+        )
+
+    if is_studio_hq_request(request or "") and is_ideate_request(request or ""):
+        return "studio_meta", (
+            "This names studio HQ (LO-*, .quinsy-studio/, teams/, knowledge-base/) and only mentions "
+            "ideation as a subject. It is HQ work on the ideation loop, not an ideate session. "
+            "Use the LO-* backlog; do not open the desk and do not queue it on the product sprint."
+        )
 
     if is_ideate_request(request or "") or is_desk_continuation(request or "", session_is_open()):
         return (
@@ -496,73 +509,93 @@ def verify_worlds() -> Tuple[bool, List[str]]:
         apply_project_isolation(name)
         issues.extend(project_git_isolation_issues(name))
 
+    issues.extend(loop_separation_issues())
     return len(issues) == 0, issues
 
 
-# Paths where project names are allowed (learning provenance, retros, tests)
-_ABSTRACTION_ALLOWLIST_PREFIXES = (
-    "backlog/",
-    "retros/",
-    "studio-library/manifest.json",
-    "process/studio-abstraction.md",
-    "studio-tools/studio_context.py",
-    "studio-tools/studio_portability.py",
-    "studio-tools/test_",
-    "knowledge-base/learnings/archive/",
-    "CHANGELOG.md",
-)
+def loop_separation_issues(root: Optional[Path] = None) -> List[str]:
+    """The three loops stay in their folders (LO-0417).
 
-_ABSTRACTION_SCAN_ROOTS = (
-    "process",
-    "knowledge-base",
-    "studio-tools",
-    "studio-templates",
-    "teams",
-    "GETTING_STARTED.md",
-    "README.md",
-)
+    ideation → ideation/ only; implementation → projects/<p>/ only; HQ learning → .quinsy-studio/.
+    """
+    root = root or STUDIO_ROOT
+    out: List[str] = []
+    gitignore = root / ".gitignore"
+    if gitignore.is_file():
+        text = gitignore.read_text(encoding="utf-8", errors="ignore")
+        for needed in ("projects/", "intake/", "ideation/"):
+            if not any(line.strip().lstrip("/").rstrip("*").rstrip("/") == needed.rstrip("/") for line in text.splitlines()):
+                out.append(f".gitignore does not list {needed} (loop folders stay out of studio git)")
+    else:
+        out.append(".gitignore missing at the studio root")
+    ideation = root / "ideation"
+    if ideation.is_dir():
+        for stray in ideation.rglob("*"):
+            if stray.is_dir() and stray.name in ("backlog", "sprints", "apps", "src") and ".git" not in stray.parts:
+                out.append(f"ideation/ holds a build folder: {stray.relative_to(root)} — the desk writes cases and PRDs only")
+                break
+    projects = root / "projects"
+    if projects.is_dir():
+        for child in sorted(projects.iterdir()):
+            if not child.is_dir() or child.name.startswith("."):
+                continue
+            if (child / ".quinsy-studio").exists():
+                out.append(f"projects/{child.name}/.quinsy-studio exists — HQ lives only at the studio root")
+            if (child / "ideation").is_dir():
+                out.append(f"projects/{child.name}/ideation exists — the desk lives only in ideation/")
+    hq = root / ".quinsy-studio"
+    for folder in ("apps", "src", "ideation", "projects"):
+        if (hq / folder).exists():
+            out.append(f".quinsy-studio/{folder} exists — product or desk content inside HQ")
+    return out
 
-_ABSTRACTION_PATTERNS = ()  # replaced by list_project_names() in verify_studio_abstraction
+
+_ABSTRACTION_TEXT_SUFFIXES = frozenset({
+    ".md", ".mdx", ".mdc", ".py", ".json", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs",
+    ".css", ".yaml", ".yml", ".toml", ".txt", ".html", ".sh", ".example", "",
+})
+_ABSTRACTION_OTHER_WORLDS = ("projects/", "intake/", "ideation/")
+
+
+def _studio_git_files() -> List[Path]:
+    """Every file studio git would commit: tracked plus untracked-not-ignored, studio world only."""
+    root = QUINSY_STUDIO.parent
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "--cached", "--others", "--exclude-standard"],
+            capture_output=True, text=True, check=True,
+        ).stdout
+        rels = out.splitlines()
+    except (OSError, subprocess.CalledProcessError):
+        rels = [p.relative_to(root).as_posix() for p in QUINSY_STUDIO.rglob("*") if p.is_file()]
+        rels += [p.name for p in root.iterdir() if p.is_file()]
+    files: List[Path] = []
+    for rel in rels:
+        if rel.startswith(_ABSTRACTION_OTHER_WORLDS) or "node_modules/" in rel or "__pycache__/" in rel:
+            continue
+        path = root / rel
+        if path.is_file() and path.suffix.lower() in _ABSTRACTION_TEXT_SUFFIXES:
+            files.append(path)
+    return files
 
 
 def verify_studio_abstraction() -> Tuple[bool, List[str]]:
-    """Flag project-specific references in studio HQ docs/tools/templates."""
+    """Flag product names and product ticket IDs anywhere studio git would commit."""
     issues: List[str] = []
-    studio_dir = QUINSY_STUDIO
+    root = QUINSY_STUDIO.parent
     from studio_portability import find_product_nouns_in_hq_text, list_project_names
 
     names = list_project_names()
-
-    def _scan_file(path: Path) -> None:
-        rel = path.relative_to(studio_dir).as_posix()
-        if any(rel.startswith(prefix) for prefix in _ABSTRACTION_ALLOWLIST_PREFIXES):
-            return
-        if path.name == "CHANGELOG.md":
-            return
-        if rel.endswith(".pyc") or "/__pycache__/" in rel:
-            return
+    for path in _studio_git_files():
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
-            return
+            continue
+        rel = path.relative_to(root).as_posix()
         for line_no, noun, snippet in find_product_nouns_in_hq_text(text, nouns=names):
-            issues.append(f"{rel}:{line_no}: project folder {noun!r} ({snippet})")
+            issues.append(f"{rel}:{line_no}: product reference {noun!r} ({snippet})")
 
-    for root_name in _ABSTRACTION_SCAN_ROOTS:
-        target = studio_dir / root_name
-        if target.is_file():
-            _scan_file(target)
-        elif target.is_dir():
-            for path in target.rglob("*"):
-                if path.is_file() and path.suffix in {
-                    ".md",
-                    ".py",
-                    ".json",
-                    ".mdc",
-                    ".ts",
-                    ".tsx",
-                }:
-                    _scan_file(path)
+    studio_dir = QUINSY_STUDIO
 
     tmp_dir = studio_dir / "tmp"
     if tmp_dir.is_dir():

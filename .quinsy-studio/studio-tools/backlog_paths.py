@@ -159,7 +159,7 @@ def read_ticket_meta(path: Path) -> Dict:
     meta: Dict = {"path": path, "body": text, "file": path}
     for key in (
         "id", "title", "priority", "phase", "estimate", "sprint", "status",
-        "files", "dependencies", "team", "skills", "ticket_type", "type",
+        "files", "dependencies", "team", "skills", "ticket_type", "type", "milestone",
         "design_status", "architecture_status", "cycle_return",
     ):
         # [ \t]* only — \s would swallow the newline after empty `sprint:` fields

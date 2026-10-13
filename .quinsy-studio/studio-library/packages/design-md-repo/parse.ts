@@ -1,5 +1,5 @@
 /**
- * Parse validated Design.md → layout-engine params (MOOD-0260).
+ * Parse validated Design.md → layout-engine params.
  * No per-preset hardcoded branches — behavior comes from frontmatter.
  */
 import type { DesignMdDocument, DesignMdFrontmatter } from './types';

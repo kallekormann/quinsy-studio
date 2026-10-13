@@ -31,6 +31,7 @@ from sprint_hitl import (
     needs_sprint_review,
     sprint_directory,
 )
+from receipt_checks import section_is_stub, stub_sections
 from studio_learning_gate import open_lo_tickets
 from ticket_helpers import playbooks_for_skills
 
@@ -301,7 +302,54 @@ def ticket_card_for(project: str, ticket_id: str) -> Optional[Dict[str, Any]]:
     path, _status = find_ticket(project, ticket_id)
     if not path:
         return None
-    return compact_card(path)
+    card = compact_card(path)
+    from payload_foundation import augment_card_skills, payload_is_in
+
+    ticket_text = path.read_text(encoding="utf-8", errors="ignore")
+    card["skills"] = augment_card_skills(project, ticket_text, card["skills"])
+    card = staff_card(card, ticket_text)
+    if payload_is_in(project):
+        books = playbooks_for_skills(card["skills"])
+        extra = "knowledge-base/payload-playbook.md"
+        if extra not in books:
+            books.append(extra)
+        card["playbooks"] = books[:6]
+    return card
+
+
+def staff_card(card: Dict[str, Any], ticket_text: str) -> Dict[str, Any]:
+    """Add required companion skills the ticket is missing; list the skill files to read."""
+    from skill_matcher import MAX_TICKET_SKILLS, skill_files_for, staff_skills
+
+    meta_text, body = ticket_text, ticket_text
+    if ticket_text.startswith("---"):
+        parts = ticket_text.split("---", 2)
+        if len(parts) >= 3:
+            meta_text, body = parts[1], parts[2]
+    waived = parse_yaml_list(_frontmatter_value(meta_text, "staffing_waive"))
+    design_status = _frontmatter_value(meta_text, "design_status")
+    staffing = staff_skills(
+        str(card.get("title") or ""),
+        body,
+        skills=list(card.get("skills") or []),
+        ticket_type=str(card.get("ticket_type") or ""),
+        design_status=design_status,
+        waived=waived,
+    )
+    required = {sid for sid, _ in staffing["missing_required"]}
+    staffed = list(card.get("skills") or [])
+    for skill_id, _reason in staffing["added"]:
+        if skill_id in required and len(staffed) < MAX_TICKET_SKILLS:
+            staffed.append(skill_id)
+    card["skills"] = staffed
+    card["staffed"] = [sid for sid in staffed if sid in required]
+    card["skill_files"] = skill_files_for(staffed)
+    return card
+
+
+def _frontmatter_value(meta_text: str, key: str) -> str:
+    match = re.search(rf"^{re.escape(key)}:\s*(.*)$", meta_text, re.MULTILINE)
+    return match.group(1).strip() if match else ""
 
 
 def execution_log_path(project: str, sprint: str) -> Path:
@@ -346,10 +394,11 @@ def append_execution_event(
 
 
 def count_gate_fails(log: Dict[str, Any], ticket_id: str) -> int:
+    """Red gates and QA FAIL verdicts share one retry budget."""
     return sum(
         1
         for e in log.get("entries", [])
-        if e.get("ticket") == ticket_id and e.get("event") == "gate-fail"
+        if e.get("ticket") == ticket_id and e.get("event") in ("gate-fail", "qa-fail")
     )
 
 
@@ -392,8 +441,7 @@ def receipt_issues(text: str) -> List[str]:
         rest = text[start:]
         nxt = re.search(r"^##\s+", rest, re.M)
         body = rest[: nxt.start()] if nxt else rest
-        lines = [ln.strip() for ln in body.splitlines() if ln.strip() and ln.strip() not in ("- ...", "...", "-")]
-        if not lines:
+        if section_is_stub(body):
             issues.append(f"placeholder ## {name}")
     return issues
 
@@ -428,7 +476,26 @@ def receipt_blocker_messages(
     root = PROJECTS_DIR / project
     issues.extend(baseline_departure_issues(root, text))
     issues.extend(implementation_receipt_issues(root, text, blob))
+    from payload_foundation import receipt_payload_issues
+
+    issues.extend(receipt_payload_issues(project, text, blob))
+    from receipt_checks import skills_read_issues, trust_issues
+
+    issues.extend(trust_issues(text, blob, root, receipt_dir=path.parent))
+    issues.extend(skills_read_issues(text, _card_files(project, ticket_id)))
     return issues
+
+
+def _card_files(project: str, ticket_id: str) -> List[str]:
+    """Skill files plus playbooks the execute CARD listed for this ticket."""
+    tpath, _status = find_ticket(project, ticket_id)
+    if not tpath:
+        return []
+    try:
+        card = staff_card(compact_card(tpath), tpath.read_text(encoding="utf-8", errors="ignore"))
+    except Exception:
+        return []
+    return list(card.get("skill_files") or []) + list(card.get("playbooks") or [])
 
 
 def receipt_is_complete(
@@ -458,7 +525,7 @@ def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional
 ## Default flow
 - Route / user path a real user would take (LO-0051):
 - Screenshot: (path or none — function-only ticket)
-- If the live surface never left loading, that is not browser proof of list chrome — record the hang and cite HTTP/API tests (curl, PHPUnit, Vitest), not a click-through (LO-0276, LO-0291)
+- (If the live surface never left loading, that is not browser proof of list chrome — record the hang and cite HTTP/API tests, not a click-through; LO-0276, LO-0291)
 
 ## Playbook citations
 - playbook: {(card or {}).get("playbooks") and (card or {}).get("playbooks")[0] or "none"}
@@ -478,11 +545,28 @@ def write_receipt_stub(project: str, sprint: str, ticket_id: str, card: Optional
 - n/a (required filled section when skills include AI-001 or AI-004)
 
 ## Skills read
-- (skill IDs + playbooks from the CARD)
-""",
+{_skills_read_lines(card)}
+
+{stub_sections(card, _ticket_blob(project, ticket_id))}""",
         encoding="utf-8",
     )
     return path
+
+
+def _skills_read_lines(card: Optional[Dict[str, Any]]) -> str:
+    files = list((card or {}).get("skill_files") or []) + list((card or {}).get("playbooks") or [])
+    if not files:
+        return "- none"
+    return "\n".join(f"- {f} — (the rule from this file you applied)" for f in files)
+
+
+def _ticket_blob(project: str, ticket_id: str) -> str:
+    path, _status = find_ticket(project, ticket_id)
+    return path.read_text(encoding="utf-8", errors="ignore") if path else ""
+
+
+def failure_signature(failed_checks: Optional[List[Dict[str, Any]]]) -> str:
+    return ",".join(sorted(str(c.get("check") or "") for c in failed_checks or [] if c.get("check")))
 
 
 def append_debug_attempt(
@@ -492,20 +576,83 @@ def append_debug_attempt(
     attempt: int,
     symptom: str,
     excerpt: str = "",
+    failed_checks: Optional[List[Dict[str, Any]]] = None,
+    findings: str = "",
+    repeated: bool = False,
 ) -> Path:
+    """Issue / Expected / Actual / Evidence / Fix / Files — the next attempt fixes only these."""
     path = debug_path(project, sprint, ticket_id)
     path.parent.mkdir(parents=True, exist_ok=True)
+    checks = failed_checks or []
+    if findings:
+        issue = findings
+        expected = "- every QA finding above resolved; the reviewer re-runs against the same AC"
+        actual = "- see Actual under each finding"
+    else:
+        issue = "\n".join(f"- {c.get('check')}: {c.get('error') or 'failed'}" for c in checks) or f"- {symptom.strip() or 'Gate failed'}"
+        expected = "- " + (", ".join(c.get("check", "") for c in checks) or "every check") + " green at QA level 5"
+        actual = "\n".join(
+            f"- {c.get('check')}: " + " | ".join((c.get("output") or "").strip().splitlines()[:3])[:300]
+            for c in checks
+        ) or "- (see Evidence)"
+    note = "Same failure as the previous attempt — escalating instead of a third try.\n\n" if repeated else ""
     block = (
         f"\n## Attempt {attempt} — {_now()}\n"
-        f"### Symptom\n{symptom.strip() or 'Gate failed'}\n\n"
-        f"### Hypotheses\n- (agent: most likely cause)\n\n"
+        f"{note}Fix only the issues below. Do not refactor or touch files outside `Files`.\n\n"
+        f"### Issue\n{issue}\n\n"
+        f"### Expected\n{expected}\n\n"
+        f"### Actual\n{actual}\n\n"
         f"### Evidence\n```\n{(excerpt or '')[:2000]}\n```\n\n"
-        f"### Fix\n- (what you will try next)\n"
+        f"### Fix\n- (one line per issue: the change you will make)\n\n"
+        f"### Files\n- (the files you will change, nothing else)\n"
     )
     if path.exists():
         path.write_text(path.read_text(encoding="utf-8") + block, encoding="utf-8")
     else:
         path.write_text(f"# Debug — {ticket_id}\n{block}", encoding="utf-8")
+    return path
+
+
+def escalation_path(project: str, sprint: str, ticket_id: str) -> Path:
+    return sprint_directory(project, sprint) / "escalations" / f"{ticket_id}.md"
+
+
+def repeated_failure(log: Dict[str, Any], ticket_id: str) -> bool:
+    """The last two failures for this ticket carry the same signature."""
+    notes = [
+        str(e.get("note") or "")
+        for e in log.get("entries", [])
+        if e.get("ticket") == ticket_id and e.get("event") in ("gate-fail", "qa-fail")
+    ]
+    if len(notes) < 2:
+        return False
+    a, b = notes[-2], notes[-1]
+    return ":" in b and a == b
+
+
+def should_escalate(log: Dict[str, Any], ticket_id: str) -> bool:
+    return count_gate_fails(log, ticket_id) >= MAX_GATE_RETRIES or repeated_failure(log, ticket_id)
+
+
+def write_escalation(project: str, sprint: str, ticket_id: str, reason: str) -> Path:
+    """Packet for the human: what failed, what was tried, what needs deciding."""
+    path = escalation_path(project, sprint, ticket_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    debug = debug_path(project, sprint, ticket_id)
+    attempts = []
+    if debug.exists():
+        attempts = re.findall(r"^## (Attempt \d+ — [^\n]+)", debug.read_text(encoding="utf-8"), re.M)
+    path.write_text(
+        f"# Escalation — {ticket_id}\n\n"
+        f"Reason: {reason}\n\n"
+        "## Attempts\n" + ("\n".join(f"- {a}" for a in attempts) or "- (see debug file)") + "\n\n"
+        f"Debug log: `{debug.name}` in `debug/`. QA verdicts in `qa/`.\n\n"
+        "## Needs a human decision\n"
+        "- (agent: the one question that unblocks this — scope cut, wrong AC, missing access, or tech veto)\n\n"
+        "## Meanwhile\n"
+        "- Ticket moved to `blocked`. Independent sprint tickets continue; dependants wait.\n",
+        encoding="utf-8",
+    )
     return path
 
 
@@ -625,6 +772,42 @@ def _hitl(
         command=command,
         read=read,
         loop=False,
+    )
+
+
+def _reality_step(project: str, sprint: str, status: Dict, open_work: List[Dict]) -> Any:
+    """None = verdict lets the review open; "continue" = run the FAILED bug tickets first."""
+    from reality_check import reality_state
+
+    if not sprint:
+        return None
+    state = reality_state(sprint_directory(project, sprint), PROJECTS_DIR / project)
+    if state == "ready":
+        return None
+    read = f"sprints/{sprint}/reality-check.md"
+    if state in ("failed", "needs-work"):
+        # LO-0399: NEEDS WORK files tickets like FAILED does; the review opens on READY only.
+        if open_work:
+            return "continue"
+        label = "FAILED" if state == "failed" else "NEEDS WORK"
+        return ExecuteStep(
+            kind="VERIFY",
+            reason=f"reality check {label} — file one bug ticket per finding into this sprint; review stays closed until READY",
+            command=f'./studio ticket {project} "<trigger: Issue / Expected / Actual>"  (then set sprint: {sprint})',
+            read=read,
+            loop=True,
+        )
+    return ExecuteStep(
+        kind="REALITY_CHECK",
+        reason=(
+            "dev has a build the human has not seen — walk one journey and every done ticket's default flow on dev first"
+            if state == "missing"
+            else "reality check is for an older commit — re-run it on the current dev build"
+        ),
+        command=f"./studio reality-check {project}",
+        read=read,
+        inform="Fresh-context subagent, dev URL only. FAILED files bug tickets; it is not a sign-off request.",
+        loop=True,
     )
 
 
@@ -754,12 +937,13 @@ def _production_step(project: str, prod: Dict, write_kind) -> ExecuteStep:
         )
     if kind == "hitl-arch":
         return ExecuteStep(
-            kind="HITL",
+            kind="VERIFY",
             ticket_id=tid,
-            reason="production packet ready — human approve-arch",
+            reason="architecture packet ready — agent signs; tech-veto window open",
             command=f"./studio approve-arch {project} {tid}",
             read=path,
-            loop=False,
+            inform="Human may ./studio veto <p> --decision <TICKET> --reason '…' before the next IMPLEMENT; no signature needed.",
+            loop=True,
         )
     if kind == "write-arch":
         note = f"docs/architecture/{tid}.md"
@@ -767,7 +951,7 @@ def _production_step(project: str, prod: Dict, write_kind) -> ExecuteStep:
             kind="PRODUCTION",
             ticket_id=tid,
             reason="write architecture packet before implementation sprint",
-            command=f"Write {note} (approach, constraints, files). Then HITL ./studio approve-arch {project} {tid}",
+            command=f"Write {note} (approach, constraints, files). Then ./studio approve-arch {project} {tid} (agent-signed, tech-veto window)",
             read=path,
             loop=True,
         )
@@ -775,15 +959,39 @@ def _production_step(project: str, prod: Dict, write_kind) -> ExecuteStep:
     return ExecuteStep(
         kind="PRODUCTION",
         ticket_id=tid,
-        reason="write design packet (spec + all-state mocks) before implementation sprint",
+        reason="write design packet (spec + interactive mock prototype) before implementation sprint",
         command=(
-            f"Write {spec_hint} and docs/design-specs/mocks/{tid}/*.html "
-            f"(project tokens, in-context, all states). "
-            f"Then HITL ./studio approve-design {project} {tid}"
+            f"Write {spec_hint} and the mock routes app/(design-mocks)/design-mocks/{tid}/ in the "
+            f"product app (real views and components, solution woven in). The mock is an "
+            f"interactive prototype: `library pull {project} mock-scenario-panel`, wire handlers, "
+            f"states and §2d transitions, write §2e Interaction walkthrough, then capture every "
+            f"state to docs/design-specs/mocks/{tid}/ as the record. "
+            f"Verify with ./studio mock {project} {tid}; then HITL ./studio approve-design {project} {tid}"
         ),
         read=path,
         loop=True,
     )
+
+
+def _design_mock_reference(project: str, tid: str, read_path) -> Optional[str]:
+    """For a ticket with a signed design, the mock route dir + spec the implementer must port."""
+    if not read_path:
+        return None
+    try:
+        body = Path(str(read_path)).read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return None
+    fields = parse_design_fields(body)
+    if fields.get("design_status") != "approved" and not fields.get("design_approved_at"):
+        return None
+    from design_ticket_helpers import default_design_spec_path, real_ui_mock_dir
+
+    root = PROJECTS_DIR / project
+    mock_dir = real_ui_mock_dir(root, tid)
+    if mock_dir is None or not mock_dir.is_dir():
+        return None
+    spec = fields.get("design_spec") or default_design_spec_path(tid)
+    return f"{mock_dir.relative_to(root).as_posix()}/ + {spec}"
 
 
 def execute_is_looping(project: str) -> bool:
@@ -829,6 +1037,86 @@ def _studio_lo_if_idle(
     return _studio_lo_step(open_los)
 
 
+def _milestone_roadmap_step(project: str, milestone: Optional[Dict[str, Any]]) -> Optional[ExecuteStep]:
+    """After gate 2b: the PM drafts the whole-product roadmap, then the human signs it."""
+    if milestone is None or milestone.get("roadmap_approved"):
+        return None
+    from studio_milestones import PM_CARD
+
+    issues = milestone.get("coverage_issues") or []
+    if issues:
+        return ExecuteStep(
+            kind="IMPLEMENT",
+            reason=(
+                "PM-002: draft docs/phases/ for the finished product (not the MVP) from "
+                "studio-templates/phases/milestone.md; coverage gaps: " + "; ".join(issues[:4])
+            ),
+            command=f"./studio milestone {project}",
+            read="docs/phases/",
+            loop=True,
+            card=dict(PM_CARD),
+        )
+    return _hitl(
+        "milestones",
+        project,
+        f"./studio approve {project} --milestones",
+        "human signs the milestone roadmap (product decision). Coverage check already passed",
+    )
+
+
+def _milestone_boundary_step(project: str, milestone: Optional[Dict[str, Any]]) -> Optional[ExecuteStep]:
+    """Between sprints: plan the active milestone, or review and sign a finished one."""
+    if milestone is None or not milestone.get("roadmap_approved"):
+        return None
+    from studio_milestones import PM_CARD
+
+    active = milestone.get("active")
+    if not active:
+        return ExecuteStep(
+            kind="VERIFY",
+            reason="every milestone is done or none is active — activate the next one",
+            command=f"./studio milestone {project} plan --next",
+            loop=True,
+            card=dict(PM_CARD),
+        )
+    if not milestone.get("has_tickets"):
+        return ExecuteStep(
+            kind="IMPLEMENT",
+            reason=f"PM-002/PM-004: write `- <title> :: <scope>` lines under ## Tickets in docs/phases/{active}-*.md, then plan",
+            command=f"./studio milestone {project} plan",
+            read=f"docs/phases/",
+            loop=True,
+            card=dict(PM_CARD),
+        )
+    if milestone.get("complete"):
+        review = milestone.get("review")
+        if review == "missing":
+            return ExecuteStep(
+                kind="VERIFY",
+                reason=f"{active}: every ticket is done — PM reviews production and implementation state",
+                command=f"./studio milestone {project} review",
+                read=f"docs/phases/{active}-review.md",
+                loop=True,
+                card=dict(PM_CARD),
+            )
+        if review == "written":
+            return _hitl(
+                "milestone-review",
+                project,
+                f"./studio milestone {project} --approve",
+                f"human signs {active} and the roadmap changes in docs/phases/{active}-review.md (product decision)",
+                read=f"docs/phases/{active}-review.md",
+            )
+        return ExecuteStep(
+            kind="VERIFY",
+            reason=f"{active} approved — activate the next milestone",
+            command=f"./studio milestone {project} plan --next",
+            loop=True,
+            card=dict(PM_CARD),
+        )
+    return None
+
+
 def decide_from_state(
     project: str,
     status: Dict,
@@ -853,6 +1141,7 @@ def decide_from_state(
     skip_ticket_ids: Optional[Set[str]] = None,
     phase_sign: Optional[str] = None,
     design_command: Optional[str] = None,
+    milestone: Optional[Dict[str, Any]] = None,
 ) -> ExecuteStep:
     """Pure next-step machine. Disk I/O lives in decide_next_action."""
     step = _decide_from_state_body(
@@ -878,6 +1167,7 @@ def decide_from_state(
         skip_ticket_ids=skip_ticket_ids,
         phase_sign=phase_sign,
         design_command=design_command,
+        milestone=milestone,
     )
     return _attach_lo_inform(step, open_los if open_los is not None else [])
 
@@ -906,6 +1196,7 @@ def _decide_from_state_body(
     skip_ticket_ids: Optional[Set[str]] = None,
     phase_sign: Optional[str] = None,
     design_command: Optional[str] = None,
+    milestone: Optional[Dict[str, Any]] = None,
 ) -> ExecuteStep:
     from pre_impl_workflow import design_system_approved, direction_approved
 
@@ -1081,6 +1372,10 @@ def _decide_from_state_body(
             "./studio revise --gate 2b until approved. Do not promote look into studio-library",
         )
 
+    roadmap_step = _milestone_roadmap_step(project, milestone)
+    if roadmap_step:
+        return roadmap_step
+
     abort_notes = [n for n in inbox_open if n.get("abort")]
     if abort_notes:
         return _hitl(
@@ -1092,6 +1387,9 @@ def _decide_from_state_body(
         )
 
     ui_review = needs_sprint_review(status) and not backend_only
+    open_sprint_work = [
+        t for t in sprint_tickets if t.get("status") not in ("done", "cancelled", "blocked")
+    ]
     if ui_review:
         try:
             from studio_product_git import needs_dev_push
@@ -1105,11 +1403,18 @@ def _decide_from_state_body(
                 )
         except Exception:
             pass
-        return _hitl(
-            "sprint-review",
-            project,
-            f"./studio review {project}",
-            "cadence review — feedback into ticket production; do not implement last sprint",
+        reality = _reality_step(project, sprint, status, open_sprint_work)
+        if reality == "continue":
+            ui_review = False
+        elif reality is not None:
+            return reality
+    if ui_review:
+        return ExecuteStep(
+            kind="VERIFY",
+            reason="cadence review brief — written for async human feedback; the train continues",
+            command=f"./studio review {project} --inform",
+            inform="Cadence review is INFORM (HQ autonomy): read the brief when you like; ./studio feedback <p> \"…\" at any time. Design feedback waits for the next design phase.",
+            loop=True,
         )
 
     hitl = get_sprint_hitl(status)
@@ -1132,6 +1437,9 @@ def _decide_from_state_body(
                 inform=reuse_brief,
                 loop=True,
             )
+        ms_step = _milestone_boundary_step(project, milestone)
+        if ms_step:
+            return ms_step
         lo_step = _studio_lo_if_idle(open_los, sprint_tickets)
         if lo_step:
             return lo_step
@@ -1143,6 +1451,9 @@ def _decide_from_state_body(
         )
 
     if not sprint:
+        ms_step = _milestone_boundary_step(project, milestone)
+        if ms_step:
+            return ms_step
         lo_step = _studio_lo_if_idle(open_los, sprint_tickets)
         if lo_step:
             return lo_step
@@ -1169,7 +1480,7 @@ def _decide_from_state_body(
         )
 
     tickets = sprint_tickets
-    # Cross-sprint deps (e.g. MOOD-0629 done last sprint) must count as satisfied.
+    # Cross-sprint deps (a ticket done last sprint) must count as satisfied.
     done_ids = project_done_ids(project) | {t["id"] for t in tickets if t.get("status") == "done"}
     scope_order = load_scope_order(project, sprint) if sprint else []
     current = pick_next_ticket(
@@ -1198,13 +1509,24 @@ def _decide_from_state_body(
                 command=f"./studio board {project}",
                 loop=False,
             )
+        stuck = [t["id"] for t in tickets if t.get("status") == "blocked"]
+        if stuck and all(t.get("status") in ("done", "blocked", "cancelled") for t in tickets):
+            return _hitl(
+                "blocked-retries",
+                project,
+                f"./studio board {project}",
+                f"only escalated tickets remain: {', '.join(stuck)} — decide each escalation packet",
+                ticket_id=stuck[0],
+                read=f"escalations/{stuck[0]}.md",
+            )
         if tickets and all(t.get("status") == "done" for t in tickets):
             if needs_sprint_review(status):
-                return _hitl(
-                    "sprint-review",
-                    project,
-                    f"./studio review {project}",
-                    "cadence review — feedback into ticket production (not implement last sprint)",
+                return ExecuteStep(
+                    kind="VERIFY",
+                    reason="cadence review brief — written for async human feedback; the train continues",
+                    command=f"./studio review {project} --inform",
+                    inform="Cadence review is INFORM (HQ autonomy); feedback arrives through ./studio feedback at any time.",
+                    loop=True,
                 )
             if backend_only or not needs_sprint_review(status):
                 return ExecuteStep(
@@ -1251,13 +1573,14 @@ def _decide_from_state_body(
                 read=f"docs/design-specs/{tid}.md",
             )
         if phase_sign == "architecture":
-            return _hitl(
-                "arch-approve",
-                project,
-                f"./studio approve-arch {project} --phase",
-                design_block or "Sign the architecture phase",
+            return ExecuteStep(
+                kind="VERIFY",
                 ticket_id=tid,
+                reason=design_block or "architecture phase packets complete — agent signs the phase (tech-veto window)",
+                command=f"./studio approve-arch {project} --phase",
                 read=f"docs/architecture/{tid}.md",
+                inform="Architecture is agent-signed (HQ autonomy). The human stops only at gate 1 and through ./studio veto.",
+                loop=True,
             )
         if phase_sign in ("release-design", "release-architecture"):
             command = (
@@ -1279,8 +1602,12 @@ def _decide_from_state_body(
                 ticket_id=tid,
                 reason="phase packet is still open — write it before the phase signature",
                 command=design_command or (
-                    f"Write {spec_hint} and docs/design-specs/mocks/{tid}/*.html "
-                    f"(project tokens, in-context shell, all states). "
+                    f"Write {spec_hint} and the mock routes app/(design-mocks)/design-mocks/{tid}/ "
+                    f"in the product app (real views and components, solution woven in). Make the "
+                    f"mock an interactive prototype: `library pull {project} mock-scenario-panel`, "
+                    f"wire handlers, states and §2d transitions, write §2e Interaction walkthrough, "
+                    f"then capture every state to docs/design-specs/mocks/{tid}/ as the record. "
+                    f"Verify with ./studio mock {project} {tid}. "
                     f"Do not ./studio approve-design {project} {tid} until those files exist."
                 ),
                 card=card,
@@ -1298,27 +1625,39 @@ def _decide_from_state_body(
                 read=f"docs/design-specs/{tid}.md",
             )
         train = _train_sidecar(open_los) if open_los else None
+        mock_ref = _design_mock_reference(project, tid, read_path)
         return ExecuteStep(
             kind="IMPLEMENT",
             ticket_id=tid,
             reason="next unblocked sprint ticket",
             command=f'./studio move {project} {tid} implement --reason "Sprint execution"',
             card=card,
-            read=read_path,
+            read=f"{read_path} + {mock_ref}" if mock_ref else read_path,
             loop=True,
             parallel_train=train,
             inbox_pending=len(inbox_open),
+            inform=(
+                f"Signed mock at {mock_ref} is the reference implementation: port its interactions, "
+                "transitions and component wiring — do not rebuild from the screenshots."
+            ) if mock_ref else "",
         )
 
     # in implement
     fails = count_gate_fails(log, tid)
-    if fails >= MAX_GATE_RETRIES:
-        return _hitl(
-            "blocked-retries",
-            project,
-            f"./studio move {project} {tid} blocked --reason \"gate failed {fails} times\"",
-            f"gate failed {fails} times — write debug then block",
+    if should_escalate(log, tid):
+        why = (
+            f"failed {fails} times"
+            if fails >= MAX_GATE_RETRIES
+            else "failed twice the same way"
+        )
+        return ExecuteStep(
+            kind="BLOCK",
             ticket_id=tid,
+            reason=f"{why} — fill the escalation packet, block the ticket, continue with independent tickets",
+            command=f'./studio move {project} {tid} blocked --reason "{why}; see escalations/{tid}.md"',
+            read=f"escalations/{tid}.md",
+            retries=fails,
+            loop=True,
         )
 
     receipt_ok = receipts_ok.get(tid, False)
@@ -1360,16 +1699,68 @@ def _decide_from_state_body(
             loop=True,
         )
 
+    from qa_review import finish_state, needs_finish_gate, qa_state
+
+    verdict = qa_state(log, tid)
+    if verdict == "fail":
+        return ExecuteStep(
+            kind="DEBUG",
+            ticket_id=tid,
+            reason=f"QA FAIL — fix only the findings in qa/{tid}.md, then re-run gate (attempt {fails + 1}/{MAX_GATE_RETRIES})",
+            command=f"./studio gate {project} --level 5",
+            card=card,
+            read=f"qa/{tid}.md",
+            retries=fails,
+            loop=True,
+        )
+    if verdict != "pass":
+        return ExecuteStep(
+            kind="QA_REVIEW",
+            ticket_id=tid,
+            reason="gate green — a fresh-context reviewer judges the AC before done (defaults to FAIL without proof)",
+            command=f"./studio qa {project} {tid}",
+            inform="Spawn a subagent without this chat. It writes the verdict file; then record it with --verdict.",
+            card=card,
+            read=read_path,
+            retries=fails,
+            loop=True,
+        )
+    if needs_finish_gate(PROJECTS_DIR / project, tid) and finish_state(log, tid) != "pass":
+        return ExecuteStep(
+            kind="QA_REVIEW",
+            ticket_id=tid,
+            reason="UX-009 finish gate — capture the shipped states at 1440 and 390 next to the signed mock shots",
+            command=f"./studio qa {project} {tid} --finish",
+            inform="HOLD counts as a QA fail on the same retry budget; it is not a human stop.",
+            card=card,
+            read=f"docs/design-specs/mocks/{tid}/",
+            retries=fails,
+            loop=True,
+        )
+
     return ExecuteStep(
         kind="MOVE_DONE",
         ticket_id=tid,
-        reason="receipt + fresh gate 5 — mark done and continue",
+        reason="receipt + fresh gate 5 + QA PASS — mark done and continue",
         command=f'./studio move {project} {tid} done --reason "DoD met"',
         inform="Then git commit on the product repo happens in move done. Do not push main. Cadence review pushes origin/dev.",
         card=card,
         read=read_path,
         loop=True,
     )
+
+
+def _milestone_signal(project: str, status: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    from pre_impl_workflow import design_system_approved
+
+    if not design_system_approved(status):
+        return None
+    try:
+        from studio_milestones import execute_signal
+
+        return execute_signal(project, status)
+    except Exception:
+        return None
 
 
 def decide_next_action(project: str) -> ExecuteStep:
@@ -1544,6 +1935,7 @@ def decide_next_action(project: str) -> ExecuteStep:
         skip_ticket_ids=skip_ticket_ids,
         phase_sign=phase_sign,
         design_command=design_command,
+        milestone=_milestone_signal(project, status),
     )
     if step.kind == "IMPLEMENT" and step.parallel_train:
         for job in step.parallel_train:
@@ -1591,7 +1983,7 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
     if step.read:
         read = step.read
         banned = "learnings/inbox.md"
-        if step.kind in ("IMPLEMENT", "VERIFY", "GATE", "DEBUG", "MOVE_DONE") and banned in str(read):
+        if step.kind in ("IMPLEMENT", "VERIFY", "GATE", "DEBUG", "QA_REVIEW", "BLOCK", "MOVE_DONE") and banned in str(read):
             read = "(this ticket only — not learnings/inbox.md)"
         lines.append(f"  READ:    {read}  (this ticket only — not the backlog)")
     if step.retries:
@@ -1636,6 +2028,16 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
     elif step.kind == "PRODUCTION":
         lines.append("  Write the packet now. Do not implement the product ticket until stream is ready.")
         lines.append("  Then loop: ./studio execute <project> until HITL approve-design / approve-arch.")
+    elif step.kind == "QA_REVIEW":
+        lines.append("  Run NEXT for the reviewer brief. Hand it to a fresh subagent (no chat history); it writes the verdict.")
+        lines.append("  Do not write or edit the verdict yourself. Then: ./studio qa <project> <TICKET> --verdict PASS|FAIL")
+        lines.append("  Loop: ./studio execute again.")
+    elif step.kind == "REALITY_CHECK":
+        lines.append("  Run NEXT for the brief; hand it to a fresh subagent. It fills the report on the dev build.")
+        lines.append("  Then: ./studio reality-check <project> --check, and ./studio execute again.")
+    elif step.kind == "BLOCK":
+        lines.append("  Fill the escalation packet's one human question, run NEXT, then ./studio execute again.")
+        lines.append("  Independent tickets continue. The human decides escalations when nothing else is left.")
     else:
         lines.append("  Loop: do NEXT, then ./studio execute again. Do not ask to continue.")
         if step.kind in ("IMPLEMENT", "VERIFY", "GATE", "DEBUG", "MOVE_DONE"):
@@ -1668,9 +2070,20 @@ def format_execute_step(project: str, step: ExecuteStep) -> str:
             lines.append(f"    deps:  {', '.join(card['deps'])}")
         if card.get("skills"):
             lines.append(f"    skills: {', '.join(card['skills'])}")
+        if card.get("staffed"):
+            lines.append(
+                f"    staffed by PM-004 (missing on the ticket): {', '.join(card['staffed'])}"
+                " — add them to the ticket `skills:` or `staffing_waive:` with a reason"
+            )
+        if card.get("skill_files"):
+            lines.append(f"    skill files: {', '.join(card['skill_files'])}")
         if card.get("playbooks"):
             lines.append(f"    playbooks: {', '.join(card['playbooks'])}")
-            lines.append("    READ only these playbooks and the listed learnings README. Do not open learnings/inbox.md or archive/.")
+        if card.get("skill_files") or card.get("playbooks"):
+            lines.append(
+                "    READ the skill files and these playbooks before coding; each skill's Rules and"
+                " Done evidence apply to the receipt. Do not open learnings/inbox.md or archive/."
+            )
     return "\n".join(lines)
 
 

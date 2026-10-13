@@ -51,18 +51,18 @@ class TestApplySprintScope(unittest.TestCase):
             root = Path(tmp)
             backlog = root / "projects" / "demo" / "backlog"
             backlog.mkdir(parents=True)
-            ticket = backlog / "MOOD-0204-dropdown.md"
+            ticket = backlog / "DEMO-0204-dropdown.md"
             ticket.write_text(
-                "---\nid: MOOD-0204\nsprint: SPRINT-40\ncreated: 2026-08-26\n---\n\n# D\n",
+                "---\nid: DEMO-0204\nsprint: SPRINT-40\ncreated: 2026-08-26\n---\n\n# D\n",
                 encoding="utf-8",
             )
-            proposal = {"proposed": [{"id": "MOOD-0204"}, {"id": "MOOD-9999"}]}
+            proposal = {"proposed": [{"id": "DEMO-0204"}, {"id": "DEMO-9999"}]}
 
             with patch("backlog_paths.queue_ticket_paths", return_value=[ticket]):
                 count, missing = apply_sprint_scope("demo", "SPRINT-41", proposal)
 
             self.assertEqual(count, 1)
-            self.assertEqual(missing, ["MOOD-9999"])
+            self.assertEqual(missing, ["DEMO-9999"])
             self.assertIn("sprint: SPRINT-41", ticket.read_text(encoding="utf-8"))
 
 

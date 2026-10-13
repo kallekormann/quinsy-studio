@@ -10,6 +10,7 @@ Pairing: [design-team-canon-ledger.md](../../knowledge-base/design-team-canon-le
 |-------|------|
 | GD-001 | Growth Designer — hypothesis, metric, experiment, variant intent |
 | GD-002 | Commercial surface mechanics — landing, pricing, checkout, PLP, PDP |
+| GD-003 | Persona walkthrough — five-second test and walkthrough appendix on commercial design packets |
 
 ## Workflow
 

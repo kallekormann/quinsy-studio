@@ -24,6 +24,10 @@ activation_triggers:
 
 ## Behavior rules
 
+### 0. Payload first
+
+Payload already serves REST at `/api/<collection>` and the Local API on the server. Use them for CRUD; the collection `access` rules are the authorization. Write a custom endpoint (Payload `endpoints` or a Next route handler) only for operations that are not CRUD on one collection: webhooks, checkout, exports, multi-step actions. Rules 1–7 apply to custom endpoints. Payload's built-in routes keep Payload's own error format (`{ "errors": [{ "message": … }] }`); do not wrap them.
+
 ### 1. RESTful resources
 
 ```markdown
@@ -66,17 +70,22 @@ For lists:
   "meta": { ... }
 }
 
-For errors:
+For errors — the one studio error shape (same as BE-004):
 {
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Email is invalid",
-    "details": [
-      { "field": "email", "message": "Must be a valid email address" }
-    ]
-  }
+  "code": "VALIDATION_ERROR",
+  "message": "Email is invalid",
+  "details": [
+    { "field": "email", "code": "INVALID_FORMAT", "message": "Must be a valid email address" }
+  ],
+  "request_id": "req_7f3a9c"
 }
 ```
+
+- `code`: stable UPPER_SNAKE string from the BE-004 list. Clients branch on it, never on `message`.
+- `message`: one sentence for a developer. The UI shows its own catalog text for `code` (FE-008), not this string.
+- `details`: array, empty when there is nothing to add. Field errors use `field`.
+- `request_id`: also sent as the `X-Request-Id` response header and written to every log line.
+- The HTTP status carries the class; the body never says `200` with an error inside.
 
 ### 3. Status codes
 
@@ -136,11 +145,27 @@ Strategy: URL-based
   /api/v2/users
 
 Rules:
-  - Old versions supported for at least 6 months
-  - Breaking changes only in a new version
-  - Deprecation header on old endpoints
+  - Version only endpoints that outside clients call (extension, mobile, partner).
+    Same-origin routes used only by our Next app change together with the app.
+  - Breaking changes only in a new version (see compatibility table)
+  - Old version kept for the window named in the architecture doc
+  - `Deprecation` (RFC 9745) and `Sunset` (RFC 8594) headers on old endpoints
   - Changelog for API changes
 ```
+
+### 5a. Compatibility table
+
+| Safe within a version | Breaking: needs a new version |
+|---|---|
+| Add an endpoint | Remove or rename an endpoint or field |
+| Add an optional response field | Change a field's type, format or unit |
+| Add an optional request parameter | Make an optional parameter required |
+| Add an error `code` inside the same shape | Change the error shape or a status code's meaning |
+| Add an enum value, if clients are documented to ignore unknown values | Remove an enum value or change a default |
+| Relax a validation rule | Tighten a validation rule |
+| Add a Payload field with `access.read` limited to admin | Expose or hide a field by changing `access.read` on a public collection |
+
+A Payload collection that a client reads over REST is a public contract too: renaming a field is breaking.
 
 ### 6. Rate limiting
 
@@ -152,13 +177,19 @@ Headers:
 
 On limit:
   429 Too Many Requests
-  Retry-After: 60
+  Retry-After: <seconds>
+  body: { "code": "RATE_LIMITED", "message": "…", "details": [], "request_id": "…" }
 
 Limits:
-  - Auth endpoints: 10/min
-  - Standard endpoints: 100/min
-  - Read-heavy: 1000/min
+  - Set per endpoint class in the architecture doc (auth, write, read)
+  - Auth: Payload `maxLoginAttempts` / `lockTime` per account (BE-003),
+    plus a per-IP limit at the proxy or route
+  - Webhooks are not rate-limited by us; they are verified (BE-008)
 ```
+
+### 7. Idempotent writes
+
+Creates that a client may retry (checkout, order, send) accept an `Idempotency-Key` header. Store key plus response for the retry window; a repeat returns the stored response. Derive server-side keys from the business operation (`order-<id>-attempt-<n>`), not a random value per call.
 
 ---
 
@@ -190,6 +221,18 @@ Limits:
 
 ---
 
+## Done evidence (receipt)
+
+`## API proof` on every BE-001 ticket, PASS / FAIL / NOT TESTED per line:
+
+- One request and response sample per new or changed endpoint (method, path, status, body trimmed), from a real call (`curl` or test log), not hand-written
+- **Authz negative case:** the same call as a user without access, or anonymous, returns `401` / `403` (or a filtered empty list for Payload `read`). Name the user and the status
+- One error sample in the studio error shape, with `request_id`
+- Compatibility: "additive only" or the new version and its `Sunset` date
+- For Payload collections: the `access` function names per operation
+
+---
+
 ## Toolbox (trained — LO-0146)
 
 ### Operator idea queues
@@ -203,6 +246,8 @@ Limits:
 
 - `.quinsy-studio/process/adr-policy.md` — ADR for API decisions
 - `.quinsy-studio/knowledge-base/backend_playbook.md` — backend rules
+- `.quinsy-studio/knowledge-base/payload-playbook.md` — Payload REST and Local API
+- BE-004 error handling (error codes, timeouts), BE-003 auth, BE-008 webhooks
 - `studio-library/packages/` — reusable packages
 
 ## Deltas

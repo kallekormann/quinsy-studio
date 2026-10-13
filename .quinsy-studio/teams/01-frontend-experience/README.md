@@ -31,6 +31,9 @@ Owns **shipping** UI after Team 10 (and Team 11 on commercial surfaces). Compose
 | FE-005 | PWA Implementation | Frontend Architect | `skills/pwa-implementation.md` |
 | FE-006 | Frontend Testing | QA Specialist | `skills/frontend-testing.md` |
 | FE-007 | Client Security | Frontend Security Engineer | `skills/client-security.md` |
+| FE-008 | i18n and Localization | Frontend Engineer | `skills/i18n-localization.md` |
+
+FE-004 and FE-006 are required companions on every user-facing UI ticket (PM-004). UX-009 (Team 10) compares the shipped screen with the signed real-UI mock before `MOVE_DONE`.
 
 Canon: [frontend-team-canon-ledger.md](../../knowledge-base/frontend-team-canon-ledger.md). Playbook: [frontend_playbook.md](../../knowledge-base/frontend_playbook.md). QA rubric: [qa-gate-playbook.md](../../knowledge-base/qa-gate-playbook.md).
 

@@ -1,6 +1,6 @@
 /**
- * Moody Bloom — segmented A|B (or A|B|C) toggle.
- * Pixel-aligned to MOOD-0413 mock `.seg` (07-components.html).
+ * Segmented A|B (or A|B|C) toggle.
+ * Compact track with pixel-aligned segments.
  */
 'use client';
 

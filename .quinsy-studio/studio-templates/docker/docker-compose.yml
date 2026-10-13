@@ -19,13 +19,13 @@ name: {{PROJECT_NAME}}
 services:
   db:
     container_name: {{PROJECT_NAME}}-postgres
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "${POSTGRES_HOST_PORT:-15432}:5432"
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-15432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -35,29 +35,59 @@ services:
       retries: 5
 
   redis:
+    profiles: ["redis", "rag"]
     container_name: {{PROJECT_NAME}}-redis
     image: redis:7-alpine
     ports:
-      - "${REDIS_HOST_PORT:-16379}:6379"
+      - "127.0.0.1:${REDIS_HOST_PORT:-16379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Optional: App-Service (für Full-Stack-Projekte einblenden)
-  # app:
-  #   build: .
-  #   ports:
-  #     - "${APP_HOST_PORT:-13000}:3000"
-  #   environment:
-  #     DATABASE_URL: postgresql://postgres:postgres@db:5432/${PROJECT_NAME}
-  #     REDIS_URL: redis://redis:6379
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
+  pgbouncer:
+    profiles: ["pooler"]
+    container_name: {{PROJECT_NAME}}-pgbouncer
+    image: edoburu/pgbouncer:latest
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      POOL_MODE: session
+      LISTEN_PORT: "5432"
+    ports:
+      - "127.0.0.1:${PGBOUNCER_HOST_PORT:-15433}:5432"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  minio:
+    profiles: ["minio"]
+    container_name: {{PROJECT_NAME}}-minio
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:${MINIO_HOST_PORT:-19000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_HOST_PORT:-19001}:9001"
+
+  embeddings:
+    profiles: ["rag"]
+    container_name: {{PROJECT_NAME}}-embeddings
+    image: python:3.12-slim
+    working_dir: /worker
+    command: python worker.py
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+    volumes:
+      - ../apps/worker/worker.py:/worker/worker.py:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:

@@ -10,6 +10,51 @@ from design_ticket_helpers import (
     infer_ticket_type,
 )
 
+_ALL_STATES = (
+    "rest", "hover", "pressed", "disabled", "focus",
+    "closed", "open", "empty", "loading", "error",
+)
+
+
+def _write_real_ui_mock(root, ticket_id, page_body=None, states=_ALL_STATES, shots=True):
+    """A Payload-style app with mock routes that render the real shell and components."""
+    from design_ticket_helpers import ensure_design_mocks_layout
+
+    app = root / "apps" / "web"
+    (app / "src" / "app" / "(app)").mkdir(parents=True, exist_ok=True)
+    (app / "package.json").write_text('{"name": "web"}', encoding="utf-8")
+    ensure_design_mocks_layout(root)
+    body = page_body or (
+        "'use client'\n"
+        "import { useState } from 'react'\n"
+        "import AppLayout from '@/app/(app)/layout'\n"
+        "import { FilterMenu } from '@/components/filter-menu'\n"
+        "import { MockScenarioPanel, useMockScenario } from '@/components/mock-scenario-panel'\n\n"
+        "export default function Mock() {\n"
+        "  const [scenario, setScenario] = useMockScenario()\n"
+        "  const [open, setOpen] = useState(false)\n"
+        "  return (\n"
+        "    <AppLayout>\n"
+        "      <FilterMenu data-state=\"{state}\" open={open} onClick={() => setOpen(!open)}\n"
+        "        className=\"transition-opacity duration-150\" />\n"
+        "      <MockScenarioPanel scenarios={['rest', 'empty', 'loading', 'error']}\n"
+        "        value={scenario} onValueChange={setScenario} />\n"
+        "    </AppLayout>\n"
+        "  )\n"
+        "}\n"
+    )
+    mock_root = app / "src" / "app" / "(design-mocks)" / "design-mocks" / ticket_id
+    for state in states:
+        page = mock_root / state / "page.tsx"
+        page.parent.mkdir(parents=True, exist_ok=True)
+        page.write_text(body.replace("{state}", state), encoding="utf-8")
+    if shots:
+        shot_dir = root / "docs" / "design-specs" / "mocks" / ticket_id
+        shot_dir.mkdir(parents=True, exist_ok=True)
+        for state in states:
+            (shot_dir / f"{state}-1440.png").write_bytes(b"\x89PNG")
+    return mock_root
+
 
 def test_infer_ia_feature_placement():
     assert infer_ticket_type("Move presentation link to presentation builder") == "ia-feature-placement"
@@ -45,7 +90,7 @@ def test_infer_i18n_catalog_ac_stays_feature():
 def test_infer_identity_fixture_stays_feature():
     assert (
         infer_ticket_type(
-            "Command Center chrome drops kit demo identity. GitHub kit menus still show demo profiles."
+            "Admin chrome drops kit demo identity. GitHub kit menus still show demo profiles."
         )
         == "feature"
     )
@@ -55,7 +100,7 @@ def test_feature_chrome_is_not_backend_only():
     from design_ticket_helpers import tickets_are_backend_only
 
     assert not tickets_are_backend_only(
-        [{"ticket_type": "feature", "title": "Command Center chrome drops kit demo identity"}]
+        [{"ticket_type": "feature", "title": "Admin chrome drops kit demo identity"}]
     )
 
 
@@ -89,7 +134,7 @@ def test_in_context_mocks_detected():
 | Field | Value |
 |-------|-------|
 | **Shell / surface** | Board canvas chrome + Inbox rail |
-| **Mock assets** | docs/design-specs/mocks/MOOD-0190/dialog-in-board.png |
+| **Mock assets** | docs/design-specs/mocks/DEMO-0190/dialog-in-board.png |
 | **States shown** | empty, open, error |
 | **Anti-orphan check** | Board header and canvas edge visible in frame |
 
@@ -167,11 +212,31 @@ Ship the filter bar on the command list.
 Filter menu opens in 250ms and closes in 150ms (`--motion-duration-fast` / `--motion-duration-quick`), ease smooth-out.
 Reduced-motion: same menu, durations at 0ms.
 
+## 2e. Interaction walkthrough
+
+Mock route: http://localhost:3000/design-mocks/DEMO-0001/
+
+| # | Do | Expect (incl. motion) |
+| 1 | Hover the filter button | Expect hover tint, 150ms ease |
+| 2 | Click to open the filter menu | Expect panel opens from trigger, 250ms |
+| 3 | Switch ?state=empty | Expect empty list view, no layout shift |
+
 ## 3. Atomic inventory
 
 | Level | Name | Library source | New? |
 | atom | Button | pull: button | no |
 | molecule | Dropdown | pull: dropdown-menu | no |
+
+### Five-second test
+
+| Question | 1440 | 390 |
+| What is this? | Filter bar above the command list | same, stacked |
+| Is it for me? | operator label in the header | same |
+| What do I do next? | open the filter menu | same |
+
+## 7b. Catalog applied
+
+- LO-0172 — scrollbar gutter reserved on the list well (§4)
 """
 
 
@@ -195,26 +260,7 @@ def test_filled_spec_with_token_all_state_mocks_passes():
         spec = tmp_path / "docs" / "design-specs" / "DEMO-0001.md"
         spec.parent.mkdir(parents=True)
         spec.write_text(_filled_spec(), encoding="utf-8")
-        mock = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-0001" / "list.html"
-        mock.parent.mkdir(parents=True)
-        mock.write_text(
-            """<!doctype html>
-<link rel="stylesheet" href="../../../../ui/tokens/design-tokens.css">
-<!-- in-context: sidebar + command list -->
-<button data-state="rest">Filter</button>
-<button data-state="hover">Filter</button>
-<button data-state="pressed">Filter</button>
-<button disabled data-state="disabled">Filter</button>
-<button data-state="focus">Filter</button>
-<div data-state="closed">dropdown closed</div>
-<div data-state="open">dropdown open</div>
-<div data-state="empty">empty</div>
-<div data-state="loading">loading</div>
-<div data-state="error">error</div>
-<div style="background: var(--background); color: var(--foreground)">shell</div>
-""",
-            encoding="utf-8",
-        )
+        _write_real_ui_mock(tmp_path, "DEMO-0001")
         err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
         assert err is None
         ticket = (
@@ -236,25 +282,7 @@ def test_ia_navigation_missing_metrics_fails():
         spec = tmp_path / "docs" / "design-specs" / "DEMO-IA.md"
         spec.parent.mkdir(parents=True)
         spec.write_text(_filled_spec(), encoding="utf-8")
-        mock = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-IA" / "list.html"
-        mock.parent.mkdir(parents=True)
-        mock.write_text(
-            """<!doctype html>
-<link rel="stylesheet" href="../../../../ui/tokens/design-tokens.css">
-<button data-state="rest">Nav</button>
-<button data-state="hover">Nav</button>
-<button data-state="pressed">Nav</button>
-<button disabled data-state="disabled">Nav</button>
-<button data-state="focus">Nav</button>
-<div data-state="closed">closed</div>
-<div data-state="open">open</div>
-<div data-state="empty">empty</div>
-<div data-state="loading">loading</div>
-<div data-state="error">error</div>
-<div style="background: var(--background); color: var(--foreground)">shell</div>
-""",
-            encoding="utf-8",
-        )
+        _write_real_ui_mock(tmp_path, "DEMO-IA")
         err = design_spec_completeness_error(spec, tmp_path, "DEMO-IA", "ia-navigation")
         assert err and "IA nav" in err
 
@@ -268,25 +296,7 @@ def test_ia_navigation_nine_top_level_fails():
         spec = tmp_path / "docs" / "design-specs" / "DEMO-IA.md"
         spec.parent.mkdir(parents=True)
         spec.write_text(_filled_spec() + "\n\nia_nav: { top: 9, depth: 2 }\n", encoding="utf-8")
-        mock = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-IA" / "list.html"
-        mock.parent.mkdir(parents=True)
-        mock.write_text(
-            """<!doctype html>
-<link rel="stylesheet" href="../../../../ui/tokens/design-tokens.css">
-<button data-state="rest">Nav</button>
-<button data-state="hover">Nav</button>
-<button data-state="pressed">Nav</button>
-<button disabled data-state="disabled">Nav</button>
-<button data-state="focus">Nav</button>
-<div data-state="closed">closed</div>
-<div data-state="open">open</div>
-<div data-state="empty">empty</div>
-<div data-state="loading">loading</div>
-<div data-state="error">error</div>
-<div style="background: var(--background); color: var(--foreground)">shell</div>
-""",
-            encoding="utf-8",
-        )
+        _write_real_ui_mock(tmp_path, "DEMO-IA")
         err = design_spec_completeness_error(spec, tmp_path, "DEMO-IA", "ia-navigation")
         assert err and "9" in err
 
@@ -300,27 +310,214 @@ def test_ia_navigation_ok_counts_pass():
         spec = tmp_path / "docs" / "design-specs" / "DEMO-IA.md"
         spec.parent.mkdir(parents=True)
         spec.write_text(_filled_spec() + "\n\nia_nav: { top: 5, depth: 2 }\n", encoding="utf-8")
-        mock = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-IA" / "list.html"
-        mock.parent.mkdir(parents=True)
-        mock.write_text(
-            """<!doctype html>
-<link rel="stylesheet" href="../../../../ui/tokens/design-tokens.css">
-<button data-state="rest">Nav</button>
-<button data-state="hover">Nav</button>
-<button data-state="pressed">Nav</button>
-<button disabled data-state="disabled">Nav</button>
-<button data-state="focus">Nav</button>
-<div data-state="closed">closed</div>
-<div data-state="open">open</div>
-<div data-state="empty">empty</div>
-<div data-state="loading">loading</div>
-<div data-state="error">error</div>
-<div style="background: var(--background); color: var(--foreground)">shell</div>
-""",
-            encoding="utf-8",
-        )
+        _write_real_ui_mock(tmp_path, "DEMO-IA")
         err = design_spec_completeness_error(spec, tmp_path, "DEMO-IA", "ia-navigation")
         assert err is None
+
+
+def _spec_in(tmp_path, ticket_id="DEMO-0001"):
+    spec = tmp_path / "docs" / "design-specs" / f"{ticket_id}.md"
+    spec.parent.mkdir(parents=True, exist_ok=True)
+    spec.write_text(_filled_spec(), encoding="utf-8")
+    return spec
+
+
+def test_standalone_html_mocks_are_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    app = tmp_path / "apps" / "web"
+    (app / "src" / "app").mkdir(parents=True)
+    (app / "package.json").write_text("{}", encoding="utf-8")
+    html = tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-0001" / "list.html"
+    html.parent.mkdir(parents=True)
+    html.write_text('<link href="ui/tokens/design-tokens.css"><div style="color: var(--x)">', encoding="utf-8")
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "Standalone HTML mocks are no longer accepted" in err
+
+
+def test_mock_without_app_imports_is_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body="export default function Mock() { return <div data-state=\"{state}\">x</div> }\n",
+    )
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "import nothing from the app" in err
+
+
+def test_mock_without_shell_is_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=(
+            "import { FilterMenu } from '@/components/filter-menu'\n"
+            "export default function Mock() { return <FilterMenu state=\"{state}\" /> }\n"
+        ),
+    )
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "no app shell" in err
+
+
+def test_hand_rolled_styling_in_mock_is_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=(
+            "import AppLayout from '@/app/(app)/layout'\n"
+            "export default function Mock() {\n"
+            "  return <AppLayout><button style={{ background: '#3b82f6' }}>{state}</button></AppLayout>\n"
+            "}\n"
+        ),
+    )
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "redraw UI" in err
+
+
+def test_static_mock_frames_are_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=(
+            "import AppLayout from '@/app/(app)/layout'\n"
+            "import { FilterMenu } from '@/components/filter-menu'\n\n"
+            "export default function Mock() {\n"
+            "  return <AppLayout><FilterMenu /></AppLayout>\n"
+            "}\n"
+        ),
+    )
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "static frames" in err
+
+
+def test_interactive_mock_without_scenario_states_is_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=(
+            "'use client'\n"
+            "import { useState } from 'react'\n"
+            "import AppLayout from '@/app/(app)/layout'\n"
+            "import { FilterMenu } from '@/components/filter-menu'\n\n"
+            "export default function Mock() {\n"
+            "  const [open, setOpen] = useState(false)\n"
+            "  return <AppLayout><FilterMenu open={open} onClick={() => setOpen(!open)} /></AppLayout>\n"
+            "}\n"
+        ),
+    )
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "scenario states" in err
+
+
+def test_interactive_mock_without_wired_motion_is_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=(
+            "'use client'\n"
+            "import { useState } from 'react'\n"
+            "import AppLayout from '@/app/(app)/layout'\n"
+            "import { FilterMenu } from '@/components/filter-menu'\n"
+            "import { MockScenarioPanel, useMockScenario } from '@/components/mock-scenario-panel'\n\n"
+            "export default function Mock() {\n"
+            "  const [scenario, setScenario] = useMockScenario()\n"
+            "  const [open, setOpen] = useState(false)\n"
+            "  return (\n"
+            "    <AppLayout>\n"
+            "      <FilterMenu open={open} onClick={() => setOpen(!open)} />\n"
+            "      <MockScenarioPanel scenarios={['rest', 'empty']} value={scenario} onValueChange={setScenario} />\n"
+            "    </AppLayout>\n"
+            "  )\n"
+            "}\n"
+        ),
+    )
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "wires none" in err
+
+
+def test_motion_off_mock_passes_without_transitions(tmp_path):
+    from design_ticket_helpers import design_mocks_interactive_error
+
+    _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=(
+            "'use client'\n"
+            "import { useState } from 'react'\n"
+            "import AppLayout from '@/app/(app)/layout'\n"
+            "import { FilterMenu } from '@/components/filter-menu'\n\n"
+            "export default function Mock() {\n"
+            "  const [open, setOpen] = useState(false)\n"
+            "  return <AppLayout><FilterMenu data-state='open' open={open} onClick={() => setOpen(!open)} /></AppLayout>\n"
+            "}\n"
+        ),
+    )
+    err = design_mocks_interactive_error("motion: off", tmp_path, "DEMO-0001")
+    assert err is None
+
+
+def test_interaction_walkthrough_checker():
+    from design_ticket_helpers import design_spec_interaction_walkthrough_error
+
+    assert "2e" in (design_spec_interaction_walkthrough_error("## 1. Summary\nx") or "")
+    short = "## 2e. Interaction walkthrough\n| 1 | Click | Expect open |\n"
+    assert "3 steps" in (design_spec_interaction_walkthrough_error(short) or "")
+    no_expect = (
+        "## 2e. Interaction walkthrough\n"
+        "| 1 | Click | menu |\n| 2 | Hover | tint |\n| 3 | Esc | closed |\n"
+    )
+    assert "expectations" in (design_spec_interaction_walkthrough_error(no_expect) or "")
+    good = (
+        "## 2e. Interaction walkthrough\n"
+        "| 1 | Click | Expect menu opens, 250ms |\n"
+        "| 2 | Hover | Expect tint, 150ms |\n"
+        "| 3 | ?state=empty | Expect empty view |\n"
+    )
+    assert design_spec_interaction_walkthrough_error(good) is None
+
+
+def test_mock_without_screenshots_is_refused(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(tmp_path, "DEMO-0001", shots=False)
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "No screenshots" in err
+
+
+def test_stale_screenshots_are_refused(tmp_path):
+    import os
+
+    spec = _spec_in(tmp_path)
+    mock_root = _write_real_ui_mock(tmp_path, "DEMO-0001")
+    old = os.path.getmtime(mock_root / "rest" / "page.tsx") - 60
+    for shot in (tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-0001").iterdir():
+        os.utime(shot, (old, old))
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
+    assert err and "older than the mock code" in err
+
+
+def test_mock_layout_guards_production(tmp_path):
+    _write_real_ui_mock(tmp_path, "DEMO-0001")
+    layout = tmp_path / "apps" / "web" / "src" / "app" / "(design-mocks)" / "layout.tsx"
+    text = layout.read_text(encoding="utf-8")
+    assert "notFound()" in text and "production" in text
+
+
+def test_prototype_is_the_app_before_apps_web(tmp_path):
+    from design_ticket_helpers import product_app_root
+
+    proto = tmp_path / "design" / "prototype"
+    (proto / "app").mkdir(parents=True)
+    (proto / "package.json").write_text("{}", encoding="utf-8")
+    assert product_app_root(tmp_path) == proto
+    web = tmp_path / "apps" / "web"
+    (web / "src" / "app").mkdir(parents=True)
+    (web / "package.json").write_text("{}", encoding="utf-8")
+    assert product_app_root(tmp_path) == web
 
 
 def test_design_implement_blocks_pending_design_track():

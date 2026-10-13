@@ -79,6 +79,31 @@ Sources (distilled, not reprinted): Nielsen heuristics; Krug; Wroblewski forms; 
 
 If there is no analytics yet, still write the claim. Do not invent three layouts “to see what feels better.” Catalog CRO skills (`form-cro`, `page-cro`, `signup-flow-cro`, …) map here and to GD-001 — not a new ID.
 
+## In-product loops (Team 11 GD-004 with Team 10)
+
+Growth that lives inside the product, drawn at the flow stage, not added after the mock. Template: `studio-templates/growth/growth-loop-map.md`. Milestone coverage area `growth` (Growth loops).
+
+| Loop | Input → step → output → new input | Closing metric |
+|------|-----------------------------------|----------------|
+| Activation | signup → shortest path → first success → retained user | time to first success, % reaching it |
+| Sharing / public artifact | user action → artifact worth receiving → receiver lands on a GD-002 surface → signup | share-to-signup |
+| Invite / collaboration | user needs a second person → invite with consent → invitee's first screen → activated invitee | invite acceptance |
+| Referral | activated user → honest incentive → referred signup → activation | referred activation |
+| Upgrade | limit felt in context → one-sentence plan difference, free path kept → upgrade | upgrade conversion at the moment |
+
+**Do**
+
+- Name the activation moment in the persona's words; strip onboarding steps that do not lead to it.
+- Give the receiver value first; run the five-second test (GD-003) on their first screen.
+- Keep a free path next to every upgrade prompt; the soft path lands on a real plan surface.
+- One closing metric per loop, written in spec §1 and the loop map.
+
+**Don't**
+
+- A Share button with nothing worth receiving.
+- Referral credits before activation exists.
+- Streaks, guilt, fake scarcity, variable rewards, inferred sensitive data (also Art. 9 DSGVO).
+
 ## Dark patterns (never “growth”)
 
 Hidden costs, obstruction, forced continuity, fake urgency, sneak into basket. Legal/HITL. Team 11 does not ship these as variants.

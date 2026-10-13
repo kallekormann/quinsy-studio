@@ -27,6 +27,14 @@
 
 ---
 
+## Positioning (GM-007)
+
+- **Core message:** one sentence a persona would repeat.
+- **Alternative today:** what the audience uses instead.
+- **The one difference:** why this wins against that alternative.
+- **Proof:** the number, quote, or demo behind the claim.
+- **Growth loop (GD-004):** the in-product mechanic that brings the next user or upgrade, or `none — reason`.
+
 ## Goals & Success Criteria
 
 * **North Star Metric:** [The one metric that matters.]

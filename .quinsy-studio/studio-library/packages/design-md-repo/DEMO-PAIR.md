@@ -1,22 +1,22 @@
-# Differential demo — contrast core pair (MOOD-0263)
+# Differential demo — contrast core pair
 
 ## Pair
 
 | Role         | System id      | Path                             |
 | ------------ | -------------- | -------------------------------- |
-| Default / A  | `moody-bloom`  | `systems/moody-bloom/Design.md`  |
+| Default / A  | `soft-ui`      | `systems/soft-ui/Design.md`      |
 | Contrast / B | `brutalist-ui` | `systems/brutalist-ui/Design.md` |
 
-Same moodboard Style DNA × two grammars proves the interpreter (AM-008).
+Same moodboard Style DNA × two grammars proves the interpreter.
 
 ## Non-goal
 
-Brutalist does **not** restyle Moody product chrome or tokens. Pair is generation-only.
+Neither core restyles the product's own chrome or tokens. The pair is generation-only.
 
 ## Operator check
 
 ```bash
-cd projects/moody
+cd projects/<project>
 npx vitest run packages/design-md-repo/parse.test.ts packages/design-md-repo/compile-cores.test.ts
 ```
 

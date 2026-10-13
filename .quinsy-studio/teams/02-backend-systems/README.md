@@ -9,7 +9,7 @@
 | **Senior Fullstack Architect** | Director | connects frontend and backend infrastructures, owns end-to-end data integration |
 | **Backend Architect** | Director | holistic API and system architecture |
 | **Backend / PHP / JS Engineers** | Lead | Laravel 11 core, Eloquent, queue management, Node.js |
-| **Database Specialist** | Director | PostgreSQL/Supabase, JSONb EAV models, GIN indexing |
+| **Database Specialist** | Director | PostgreSQL via Payload, JSONb EAV models, GIN indexing |
 | **Backend Security & Infrastructure Specialists** | Director | Docker, Turborepo, CI/CD |
 | **Data Engineer** | Director | ETL, affiliate API syncs |
 
@@ -25,6 +25,9 @@
 | BE-004 | Error Handling & Resilience | Backend Architect | `skills/error-handling.md` |
 | BE-005 | Third-Party Integrations | Backend Architect | `skills/third-party-integrations.md` |
 | BE-006 | Jobs and Delivery | Backend Architect | `skills/jobs-and-delivery.md` |
+| BE-007 | Payload (collections, access, Local API, localization) | Backend Architect | `skills/payload/SKILL.md` (vendored) + `skills/payload/README.md` |
+| BE-008 | Payments and Billing | Backend Architect | `skills/payments-billing.md` |
+| BE-009 | Document Generation (PDF, XRechnung/ZUGFeRD, GoBD) | Backend Engineer | `skills/document-generation.md` |
 
 ---
 

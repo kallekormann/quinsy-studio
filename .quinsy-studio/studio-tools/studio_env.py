@@ -68,12 +68,19 @@ def merged_schema_names(project: str, projects_dir: Path) -> List[str]:
     return names
 
 
-def refuse_without_approve(project: str, action: str) -> str:
+def inform_local_inject(project: str, action: str) -> str:
+    """Local Docker inject is agent-run (LO-0403). One INFORM line; `--approve` is accepted as a no-op."""
     return (
-        f"  ❌ `{action}` copies named variables into Docker and needs HITL.\n"
-        f"  Run: ./studio env {project} {action} --approve\n"
-        f"  Intent: inject schema names from projects/{project}/.env into Compose "
-        f"(values are never printed)."
+        f"  ℹ️  INFORM: `{action}` injects schema names from projects/{project}/.env into the local Compose stack "
+        f"(values are never printed). No signature needed; production steps live under `./studio ops`."
+    )
+
+
+def refuse_without_approve(project: str, action: str) -> str:
+    """Kept for callers that still print the old HITL hint; local inject no longer refuses."""
+    return (
+        f"  ℹ️  `{action}` runs without a signature since LO-0403. The old form still works:\n"
+        f"  ./studio env {project} {action} --approve"
     )
 
 
@@ -193,8 +200,10 @@ def compose_argv(
     compose_file: Path,
     host_env: Path,
     compose_args: Sequence[str],
+    extra_files: Sequence[Path] = (),
+    profiles: Sequence[str] = (),
 ) -> List[str]:
-    return [
+    cmd = [
         "docker",
         "compose",
         "-p",
@@ -203,10 +212,13 @@ def compose_argv(
         str(docker_dir),
         "-f",
         str(compose_file),
-        "--env-file",
-        str(host_env),
-        *compose_args,
     ]
+    for extra in extra_files:
+        cmd.extend(["-f", str(extra)])
+    for profile in profiles:
+        cmd.extend(["--profile", profile])
+    cmd.extend(["--env-file", str(host_env), *compose_args])
+    return cmd
 
 
 def public_command_line(argv: Sequence[str]) -> str:

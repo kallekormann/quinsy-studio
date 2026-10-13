@@ -31,7 +31,9 @@ Product/studio jobs that must survive restart. Distill of catalog `workflow-auto
 
 ### Eval and context (AI-004)
 
-Named eval set on the receipt (`## Eval`). RAG cites chunks; empty retrieval is a user-visible empty state. Context budget — do not dump the corpus. Prompt-injection: PE-003 (defensive).
+Named eval set on the receipt (`## Eval`). RAG cites chunks; empty retrieval is a user-visible empty state. Context budget — do not dump the corpus. Prompt-injection and LLM output sinks: AI-005 (`teams/07-ai-autonomous-systems/skills/ai-code-security-audit.md`). RAG on pgvector filters by tenant, locale and access before ranking; German chunks use the `german` full-text config.
+
+**Cost guardrails (AI-001):** `max_tokens` on every call; per-user/day and per-project/day budgets enforced in the adapter; model fallback chain in the architecture doc; cost logged per call without prompt text that may hold personal data.
 
 **Adapter rule (AI-001):** one provider adapter + eval + **user-visible surface** (LO-0017). Do not list every cloud model as the architecture.
 
@@ -107,8 +109,8 @@ async function cachedLLM(prompt: string): Promise<string> {
 │                             │                           │
 │                      ┌──────▼──────┐                   │
 │                      │ vector DB   │                   │
-│                      │ (Pinecone,  │                   │
-│                      │  Supabase)  │                   │
+│                      │ (pgvector)  │                   │
+│                      │             │                   │
 │                      └──────┬──────┘                   │
 │                             │                           │
 │  ┌─────────────┐     ┌──────▼──────┐                   │

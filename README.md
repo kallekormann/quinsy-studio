@@ -39,28 +39,33 @@ Open this repo in Cursor, Claude Code, or Gemini CLI. You talk. The agent runs `
 | You have | You say |
 |----------|---------|
 | A direction, no product | *"Look into …"* The desk explains the case. You say *"Yes, write the PRD."* |
-| A product definition in `intake/<project>.md` | *"Bootstrap <project> and walk me through gate 0."* |
+| A product definition in `intake/<project>.md`, or a folder `intake/<project>/` with several PRDs, notes and PDFs | *"Bootstrap <project> and walk me through gate 0."* |
 | Code that already runs | *"Adopt <project> from this folder and reconstruct as-built."* |
 
-Then you sign gate 0, gate 1, gate 2a, and gate 2b, in that order. `approve --gate 2` is refused. After that the agent designs, specifies, and builds until it needs you again. Production is `./studio ship <project> --to main --approve`.
+Then you sign gate 0, gate 1, gate 2a, and gate 2b, in that order. `approve --gate 2` is refused. Gate 1 records `Payload: in` or an ADR that opts out. The next execute writes `apps/web` when Payload is in. After that the agent designs, specifies, and builds until it needs you again. Production is Coolify. `./studio ship <project> --to main --approve` pushes that branch. Coolify builds it.
+
+The foundation how-to is [Getting Started § project foundation](.quinsy-studio/GETTING_STARTED.md#project-foundation) and [payload-playbook.md](.quinsy-studio/knowledge-base/payload-playbook.md).
 
 The walk-through is in [the story](.quinsy-studio/process/studio-overview.md). The full script is in [Getting Started](.quinsy-studio/GETTING_STARTED.md#start-here-tell-the-agent).
 
 ## What stays true
 
-1. **Library first.** Suggest and pull before coding. Do not pull the stubs `billing` and `feature-gating`. Promote only when the generic piece got better.
+1. **Library first.** Suggest and pull before coding. Do not pull the `feature-gating` stub. `billing` is pullable. Promote only when the generic piece got better.
 2. **No product code before the gates.** Gates are 0, then 1, then 2a, then 2b. An existing app uses `./studio adopt`, never an empty init.
 3. **No code without a ticket** after gate 2b.
-4. **Execute until it stops.** `./studio execute` is the driver. `./studio resume` is only a checklist. A finished ticket needs a receipt and gate 5. The agent does not wait for "looks good" on that ticket.
-5. **You sign packets, not every ticket.** Design phase, architecture phase, then a cadence review every few implementation phases. Hygiene sits outside that train.
-6. **Milestones** after gate 2b. Finish a milestone review before the next version's tickets.
-7. **Amendments** are a change of direction. Sprint feedback is a small note. They are different commands.
-8. **Placement before layout.** A UI spec is a file on disk, with every state, using the project's tokens. Motion is on unless the spec says `motion: off`.
-9. **A lesson is infused while the product keeps building.** The catalog, the playbook, or the skill is what gets committed. The ticket stays local.
-10. **Two git repos.** Product commits live in `projects/<name>/`. Studio commits never include `projects/`, `intake/`, or `ideation/`.
-11. **One chat per product.** `./studio focus` hides the other products from the agent. It is an assignment, not a sandbox. The default is five products at once.
-12. **Load caps** are in `studio.settings.yaml`. On `INFORM cost-cap`, raise the named key. Do not paste more files in.
-13. **Docker is required** to boot, migrate, and pass a gate. Env names live in `env.schema.json`. Values go in with `./studio env … --approve`. Do not read `.env` values into chat.
+4. **Execute until it stops.** `./studio execute` is the driver. `./studio resume` is only a checklist. The agent does not wait for "looks good" on a ticket.
+5. **Done means proven.** A receipt with PASS / FAIL / NOT TESTED lines and real paths, a green gate 5 (including security and quality checks), a QA PASS from a reviewer that has not seen the chat, and on UI tickets a screen that matches the signed mock. Three failed attempts move a ticket to `blocked`; the others continue. Before a cadence review a fresh agent walks the dev build (`./studio reality-check`).
+6. **Every ticket is staffed.** An owner skill plus companions from other teams (security, privacy, accessibility, tests) with reasons. `./studio groom` refuses gaps.
+7. **Mocks are the real app.** Design mocks are routes in the product app with screenshots of every state. Standalone HTML is refused.
+8. **You sign packets, not every ticket.** Design phase, architecture phase, then a cadence review every few implementation phases. Hygiene sits outside that train.
+9. **Milestones** after gate 2b. Finish a milestone review before the next version's tickets.
+10. **Amendments** are a change of direction. Sprint feedback is a small note. They are different commands.
+11. **Placement before layout.** A UI spec is a file on disk, with every state, using the project's tokens. Motion is on unless the spec says `motion: off`.
+12. **A lesson is infused while the product keeps building.** The catalog, the playbook, or the skill is what gets committed. The ticket stays local.
+13. **Two git repos.** Product commits live in `projects/<name>/`. Studio commits never include `projects/`, `intake/`, or `ideation/`.
+14. **One chat per product.** `./studio focus` hides the other products from the agent. It is an assignment, not a sandbox. The default is five products at once.
+15. **Load caps** are in `studio.settings.yaml`. On `INFORM cost-cap`, raise the named key. Do not paste more files in.
+16. **Docker is required** to boot, migrate, and pass a gate. Env names live in `env.schema.json`. Values go in with `./studio env … --approve`. Do not read `.env` values into chat.
 
 ## Where to read the rest
 
@@ -69,7 +74,8 @@ The walk-through is in [the story](.quinsy-studio/process/studio-overview.md). T
 | The path | [process/studio-overview.md](.quinsy-studio/process/studio-overview.md) |
 | Words you type | [GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
 | Ideation desk | [Getting Started § ideation](.quinsy-studio/GETTING_STARTED.md#ideation-desk) · [ideation-desk.md](.quinsy-studio/teams/09-studio-operations-evolution/skills/ideation-desk.md) |
-| Execute loop | [Getting Started § execute](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) |
+| Execute loop and the done bar | [Getting Started § execute](.quinsy-studio/GETTING_STARTED.md#the-execute-loop-how-work-actually-proceeds) |
+| Launching a product | [launch-playbook.md](.quinsy-studio/knowledge-base/launch-playbook.md) |
 | Learnings | [Getting Started § learnings](.quinsy-studio/GETTING_STARTED.md#learnings-harvest-when-identified) |
 | Cost and tokens | [Getting Started § settings](.quinsy-studio/GETTING_STARTED.md#studio-settings-cost--tokens) |
 | Motion | [Getting Started § motion](.quinsy-studio/GETTING_STARTED.md#motion-default-on) · [motion-transitions](.quinsy-studio/knowledge-base/skill-extensions/motion-transitions.md) |

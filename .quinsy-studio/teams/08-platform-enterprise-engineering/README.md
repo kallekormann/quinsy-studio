@@ -18,6 +18,11 @@
 | PE-002 | CI/CD Pipelines | DevOps Engineer | `skills/ci-cd-pipelines.md` |
 | PE-003 | Security Audit | Backend Security Engineer | `skills/security-audit.md` |
 | PE-004 | Monitoring & Observability | Platform Architect | `skills/monitoring-observability.md` |
+| PE-005 | Threat Modeling | Backend Security Specialist | `skills/threat-modeling.md` |
+| PE-006 | Secrets Hygiene | Backend Security Specialist | `skills/secrets-hygiene.md` |
+| PE-007 | Incident, Reliability and Breach Response | Infrastructure Specialist | `skills/incident-response.md` |
+
+PE-003 (with AI-005) is a required companion on tickets that touch auth, access, tenants, uploads, webhooks or keys; PE-006 on tickets that handle secrets (PM-004).
 
 ---
 

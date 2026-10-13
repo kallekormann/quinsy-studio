@@ -114,15 +114,16 @@ def create_phases_scaffold(project_dir: Path):
 
 | Milestone | Goal | Status |
 |-----------|------|--------|
-| M0 | _TBD after execution planning_ | planned |
-| M1 | _TBD_ | planned |
+| M0 | _TBD — first version from the PRD_ | planned |
 
 **Current milestone:** — (set after roadmap approval)
+
+Add M1, M2, M3, and as many later rows as `docs/intake/prd.md` and `docs/intake/sources/` need. There is no fixed count.
 
 ## Documents
 
 - [revisions.md](revisions.md) — pre-implementation gate feedback
-- _M0-*.md, M1-*.md added during execution planning_
+- One `M<n>-*.md` file per version, added during execution planning
 """,
             encoding="utf-8",
         )
@@ -138,7 +139,18 @@ def create_phases_scaffold(project_dir: Path):
 DEFINITION_TEMPLATES = {
     "00-index.md": "# Definitions Index\n\nLinks to all definition documents for this project.\n",
     "01-glossary.md": "# Glossary\n\n| Term | Definition |\n|------|------------|\n| _TODO_ | _TODO_ |\n",
-    "02-personas.md": "# Personas\n\n_Describe primary user personas._\n",
+    "02-personas.md": (
+        "# Personas\n\n"
+        "Task-based segments (UX-004), not demographic posters. One block per persona.\n\n"
+        "## <Persona name — the job they are doing>\n\n"
+        "| Field | Value |\n|-------|-------|\n"
+        "| Top tasks | _TODO_ |\n"
+        "| Problem in their words | _TODO_ |\n"
+        "| What they use today | _TODO_ |\n"
+        "| Trigger to switch | _TODO_ |\n"
+        "| Success in their words | _TODO_ |\n"
+        "| Source (interviews, reviews, support, analytics) or **assumption** + date | _TODO_ |\n"
+    ),
     "03-user-journeys.md": "# User Journeys\n\n_Key flows through the product._\n",
     "04-domain-model.md": "# Domain Model\n\n_Core entities and relationships._\n",
     "05-data-flows.md": "# Data Flows\n\n_How data moves through the system._\n",
@@ -148,6 +160,22 @@ DEFINITION_TEMPLATES = {
     "09-constraints.md": "# Constraints\n\n_Technical and business constraints._\n",
     "10-kpis.md": "# KPIs\n\n_Measurable success metrics._\n",
     "11-assumptions.md": "# Assumptions\n\n_Document assumptions until validated._\n",
+    "12-positioning.md": (
+        "# Positioning\n\n"
+        "Skill GM-007. Gate 0 refuses a stub. Every public surface, listing, and email derives from this file.\n\n"
+        "## Positioning table\n\n"
+        "| Field | Value |\n|-------|-------|\n"
+        "| Audience (persona from 02-personas.md) | _TODO_ |\n"
+        "| Problem in their words | _TODO_ |\n"
+        "| Alternative they use today | _TODO_ |\n"
+        "| Category we claim | _TODO_ |\n"
+        "| The one difference that matters | _TODO_ |\n"
+        "| Proof | _TODO_ |\n\n"
+        "## Core message\n\n_One sentence a persona would repeat._\n\n"
+        "## Message hierarchy per persona\n\n"
+        "| Persona | Problem line | Mechanism line | Proof line | Next step |\n|---------|--------------|----------------|------------|-----------|\n| _TODO_ | _TODO_ | _TODO_ | _TODO_ | _TODO_ |\n\n"
+        "## Proof list\n\n- _TODO_ (claim → number, quote with permission, or demo)\n"
+    ),
 }
 
 
@@ -255,7 +283,7 @@ Autonomous flow from intake to gate 7. The agent works through this document.
 3. User approves: `./studio approve {project} --gate 2b` — tickets; do **not** promote product look into studio-library
 
 ## Execution planning — Milestones (HITL)
-1. Agent drafts `docs/phases/README.md` + M0/M1 outlines from PRD + blueprint
+1. Agent drafts `docs/phases/README.md` and one outline per version the PRD and its source files need
 2. User approves: `./studio approve {project} --milestones`
 3. Agent writes tickets for **active milestone only** → product backlog (`milestone: M0`)
 4. See `.quinsy-studio/process/milestone-planning.md`

@@ -17,35 +17,42 @@ Agent: "Implemented."
 
 ## When is HITL needed?
 
-| Category | Actions | HITL? |
-|----------|---------|-------|
-| **Budget / paid vendor** | new paid vendor, costs above X €/month | **Yes** (tech-veto) |
-| **Legal** | contracts, licenses, GDPR exceptions | **Yes** |
-| **Irreversible** | deleting data, production deploy, DNS changes | **Yes** |
-| **Security** | security exceptions, access rights | **Yes** (tech-veto) |
-| **As-built / PRD (gate 0)** | confirm “this is what we have / are building” | **Yes** (`./studio approve --gate 0`) |
-| **Architecture (gate 1)** | stack, ADRs, persistence, vendors — after PRD | **Yes** (`./studio approve --gate 1`; refuses if gate 0 pending). Iterate: `./studio revise --gate 1` |
-| **Design direction (gate 2a)** | critique PASS, then the human signs identity (preference) | **Yes** (`./studio approve --gate 2a`; refuses if gate 1 pending), only after `DIRECTION-CRITIQUE.md` has no FAIL. Execute stays IMPLEMENT while the grader fails. No prototype. |
-| **Design system (gate 2b)** | pulled kit, shell routes, sticker all-states, live prototype | **Yes** (`./studio approve --gate 2b`; refuses if 2a pending). That copies the prototype into the product app. Iterate: `./studio revise --gate 2b`. Bare `--gate 2` is refused. Do not promote product look into studio-library. |
-| **Release** | production release | **Yes** |
-| **Cadence review** | shipped UI / product after **N implementation sprints** (default 2) | **Yes** (`./studio review`) — feedback goes into **production** tickets, not a silent next implement |
-| **Architecture packet** | ticket-level approach note | **Yes** (`./studio approve-arch`) after `docs/architecture/<TICKET>.md` exists |
-| **Backend-only sprint** | API / data work with no UI | **Inform** — continue to retro |
-| **Reuse** | what was pulled / promoted / now in registry | **Inform brief** — no `--approve` |
-| **Sprint scope / groom** | which tickets this sprint | **Agent-owned** (human may override) |
-| **Design phase** | experience tickets with `design_status: pending` | **Yes**, once, `./studio approve-design <p> --phase`, after every spec and all-state mock in the phase is written. Asking to approve a missing file is forbidden. |
-| **Architecture phase** | deltas from design, plus boundary tickets with no screen | **Yes**, once, `./studio approve-arch <p> --phase`. `--reject` sends an infeasible design to the next design cycle. |
-| **Design-system gap** | missing component, token, or pattern vs the gate-2b kit | **Do not invent in a feature ticket.** Open a design-track ticket for the next design phase. |
-| **Other UI / feature / styling** | assemble approved library + project tokens | **No** ticket ACK — stay inside the defined design system |
-| **Ticket done** | receipt + gate 5 + `MOVE_DONE` | **No** — product **git commit** on that ticket; never ACK in chat |
-| **Push `dev`** | before cadence review, if `origin` exists | **Agent** (`./studio ship <p> --to dev`) — not `main` |
-| **Push `main` / production** | deploy production | **Yes** (`./studio ship <p> --to main --approve`) |
-| **Feature** | new features (incremental, in sprint) | No (if ticket exists) |
-| **Bugfix** | fixing bugs | No |
-| **Docs** | documentation | No |
-| **Schema migrate (apply)** | Pending migrations on a DB the agent can reach (Compose via `./studio env <p> migrate --approve`, documented VPS) | **No** — agent runs migrate, then **informs**. Do not Read `.env` values |
-| **Destructive DB reset** | `migrate:fresh`, drop database, wipe production | **Yes** |
-| **Mid-execute chat** | thoughts while IMPLEMENT is in flight | **Queue** (`./studio guard` → `INBOX_ACK`) — auto-queued, do not preempt. Drain after MOVE_DONE. Only “stop this ticket” aborts |
+The human stops on **product decisions** and **design decisions**, plus the few irreversible production steps. Everything else the agent runs and **INFORM**s. Program: [hq-autonomy-program.md](hq-autonomy-program.md).
+
+### Human stops (execute prints `HITL` and waits)
+
+| Decision | Command | Why a human |
+|----------|---------|-------------|
+| **Gate 0** — PRD, personas, positioning | `./studio approve <p> --gate 0` | What we build and for whom |
+| **Gate 1** — architecture after the PRD | `./studio approve <p> --gate 1` | Stack, persistence, vendors, Payload in/out |
+| **Gate 2a** — design direction | `./studio approve <p> --gate 2a` | Identity is a preference the critique cannot decide |
+| **Gate 2b** — project kit | `./studio approve <p> --gate 2b` | The look every later screen inherits |
+| **Milestone roadmap and each milestone review** | `./studio approve <p> --milestones`, `./studio milestone <p> approve` | Re-plan, re-order, open a design sprint |
+| **Design phase** | `./studio approve-design <p> --phase` (per ticket `--reject --reason <code>`) | Taste and product fit; the rejection code feeds the design loop |
+| **Ship main / production deploy** | `./studio ship <p> --to main --approve` | Irreversible for users |
+| **Production migration, destructive data steps** | `./studio ops <p> migrate --prod --approve`, `db --reset --approve`, `cleanup --prune-volumes --approve` | Data cannot be un-dropped |
+| **Tech-veto** | `./studio veto <p> --decision … --reason …` | Budget, legal, security exceptions; stops at the next IMPLEMENT boundary |
+| **Abort** | "stop this ticket" | Only the human ends work in flight |
+| **Every remaining ticket blocked** | `./studio board <p>` | Escalation packets after 3 failures |
+
+### Agent-run with INFORM (execute prints `VERIFY` / `INFORM` and continues)
+
+| Step | Command | What the human sees |
+|------|---------|---------------------|
+| Local Docker: up, migrate, dev | `./studio env <p> up\|migrate\|dev` (`--approve` accepted, not required) | One INFORM line; values never printed |
+| Architecture phase and per-ticket packets | `./studio approve-arch <p> --phase` | INFORM with the tech-veto window; `--reject` still returns an infeasible design |
+| Cadence review | `./studio review <p> --inform` | Brief written; feedback arrives asynchronously via `./studio feedback` / `clarify` / `ticket --from-feedback`; design feedback waits for the next design phase |
+| Production ops: readiness, deploy, logs, status, db read, cleanup | `./studio ops <p> …` | One line each in `docs/ops/ops-log.md`; names from `.env.local` (`./studio env <p> prod --explain`) |
+| Reality check | `./studio reality-check <p>` | FAILED / NEEDS WORK file bug tickets instead of asking |
+| Backend-only sprint, reuse brief, sprint scope, groom | `./studio retro`, `./studio reuse`, `./studio sprint --approve-scope`, `./studio groom` | Inform; human may override |
+| Ticket done | receipt + gate 5 + QA PASS + finish gate → `MOVE_DONE` | Product git commit; never a chat ACK |
+| Push `dev` | `./studio ship <p> --to dev` | Before each cadence brief |
+| Design-system gap | design-track ticket for the next design phase | Never invented inside a feature ticket |
+| Mid-execute chat | `./studio guard` → `INBOX_ACK` | Queued, drained after `MOVE_DONE`; only abort preempts |
+
+### Design feedback loop
+
+Every push-back is coded: `hierarchy`, `density`, `motion`, `copy`, `flow`, `uniqueness`, `a11y`, `brand`. `approve-design --reject --reason <code>`, a finish-gate HOLD (`Reason:` line), and `feedback` / `clarify --design-reason <code>` write `docs/design-specs/pushback-log.md` and harvest into `knowledge-base/learnings/design/`. Team 10 cites what it read in spec §7b. The retro has a `## Design` section; the milestone review carries the top codes forward.
 
 ---
 
@@ -87,7 +94,7 @@ If something is **missing** (no matching component, token, or IA surface):
 
 1. Stop composing a fake control in the feature ticket
 2. File a design-track ticket (`ui-new-component`, `ia-feature-placement`, …) with `docs/design-specs/<TICKET>.md` **written** (not only a frontmatter path)
-3. Put it in the next **design phase** — Team 10 spec §2 + §2c, **project-token HTML mocks in the real view, all states**, and an `architecture delta:` line
+3. Put it in the next **design phase** — Team 10 spec §2 + §2c, **real-UI mocks (routes in the product app that render its own views and components), all states**, and an `architecture delta:` line
 4. Human: `./studio approve-design <p> --phase` — **then** the architecture phase, then implementation
 
 Do not ship a new primitive “so this ticket can finish.” That is a process fail, not a library-first shortcut.
@@ -142,7 +149,7 @@ Sprint review feedback (once per theme)
 **Rule (LO-0183 — over-capacity polish):** Human-approved review dumps may exceed 6 tickets. Prefer **splitting into two sprints** (P0 chrome/bugs first, then deeper product stories) over a single 14-ticket sprint that ships incomplete polish and immediate follow-up FBs. If the human insists on one large set, call out which ACs need soak/proof and keep receipts honest.
 | **Sprint review** | **Human** tries shipped work | Read review.md — **live app** (`npm run dev` at project root) and extension `dist/` if shipped; **not** `design/prototype` after implement |
 
-**Rule (LO-0066):** Before writing Docker Compose **published host ports** or local app URLs, probe `docker ps` (and listeners). Multiple project stacks share one machine. Do not take 5432 / 6379 / 3000 / Supabase 54321–54323 if they are already bound. Pin via project env and RUNBOOK. See `knowledge-base/host-port-allocation.md`. Do not stop another project’s containers to free a default port.
+**Rule (LO-0066):** Before writing Docker Compose **published host ports** or local app URLs, probe `docker ps` (and listeners). Multiple project stacks share one machine. Do not take 5432 / 6379 / 3000 / 54321–54323 if they are already bound. Pin via project env and RUNBOOK. See `knowledge-base/host-port-allocation.md`. Do not stop another project’s containers to free a default port.
 
 **Rule (LO-0198 / LO-0199 — one listener per published port):** For each RUNBOOK host port, run **either** the Compose service **or** host `npm run dev` / `next dev`, not both. Adding a service to Compose that publishes a port already used by a host process requires stopping the host listener first (SIGTERM/143 is expected). Do not keep a second Next/dev server on the same port “as a fallback” after Compose is healthy.
 
@@ -180,7 +187,7 @@ Sprint review feedback (once per theme)
 **Rule (LO-0144):** Review is for **this sprint’s shipped tickets**, not for work that is still only feedback (amendments, console, unwritten skills). Do not linger in review waiting for that work to become a ticket in the same close. Ticket it, then plan the next sprint.
 | **Reuse review** | **Agent** | `./studio reuse <p>` → promote / LO ticket / `--record local`. Completes when unresolved paths are 0 (LO-0169) — no `--approve` |
 | **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket**. Drop accidental CLI noise (`--help`) before retro (LO-0173) |
-| **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --approve` |
+| **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --severity blocker\|major\|minor\|polish --approve`. The human's words stay verbatim; earlier sprints that raised the same point are listed as recurring; severity sets the ticket priority (P0–P3) |
 | **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
 | **Grooming** | **Human** + agent | `./studio groom <p>` — reprioritize backlog for next sprint |
 | **Retro** | **Agent** fills content, **human** reviews | `./studio retro <p>` → fill `retro.md` → `./studio retro <p> --complete` (auto-harvest) → `./studio execute` `STUDIO_LO` |
@@ -268,22 +275,23 @@ Smoke both a **healthy provider response** and a **forced 502** (or stub) before
 ### Example
 
 ```bash
-./studio review nudge
+./studio review demo
 # human tries the app, then:
-./studio feedback nudge "Habits should work offline"
-./studio clarify nudge FB-001 \
+./studio feedback demo "Habits should work offline"
+./studio clarify demo FB-001 \
   --title "Offline habit tracking" \
   --scope "Cache today's habits in IndexedDB" \
   --acceptance "Completing a habit works offline" \
+  --severity major \
   --approve
-./studio ticket nudge "Offline habit tracking" --from-feedback FB-001
-./studio review nudge --approve --notes "Sprint 1 shipped, offline next"
-./studio reuse nudge
-./studio reuse nudge --approve
-./studio groom nudge
-./studio retro nudge
-./studio sprint nudge
-./studio groom nudge --approve
+./studio ticket demo "Offline habit tracking" --from-feedback FB-001
+./studio review demo --approve --notes "Sprint 1 shipped, offline next"
+./studio reuse demo
+./studio reuse demo --approve
+./studio groom demo
+./studio retro demo
+./studio sprint demo
+./studio groom demo --approve
 ```
 
 ---

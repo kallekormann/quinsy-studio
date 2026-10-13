@@ -6,20 +6,20 @@ import {
 
 describe('share-opened-template', () => {
   it('builds subject with board title', () => {
-    expect(shareOpenedEmailSubject('Moody', 'Mood board')).toBe(
-      'Someone viewed Mood board on Moody',
+    expect(shareOpenedEmailSubject('Acme', 'Launch board')).toBe(
+      'Someone viewed Launch board on Acme',
     );
   });
 
   it('includes view count in html', () => {
     const html = shareOpenedEmailHtml({
-      appName: 'Moody',
-      boardTitle: 'Mood board',
+      appName: 'Acme',
+      boardTitle: 'Launch board',
       boardUrl: 'http://localhost:3000/board/abc',
       viewCount: 3,
     });
 
     expect(html).toContain('viewed 3 times');
-    expect(html).toContain('Mood board');
+    expect(html).toContain('Launch board');
   });
 });

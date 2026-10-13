@@ -15,11 +15,13 @@ Design is how it works.
 Do not ask a human to `./studio approve-design` until:
 
 1. `projects/<p>/docs/design-specs/<TICKET>.md` **exists and is filled** (a ticket stub is not enough)
-2. HTML mocks live in `docs/design-specs/mocks/<TICKET>/` and **import this project's CSS tokens**
+2. Mocks are routes in the product app (`app/(design-mocks)/design-mocks/<TICKET>/`) that render its real views and components. Screenshots of every state live in `docs/design-specs/mocks/<TICKET>/` — they are the record, not the deliverable
 3. The mock is **in the product view** the work ships in (chrome/nav/neighbors — not an orphan artboard)
-4. **Every state** is shown: rest/up, hover, pressed/down, disabled/inactive, focus; plus open/closed for menus; empty/loading/error for surfaces
+4. The mock is an **interactive prototype**: a client component with wired handlers, scenario states one click away (`mock-scenario-panel`, `?state=`), and every §2d transition moving as the product will. Static per-state frames are rejected
+5. **Every state** is shown: rest/up, hover, pressed/down, disabled/inactive, focus; plus open/closed for menus; empty/loading/error for surfaces
+6. §2e **Interaction walkthrough** is written — the review script the human follows on the running route (`./studio mock <p> <TICKET>` verifies the packet and prints it)
 
-Missing a state means implement will hallucinate it. The CLI rejects incomplete packets.
+Missing a state means implement will hallucinate it. The CLI rejects incomplete packets. After sign-off the mock code is the **reference implementation**: the implementation sprint ports its interactions, transitions and component wiring instead of rebuilding from screenshots.
 
 ---
 
@@ -261,13 +263,14 @@ Pair with [contextual-ia-playbook.md](contextual-ia-playbook.md) — imagery epi
 
 ---
 
-## Scrollbar gutter on public chrome (LO-0172)
+## Scrollbar gutter (LO-0172)
 
-When switching public sections, filters, or rubric chips, **content width must not shift** because a classic vertical scrollbar appears or disappears.
+When switching sections, filters, or rubric chips, **content width must not shift** because a classic vertical scrollbar appears or disappears. This covers public chrome and every app list of cards: Inbox, Notes, Knowledge Base, add-ons, and any page created later.
 
-- Put `scrollbar-gutter: stable` on the **scrolling root** (`html`, or the well that actually scrolls).
-- Treat reserved gutter as an AC on public layout / chrome tickets — not a follow-up nit.
-- Overlay OS scrollbars still must not shove the masthead; classic gutters always reserve the slot.
+- Put `scrollbar-gutter: stable` on the element that actually scrolls, at the moment that well is created, including when the list is too short to need a bar.
+- The reserved slot stays when the bar is not painted. A filter that lengthens the list must not move the cards sideways.
+- Treat the reserved gutter as acceptance on the ticket that creates the scrolling well, not as a follow-up.
+- Overlay OS scrollbars still must not shove the content; classic gutters always reserve the slot.
 
 ```
 ❌ short page vs long page moves the well sideways

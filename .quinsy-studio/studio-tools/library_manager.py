@@ -371,15 +371,12 @@ def _update_manifest_entry(
         "kind": kind,
         "path": path,
         "version": version,
-        "source_project": project,
         "promoted": datetime.now().strftime("%Y-%m-%d"),
         "promoted_at": datetime.now().isoformat(),
-        "title": f"{name} (promoted from {project})",
+        "title": name,
     }
-    if ticket_id:
-        by_name[name]["ticket_id"] = ticket_id
     manifest["assets"] = list(by_name.values())
-    manifest["last_promotion"] = {"project": project, "at": datetime.now().isoformat()}
+    manifest["last_promotion"] = {"at": datetime.now().isoformat()}
     _save_manifest(manifest)
     return version
 

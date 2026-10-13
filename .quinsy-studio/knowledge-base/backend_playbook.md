@@ -69,6 +69,12 @@ When the ticket skills include `BE-*` or `PE-001`, `## Architecture skill` canno
 └─────────────────────────────────────────────────────────┘
 ```
 
+### Separation of concerns
+
+This is a workflow requirement on every feature.
+
+A page, route handler, or component does not embed the query, the storage call, or the business rule. Those live in an application service. The service does not know about HTTP or the screen. Infrastructure (database, Redis, object storage, the encoder) is reached only from that service. A change to where a file is stored does not rewrite the note screen. A change to the screen does not rewrite the query.
+
 ### Layers
 
 | Layer | Responsible | Contains |
@@ -82,8 +88,7 @@ When the ticket skills include `BE-*` or `PE-001`, `## Architecture skill` canno
 
 | Stack | Migrate command | Notes |
 |-------|-----------------|-------|
-| Studio docker template | `./studio env <project> up --approve` | Generic Postgres on 5432; `--approve` required |
-| Supabase CLI (local) | `npm run db:migrate:supabase` in **project** repo | API ~54321, DB ~54322 — not legacy port 54320 |
+| Studio docker template | `./studio env <project> migrate --approve` | Postgres, then `payload migrate` in the app container |
 | Local-first canvas | See [local-first-sync-playbook.md](local-first-sync-playbook.md) | Continuous sync, not one-time migration |
 
 Agents: read project `package.json` scripts and `env.schema.json` / `*.env.example` (**names**) before running migrate. Do not Read `.env` **values**. **You run** `./studio env <project> migrate --approve` (or the project migrate command inside Compose) when you can reach the database. That is sprint work. Tell the human it ran (one INFORM line). Do **not** paste migrate steps for the operator to execute instead of you.
@@ -94,7 +99,7 @@ Agents: read project `package.json` scripts and `env.schema.json` / `*.env.examp
 
 **Self-hosted Postgres pooler (LO-0168):** transaction poolers (often `:54332`) may require **tenant username** and **SNI / TLS server name** matching the pooler host. Do not treat a failed `psql` to that port as “migrations cannot run.” Apply DDL **inside the database container** (`docker exec … psql` / `artisan migrate` on the app that talks to the primary), not via the pooler as a naive `localhost:54332` without tenant/SNI.
 
-**Host ports:** before writing Compose published ports or local URLs, probe what is already bound. See [host-port-allocation.md](host-port-allocation.md) (LO-0066). Do not reuse another project’s 5432 / 6379 / 3000 / Supabase 54321–54323.
+**Host ports:** before writing Compose published ports or local URLs, probe what is already bound. See [host-port-allocation.md](host-port-allocation.md) (LO-0066). Do not reuse another project’s 5432 / 6379 / 3000 / 54321–54323.
 
 **Laravel `artisan serve` in Docker:** `ServeCommand` strips most process env from the PHP child (Compose `DB_*`, vendor base URLs, session driver) unless you pass `--no-reload`. CLI `php artisan` in the same container still sees full env, so tinker can look healthy while HTTP 500s. Use `php artisan serve --host=0.0.0.0 --port=8000 --no-reload`, or `php -S` which inherits the container environment.
 
@@ -160,7 +165,7 @@ class UserService {
 
 ---
 
-## PostgreSQL / Supabase
+## PostgreSQL / Payload
 
 ### Database design
 
@@ -207,15 +212,10 @@ WHERE attribute_value @> '{"color": "red"}';
 ### Migrations
 
 ```bash
-# new migration
-supabase migration new add_users_table
-
-# run migrations
-supabase db reset
-
-# apply migrations
-supabase db push
+./studio env <project> migrate --approve
 ```
+
+That runs `payload migrate` inside the app container. Local development may push schema. Production does not. Read [payload-playbook.md](payload-playbook.md).
 
 ---
 
@@ -426,7 +426,7 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 
 - **PB-20260925-001** helpful=0 harmful=0 :: Do not enqueue HQ skill-catalog work on the product sprint inbox. Route it to the studio LO and train queue. Product execute INFORM the open HQ LO count. Infuse those jobs in a HQ session; STUDIO_LO only when the product loop is idle.
 - **PB-20260922-001** helpful=0 harmful=0 :: When a persisted image URL fails reachability, queue public-photo research on the same gold path as persist. Do not wait for a generation vendor.
-- **PB-20260916-005** helpful=0 harmful=0 :: Operator-loop network credentials are per-host rows in api_credentials (encrypted payload) plus sourcing_configs.networks. Do not have the Command Center read process .env publisher tokens for connect/browse.
+- **PB-20260916-005** helpful=0 harmful=0 :: Per-tenant third-party API credentials are encrypted rows in the database, scoped to the tenant. An admin surface must not read them from process .env.
 - **PB-20260916-004** helpful=5 harmful=0 :: A list GET must return every attribute the inspector is supposed to show. Do not ship a write path whose corresponding list omits those fields.
 - **PB-20260916-003** helpful=1 harmful=0 :: Operator-authorized jobs skip the exploration weekly cap. Re-check monthly and kill-switch caps on every LLM complete; do not add a daemon. After the operator raises a limit, the next call picks up available budget.
 - **PB-20260916-002** helpful=0 harmful=0 :: Lifecycle folder queries (awaiting approval, in progress, done) must exclude dismissed rows. Filtering dismissed only on the Dismissed folder still lists trashed items in the other lifecycle views.

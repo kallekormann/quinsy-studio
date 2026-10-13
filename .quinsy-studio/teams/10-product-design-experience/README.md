@@ -14,6 +14,7 @@ Owns **what** and **why** for UI/UX. Team 01 implements after the **project kit*
 | UX-006 | Brand Guardian |
 | UX-007 | Visual Storyteller |
 | UX-008 | Anti-Slop Design & UX |
+| UX-009 | UI Finish Gate — shipped screen vs signed real-UI mock, PASS / HOLD |
 
 ## Anti-slop (mandatory)
 
@@ -38,7 +39,7 @@ The catalog locks type, elevation, motion, and density. It is not the product id
 **After gate 2b (the phase train):**
 
 1. A **design phase** holds experience tickets whose `design_status` is `pending`. Polish on the signed kit stays `n/a` and stays out of this phase.
-2. Team 10 **fills** every spec (remove the stub banner) and writes HTML mocks under `docs/design-specs/mocks/<TICKET>/` using **the same project tokens**, in the **real product view**, **all states**. Each ticket states `architecture delta: none` or names the architecture ticket. **§2d Motion** is required. The only skip is the line `motion: off` from HITL.
+2. Team 10 **fills** every spec (remove the stub banner) and builds **real-UI mocks**: routes in the product app at `app/(design-mocks)/design-mocks/<TICKET>/` that render the app's own layouts, views, and components with the design solution woven in. A missing part is built as a real component and imported; nothing is redrawn in HTML or inline styles. Screenshots of **all states** at 1440 and 390 go in `docs/design-specs/mocks/<TICKET>/`. The human only signs mocks that look exactly like the implemented app. Each ticket states `architecture delta: none` or names the architecture ticket. **§2d Motion** is required. The only skip is the line `motion: off` from HITL.
 3. Human → `./studio approve-design <project> --phase` once, after every packet in the phase is written.
 4. An **architecture phase** signs the deltas and any boundary tickets. `./studio approve-arch <project> <TICKET> --reject` sends an infeasible design to the next design cycle.
 5. An **implementation phase** builds only tickets whose design and architecture are `approved` or `n/a`. Team 01 styles the pulled kit and this baseline; do not redraw popover, tooltip, dropdown, or dialog.

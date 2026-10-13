@@ -244,7 +244,7 @@ function InteractiveComponent() {
 │                             │                           │
 │                      ┌──────▼──────┐                   │
 │                      │  cloud DB   │                   │
-│                      │ (Supabase)  │                   │
+│                      │ (Payload)   │                   │
 │                      └─────────────┘                   │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
@@ -297,9 +297,8 @@ self.addEventListener('fetch', (event) => {
 | Metric | Target | Measurement |
 |--------|--------|-------------|
 | LCP | < 2.5s | Largest Contentful Paint |
-| FID | < 100ms | First Input Delay |
+| INP | < 200ms | Interaction to Next Paint (replaced FID in March 2024) |
 | CLS | < 0.1 | Cumulative Layout Shift |
-| INP | < 200ms | Interaction to Next Paint |
 
 ### Optimizations
 
@@ -401,7 +400,7 @@ test('homepage loads', async ({ page }) => {
 
 ## Tailwind content scan (shared class constants)
 
-**Signal (LO-0027 / moody):** Shared layout class strings living only in `src/lib/**` (or any path **outside** `tailwind.config` `content`) and applied as `className={SOME_CONST}` are **purged**. The DOM still has the class names, but CSS never emits utilities like `right-3` → absolute panels fall to the **left**. Hard refresh cannot fix missing CSS.
+**Signal (LO-0027):** Shared layout class strings living only in `src/lib/**` (or any path **outside** `tailwind.config` `content`) and applied as `className={SOME_CONST}` are **purged**. The DOM still has the class names, but CSS never emits utilities like `right-3` → absolute panels fall to the **left**. Hard refresh cannot fix missing CSS.
 
 ### Rules
 
@@ -433,7 +432,7 @@ className="absolute bottom-20 right-3 top-14 z-30 flex w-[280px] ..."
 
 ## PDF export DoD (Playwright + watermark)
 
-**Signal (LO-0028 / moody):** Brand-guide PDF via Playwright can 503 when Chromium is missing; free Export PDF can die in `applyWatermark` (`Failed to load export image for watermark`) with no file. Both look “done” in unit tests.
+**Signal (LO-0028):** Brand-guide PDF via Playwright can 503 when Chromium is missing; free Export PDF can die in `applyWatermark` (`Failed to load export image for watermark`) with no file. Both look “done” in unit tests.
 
 ### Rules
 
@@ -469,6 +468,7 @@ Tickets that claim “no third-party font CDN pre-auth” are not done until **a
 
 ## Deltas
 
+- **PB-20261012-001** helpful=0 harmful=0 :: **PB-20261012-001** helpful=0 harmful=0 :: Prefer `next dev` in Compose for UI tickets when the app image can boot it. A production `build` plus `start` with a named `.next` volume hides bind-mounted source until rebuild.
 - **PB-20261001-001** helpful=0 harmful=0 :: When wrapping or extending a kit control, do not copy an existing arbitrary Tailwind size class (text-[Npx], h-[Npx]) onto a newly added className line. The UI receipt scans added lines. Leave the original className untouched, or replace with a scale class (text-xs) or a token.
 - **PB-20260916-001** helpful=0 harmful=0 :: Operator review Approve must show a visible outcome next to the action (published, already published, or error). Preview URLs must be the public reader host, not the operator admin sign-in wall.
 - **PB-20260915-002** helpful=1 harmful=0 :: Do not call delivery cache-bust from a use-client module. After a write, revalidate from the server plane that already has the secret. Client-visible env cannot reach admin-only URLs, so the UI can report Saved while the public host stays stale.

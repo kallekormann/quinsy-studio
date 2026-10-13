@@ -1,5 +1,5 @@
 /**
- * Moody icons — Lucide wrappers (do not invent custom SVG paths).
+ * Icons — Lucide wrappers (do not invent custom SVG paths).
  * Same export names as before so call sites stay stable.
  */
 'use client';
@@ -137,11 +137,11 @@ export function CloseIcon(props: IconProps) {
 export function InboxIcon(props: IconProps) {
   return LucideWrap(Inbox, props);
 }
-/** Studio rail — selection metadata (MOOD-0430). */
+/** Studio rail — selection metadata. */
 export function InspectorIcon(props: IconProps) {
   return LucideWrap(Shield, props);
 }
-/** Studio rail — brand kit peer (MOOD-0430). */
+/** Studio rail — brand kit peer. */
 export function BrandKitIcon(props: IconProps) {
   return LucideWrap(Briefcase, props);
 }

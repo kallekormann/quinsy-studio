@@ -3,7 +3,7 @@
 > In-repo companion to [Tailwind CSS](https://tailwindcss.com/docs/), [Headless UI](https://headlessui.com), and a **shadcn-style** themable kit.  
 > **All UI / frontend tickets must use Tailwind utilities + studio-library components** — no hand-rolled modals, raw unstyled form controls, or one-off CSS.
 
-**Coverage vs shadcn / Command Center:** [shadcn-coverage.md](./shadcn-coverage.md)
+**Coverage vs shadcn:** [shadcn-coverage.md](./shadcn-coverage.md)
 
 ## Getting started
 

@@ -1,6 +1,6 @@
 /**
  * Studio Library — contextual metadata panel for a selected canvas item.
- * Tags + exclusive accordion sections via children (MOOD-0237).
+ * Tags + exclusive accordion sections via children.
  */
 'use client';
 

@@ -84,6 +84,10 @@ def validate_gate_0(project: str) -> Tuple[bool, List[str]]:
         )
     elif not _min_content(prd, 200):
         issues.append("docs/intake/prd.md is empty or has placeholders")
+    else:
+        from process_intake import prd_frame_issues
+
+        issues.extend(prd_frame_issues(prd.read_text(encoding="utf-8", errors="ignore")))
 
     if validation.exists():
         try:
@@ -102,11 +106,13 @@ def validate_gate_0(project: str) -> Tuple[bool, List[str]]:
         "03-user-journeys.md",
         "10-kpis.md",
         "11-assumptions.md",
+        "12-positioning.md",
     ]
     for name in required_defs:
         path = defs_dir / name
         if not _min_content(path, 40):
-            issues.append(f"Fill docs/definitions/{name} (no _TODO_ / placeholders)")
+            hint = " — skill GM-007: audience, problem, alternative, difference, proof, core message" if name == "12-positioning.md" else ""
+            issues.append(f"Fill docs/definitions/{name} (no _TODO_ / placeholders){hint}")
 
     return len(issues) == 0, issues
 
@@ -128,6 +134,15 @@ def validate_gate_1(project: str) -> Tuple[bool, List[str]]:
     adrs = list(adr_dir.glob("ADR-*.md")) if adr_dir.exists() else []
     if not adrs:
         issues.append("At least one ADR required in docs/adr/")
+
+    from payload_foundation import gate_1_payload_issues
+
+    issues.extend(gate_1_payload_issues(project))
+
+    from architecture_checks import gate_1_security_issues, gate_1_workflow_issues
+
+    issues.extend(gate_1_security_issues(root))
+    issues.extend(gate_1_workflow_issues(root))
 
     return len(issues) == 0, issues
 
@@ -403,6 +418,11 @@ def scaffold_design(project: str, scope: str = "core-views") -> List[Path]:
 
 
 def product_app_dir(root: Path) -> Path:
+    web = root / "apps" / "web"
+    if (web / "package.json").exists():
+        router = web / "src" / "app" if (web / "src" / "app").is_dir() else web / "app"
+        group = router / "(app)"
+        return group if group.is_dir() else router
     src_app = root / "src" / "app"
     app = root / "app"
     if src_app.is_dir() and not app.is_dir():

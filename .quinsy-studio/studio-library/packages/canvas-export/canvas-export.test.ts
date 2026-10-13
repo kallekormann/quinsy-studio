@@ -45,7 +45,7 @@ describe('canvas-export bounds', () => {
   });
 });
 
-describe('dataUrlToUint8Array (MOOD-0356)', () => {
+describe('dataUrlToUint8Array', () => {
   it('decodes base64 PNG data URLs without fetch', () => {
     const dataUrl = `data:image/png;base64,${btoa('png-bytes')}`;
     const { bytes, mime } = dataUrlToUint8Array(dataUrl);
@@ -54,7 +54,7 @@ describe('dataUrlToUint8Array (MOOD-0356)', () => {
   });
 });
 
-describe('export download guards (MOOD-0357)', () => {
+describe('export download guards', () => {
   it('rejects empty data URLs', () => {
     expect(() => assertExportDataUrl('data:image/png;base64,')).toThrow(/empty/i);
   });

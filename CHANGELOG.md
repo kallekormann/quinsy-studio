@@ -34,7 +34,7 @@ Detail: [.quinsy-studio/CHANGELOG.md](.quinsy-studio/CHANGELOG.md) · [STUDIO-SP
 
 ## [1.9.3] — 2026-08-24
 
-### Sprint planning & learning loop (moody SPRINT-25 retro)
+### Sprint planning & learning loop
 
 - ✅ **`assess_ticket_maturity`** — reads `phase` from ticket frontmatter (not body); feedback tickets still require `**Scope:**` in body
 - ✅ **HITL** — retro step: agent must fill project `retro.md` + meta-retro (not template-only); maturity rules documented
@@ -45,10 +45,10 @@ Detail: [.quinsy-studio/CHANGELOG.md](.quinsy-studio/CHANGELOG.md) · [STUDIO-SP
 
 ### Studio library: Supabase auth boilerplate (LO-0001)
 
-- ✅ **`packages/auth` v2.0.0** — Next.js App Router + `@supabase/ssr`: client, server, middleware, callback, RBAC, Resend welcome, `sync-supabase-env.mjs`, Supabase/Mailpit templates (from Moody MOOD-0004)
+- ✅ **`packages/auth` v2.0.0** — Next.js App Router + `@supabase/ssr`: client, server, middleware, callback, RBAC, Resend welcome, `sync-supabase-env.mjs`, Supabase/Mailpit templates (promoted from a product)
 - ✅ **`ui/components/auth-login/`** — generic `AuthLoginForm` molecule (sign-in, sign-up, magic link)
 - ✅ Registry aliases: `supabase-auth`, `supabase`, `auth-login`
-- ✅ Learning item **LO-0001** (library-gap, moody SPRINT-08)
+- ✅ Learning item **LO-0001** (library-gap, a product sprint)
 
 ## [1.9.1] — 2026-08-20
 
@@ -156,7 +156,7 @@ Detail: [.quinsy-studio/CHANGELOG.md](.quinsy-studio/CHANGELOG.md) · [STUDIO-SP
 
 - ✅ Unified ticket IDs, skill_matcher, intake fail-fast, init merge
 - ✅ Sprint auto-assign, board columns, German PRD intake
-- ✅ E2E reference flow documented (Nudge)
+- ✅ E2E reference flow documented
 
 ## [1.3.0] — 2026-08-20
 

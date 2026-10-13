@@ -17,8 +17,8 @@ class ReviewApproveGateTests(unittest.TestCase):
             "done": 0,
             "all_done": False,
             "tickets": [
-                {"id": "MOOD-0001", "status": "implement", "title": "A"},
-                {"id": "MOOD-0002", "status": "open", "title": "B"},
+                {"id": "DEMO-0001", "status": "implement", "title": "A"},
+                {"id": "DEMO-0002", "status": "open", "title": "B"},
             ],
         }
 
@@ -30,7 +30,7 @@ class ReviewApproveGateTests(unittest.TestCase):
             patch("studio.print_header"),
             patch("builtins.print"),
         ):
-            ok = orch.cmd_review("moody", approve=True, notes="premature")
+            ok = orch.cmd_review("demo", approve=True, notes="premature")
 
         self.assertFalse(ok)
         approve_mock.assert_not_called()
@@ -45,7 +45,7 @@ class ReviewApproveGateTests(unittest.TestCase):
             "total": 1,
             "done": 1,
             "all_done": True,
-            "tickets": [{"id": "MOOD-0001", "status": "done", "title": "A"}],
+            "tickets": [{"id": "DEMO-0001", "status": "done", "title": "A"}],
         }
 
         with (
@@ -56,7 +56,7 @@ class ReviewApproveGateTests(unittest.TestCase):
             patch("studio.print_header"),
             patch("builtins.print"),
         ):
-            ok = orch.cmd_review("moody", approve=True, notes="ok")
+            ok = orch.cmd_review("demo", approve=True, notes="ok")
 
         self.assertTrue(ok)
         approve_mock.assert_called_once()

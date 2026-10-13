@@ -32,29 +32,34 @@ class ProjectDirTests(unittest.TestCase):
 
 
 class AbstractionVerifyTests(unittest.TestCase):
-    def test_fixture_project_folder_fails_and_provenance_passes(self):
+    def test_any_product_reference_fails_including_provenance(self):
         from unittest.mock import patch
         import tempfile
         from pathlib import Path
         import studio_context
 
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            kb = root / "knowledge-base"
-            kb.mkdir()
-            leak = kb / "frontend_playbook.md"
-            leak.write_text("# Guide\n\nNever ship acme-app chrome.\n", encoding="utf-8")
-            ok_file = kb / "backend_playbook.md"
-            ok_file.write_text("# Guide\n\n- **Source:** `acme-app` (provenance only)\n", encoding="utf-8")
-            with patch.object(studio_context, "QUINSY_STUDIO", root), patch(
+            repo = Path(tmp)
+            studio = repo / ".quinsy-studio"
+            kb = studio / "knowledge-base"
+            kb.mkdir(parents=True)
+            (kb / "frontend_playbook.md").write_text("# Guide\n\nNever ship acme-app chrome.\n", encoding="utf-8")
+            (kb / "backend_playbook.md").write_text("- **Source:** `acme-app` (provenance only)\n", encoding="utf-8")
+            lib = studio / "studio-library" / "ui"
+            lib.mkdir(parents=True)
+            (lib / "Toast.tsx").write_text("/** Bottom inset (ACME-0413). */\n", encoding="utf-8")
+            (kb / "design_playbook.md").write_text("# Guide\n\nUse ./studio review <project>.\n", encoding="utf-8")
+            (repo / "AGENTS.md").write_text("Example: ./studio focus acme-app\n", encoding="utf-8")
+            with patch.object(studio_context, "QUINSY_STUDIO", studio), patch(
                 "studio_portability.list_project_names", return_value=["acme-app"]
             ):
                 ok, issues = verify_studio_abstraction()
             self.assertFalse(ok)
             blob = "\n".join(issues)
-            self.assertIn("acme-app", blob)
-            self.assertIn("frontend_playbook.md", blob)
-            self.assertNotIn("backend_playbook.md", blob)
+            for leak in ("frontend_playbook.md", "backend_playbook.md", "Toast.tsx", "AGENTS.md"):
+                self.assertIn(leak, blob)
+            self.assertIn("ACME-0413", blob)
+            self.assertNotIn("design_playbook.md", blob)
 
 
 if __name__ == "__main__":

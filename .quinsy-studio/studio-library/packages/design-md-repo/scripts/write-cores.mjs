@@ -1,5 +1,5 @@
 /**
- * Write systems/<id>/Design.md + catalog.json + SOURCE.md (MOOD-0256).
+ * Write systems/<id>/Design.md + catalog.json + SOURCE.md.
  * node packages/design-md-repo/scripts/write-cores.mjs
  */
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
@@ -72,23 +72,11 @@ const SHARED_TYPO = {
 
 const CORE_PROFILES = [
   {
-    id: 'moody-bloom',
-    name: 'Moody Bloom',
-    description: 'Warm soft Bloom grammar from Moody product design — default generate system.',
-    source: 'projects/moody/design/DESIGN.md + ui/tokens/',
-    style_dna_affinity: ['Soft', 'Warm', 'Consumer'],
-    whitespace_bias: 'generous',
-    borders: 'none',
-    shadows: 'soft',
-    corners: 'rounded',
-    asymmetry: false,
-    default: true,
-  },
-  {
     id: 'soft-ui',
     name: 'Soft UI',
     description: 'Warm consumer premium, glass, bounce.',
     source: 'aesthetic-presets/soft-ui/SKILL.md',
+    default: true,
     whitespace_bias: 'generous',
     borders: 'none',
     shadows: 'soft',
@@ -109,7 +97,7 @@ const CORE_PROFILES = [
   {
     id: 'brutalist-ui',
     name: 'Brutalist UI',
-    description: 'Raw high-contrast editorial — contrast demo core, not Moody product skin.',
+    description: 'Raw high-contrast editorial — the contrast core.',
     source: 'aesthetic-presets/brutalist-ui/SKILL.md',
     style_dna_affinity: ['Bold', 'Editorial'],
     whitespace_bias: 'dense',
@@ -299,12 +287,12 @@ function toFrontmatter(p) {
 function render(p) {
   const yamlDumpLineWidth = 100;
   const yaml = dump(toFrontmatter(p), { lineWidth: yamlDumpLineWidth, noRefs: true });
-  return `---\n${yaml.trim()}\n---\n\n# ${p.name}\n\n${p.description}\n\n_Source: ${p.source}_\n\n_Grammar only — Style DNA / board supplies values at generate time. Does not restyle Moody product chrome._\n`;
+  return `---\n${yaml.trim()}\n---\n\n# ${p.name}\n\n${p.description}\n\n_Source: ${p.source}_\n\n_Grammar only — Style DNA / board supplies values at generate time. Does not restyle the product's own chrome._\n`;
 }
 
 const catalog = {
   schema_version: '1.0',
-  default_system_id: 'moody-bloom',
+  default_system_id: 'soft-ui',
   systems: CORE_PROFILES.map((p) => ({
     id: p.id,
     name: p.name,
@@ -319,7 +307,7 @@ writeFileSync(join(root, 'catalog.json'), `${JSON.stringify(catalog, null, 2)}\n
 const sourceLines = [
   '# Design.md SOURCE map',
   '',
-  'Maps curated **Design.md** cores → editorial sources (MOOD-0256).',
+  'Maps curated **Design.md** cores → editorial sources.',
   '',
   '| System id | Source | Notes |',
   '|-----------|--------|--------|',

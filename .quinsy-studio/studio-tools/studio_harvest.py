@@ -116,6 +116,14 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
         "team": "10-product-design-experience",
         "playbook": "knowledge-base/design-science-playbook.md",
     },
+    "craft": {
+        "signal": "design-gap",
+        "path": "knowledge-base/learnings/design/craft.md",
+        "skills": ["UX-008", "UX-006"],
+        "role": "UI/Visual Designer (Director)",
+        "team": "10-product-design-experience",
+        "playbook": "knowledge-base/anti-slop-design-ux.md",
+    },
     "frontend": {
         "signal": "knowledge-gap",
         "path": "knowledge-base/learnings/frontend/runtime.md",
@@ -264,7 +272,6 @@ def append_inbox(entry: Dict[str, str]) -> Path:
         block = (
             f"## {entry['id']} — {entry['title']}\n"
             f"- **When:** {entry['when']}\n"
-            f"- **Source:** `{entry['source']}` (provenance only)\n"
             f"- **Kind:** {entry['kind']}\n"
             f"- **Infuse into:** `{entry['infusion_path']}`\n"
             f"- **Playbook:** `{entry['playbook']}`\n"
@@ -360,8 +367,8 @@ def harvest_identified_learning(
         "assignee_role": meta["role"],
         "soll_zustand": (
             f"General rule lives in `{infusion_path}` so the next project cannot repeat this. "
-            "No client / product names in studio HQ titles or infused body "
-            "(provenance `--source` / CHANGELOG only)."
+            "No product names or product ticket IDs anywhere in studio HQ, CHANGELOG included; "
+            "the source stays in this local LO."
         ),
         "value": "Immediate harvest — portable principle only.",
         "signal": signal,
@@ -372,7 +379,7 @@ def harvest_identified_learning(
         "modification_files": [f".quinsy-studio/{infusion_path}", ".quinsy-studio/CHANGELOG.md"],
         "acceptance_criteria": [
             f"Inbox item {lo_id} generalized into `{infusion_path}` (or matching playbook/skill/package)",
-            "Infused text passes portability gate (no project folder names outside provenance)",
+            "Infused text and CHANGELOG line pass ./studio verify-abstraction (no product names or ticket IDs)",
             "CHANGELOG.md updated",
             "LO moved to backlog/done/",
         ],

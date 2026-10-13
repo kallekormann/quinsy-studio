@@ -6,13 +6,13 @@
 
 | Archetype | Description | Complexity | Stack |
 |-----------|-------------|------------|-------|
-| `saas-application` | B2C/B2B SaaS product | P0–P3 | Next.js, Tailwind, Supabase |
-| `ecommerce` | Online shop | P1–P3 | Shopify, Medusa, WooCommerce |
-| `content-platform` | Content management, blog, magazine | P0–P2 | WordPress, Strapi, Sanity |
-| `marketplace` | Two-sided market (buyer/seller) | P2–P3 | custom, Medusa, Sharetribe |
-| `internal-tool` | Internal dashboards, admin tools | P0–P1 | Retool, Next.js, Postgres |
-| `api-service` | Backend API, microservice | P1–P2 | Node.js, Go, Rust |
-| `mobile-app` | Native/hybrid mobile app | P1–P3 | React Native, Flutter |
+| `saas-application` | B2C/B2B SaaS product | P0–P3 | Next.js, Payload, Postgres, Coolify |
+| `ecommerce` | Online shop | P1–P3 | Next.js, Payload (products, orders), Postgres, studio `billing` (Stripe / Lemon Squeezy). A hosted shop platform only by ADR |
+| `content-platform` | Content management, blog, magazine | P0–P2 | Next.js, Payload, Postgres |
+| `marketplace` | Two-sided market (buyer/seller) | P2–P3 | Next.js, Payload, Postgres, Stripe Connect via BE-008 |
+| `internal-tool` | Internal dashboards, admin tools | P0–P1 | Next.js, Payload (admin + auth), Postgres |
+| `api-service` | Backend API, microservice | P1–P2 | Payload REST/GraphQL, or Node.js by ADR |
+| `mobile-app` | Mobile app | P1–P3 | PWA first (FE-005). A native client calls the Payload API and needs an ADR |
 | `prototype` | Quick prototype, MVP | P0 | varies |
 
 ---
@@ -30,12 +30,12 @@ Goal: subscription-based product
 ### Stack recommendation
 
 ```
-Frontend:    Next.js 14+ (App Router), Tailwind CSS, shadcn/ui
-Backend:     Next.js API routes / server actions
-Database:    PostgreSQL (Supabase / Neon / Railway)
-Auth:        Supabase Auth / Clerk / NextAuth.js
-Storage:     Supabase Storage / Cloudflare R2
-Deployment:  Vercel / Railway / Fly.io
+Frontend:    Next.js (App Router), Tailwind CSS, studio-library
+Backend:     Payload (Local API on the server, REST for clients)
+Database:    PostgreSQL (Compose locally, Coolify database in production)
+Auth:        Payload auth collection
+Storage:     local disk in dev, Cloudflare R2 in production
+Deployment:  Coolify on a VPS
 CI/CD:       GitHub Actions
 ```
 
@@ -83,12 +83,12 @@ Goal: product sales, conversion optimization
 ### Stack recommendation
 
 ```
-Frontend:    Next.js 14+ / Shopify Hydrogen
-Backend:     Shopify / Medusa / WooCommerce
-Database:    PostgreSQL / MySQL
-Payment:     Stripe / PayPal / Klarna
-Storage:     Shopify CDN / Cloudflare R2
-Deployment:  Vercel / Shopify Hosting
+Frontend:    Next.js (App Router), studio-library
+Backend:     Payload
+Database:    PostgreSQL
+Payment:     Stripe or Lemon Squeezy (studio billing package)
+Storage:     Cloudflare R2
+Deployment:  Coolify on a VPS
 ```
 
 ### Process adjustments
@@ -117,11 +117,11 @@ Goal: create and distribute content
 ### Stack recommendation
 
 ```
-CMS:         WordPress / Strapi / Sanity / Contentful
-Frontend:    Next.js 14+ (ISR) / Astro
-Database:    PostgreSQL / MySQL
-Storage:     Cloudflare R2 / S3
-Deployment:  Vercel / Netlify
+CMS:         Payload
+Frontend:    Next.js (App Router)
+Database:    PostgreSQL
+Storage:     Cloudflare R2
+Deployment:  Coolify on a VPS
 ```
 
 ### Process adjustments
@@ -150,8 +150,8 @@ Goal: bring suppliers and demanders together
 ### Stack recommendation
 
 ```
-Frontend:    Next.js 14+ / React
-Backend:     Node.js / Ruby on Rails
+Frontend:    Next.js (App Router)
+Backend:     Payload
 Database:    PostgreSQL
 Search:      Elasticsearch / Algolia
 Payment:     Stripe Connect
@@ -184,11 +184,11 @@ Goal: make internal processes more efficient
 ### Stack recommendation
 
 ```
-Frontend:    Next.js / Retool / Tooljet
-Backend:     Next.js API routes
-Database:    PostgreSQL / Supabase
-Auth:        LDAP / SSO / NextAuth.js
-Deployment:  internal / Vercel
+Frontend:    Next.js (App Router)
+Backend:     Payload
+Database:    PostgreSQL
+Auth:        Payload auth collection
+Deployment:  Coolify on a VPS
 ```
 
 ### Process adjustments
@@ -251,11 +251,11 @@ Goal: app-store product
 ### Stack recommendation
 
 ```
-Framework:   React Native / Flutter / Swift/Kotlin
-Backend:     Node.js / Firebase / Supabase
-Database:    PostgreSQL / Firestore
-Auth:        Firebase Auth / Supabase Auth
-Deployment:  App Store / Play Store / EAS
+Framework:   PWA (Next.js) first; React Native / Flutter / Swift / Kotlin only by ADR
+Backend:     Payload REST or GraphQL (the app does not embed Payload)
+Database:    PostgreSQL
+Auth:        Payload auth collection
+Deployment:  App Store / Play Store
 ```
 
 ### Process adjustments
@@ -284,10 +284,10 @@ Goal: validate the idea
 ### Stack recommendation
 
 ```
-Frontend:    Next.js / Vite / CodeSandbox
-Backend:     serverless / Supabase
-Database:    Supabase / Firebase
-Deployment:  Vercel / Netlify
+Frontend:    Next.js (App Router)
+Backend:     Payload
+Database:    PostgreSQL
+Deployment:  Coolify on a VPS
 ```
 
 ### Process adjustments

@@ -11,12 +11,12 @@ function fixture(name: string): string {
   return readFileSync(join(here, 'fixtures', name), 'utf8');
 }
 
-describe('validateDesignMd (MOOD-0254)', () => {
+describe('validateDesignMd', () => {
   it('accepts a minimal valid Design.md', () => {
     const result = validateDesignMd(fixture('valid-minimal.Design.md'));
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.document.frontmatter.id).toBe('moody-bloom-fixture');
+      expect(result.document.frontmatter.id).toBe('minimal-fixture');
       expect(result.document.frontmatter.modes.light_dark).toBe('variable_modes');
       expect(result.document.narrative).toContain('Fixture only');
     }

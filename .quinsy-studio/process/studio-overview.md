@@ -100,6 +100,8 @@ You name the project and point at that PRD.
 Bootstrap chase from intake/<slug>.md and walk me through gate 0.
 ```
 
+You can also bring your own material instead of a desk PRD. Put every source file in `intake/<project>/`: several PRDs, notes, a PDF, an old spec. Bootstrap keeps every file, unedited, and writes an index PRD that points at each of them. A single `intake/<project>.md` still works.
+
 `./studio bootstrap` copies the definition into `projects/<project>/` and fills `docs/definitions/`. The product has its own git repo. Studio git never commits `projects/`.
 
 If the code already exists, say adopt instead of bootstrap. The agent writes down what is built, citing file paths, then you sign the same gates. Do not bootstrap over a live tree. See [brownfield-adopt.md](brownfield-adopt.md).
@@ -111,7 +113,7 @@ The agent writes the packet, then stops. You approve it, or you send it back. `.
 | Gate | What you are signing | Command |
 |------|----------------------|---------|
 | 0 | The PRD and the definitions. On adopt, this is "this is what we have." | `./studio approve <project> --gate 0` |
-| 1 | Architecture and the decision records | `./studio approve <project> --gate 1` |
+| 1 | Architecture and the decision records. A web project says `Payload: in`, or opts out in an ADR. The next execute writes `apps/web`. | `./studio approve <project> --gate 1` |
 | 2a | Design direction, after the interview and `design/DESIGN.md` | `./studio approve <project> --gate 2a` |
 | 2b | The project kit: tokens, coded components, a sticker sheet of every state | `./studio approve <project> --gate 2b` |
 
@@ -125,7 +127,7 @@ Detail: [gates.md](gates.md) and [human-in-the-loop.md](human-in-the-loop.md).
 
 ## 6. The build
 
-After gate 2b you approve a milestone roadmap in `docs/phases/`. A milestone is a version: M0, then M1. The agent writes tickets for the active milestone only.
+After gate 2b you approve a milestone roadmap in `docs/phases/`. A milestone is a version. M0 is the first. Add as many later versions as the PRD and its source files need. The agent writes tickets for the active milestone only.
 
 Then each cycle is three phases. A phase with no tickets is skipped and does not open a sprint.
 
@@ -135,13 +137,26 @@ Then each cycle is three phases. A phase with no tickets is skipped and does not
 | Architecture | `./studio approve-arch <project> --phase` after `docs/architecture/<TICKET>.md` exists |
 | Implementation | No ticket-by-ticket approval. The agent runs `./studio execute` until the review |
 
+Each ticket is staffed the way a product manager would staff it: an owner skill, plus companion skills from other teams, each with a reason. Login or payments bring in security, personal data brings in privacy, and a screen brings in accessibility and tests. `./studio groom` refuses a sprint with a gap.
+
+A design mock is not a drawing. It is a route inside your product app that renders your own screens with the change woven in, with a screenshot of every state: rest, hover, focus, disabled, empty, loading, error. You sign only mocks that look exactly like the app will.
+
 A design ticket says `architecture delta: none` or names the architecture ticket. An architecture that cannot be built goes back with `./studio approve-arch <project> <TICKET> --reject`.
 
 Implementation only builds tickets whose design and architecture are already approved, or marked not applicable. One unsigned ticket does not freeze a sibling that is ready.
 
-Every few implementation phases the agent stops for a cadence review. The default is every two. You look at what shipped. A small note becomes a ticket only after `./studio feedback` and `./studio clarify`. A change of direction is an amendment, not a sprint note. See [amendment-intake.md](amendment-intake.md).
+A ticket is done only when four things hold:
 
-Before that review, the agent may ship the branch to `dev`. Production is the next section.
+1. **A receipt.** Every acceptance criterion has a line that says PASS, FAIL or NOT TESTED, with the file or command that proves it. Paths must exist.
+2. **Gate 5 is green.** Build, tests, smoke, plus the security and quality checks (secrets, env leaks, Payload access rules, webhook signatures, accessibility, performance budgets).
+3. **A second reviewer passes it.** `./studio qa` hands the ticket to an agent that has not seen the chat. Without proof it fails.
+4. **The screen matches the mock.** A ticket with signed mocks is captured at desktop and phone width next to them (`./studio qa --finish`).
+
+A failure goes back to the agent with exactly what to fix. After three failed attempts the ticket moves to `blocked` with an escalation note, and the agent carries on with the other tickets. You are asked only when nothing else can run.
+
+Every few implementation phases the agent stops for a cadence review. The default is every two. First it ships to `dev`, and a fresh agent walks the dev build like a user (`./studio reality-check`). If that walk fails, the agent files bug tickets and fixes them before asking you to look. Then you look at what shipped. A small note becomes a ticket only after `./studio feedback` and `./studio clarify`. A change of direction is an amendment, not a sprint note. See [amendment-intake.md](amendment-intake.md).
+
+When the product is ready to meet people, a launch is its own set of tickets: plan, landing page, waitlist, analytics, lifecycle email, legal review, pre-ship check, results. See [launch-playbook.md](../knowledge-base/launch-playbook.md).
 
 Hygiene (`./studio sprint --kind hygiene`) is lint and debt. It sits outside this train and does not count toward the review.
 
@@ -154,7 +169,7 @@ Hygiene (`./studio sprint --kind hygiene`) is lint and debt. It sits outside thi
 ./studio ship <project> --to main --approve
 ```
 
-The second command is the production step. You pass `--approve`. Without it, the ship does not happen.
+The second command is the production step. You pass `--approve`. Without it, the ship does not happen. Coolify builds that branch, installs the packages in `package.json`, and runs `payload migrate` before the new container serves traffic. The studio does not call a Coolify API.
 
 Each finished ticket is one commit in the product repo, so that ticket can be reverted on its own. Studio git is a different repo.
 
@@ -203,4 +218,4 @@ Docker is required to boot, migrate, and pass a gate. Env names live in `env.sch
 | Build | *"Let the sprint run — execute until HITL."* |
 | Production | *"Ship <project> to main."* The agent waits for `--approve` |
 
-HITL means the studio has stopped and is waiting for you. It is a gate, a phase signature, an env approval, or a cadence review. It is not a morning brief, and it is not a thumbs-up on a single ticket.
+HITL means the studio has stopped and is waiting for you. It is a gate (0, 1, 2a, 2b), the milestone roadmap or a milestone review, the design-phase signature, `ship --to main`, a production migration or destructive data step, or a tech-veto. Architecture sign-off, local Docker, cadence reviews, and production ops run from the agent seat and INFORM you. It is not a morning brief, and it is not a thumbs-up on a single ticket. Matrix: [human-in-the-loop.md](human-in-the-loop.md#when-is-hitl-needed).

@@ -6,7 +6,7 @@ const EXPORT_LAYOUT = {
   defaultPaletteBarPx: 20,
 } as const;
 
-/** Reject empty / truncated downloads (MOOD-0357). Tiny valid PNG is larger than this. */
+/** Reject empty / truncated downloads. Tiny valid PNG is larger than this. */
 const MIN_EXPORT_FILE_BYTES = 32;
 
 /** Delay object-URL revoke so the browser can finish starting the download. */
@@ -126,7 +126,7 @@ function bytesToBlob(bytes: Uint8Array, mime: string): Blob {
   return new Blob([copy], { type: mime });
 }
 
-/** Blob download with size check — avoids 0KB saves from oversized `data:` hrefs (MOOD-0357). */
+/** Blob download with size check — avoids 0KB saves from oversized `data:` hrefs. */
 export function downloadBlob(blob: Blob, filename: string): void {
   if (blob.size < MIN_EXPORT_FILE_BYTES) {
     throw new Error('Export produced an empty file — try a lower resolution or fewer items.');
@@ -167,7 +167,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Decode a data URL without fetch() — large Konva PNGs often fail fetch(dataUrl) (MOOD-0356). */
+/** Decode a data URL without fetch() — large Konva PNGs often fail fetch(dataUrl). */
 export function dataUrlToUint8Array(dataUrl: string): { bytes: Uint8Array; mime: string } {
   const comma = dataUrl.indexOf(',');
   if (comma < 0) {
@@ -266,7 +266,7 @@ export async function downloadPdfFromPng(dataUrl: string, filename: string): Pro
   try {
     decoded = await decodePngDataUrl(dataUrl);
   } catch {
-    // Last resort: give the user a PNG instead of a dead-end error (MOOD-0356).
+    // Last resort: give the user a PNG instead of a dead-end error.
     downloadDataUrl(dataUrl, `${filename}.png`);
     throw new Error('PDF encode failed — downloaded PNG instead. Try a lower resolution.');
   }

@@ -127,7 +127,7 @@ Full banned list: [anti-slop-design-ux.md §2.1](../knowledge-base/anti-slop-des
 ### Audit output
 
 ```
-Anti-Slop Audit: nudge
+Anti-Slop Audit: demo
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Code slop:
   [!] S2: Unused variable (src/utils/helpers.ts:42)

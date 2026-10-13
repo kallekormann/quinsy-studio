@@ -19,7 +19,7 @@ export type AvatarStackProps = {
 
 const FILLS = [
   'bg-[var(--accent)] text-[var(--on-accent)]',
-  'bg-[var(--rhodes)] text-[var(--on-rhodes)]',
+  'bg-[var(--accent-secondary)] text-[var(--on-accent-secondary)]',
   'bg-[var(--accent-bright)] text-[var(--on-accent)]',
 ] as const;
 

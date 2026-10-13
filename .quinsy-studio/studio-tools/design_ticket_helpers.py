@@ -369,6 +369,34 @@ def design_spec_growth_intent_error(
     )
 
 
+_FIVE_SECOND = re.compile(r"^#{2,3}\s*Five-second test\b", re.I | re.M)
+_WALKTHROUGH = re.compile(r"^##\s*Appendix\s*[—–-]\s*Persona walkthrough\b", re.I | re.M)
+
+
+def design_spec_walkthrough_error(
+    spec_text: str,
+    ticket_type: str = "",
+    ticket_blob: str = "",
+) -> Optional[str]:
+    """GD-003: five-second test on every packet; persona walkthrough appendix on commercial ones."""
+    match = _FIVE_SECOND.search(spec_text or "")
+    if not match:
+        return (
+            "Design spec needs a `### Five-second test` table (What is this? / Is it for me? / "
+            "What do I do next?) at 390 and 1440 (GD-003)."
+        )
+    table = spec_text[match.end(): match.end() + 1200]
+    if not ("390" in table and "1440" in table):
+        return "Five-second test needs both widths, 390 and 1440 (GD-003)."
+    commercial = (ticket_type or "").strip() == "marketing-page" or is_commercial_surface(ticket_blob)
+    if commercial and not _WALKTHROUGH.search(spec_text):
+        return (
+            "Commercial packet needs `## Appendix — Persona walkthrough (GD-003)`: personas from the PRD "
+            "and research only, fold-by-fold friction, hypotheses for §6."
+        )
+    return None
+
+
 def design_spec_needs_story(ticket_type: str, ticket_blob: str = "") -> bool:
     tt = (ticket_type or "").strip()
     if tt in ("marketing-page", "workflow-explainer"):
@@ -526,14 +554,260 @@ def _mock_html_files(project_root: Path, ticket_id: str) -> List[Path]:
     return sorted(p for p in d.rglob("*") if p.suffix.lower() in {".html", ".css"})
 
 
+MOCK_ROUTE_GROUP = "(design-mocks)"
+MOCK_ROUTE_SEGMENT = "design-mocks"
+_MOCK_SOURCE_SUFFIXES = {".tsx", ".jsx", ".ts", ".js"}
+_SCREENSHOT_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+
+_REAL_IMPORT_RE = re.compile(r"""from\s+['"]((?:@|~)/[^'"]+|(?:\.\./){2,}[^'"]+)['"]""")
+_SHELL_HINT_RE = re.compile(
+    r"(Shell|Layout|AppFrame|Frame|Sidebar|Nav|Header|Topbar|View|Screen)\b|/\((?:app|marketing)\)/|/layouts?/",
+)
+_HAND_ROLLED_RES: Tuple[Tuple[str, "re.Pattern[str]"], ...] = (
+    ("<style> block", re.compile(r"<style\b", re.I)),
+    ("inline style={{…}}", re.compile(r"style=\{\{")),
+    ("dangerouslySetInnerHTML", re.compile(r"dangerouslySetInnerHTML")),
+    ("hex colour", re.compile(r"(?<![\w&])#[0-9a-fA-F]{3,8}\b")),
+    ("arbitrary colour class", re.compile(r"-\[(?:#|rgb|hsl|oklch)", re.I)),
+    ("raw <html>/<body>", re.compile(r"<(?:html|body)\b", re.I)),
+)
+
+DESIGN_MOCKS_LAYOUT = """import { notFound } from 'next/navigation'
+import type { ReactNode } from 'react'
+
+// Design mocks render the real app for approve-design. They never ship.
+export default function DesignMocksLayout({ children }: { children: ReactNode }) {
+  if (process.env.NODE_ENV === 'production') notFound()
+  return children
+}
+"""
+
+
+def product_app_root(project_root: Path) -> Optional[Path]:
+    """The app the mocks must render in: apps/web, a brownfield root app, then the gate-2b kit."""
+    for candidate in (
+        project_root / "apps" / "web",
+        project_root,
+        project_root / "design" / "prototype",
+    ):
+        if (candidate / "package.json").exists() and _app_router_dir(candidate) is not None:
+            return candidate
+    return None
+
+
+def _app_router_dir(app_root: Path) -> Optional[Path]:
+    for candidate in (app_root / "src" / "app", app_root / "app"):
+        if candidate.is_dir():
+            return candidate
+    return None
+
+
+def real_ui_mock_dir(project_root: Path, ticket_id: str) -> Optional[Path]:
+    app_root = product_app_root(project_root)
+    if app_root is None:
+        return None
+    router = _app_router_dir(app_root)
+    if router is None:
+        return None
+    return router / MOCK_ROUTE_GROUP / MOCK_ROUTE_SEGMENT / ticket_id
+
+
+def _real_ui_mock_sources(project_root: Path, ticket_id: str) -> List[Path]:
+    d = real_ui_mock_dir(project_root, ticket_id)
+    if d is None or not d.is_dir():
+        return []
+    return sorted(p for p in d.rglob("*") if p.suffix.lower() in _MOCK_SOURCE_SUFFIXES)
+
+
+def _mock_screenshots(project_root: Path, ticket_id: str) -> List[Path]:
+    d = _mock_dir(project_root, ticket_id)
+    if not d.is_dir():
+        return []
+    return sorted(p for p in d.rglob("*") if p.suffix.lower() in _SCREENSHOT_SUFFIXES)
+
+
+def ensure_design_mocks_layout(project_root: Path) -> Optional[Path]:
+    """Write the production guard for the mock route group. Leave an existing file alone."""
+    app_root = product_app_root(project_root)
+    router = _app_router_dir(app_root) if app_root else None
+    if router is None:
+        return None
+    dest = router / MOCK_ROUTE_GROUP / "layout.tsx"
+    if not dest.exists():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(DESIGN_MOCKS_LAYOUT, encoding="utf-8")
+    return dest
+
+
+def design_mocks_real_ui_error(project_root: Path, ticket_id: str) -> Optional[str]:
+    """Mocks are routes in the product app that render its real views and components."""
+    route = f"{MOCK_ROUTE_GROUP}/{MOCK_ROUTE_SEGMENT}/{ticket_id}/"
+    app_root = product_app_root(project_root)
+    if app_root is None:
+        return (
+            "No product app to mock in (apps/web, a Next app at the project root, or the gate-2b "
+            "kit in design/prototype). Mocks render the real app; there is nothing to render yet."
+        )
+    sources = _real_ui_mock_sources(project_root, ticket_id)
+    pages = [p for p in sources if p.stem == "page"]
+    rel_app = app_root.relative_to(project_root) if app_root != project_root else Path(".")
+    if not pages:
+        legacy = " Standalone HTML mocks are no longer accepted." if _mock_html_files(project_root, ticket_id) else ""
+        return (
+            f"No real-UI mock pages at {rel_app}/…/app/{route}.{legacy} "
+            "Build each mock as a route in the product app that renders the real view "
+            "(layout, shell, existing components) with the design solution woven in. "
+            "The human only signs mocks that look exactly like the implemented app."
+        )
+    layout = _app_router_dir(app_root) / MOCK_ROUTE_GROUP / "layout.tsx"
+    layout_text = layout.read_text(encoding="utf-8", errors="ignore") if layout.exists() else ""
+    if "notFound" not in layout_text or "production" not in layout_text:
+        return (
+            f"Missing production guard {MOCK_ROUTE_GROUP}/layout.tsx (notFound() when NODE_ENV is "
+            "production). Run the design stub again or copy DESIGN_MOCKS_LAYOUT."
+        )
+    real_imports: List[str] = []
+    hand_rolled: List[str] = []
+    for path in sources:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        real_imports.extend(_REAL_IMPORT_RE.findall(text))
+        for label, pattern in _HAND_ROLLED_RES:
+            if pattern.search(text):
+                hand_rolled.append(f"{path.name}: {label}")
+    if not real_imports:
+        return (
+            f"Mock pages under {route} import nothing from the app. Import the real view and "
+            "components (`@/components/…`, the `(app)` or `(marketing)` layout, pulled library parts)."
+        )
+    if not any(_SHELL_HINT_RE.search(imp) for imp in real_imports):
+        return (
+            f"Mock pages under {route} render no app shell or view. Import the real layout, "
+            "shell, or view the feature ships in, so the mock shows the surrounding product."
+        )
+    if hand_rolled:
+        return (
+            "Mocks redraw UI instead of using the app's components: "
+            + "; ".join(sorted(set(hand_rolled))[:6])
+            + ". Style lives in the real components and project tokens. "
+            "If a part is missing, build it as a real component in the app (library-first) and import it."
+        )
+    shots = _mock_screenshots(project_root, ticket_id)
+    if not shots:
+        return (
+            f"No screenshots in docs/design-specs/mocks/{ticket_id}/. Capture every state from the "
+            "running mock route, e.g. `npx playwright screenshot --viewport-size=1440,900 "
+            f"http://localhost:3000/{MOCK_ROUTE_SEGMENT}/{ticket_id}/<state> "
+            f"docs/design-specs/mocks/{ticket_id}/<state>-1440.png` (and 390,844 for mobile)."
+        )
+    newest_source = max(p.stat().st_mtime for p in sources)
+    newest_shot = max(p.stat().st_mtime for p in shots)
+    if newest_shot + 1 < newest_source:
+        return (
+            f"Screenshots in docs/design-specs/mocks/{ticket_id}/ are older than the mock code. "
+            "Capture them again from the running route so the human reviews what the code renders."
+        )
+    return None
+
+
+_USE_CLIENT_RE = re.compile(r"""^\s*['"]use client['"]""", re.M)
+_HANDLER_RE = re.compile(
+    r"\buse(?:State|Reducer|Transition|Optimistic)\b"
+    r"|\bon(?:Click|Change|KeyDown|KeyUp|PointerDown|PointerUp|MouseEnter|MouseLeave|Focus|Blur|Submit|OpenChange|ValueChange|CheckedChange|Select)\s*=",
+)
+_SCENARIO_RE = re.compile(
+    r"\buseSearchParams\b|\bsearchParams\b|[?&]state=|data-state|MockScenarioPanel|mock-scenario-panel",
+)
+_MOTION_EVIDENCE_RE = re.compile(
+    r"\btransition(?:-|\b)|\bduration-\d|\banimate-|\bmotion-|framer-motion|@/lib/motion"
+    r"|data-\[state[=~]|\bease-(?:in|out|linear)",
+)
+
+
+def design_mocks_interactive_error(
+    spec_text: str,
+    project_root: Path,
+    ticket_id: str,
+) -> Optional[str]:
+    """A mock is a prototype the human can use — not a folder of static frames.
+
+    Requires at least one client page with real interaction wiring, scenario
+    states reachable in the running route, and wired transitions when §2d
+    Motion is not `motion: off`.
+    """
+    sources = _real_ui_mock_sources(project_root, ticket_id)
+    if not sources:
+        return None  # design_mocks_real_ui_error already covers the missing-route case
+    route = f"{MOCK_ROUTE_GROUP}/{MOCK_ROUTE_SEGMENT}/{ticket_id}/"
+    texts = {p: p.read_text(encoding="utf-8", errors="ignore") for p in sources}
+    blob = "\n".join(texts.values())
+    has_client = any(_USE_CLIENT_RE.search(t) for t in texts.values())
+    has_handlers = bool(_HANDLER_RE.search(blob))
+    if not (has_client and has_handlers):
+        return (
+            f"Mock pages under {route} are static frames — no 'use client' component with "
+            "wired interactions (useState / event handlers) found. A mock is a prototype the "
+            "human can use: wire hover, open/close, selection, and flow steps so the design "
+            "can be felt, not guessed from screenshots."
+        )
+    if not _SCENARIO_RE.search(blob):
+        return (
+            f"Mock pages under {route} expose no way to reach scenario states in the running "
+            "route (no `?state=` / useSearchParams / data-state / MockScenarioPanel). "
+            "Pull `mock-scenario-panel` from the studio library (or wire in-mock controls) so "
+            "empty/loading/error and open/closed are one click away — per-state static sibling "
+            "pages are not a prototype."
+        )
+    motion_on = not _MOTION_OFF_RE.search(spec_text or "")
+    if motion_on and not _MOTION_EVIDENCE_RE.search(blob):
+        return (
+            f"§2d Motion names transitions but the mock code under {route} wires none "
+            "(no transition/duration/animate classes, motion import, or data-[state] animation). "
+            "The mock must move the way the spec says the product will — or the spec must say "
+            "`motion: off` (HITL opt-out)."
+        )
+    return None
+
+
+def mock_states_from_shots(project_root: Path, ticket_id: str) -> List[str]:
+    """Scenario state names, recovered from the screenshot record (hover-1440.png → hover)."""
+    states: List[str] = []
+    for shot in _mock_screenshots(project_root, ticket_id):
+        name = re.sub(r"-(1440|390)$", "", shot.stem)
+        if name and name not in states:
+            states.append(name)
+    return states
+
+
+def mock_review_block(project_root: Path, ticket_id: str, spec_text: str) -> str:
+    """The review script for the human: running route + states + §2e walkthrough."""
+    base = f"http://localhost:3000/{MOCK_ROUTE_SEGMENT}/{ticket_id}/"
+    lines = [
+        "  Review the RUNNING prototype — the screenshots are only the record.",
+        f"    Start the app:  ./studio env <project> dev   (or npm run dev in the product app)",
+        f"    Mock route:     {base}",
+    ]
+    states = mock_states_from_shots(project_root, ticket_id)
+    if states:
+        lines.append("    States:         " + "  ".join(f"{base}?state={s}" for s in states[:8]))
+    match = _INTERACTION_WALKTHROUGH_RE.search(spec_text or "")
+    if match:
+        lines.append("    Walkthrough (§2e) — follow each step on the route:")
+        for raw in match.group(1).strip().splitlines():
+            raw = raw.strip()
+            if raw and not raw.startswith(("|--", "| #", "|---")):
+                lines.append(f"      {raw}")
+    return "\n".join(lines)
+
+
 def _corpus_for_states(spec_text: str, project_root: Path, ticket_id: str) -> str:
     parts = [spec_text]
-    for path in _mock_html_files(project_root, ticket_id):
-        parts.append(path.name)
+    for path in _real_ui_mock_sources(project_root, ticket_id) + _mock_html_files(project_root, ticket_id):
+        parts.append(path.as_posix())
         try:
             parts.append(path.read_text(encoding="utf-8", errors="ignore"))
         except OSError:
             continue
+    parts.extend(p.name for p in _mock_screenshots(project_root, ticket_id))
     return "\n".join(parts)
 
 
@@ -653,6 +927,64 @@ def design_spec_motion_error(spec_text: str, ticket_blob: str = "") -> Optional[
     return None
 
 
+_INTERACTION_WALKTHROUGH_RE = re.compile(
+    r"^##\s*2e\.?\s*Interaction walkthrough.*?$(.*?)(?=^##\s|\Z)", re.M | re.S | re.I
+)
+_WALKTHROUGH_STEP_RE = re.compile(r"^\s*(?:\|\s*\d+\s*\||\d+\.\s)", re.M)
+
+
+def design_spec_interaction_walkthrough_error(spec_text: str) -> Optional[str]:
+    """§2e: the review script the human follows on the running mock route."""
+    match = _INTERACTION_WALKTHROUGH_RE.search(spec_text or "")
+    if not match:
+        return (
+            "Design spec missing §2e Interaction walkthrough — the review script for the running "
+            "mock route. Write ordered steps `do X → expect Y` (3 minimum), naming the §2d "
+            "transition where one fires, plus the mock route URL. The human reviews the prototype "
+            "by following it; the implementation sprint ports the behavior from the mock code."
+        )
+    body = match.group(1)
+    steps = [
+        s for s in _WALKTHROUGH_STEP_RE.findall(body)
+        if "---" not in s
+    ]
+    if len(steps) < 3:
+        return (
+            "§2e Interaction walkthrough needs at least 3 steps (happy path, one failure path, "
+            "each scenario state). Each row is `do X → expect Y`."
+        )
+    if not re.search(r"\bexpect", body, re.I):
+        return (
+            "§2e Interaction walkthrough steps must state expectations — each step says what the "
+            "human should see happen (`Expect …`), including the motion where §2d names one."
+        )
+    return None
+
+
+_CATALOG_HEADING_RE = re.compile(r"^##\s*7b?\.?\s*Catalog applied.*?$(.*?)(?=^##\s|\Z)", re.M | re.S | re.I)
+_CATALOG_ID_RE = re.compile(r"\b(PB-\d{8}-\d+|LO-\d{4})\b", re.I)
+
+
+def design_spec_catalog_error(spec_text: str) -> Optional[str]:
+    """Team 10 proves it read the design catalog: §7b names the PB/LO ids it applied (LO-0408).
+
+    `catalog: none` is allowed only when the section says why nothing in the catalog matched.
+    """
+    match = _CATALOG_HEADING_RE.search(spec_text)
+    if not match:
+        return (
+            "Design spec missing `## 7b. Catalog applied`. List the PB-/LO- ids from "
+            "knowledge-base/design_playbook.md and knowledge-base/learnings/design/ you applied, "
+            "one line each with where in this spec they land."
+        )
+    body = match.group(1)
+    if _CATALOG_ID_RE.search(body):
+        return None
+    if re.search(r"catalog:\s*none", body, re.I) and len(re.sub(r"\s+", " ", body).strip()) > 40:
+        return None
+    return "§7b Catalog applied names no PB-/LO- id. Cite the catalog lines you applied, or write `catalog: none` with the reason."
+
+
 def design_spec_completeness_error(
     spec_path: Path,
     project_root: Path,
@@ -674,21 +1006,33 @@ def design_spec_completeness_error(
             return placement.replace("Approve only if", "Fill §2 before approve-design. Do not approve if")
         if missing_file:
             return missing_file
-        token_err = design_mocks_token_error(project_root, ticket_id)
-        if token_err:
-            return token_err
+        real_ui_err = design_mocks_real_ui_error(project_root, ticket_id)
+        if real_ui_err:
+            return real_ui_err
+        interactive_err = design_mocks_interactive_error(text, project_root, ticket_id)
+        if interactive_err:
+            return interactive_err
         state_err = design_mocks_states_error(text, project_root, ticket_id, ticket_type)
         if state_err:
             return state_err
         growth_err = design_spec_growth_intent_error(text, ticket_type, ticket_blob)
         if growth_err:
             return growth_err
+        walk_err = design_spec_walkthrough_error(text, ticket_type, ticket_blob)
+        if walk_err:
+            return walk_err
         story_err = design_spec_story_error(text, ticket_type, ticket_blob)
         if story_err:
             return story_err
         motion_err = design_spec_motion_error(text, ticket_blob)
         if motion_err:
             return motion_err
+        interaction_err = design_spec_interaction_walkthrough_error(text)
+        if interaction_err:
+            return interaction_err
+        catalog_err = design_spec_catalog_error(text)
+        if catalog_err:
+            return catalog_err
         from studio_ia_audit import ia_nav_error_for_ticket
 
         ia_err = ia_nav_error_for_ticket(text, ticket_type)
@@ -724,9 +1068,14 @@ def design_deliverables_status(
         return "write", (
             f"\n  ✏️  Design-track deliverables missing for {ticket_id}.\n"
             f"    Write `{spec_rel}` from knowledge-base/design-spec-template.md\n"
-            f"    and `docs/design-specs/mocks/{ticket_id}/` HTML using **project ui/tokens**,\n"
-            f"    in the **real product view** (not an orphan artboard),\n"
-            f"    with **all states** (rest/hover/pressed/disabled/focus; open/closed for menus).\n"
+            f"    and the mock routes `app/{MOCK_ROUTE_GROUP}/{MOCK_ROUTE_SEGMENT}/{ticket_id}/` in the\n"
+            f"    **product app**: the real views and components with the solution woven in.\n"
+            f"    No hand-drawn HTML. The mock is an **interactive prototype**: pull\n"
+            f"    `mock-scenario-panel`, wire handlers, scenario states and §2d transitions,\n"
+            f"    write §2e Interaction walkthrough. Then capture every state as screenshots in\n"
+            f"    `docs/design-specs/mocks/{ticket_id}/` (rest/hover/pressed/disabled/focus;\n"
+            f"    open/closed for menus; empty/loading/error for surfaces) — the record,\n"
+            f"    not the deliverable.\n"
             f"    Do **not** run ./studio approve-design and do not ask the human to review\n"
             f"    until those files exist. Incomplete mocks = hallucinated implement.\n"
             f"    Gate: {err}\n"
@@ -739,6 +1088,7 @@ def write_design_spec_stub(project_root: Path, ticket_id: str, spec_rel: Optiona
     rel = spec_rel or default_design_spec_path(ticket_id)
     dest = project_root / rel
     dest.parent.mkdir(parents=True, exist_ok=True)
+    ensure_design_mocks_layout(project_root)
     if dest.exists():
         return dest
     template = Path(__file__).resolve().parent.parent / "knowledge-base" / "design-spec-template.md"
@@ -748,7 +1098,9 @@ def write_design_spec_stub(project_root: Path, ticket_id: str, spec_rel: Optiona
     dest.write_text(
         f"# Design spec — {ticket_id}\n\n"
         f"**Status:** stub — Team 10 must fill every section before `./studio approve-design`.\n"
-        f"An empty or template-only file **fails** the gate. Mocks: `docs/design-specs/mocks/{ticket_id}/`.\n\n"
+        f"An empty or template-only file **fails** the gate. Mocks: routes in the product app at "
+        f"`app/{MOCK_ROUTE_GROUP}/{MOCK_ROUTE_SEGMENT}/{ticket_id}/`; screenshots in "
+        f"`docs/design-specs/mocks/{ticket_id}/`.\n\n"
         f"{body}",
         encoding="utf-8",
     )
@@ -768,11 +1120,11 @@ _EMOJI_ICON_RE = re.compile(
 
 def design_mocks_emoji_icon_warning(project_root: Path, ticket_id: str) -> Optional[str]:
     """Warn if design-spec mock HTML appears to use emoji as UI icons (LO-0037)."""
-    mock_dir = project_root / "docs" / "design-specs" / "mocks" / ticket_id
-    if not mock_dir.is_dir():
+    paths = _mock_html_files(project_root, ticket_id) + _real_ui_mock_sources(project_root, ticket_id)
+    if not paths:
         return None
     hits: List[str] = []
-    for path in sorted(mock_dir.rglob("*.html")):
+    for path in paths:
         try:
             raw = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:

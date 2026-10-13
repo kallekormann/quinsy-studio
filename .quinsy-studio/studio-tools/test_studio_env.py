@@ -7,10 +7,9 @@ import studio_env
 
 
 class StudioEnvTests(unittest.TestCase):
-    def test_refuse_without_approve_prints_hitl_command(self):
+    def test_refuse_without_approve_is_informational_now(self):
         msg = studio_env.refuse_without_approve("demo-app", "up")
-        self.assertIn("./studio env demo-app up --approve", msg)
-        self.assertIn("HITL", msg)
+        self.assertIn("without a signature", msg)
         self.assertNotIn("sk-", msg)
 
     def test_redact_strips_secret_values_not_names(self):
@@ -33,13 +32,13 @@ class StudioEnvTests(unittest.TestCase):
     def test_merged_schema_names_adds_product_keys(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            product = root / "arthur"
+            product = root / "acme-app"
             product.mkdir()
             (product / "env.schema.json").write_text(
                 '{"variables":[{"name":"VERTEX_PROJECT"},{"name":"APP_KEY"}]}',
                 encoding="utf-8",
             )
-            names = studio_env.merged_schema_names("arthur", root)
+            names = studio_env.merged_schema_names("acme-app", root)
             self.assertIn("VERTEX_PROJECT", names)
             self.assertIn("APP_KEY", names)
             self.assertEqual(len(names), len(set(names)))
@@ -100,12 +99,21 @@ class StudioEnvTests(unittest.TestCase):
                 self.assertEqual(path, store / ".env")
                 self.assertNotEqual(path, Path("projects/demo/docker/.env"))
 
-    def test_cmd_env_up_without_approve_refuses(self):
+    def test_cmd_env_up_without_approve_informs_and_proceeds(self):
         from studio import StudioOrchestrator
 
         orch = StudioOrchestrator()
-        ok = orch.cmd_env("demo-app", "up", approve=False)
-        self.assertFalse(ok)
+        with patch("studio_env.docker_cli_available", return_value=False), patch("studio.docker_cli_available", return_value=False, create=True):
+            with patch("builtins.print") as fake:
+                orch.cmd_env("demo-app", "up", approve=False)
+        printed = "\n".join(str(c.args[0]) for c in fake.call_args_list if c.args)
+        self.assertIn("INFORM", printed)
+        self.assertNotIn("needs HITL", printed)
+
+    def test_inform_local_inject_names_ops_for_production(self):
+        msg = studio_env.inform_local_inject("demo-app", "migrate")
+        self.assertIn("./studio ops", msg)
+        self.assertIn("No signature", msg)
 
     def test_secret_patterns_redact_dsn_not_names(self):
         raw = "fail postgresql://u:hunter2@db:5432/app with POSTGRES_PASSWORD=hunter2"

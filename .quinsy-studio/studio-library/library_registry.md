@@ -12,7 +12,7 @@
 
 **Rule:** Gate 2 and `./studio library promote` **never merge project tokens or UI into studio-library.**
 
-**Stubs** (`billing`, `feature-gating`) are marked `stub: true` in `manifest.json`. `./studio library pull` **refuses** them. Build the working asset in the project, then promote if it is generic.
+**Stubs** (`feature-gating`) are marked `stub: true` in `manifest.json`. `./studio library pull` **refuses** them. `billing` is pullable. Build a missing generic in the project, then promote if it is generic.
 
 **Product-local packages (LO-0162 / LO-0164):** companion surfaces such as `packages/figma-plugin/`, `packages/extension/` (and build junk like `.DS_Store`, `dist/`) are **project-owned**. Reuse review must not propose them for studio-library promote. See `studio-tools/sprint_reuse_review.py` (`PRODUCT_LOCAL_PACKAGE_NAMES` / `is_reuse_noise_path`).
 
@@ -37,7 +37,7 @@
 | `ui-page-type` | `ui/page-types/<name>/` | `ui/page-types/<name>/` | page-type name |
 | `ui-token` | `ui/tokens/design-tokens.json` + `.css` | `ui/tokens/` | `tokens` |
 | `ui-hook` | `hooks/<name>.ts` | `ui/hooks/<name>.ts` | hook name |
-| `package-auth` | `packages/auth/` | `packages/auth/` | `auth`, `supabase-auth`, `supabase` |
+| `package-auth` | `packages/auth/` | `packages/auth/` | not pullable — Payload Users is the login |
 | `package-billing` | `packages/billing/` | `packages/billing/` | `billing` |
 | `package-feature-gating` | `packages/feature-gating/` | `packages/feature-gating/` | `feature-gating`, `gating` |
 | `package-color-extraction` | `packages/color-extraction/` | `packages/color-extraction/` | `color-extraction`, `palette`, `extract-palette` |
@@ -70,9 +70,9 @@ Command: `./studio promote-library <project>` — same validate-only behavior
 ## Manual promotion (packages only)
 
 ```bash
-./studio library promote nudge packages/billing   # OK — generic package stub
-./studio library promote nudge ui/tokens/...      # BLOCKED — studio-owned
-./studio library promote nudge ui/components/...  # BLOCKED — adapt via pull, not promote
+./studio library promote demo packages/billing   # OK — generic package stub
+./studio library promote demo ui/tokens/...      # BLOCKED — studio-owned
+./studio library promote demo ui/components/...  # BLOCKED — adapt via pull, not promote
 ```
 
 Generic library UI/tokens are edited in `.quinsy-studio/studio-library/` directly.
@@ -89,9 +89,11 @@ Generic library UI/tokens are edited in `.quinsy-studio/studio-library/` directl
 
 `button` / `dialog` / `input` pull the **shadcn-style** folders. Headless copies are `headless-dialog`, `headless-input`, …
 
+`mock-scenario-panel` is the **design-mock state harness** (dev-only): every design-track mock route pulls it so scenario states (empty / loading / error, open / closed) are reachable in the running prototype via `?state=` — one click for the human, one URL per state for Playwright. It never ships outside the `(design-mocks)` route group.
+
 - Copies **library → project** (never overwrites without `--force`)
 - Logs to `projects/<p>/docs/library-usage.json`
-- Project then **extends** local `ui/tokens/design-tokens.json` / `.css` for brand (e.g. Nudge soft SaaS)
+- Project then **extends** local `ui/tokens/design-tokens.json` / `.css` for brand (e.g. a soft SaaS look)
 
 ---
 

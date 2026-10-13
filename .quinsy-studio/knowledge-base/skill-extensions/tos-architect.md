@@ -30,7 +30,7 @@ The agent will map the dynamic properties of the codebase directly into the lega
 
 ### B. Third-Party Platforms & Service Availability (SLA)
 *   **Rule:** The SaaS cannot promise higher availability or lower liability than its underlying critical infrastructure.
-*   **Code Discovery Path:** Scan `package.json`, environment configurations (`.env`), and API clients connecting to external platforms (AWS, Vercel, Supabase, Stripe, OpenAI).
+*   **Code Discovery Path:** Scan `package.json`, environment names in `env.schema.json`, and API clients connecting to external platforms (Coolify, Payload, Cloudflare R2, Stripe, Lemon Squeezy, Resend, OpenAI).
 *   **Drafting Directive:** Build robust *Service Availability* and *Force Majeure* clauses. Explicitly disclaim direct liability for data loss or service degradation originating from upstream infrastructure dependencies found in the code.
 
 ### C. Artificial Intelligence & Data Processing Governance (If applicable)

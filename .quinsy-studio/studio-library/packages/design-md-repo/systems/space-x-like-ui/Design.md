@@ -123,4 +123,4 @@ Industrial sci-fi mission control.
 
 _Source: aesthetic-presets/space-x-like-ui/SKILL.md_
 
-_Grammar only — Style DNA / board supplies values at generate time. Does not restyle Moody product chrome._
+_Grammar only — Style DNA / board supplies values at generate time. Does not restyle the product's own chrome._

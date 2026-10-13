@@ -18,7 +18,7 @@ A new chat bubble is **not** a new assignment while work is in flight on **any**
 - `INBOX_ACK` — note is already queued. One-line ACK, then `./studio execute` (same ACTION). Do not implement the note.
 - `ABORT` — stop the current ticket.
 - `IDEATE` — research desk. It does not call `execute` and it does not use the product sprint. If the session is waiting for a brief, ask once and do not search. After a brief, run `./studio ideate` through the case in this turn. Ask a question only when a fact only the human knows would change the problem. If several ideas remain, ask which one to focus on. If one remains, write the case and ask whether it should become the intake PRD. On yes, run approve and promote. On no, reject or park. Do not ask to continue between sections. A section or dimension name stays on the desk while a session is open. Do not call `execute`. Do not write the PRD until they say yes. Builder time is not a ceiling: one solo builder, with AI agents for coding and design, ships in chunks of about two months. The first chunk is the MVP. Later chunks stay in the idea. Medicine and clinical care are out of reach. Other trades stay in reach.
-- Gate / **`approve-design` / `approve-arch`** / cadence review approval, “back on track” — handle that HITL; do not queue.
+- Gate / **`approve-design --phase`** / milestone review / `ship --to main` / production migration / tech-veto, “back on track” — handle that HITL; do not queue. `approve-arch`, cadence review, local env and ops are agent-run INFORM.
 - Mid-sprint “looks good” on a **non-design** ticket is not HITL — resume `./studio execute`.
 
 This is core studio behavior, not a per-project rule. Sprint-review `FEEDBACK_ONLY` must not win while a ticket is still `implement`.
@@ -40,7 +40,7 @@ Active project: `.quinsy-studio/.active-project.json`
 - **Studio HQ** (this repo): `.quinsy-studio/`, LO-* backlog — commit here only for studio work
 - **Project**: `projects/<name>/` — **separate git repo**; never `git add projects/` from studio root. Existing apps: `./studio adopt` (do not `init` over source).
 - **Siblings:** after `./studio focus <project>`, other `projects/*` trees are out of bounds. Do not Read, copy, or git them into the active repo. **One chat per product.** Focus will not rewrite `.cursorignore` while another product holds an execute lease, unless `--force`. Switch products with `./studio focus <other>` (new session).
-- **Secrets:** Read `env.schema.json` / `*.env.example` for **names**. Do not Read `.env` values. Inject with `./studio env <p> … --approve`. Docker is required for gate, migrate, and boot.
+- **Secrets:** Read `env.schema.json` / `*.env.example` for **names**. Do not Read `.env` / `.env.local` values. Local inject `./studio env <p> up|migrate|dev` is agent-run (INFORM). Production names: `./studio env <p> prod --explain`; ops: `./studio ops <p> readiness|deploy|logs|status|db|cleanup` (HITL only on `migrate --prod --approve` and destructive). Docker is required for gate, migrate, and boot.
 
 ## Before implementing anything
 
@@ -58,18 +58,22 @@ Active project: `.quinsy-studio/.active-project.json`
 ```bash
 ./studio library list
 ./studio library suggest <project> "auth button"
-./studio library pull <project> auth button
+./studio library pull <project> tokens button auth-login
 ```
 
-Adapt pulled code in the project. **Do not pull stubs** (`billing`, `feature-gating`). After ticket done, promote only if the generic asset improved.
+Adapt pulled code in the project. **Do not pull** the `feature-gating` stub. `billing` is pullable. After ticket done, promote only if the generic asset improved. Web products use Payload after gate 1 (`Payload: in`, or an ADR that opts out). See `.quinsy-studio/knowledge-base/payload-playbook.md`.
 
 **UI kit (project setup):** `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` in the product app from `init` / `design` / `adopt` — not after the first failed import.
 
-**Migrations:** if you can reach the DB (Compose via `./studio env <p> migrate --approve`, or VPS), you apply them as sprint work and INFORM. Do not Read `.env` values. Do not ask the human to migrate. Destructive reset is HITL.
+**Migrations:** locally you apply them as sprint work (`./studio env <p> migrate`) and INFORM. In production `compose.prod.yml` migrates before start on deploy; an out-of-band `./studio ops <p> migrate --prod --approve` and any destructive reset are HITL. Do not Read `.env` values. Do not ask the human to migrate locally.
 
 ## Sprint HITL
 
-After gate 2b, each cycle is a **design** phase, then **architecture**, then **implementation**. An empty phase is skipped and does not open a sprint. Implementation only scopes tickets whose design and architecture are `approved` or `n/a`. One unsigned ticket does not freeze a ready sibling. Human stops: **gate 0**, **gate 1**, **gate 2a**, **gate 2b** (sequential; `--gate 2` refused), the batch `approve-design --phase` / `approve-arch --phase`, **`env --approve`**, **cadence review** (implementation phases only), rare **tech-veto**. `MOVE_DONE` commits the product repo; `./studio ship --to dev` before cadence HITL; `main` is HITL `--approve`. Hygiene stays outside the train. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.** INFORM open HQ LO counts; do not `STUDIO_LO` mid-product.
+After gate 2b, each cycle is a **design** phase, then **architecture**, then **implementation**. An empty phase is skipped and does not open a sprint. Implementation only scopes tickets whose design and architecture are `approved` or `n/a`. One unsigned ticket does not freeze a ready sibling. Human stops: **gate 0**, **gate 1**, **gate 2a**, **gate 2b** (sequential; `--gate 2` refused), **milestone roadmap and reviews**, the batch `approve-design --phase` (per ticket `--reject --reason <code>`), **`ship --to main --approve`**, **production migration / destructive data**, rare **tech-veto**. Agent-run INFORM: `approve-arch --phase`, `review --inform` (cadence), local `env`, `ops`. Before `MOVE_DONE`: green gate 5, a receipt whose result lines are PASS / FAIL / NOT TESTED with real paths, a fresh-context **QA PASS** (`./studio qa`), and the **UX-009 finish gate** (`./studio qa <p> <T> --finish`) when the ticket has signed mock shots. Red gates, QA FAILs and HOLDs share 3 attempts, then the ticket goes `blocked` and siblings continue. `MOVE_DONE` commits the product repo; `./studio ship --to dev`, then `./studio reality-check`, before the cadence brief (`review --inform`); `main` is HITL `--approve` and refuses on `ops readiness` FAIL. Receipts list every CARD skill file and playbook under `## Skills read` with the rule applied; QA verdicts carry a `Reviewer:` id that differs from the implementing context (`./studio whoami`). Hygiene stays outside the train. Chat mid-execute: `./studio note` — ACK, do not preempt. **Never implement design feedback during review.** INFORM open HQ LO counts; do not `STUDIO_LO` mid-product.
+
+## Staffing (PM-004)
+
+Every ticket you write is staffed like a Product Manager would: owner skill first, companions from other teams, reasons under `## Staffing`. `./studio groom` refuses `SKILLS_MISSING`, `SKILL_UNKNOWN`, `STAFFING_GAP`. Read the **skill files** listed on the execute CARD before coding.
 
 ## Drift recovery
 
@@ -81,4 +85,4 @@ Gate 2b does **not** merge product look into `studio-library/`. Headless primiti
 
 ## UI design (post gate 2b)
 
-Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, IA): Team 10 **writes** `docs/design-specs/<TICKET>.md` and **in-context HTML mocks** (`docs/design-specs/mocks/<TICKET>/`) using **project CSS tokens**, in the **real product view**, with **all states** (rest/hover/pressed/disabled/focus; open/closed for menus; empty/loading/error for surfaces). Only then `./studio approve-design`. Do not ask to review a file that does not exist. Other tickets use gate-2b project tokens + Headless library only. If a component is missing, write a design ticket and run it in a design sprint — do not invent it in a feature ticket. New components in studio-library first (`component-creation-playbook.md`).
+Design-track tickets (`ui-new-component`, `ui-composition`, `marketing-page`, `workflow-explainer`, IA): Team 10 **writes** `docs/design-specs/<TICKET>.md` and **interactive real-UI mocks**: routes in the product app (`app/(design-mocks)/design-mocks/<TICKET>/`) that render the app's own views and components with the solution woven in — wired handlers, scenario states via `mock-scenario-panel` (`?state=`), §2d transitions, §2e Interaction walkthrough — never hand-drawn HTML or static frames. Screenshots of **all states** (rest/hover/pressed/disabled/focus; open/closed for menus; empty/loading/error for surfaces) go in `docs/design-specs/mocks/<TICKET>/` as the record. The human reviews the **running route** (`./studio mock <p> <T>`) and only signs mocks that behave exactly like the implemented app will; the mock code is then the reference implementation for the build. Only then `./studio approve-design`. Do not ask to review a file that does not exist. Other tickets use gate-2b project tokens + Headless library only. If a component is missing, write a design ticket and run it in a design sprint — do not invent it in a feature ticket. New components in studio-library first (`component-creation-playbook.md`).

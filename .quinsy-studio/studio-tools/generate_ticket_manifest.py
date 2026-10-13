@@ -7,7 +7,7 @@ including acceptance criteria, dependencies, and estimates.
 
 Usage:
   python3 generate_ticket_manifest.py <project>
-  python3 generate_ticket_manifest.py nudge
+  python3 generate_ticket_manifest.py demo
 
 Output:
   projects/<project>/backlog/TICKET-NNNN-<slug>.md

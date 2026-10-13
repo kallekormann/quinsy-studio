@@ -1,6 +1,6 @@
 # Figma plugin host networking (CORS / origin null)
 
-**Signal:** process-gap (LO-0022, LO-0041, LO-0043, LO-0044, source: moody)  
+**Signal:** process-gap (LO-0022, LO-0041, LO-0043, LO-0044)  
 **Audience:** agents shipping Figma (or similar) plugins that call the project API
 
 ## Problem

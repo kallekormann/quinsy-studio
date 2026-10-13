@@ -247,9 +247,9 @@ The board shows all tickets by their current status:
 ./studio move <project> TICKET-NNN <status> [--reason "Reason"]
 
 # examples
-./studio move nudge TICKET-007 implement --reason "Implementation started"
-./studio move nudge TICKET-007 qa --reason "QA started"
-./studio move nudge TICKET-007 done --reason "All criteria met"
+./studio move demo TICKET-007 implement --reason "Implementation started"
+./studio move demo TICKET-007 qa --reason "QA started"
+./studio move demo TICKET-007 done --reason "All criteria met"
 ```
 
 **Rule:** every movement is documented (status change + reason).
@@ -412,7 +412,7 @@ Every project has a `status.json`:
 
 ```json
 {
-  "name": "nudge",
+  "name": "demo",
   "phase": "5",
   "gate": "4",
   "gate_status": "passed",

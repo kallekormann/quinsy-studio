@@ -1,9 +1,12 @@
 # Frontend learnings
 
-Portable studio principles for this domain. Also infuse `knowledge-base/frontend_playbook.md` / matching skills on train.
 
-Topic files in this folder are the durable store. Inbox is only the open queue.
+Portable studio principles. Playbook: `knowledge-base/frontend_playbook.md`.
+
+
+On IMPLEMENT, Read the topic file that matches the ticket — not `inbox.md`.
+
 
 ## Topics
 
-_Generated — see files in this folder._
+- [runtime](runtime.md) — frontend / runtime

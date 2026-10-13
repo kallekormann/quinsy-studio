@@ -46,8 +46,11 @@ def _read(path: Path) -> str:
 def _parse_ticket_meta(path: Path) -> Dict:
     text = _read(path)
     meta: Dict = {"path": str(path), "body": text}
-    for key in ("id", "title", "priority", "phase", "estimate", "sprint", "status"):
-        m = re.search(rf"^{key}:\s*(.+)$", text, re.MULTILINE)
+    for key in (
+        "id", "title", "priority", "phase", "estimate", "sprint", "status",
+        "ticket_type", "design_status", "skills", "staffing_waive",
+    ):
+        m = re.search(rf"^{key}:[ \t]*(.*)$", text, re.MULTILINE)
         if m:
             meta[key] = m.group(1).strip().strip("'\"")
     deps = re.search(r"^dependencies:\s*\[(.*?)\]", text, re.MULTILINE | re.DOTALL)
@@ -116,6 +119,64 @@ def _done_ticket_ids(project_dir: Path) -> set:
         if m:
             done.add(m.group(1))
     return done
+
+
+def _yaml_ids(raw: str) -> List[str]:
+    return [x.strip().strip("'\"") for x in (raw or "").strip("[] ").split(",") if x.strip()]
+
+
+def staffing_findings(ticket: Dict) -> List[Finding]:
+    """PM-004: every sprint ticket is staffed with known skills and its required companions."""
+    from skill_matcher import is_known_skill, staff_skills
+
+    tid = ticket.get("id", "?")
+    skills = _yaml_ids(ticket.get("skills", ""))
+    waived = _yaml_ids(ticket.get("staffing_waive", ""))
+    out: List[Finding] = []
+    if not skills:
+        out.append(
+            Finding(
+                "error", tid, "SKILLS_MISSING",
+                "Ticket has no skills, so no team owns it and no skill file is loaded.",
+                "Staff it per PM-004 (`teams/06-product-management-operating-model/skills/ticket-staffing.md`).",
+            )
+        )
+    unknown = [s for s in skills if not is_known_skill(s)]
+    if unknown:
+        out.append(
+            Finding(
+                "error", tid, "SKILL_UNKNOWN",
+                f"Unknown skill ID(s): {', '.join(unknown)}.",
+                "Use IDs from `teams/skill-registry.md`.",
+            )
+        )
+    staffing = staff_skills(
+        ticket.get("title", ""),
+        ticket.get("body", ""),
+        skills=skills,
+        ticket_type=ticket.get("ticket_type", ""),
+        design_status=ticket.get("design_status", ""),
+        waived=waived,
+    )
+    for skill_id, reason in staffing["missing_required"]:
+        out.append(
+            Finding(
+                "error", tid, "STAFFING_GAP",
+                f"Needs {skill_id}: {reason}.",
+                f"Add {skill_id} to `skills:`, or add it to `staffing_waive:` and say why under `## Staffing`.",
+            )
+        )
+    required = {sid for sid, _ in staffing["missing_required"]}
+    for skill_id, reason in staffing["added"]:
+        if skill_id not in required:
+            out.append(
+                Finding(
+                    "info", tid, "STAFFING_SUGGEST",
+                    f"Consider {skill_id}: {reason}.",
+                    "Add it, or leave it off if it does not apply.",
+                )
+            )
+    return out
 
 
 def validate_sprint_backlog(project: str, sprint: Optional[str] = None) -> Dict:
@@ -247,8 +308,8 @@ def validate_sprint_backlog(project: str, sprint: Optional[str] = None) -> Dict:
                         )
                     )
 
-        if t.get("folder") == "done" and tid in {x.get("id") for x in tickets}:
-            pass  # ok
+        if t.get("folder") != "done":
+            findings.extend(staffing_findings(t))
 
         ticket_path = Path(t.get("path", ""))
         if ticket_path.exists():
@@ -354,6 +415,7 @@ def write_validation_report(project: str, result: Dict) -> Path:
             "- [ ] Out-of-scope tickets moved to backlog (or later sprint)",
             "- [ ] Dependencies ordered",
             "- [ ] Capacity realistic (3–6 tickets)",
+            "- [ ] Every ticket staffed (PM-004): owner first, required companions present or waived",
             "- [ ] `./studio groom <project> --approve` after edits",
             "",
         ]

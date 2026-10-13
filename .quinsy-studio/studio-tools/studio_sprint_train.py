@@ -194,28 +194,32 @@ def design_phase_action(tickets: List[Dict]) -> Dict:
 
 def architecture_phase_action(project: str, tickets: List[Dict]) -> Dict:
     """mode: write | sign | done. A rejected ticket is already out of this phase."""
-    from studio_streams import architecture_packet_ready
+    from studio_streams import architecture_packet_issues
 
     open_rows = [t for t in tickets if (t.get("status") or "backlog") in ("backlog", "open")]
     if not open_rows:
         return {"mode": "done", "ticket_id": "", "detail": ""}
     writers: List[str] = []
     signable: List[str] = []
+    gaps: Dict[str, List[str]] = {}
     for ticket in open_rows:
         tid = str(ticket.get("id") or "")
         body = _ticket_body(ticket)
         arch = _field({"body": body}, "architecture_status").lower()
         if arch in ("approved", "rejected", "n/a"):
             continue
-        if architecture_packet_ready(project, tid):
-            signable.append(tid)
-        else:
+        issues = architecture_packet_issues(project, tid)
+        if issues:
             writers.append(tid)
+            gaps[tid] = issues
+        else:
+            signable.append(tid)
     if writers:
+        first = writers[0]
         return {
             "mode": "write",
-            "ticket_id": writers[0],
-            "detail": f"Write docs/architecture/{writers[0]}.md before any architecture signature.",
+            "ticket_id": first,
+            "detail": f"Write docs/architecture/{first}.md before any architecture signature: " + "; ".join(gaps[first]),
         }
     if signable:
         return {

@@ -1,20 +1,13 @@
 {
   "schema_version": "1.0",
-  "default_system_id": "moody-bloom",
+  "default_system_id": "soft-ui",
   "systems": [
-    {
-      "id": "moody-bloom",
-      "name": "Moody Bloom",
-      "description": "Warm soft Bloom grammar from Moody product design — default generate system.",
-      "source": "projects/moody/design/DESIGN.md + ui/tokens/",
-      "default": true
-    },
     {
       "id": "soft-ui",
       "name": "Soft UI",
       "description": "Warm consumer premium, glass, bounce.",
       "source": "aesthetic-presets/soft-ui/SKILL.md",
-      "default": false
+      "default": true
     },
     {
       "id": "minimalist-ui",
@@ -26,7 +19,7 @@
     {
       "id": "brutalist-ui",
       "name": "Brutalist UI",
-      "description": "Raw high-contrast editorial — contrast demo core, not Moody product skin.",
+      "description": "Raw high-contrast editorial \u2014 the contrast core.",
       "source": "aesthetic-presets/brutalist-ui/SKILL.md",
       "default": false
     },

@@ -12,25 +12,23 @@ from library_manager import asset_is_stub, pull_assets, suggest_assets
 
 
 class StubLibraryTests(unittest.TestCase):
-    def test_billing_and_gating_are_stubs(self):
-        self.assertIsNotNone(asset_is_stub("billing"))
+    def test_feature_gating_is_the_stub(self):
+        self.assertIsNone(asset_is_stub("billing"))
         self.assertIsNotNone(asset_is_stub("feature-gating"))
-        self.assertIsNone(asset_is_stub("auth"))
+        self.assertIsNotNone(asset_is_stub("auth"))
 
     def test_pull_refuses_stubs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "demo").mkdir()
             with patch("library_manager.PROJECTS_DIR", root):
-                result = pull_assets("demo", ["billing", "feature-gating"])
+                result = pull_assets("demo", ["feature-gating"])
         statuses = {i.get("name"): i.get("status") for i in result.get("pulled", [])}
-        self.assertEqual(statuses.get("billing"), "refused_stub")
         self.assertEqual(statuses.get("feature-gating"), "refused_stub")
 
     def test_suggest_skips_stubs(self):
-        hits = suggest_assets("billing lemon subscription")
+        hits = suggest_assets("feature gating subscription")
         names = {h.get("name") for h in hits}
-        self.assertNotIn("billing", names)
         self.assertNotIn("feature-gating", names)
 
 

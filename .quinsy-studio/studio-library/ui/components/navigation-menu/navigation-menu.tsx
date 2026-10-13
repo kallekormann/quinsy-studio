@@ -1,7 +1,7 @@
 /**
  * Studio Library — themable shadcn-style component.
  * Remap CSS variables in ui/tokens/design-tokens.css ( --primary, --background, … ).
- * Adapted from Command Center / shadcn; no product brand.
+ * Adapted from shadcn; no product brand.
  */
 import * as React from "react"
 import { cva } from "class-variance-authority"

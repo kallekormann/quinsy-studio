@@ -5,6 +5,22 @@ Matching playbook/skill: `process/learning-loop.md`.
 
 ## Principles
 
+- **LO-0385** 2026-10-12 :: MOVE_DONE treats added `[Nrem]` / `[Npx]` classNames as token violations
+  - The check scans git *added* lines. Relocating a className re-adds it. Use a scale token (`max-w-3xl`) or leave the line byte-identical. See **PB-20261012-001** in `process/ticket-workflow.md`.
+- **LO-0383** 2026-10-08 :: UUID-shaped test keys; parked tickets stay out of implementation
+  - See **PB-20261008-001** in `process/ticket-workflow.md`. Test helpers that stand in for primary keys must match the column type (UUID when the schema is UUID). Design-track and parked tickets stay out of an implementation sprint until that phase is open.
+- **PB-20261008-002** helpful=0 harmful=0 :: Register regular, bold, italic, and bold-italic for every custom PDF face before writing HTML. A missing style aborts the file. Host SIL webfonts in the product tree, load them locally, and reuse those files in PDF export so a public page does not call a font CDN.
+- **PB-20261008-001** helpful=0 harmful=0 :: When HTML-to-PDF does not implement tables, parse pipe rows in the writer and draw cells. Do not emit unsupported table tags.
+- **LO-0382** 2026-10-08 :: Host SIL webfonts locally and reuse them in PDF export
+  - See **PB-20261008-002**. Host SIL webfonts in the product tree, load them locally, and reuse those files in PDF export so a public page does not call a font CDN. Register every style of a custom PDF face before writing HTML.
+- **LO-0381** 2026-10-08 :: Draw pipe tables in the PDF writer when HTML tables are unsupported
+  - See **PB-20261008-001**. When HTML-to-PDF does not implement tables, parse pipe rows in the writer and draw cells. Do not emit unsupported table tags.
+- **LO-0379** 2026-10-07 :: A behavior the review already specified should start with two concrete acceptance lines.
+- **LO-0378** helpful=0 harmful=0 :: A control that asks for a value uses the design-system dialog, not a browser prompt. A mark's look is signed in a mock before a build changes how that mark appears.
+- **LO-0377** 2026-10-04 :: Close an approved design ticket. Do not leave the build ticket waiting on a sess
+  - When a design ticket is approved, close that ticket. A build ticket must not stay blocked on a design session that does not ship code.
+- **LO-0370** 2026-10-03 :: Build the signed prototype's editor and optional modules on the first pass
+  - When a signed prototype is the visual baseline, the first build of a surface uses that prototype's editor, controls, and optional modules. A plain text field and always-on navigation is not a stand-in. Optional modules stay off until the account enables them.
 - **PB-20261002-004** helpful=0 harmful=0 :: On the ideation desk the human answers a question, picks an idea when more than one remains, and says yes or no to the intake PRD. They do not advance the desk by naming the next section. The case is explained before that yes. The PRD is written only after the yes.
 - **PB-20261002-003** helpful=0 harmful=0 :: An ideation PRD states the full solution: user tasks, system tasks, backend, infrastructure, and scope modules. The first module is what bootstrap builds. Later modules stay in the PRD. Promote refuses a thin brief.
 - **PB-20261002-002** helpful=0 harmful=0 :: Ideation builder time is not a ceiling. One solo builder, with AI agents for coding and design, ships in chunks of about two months. Each chunk is a full web app, big enough for that builder and those agents. The first chunk is the MVP. Later chunks stay in the idea. A longer full solution is not scored as too slow.

@@ -47,7 +47,7 @@ export type StudioDockProps = {
   onPeerChange: (peer: StudioPeerId | null) => void;
   panelTitle?: string;
   panelTrailing?: ReactNode;
-  /** Close the active panel (MOOD-0499 — on title chrome, not item row). */
+  /** Close the active panel (on title chrome, not item row). */
   onPanelClose?: () => void;
   children?: ReactNode;
   className?: string;

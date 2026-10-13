@@ -1,6 +1,6 @@
 # Tooltip
 
-Position-aware label tip / compact popover for icon buttons and dense chrome (MOOD-0425).
+Position-aware label tip / compact popover for icon buttons and dense chrome.
 
 ## When to use
 

@@ -1,6 +1,7 @@
 import { dataUrlToUint8Array } from './canvas-export';
 
-export const DEFAULT_WATERMARK_TEXT = 'Moody';
+/** Neutral fallback. Products pass their own name as `text`. */
+export const DEFAULT_WATERMARK_TEXT = 'Preview';
 
 export type WatermarkOptions = {
   text?: string;
@@ -107,7 +108,7 @@ export function drawWatermarkOnCanvas(
 async function decodeExportImage(
   dataUrl: string,
 ): Promise<{ width: number; height: number; draw: (ctx: CanvasRenderingContext2D) => void }> {
-  // Decode via atob — fetch(dataUrl) fails on large Konva captures (MOOD-0355 / MOOD-0357).
+  // Decode via atob — fetch(dataUrl) fails on large Konva captures.
   if (dataUrl.startsWith('data:') && typeof createImageBitmap === 'function') {
     const { bytes, mime } = dataUrlToUint8Array(dataUrl);
     const copy = new Uint8Array(bytes.byteLength);
@@ -171,7 +172,7 @@ export async function applyWatermark(
     drawWatermarkOnCanvas(ctx, width, height, options);
     return canvas.toDataURL('image/png');
   } catch {
-    // Never block Export PDF/PNG on watermark decode failure (MOOD-0355).
+    // Never block Export PDF/PNG on watermark decode failure.
     return dataUrl;
   }
 }

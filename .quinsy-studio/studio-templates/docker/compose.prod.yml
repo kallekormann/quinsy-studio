@@ -1,0 +1,62 @@
+# =============================================================================
+# Quinsy Studio — production overlay
+# =============================================================================
+# Copied next to docker-compose.yml by `./studio env <project> init`. Use it with:
+#   docker compose -f docker-compose.yml -f compose.prod.yml up -d
+# Coolify reads the same pair. The local stack stays production-shaped so that the
+# move to a VPS changes values, not shape. `./studio ops <project> readiness` checks
+# the rules below and `./studio ship <project> --to main` refuses on a FAIL.
+#
+# Rules this file enforces:
+#   - no data port is published (Postgres, Redis, pgbouncer, MinIO reachable on the
+#     Compose network only)
+#   - every long-running service restarts unless stopped and has a healthcheck
+#   - logs are bounded (json-file, 10m x 5)
+#   - the app runs `migrate` before it serves traffic, from a built image, as NODE_ENV=production
+# =============================================================================
+
+x-logging: &bounded-logs
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  db:
+    ports: !reset []
+    restart: unless-stopped
+    logging: *bounded-logs
+
+  redis:
+    ports: !reset []
+    restart: unless-stopped
+    logging: *bounded-logs
+
+  pgbouncer:
+    ports: !reset []
+    restart: unless-stopped
+    logging: *bounded-logs
+
+  minio:
+    ports: !reset []
+    restart: unless-stopped
+    logging: *bounded-logs
+
+  app:
+    # Built image, not `npm install && npm run dev` with a bind mount.
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    image: {{PROJECT_NAME}}-app:${APP_IMAGE_TAG:-latest}
+    command: sh -c "npm run migrate && npm run start"
+    environment:
+      NODE_ENV: production
+    volumes: !reset []
+    restart: unless-stopped
+    logging: *bounded-logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s

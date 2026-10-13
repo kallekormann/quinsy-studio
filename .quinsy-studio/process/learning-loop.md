@@ -33,13 +33,13 @@ Before an LO or train job is created:
 2. **Portability test:** would another product still benefit from the *principle* alone? If the title still needs project nouns, or is incident-shaped → **do not** open an LO.
 3. **Project-local log:** dropped items go to `projects/<p>/docs/studio-learnings-local.md` (provenance only).
 4. **Train only on skill gaps:** LO frontmatter `train_skills: [...]`. Empty → playbook/process infusion only (no train queue).
-5. **Infusion:** HQ playbooks/skills must not introduce project folder names outside provenance / `source:` lines (`./studio infusion` reports hits).
+5. **Infusion:** HQ playbooks/skills must not contain product folder names or product ticket IDs, provenance lines included (`./studio verify-abstraction` reports hits).
 
 **HQ LO vs project log (examples):**
 
 | Belongs in studio HQ | Stays in `projects/<p>/docs/studio-learnings-local.md` |
 |----------------------|--------------------------------------------------------|
-| Guard must not queue HITL “approved” / review approve | Do not sprint tickets AFFI-0007 until vendor X signs off |
+| Guard must not queue HITL “approved” / review approve | Do not sprint ticket <ticket> until vendor X signs off |
 | Close UI sprints (review → reuse → retro) when the last ticket is done | This sprint still had vendor ingest tickets with no publisher site |
 | Shared CSS must be in the host stylesheet scan so chrome cannot ship unstyled | Keep magazine `@source` in this app’s public host DoD |
 | Public chrome must not list destinations that 404 (portable nav DoD) | Named section labels that 404 in this brand’s masthead |
@@ -58,7 +58,7 @@ raw observation → generalize title → portable?
 Each portable harvest:
 
 1. **Classifies** into a domain/topic (`knowledge-base/learnings/<domain>/<topic>.md`) plus the matching playbook/skill
-2. **Appends** the **open** queue `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; `--source` is provenance only)
+2. **Appends** the **open** queue `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; the `--source` product stays in the local LO, never in inbox.md)
 3. **Writes** the principle into the topic file and refreshes `learnings/index.md`
 4. **Opens** a compact LO-* with `infusion_kind`, `infusion_path` (topic file), and `train_skills`
 
@@ -233,6 +233,13 @@ Reusable **UI and code** flow from projects into `.quinsy-studio/studio-library/
 Registry: [../studio-library/library_registry.md](../studio-library/library_registry.md)
 
 Process/skill improvements still use **LO-*** items and `./studio learn`.
+
+**Harvest is part of done.** A ticket that builds a capability another product can use must leave one of these on the receipt:
+
+- `./studio library promote` for generic code. Strip the project's color, type, and copy. Auth screens promote the structure and the variants (sign in, invite-only account, password). The brand stays in the project.
+- `./studio learn` when the lesson is a principle and there is no module yet.
+
+Capabilities that always take this path: realtime, collaboration, object storage, and authentication. Skipping both needs a receipt line that says why the work cannot leave the product. Product look is never promoted. Infusion of the learning happens in an HQ session, not by pausing the product sprint.
 
 ---
 

@@ -12,8 +12,8 @@ Runs complete QA checks:
 
 Usage:
   python3 run_qa_gate.py <project> [--level N] [--fix]
-  python3 run_qa_gate.py nudge
-  python3 run_qa_gate.py nudge --level 5
+  python3 run_qa_gate.py demo
+  python3 run_qa_gate.py demo --level 5
 
 Exit code:
   0 = all checks passed
@@ -40,6 +40,14 @@ STUDIO_ROOT = Path(__file__).parent.parent.parent
 QUINSY_DIR = Path(__file__).parent.parent  # .quinsy-studio/
 PROJECTS_DIR = STUDIO_ROOT / "projects"
 
+from security_checks import HARD_LEVEL_2, HARD_LEVEL_5, WARN_CHECKS
+from quality_checks import QUALITY_HARD, QUALITY_SOFT
+
+# Advisory checks: shown as ⚠️, never fail RESULT.
+SOFT_CHECKS = {"npm_audit", "skill_application", *WARN_CHECKS, *QUALITY_SOFT}
+# Static checks run in-process (security_checks / quality_checks), not as shell commands.
+STATIC_CHECKS = {*HARD_LEVEL_2, *HARD_LEVEL_5, *WARN_CHECKS, *QUALITY_HARD, *QUALITY_SOFT}
+
 # Durable Playwright browser cache (LO-0052) — not Cursor sandbox temp paths.
 PLAYWRIGHT_CACHE_ROOT = QUINSY_DIR / ".cache" / "playwright"
 
@@ -58,6 +66,9 @@ class QAResult:
     output: str
     duration: float
     error: Optional[str] = None
+    # Did not run (no config, sandbox opt-out). Does not fail RESULT, but the
+    # receipt must say NOT TESTED; it is never reported as a pass.
+    not_tested: bool = False
 
 @dataclass
 class QAReport:
@@ -112,6 +123,10 @@ def get_checks_for_level(level: int) -> List[QACheck]:
                 timeout=30
             ),
         ])
+        checks.extend(
+            QACheck(name=name, command="", description=f"Security: {name}", timeout=60)
+            for name in HARD_LEVEL_2
+        )
     
     # Level 3: Type-Checking
     if level >= 3:
@@ -171,7 +186,31 @@ def get_checks_for_level(level: int) -> List[QACheck]:
                 timeout=30,
                 required=False,
             ),
+            QACheck(
+                name="npm_audit_policy",
+                command="",
+                description="Dependency policy (high/critical in production deps)",
+                timeout=90,
+            ),
+            QACheck(
+                name="ui_motion",
+                command="",
+                description="Motion shipped as the §2d spec names it (design-track tickets in flight)",
+                timeout=30,
+            ),
         ])
+        checks.extend(
+            QACheck(name=name, command="", description=f"Security: {name}", timeout=60)
+            for name in HARD_LEVEL_5
+        )
+        checks.extend(
+            QACheck(name=name, command="", description=f"Quality: {name}", timeout=60)
+            for name in QUALITY_HARD
+        )
+        checks.extend(
+            QACheck(name=name, command="", description=f"Advisory: {name}", timeout=60, required=False)
+            for name in (*WARN_CHECKS, *QUALITY_SOFT)
+        )
     
     return checks
 
@@ -242,6 +281,92 @@ def check_skill_application(project_dir: Path) -> QAResult:
         output=report,
         duration=duration,
         error=None if not warnings else f"{len(warnings)} skill-application warning(s)",
+    )
+
+
+def check_ui_motion(project_dir: Path) -> QAResult:
+    """Hard at level 5: §2d motion tokens, reduced-motion path, no second animation layer (LO-0400)."""
+    from gate_ui_checks import motion_findings
+
+    start_time = datetime.now()
+    findings = motion_findings(project_dir)
+    duration = (datetime.now() - start_time).total_seconds()
+    return QAResult(
+        check="ui_motion",
+        passed=not findings,
+        output="\n".join(findings) if findings else "clean (or no design-track ticket in flight)",
+        duration=duration,
+        error=None if not findings else f"{len(findings)} motion finding(s)",
+    )
+
+
+def harden_for_ui(project_dir: Path) -> bool:
+    """A UI ticket in implement makes skill_application a hard check (LO-0399)."""
+    from gate_ui_checks import ui_ticket_in_flight
+
+    if ui_ticket_in_flight(project_dir):
+        SOFT_CHECKS.discard("skill_application")
+        return True
+    return False
+
+
+def check_static(name: str, project_dir: Path) -> QAResult:
+    """In-process static check (security_checks / quality_checks). Findings fail it."""
+    from quality_checks import CHECKS as QUALITY
+    from security_checks import run_check as run_security
+
+    start_time = datetime.now()
+    if name in QUALITY:
+        findings, not_tested = QUALITY[name](project_dir)
+    else:
+        findings, not_tested = run_security(name, project_dir), False
+    duration = (datetime.now() - start_time).total_seconds()
+    shown = findings[:15] + ([f"… {len(findings) - 15} more"] if len(findings) > 15 else [])
+    return QAResult(
+        check=name,
+        passed=not findings,
+        output="\n".join(shown) if findings else ("NOT TESTED — " + not_tested if not_tested else "clean"),
+        duration=duration,
+        error=None if not findings else f"{len(findings)} finding(s)",
+        not_tested=bool(not_tested) and not findings,
+    )
+
+
+def check_npm_audit_policy(npm_dir: Path) -> QAResult:
+    """High or critical advisories in production dependencies fail the gate."""
+    from security_checks import _expired, load_exceptions
+
+    waivers = [
+        row
+        for row in load_exceptions(npm_dir)
+        if row["check"] == "npm_audit_policy" and not _expired(row)
+    ]
+    if waivers:
+        row = waivers[0]
+        return QAResult(
+            check="npm_audit_policy",
+            passed=True,
+            output=f"waived until {row['expires']} — {row['reason']}",
+            duration=0.0,
+        )
+    start_time = datetime.now()
+    try:
+        result = subprocess.run(
+            "npm audit --omit=dev --audit-level=high",
+            shell=True, cwd=str(npm_dir), capture_output=True, text=True, timeout=90,
+        )
+    except subprocess.TimeoutExpired:
+        return QAResult("npm_audit_policy", True, "NOT TESTED — npm audit timed out", 90, not_tested=True)
+    duration = (datetime.now() - start_time).total_seconds()
+    output = (result.stdout or "") + (result.stderr or "")
+    if result.returncode != 0 and re.search(r"ENOTFOUND|EAI_AGAIN|ECONNREFUSED|network|audit endpoint", output, re.I):
+        return QAResult("npm_audit_policy", True, "NOT TESTED — registry unreachable", duration, not_tested=True)
+    return QAResult(
+        check="npm_audit_policy",
+        passed=result.returncode == 0,
+        output=output[-1500:],
+        duration=duration,
+        error=None if result.returncode == 0 else "high/critical advisory in production dependencies",
     )
 
 
@@ -426,18 +551,20 @@ def check_smoke_routes(project_dir: Path) -> QAResult:
             check="smoke_routes",
             passed=True,
             output=(
-                "Skipped — QUINSY_SKIP_SMOKE set (Chromium unavailable in this environment). "
-                "Re-run smoke unrestricted before ./studio move … done."
+                "NOT TESTED — QUINSY_SKIP_SMOKE set (Chromium unavailable in this environment). "
+                "Re-run smoke unrestricted, or say `smoke routes: NOT TESTED — <why>` on the receipt."
             ),
             duration=0,
+            not_tested=True,
         )
 
     if not smoke_config.exists():
         return QAResult(
             check="smoke_routes",
             passed=True,
-            output="Skipped — no docs/smoke-routes.json (add smoke config for web apps)",
+            output="NOT TESTED — no docs/smoke-routes.json (add smoke config for web apps)",
             duration=0,
+            not_tested=True,
         )
 
     try:
@@ -516,7 +643,11 @@ def print_report(report: QAReport, use_json: bool = False):
     total_count = len(report.results)
     
     for result in report.results:
-        soft = result["check"] in ("npm_audit", "skill_application")
+        soft = result["check"] in SOFT_CHECKS
+        if result.get("not_tested"):
+            print(f"\n  ⚪ {result['check']} NOT TESTED")
+            print(f"     {redact_secret_patterns(result['output'].strip().splitlines()[0] if result['output'] else '')}")
+            continue
         if result["passed"]:
             icon = "✅"
         elif soft:
@@ -538,16 +669,19 @@ def print_report(report: QAReport, use_json: bool = False):
     hard_failed = [
         r
         for r in report.results
-        if not r["passed"] and r["check"] not in ("npm_audit", "skill_application")
+        if not r["passed"] and r["check"] not in SOFT_CHECKS
     ]
     soft_failed = [
         r
         for r in report.results
-        if not r["passed"] and r["check"] in ("npm_audit", "skill_application")
+        if not r["passed"] and r["check"] in SOFT_CHECKS
     ]
+    not_tested = [r["check"] for r in report.results if r.get("not_tested")]
     print(f"\n  {'='*50}")
     print(f"  RESULT: {report.passed}")
-    print(f"  Passed: {passed_count}/{total_count}")
+    print(f"  Passed: {passed_count - len(not_tested)}/{total_count}")
+    if not_tested:
+        print(f"  NOT TESTED: {', '.join(not_tested)} (receipt must say so)")
     if soft_failed and report.passed:
         print(f"  Soft fail ignored for RESULT: {', '.join(r['check'] for r in soft_failed)}")
     print(f"  Duration: {report.total_duration:.1f}s")
@@ -591,6 +725,17 @@ def main():
     if not project_dir.exists():
         print(f"Error: project not found: {project_dir}")
         sys.exit(1)
+
+    # Payload-foundation projects (payload_foundation.py) scaffold the Next/
+    # Payload app into apps/web/ rather than the project root, and run
+    # `npm install` *inside* Docker, not on the host (see BE-007 /
+    # payload-playbook.md). Point the npm-related checks at apps/web when it
+    # has its own package.json; project-level checks (structure, status.json,
+    # anti-slop, skill checks) still run against project_dir.
+    npm_dir = project_dir
+    web_app_dir = project_dir / "apps" / "web"
+    if (web_app_dir / "package.json").exists():
+        npm_dir = web_app_dir
     
     print(f"\n  Starting QA gate level {level} for {project}...")
 
@@ -598,6 +743,9 @@ def main():
         from studio_settings import ensure_prettierignore_cost_lines
 
         ensure_prettierignore_cost_lines(project_dir)
+
+    if level >= 5 and harden_for_ui(project_dir):
+        print("  UI ticket in flight — token literals and native <select> fail the gate (LO-0399).")
 
     # Get checks for level
     checks = get_checks_for_level(level)
@@ -637,20 +785,34 @@ def main():
             result = check_smoke_routes(project_dir)
         elif check.name == "skill_application":
             result = check_skill_application(project_dir)
+        elif check.name == "ui_motion":
+            result = check_ui_motion(project_dir)
+        elif check.name in STATIC_CHECKS:
+            result = check_static(check.name, project_dir)
+        elif check.name == "npm_audit_policy":
+            result = check_npm_audit_policy(npm_dir)
+        elif check.name in (
+            "package_json_exists",
+            "node_modules_exists",
+            "eslint",
+            "prettier",
+            "typescript",
+            "unit_tests",
+            "build",
+        ):
+            result = run_check(check, npm_dir)
         else:
             result = run_check(check, project_dir)
         
         results.append(result)
         
-        icon = "✅" if result.passed else "❌"
+        icon = "⚪ not tested" if result.not_tested else ("✅" if result.passed else "❌")
         print(f" {icon}")
     
     total_duration = (datetime.now() - total_start).total_seconds()
     
     # Build report
-    passed = all(
-        r.passed for r in results if r.check not in ["npm_audit", "skill_application"]
-    )
+    passed = all(r.passed for r in results if r.check not in SOFT_CHECKS)
     
     report = QAReport(
         project=project,

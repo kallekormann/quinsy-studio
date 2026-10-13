@@ -489,8 +489,17 @@ def prepare_review(project: str, sprint: str, status: Dict) -> Path:
 
     rate = int(100 * summary["done"] / summary["total"]) if summary["total"] else 0
     smoke_section = build_per_ticket_smoke_section(project, summary["tickets"])
+    from reality_check import parse_report, report_path
+
+    reality = report_path(sprint_dir)
+    reality_line = (
+        f"**Reality check:** [{parse_report(reality.read_text(encoding='utf-8', errors='ignore'))['verdict'] or 'no verdict'}](reality-check.md)"
+        if reality.exists()
+        else "**Reality check:** not run (execute runs it on the dev build before this review)"
+    )
     content = f"""# Sprint Review — {sprint}
 
+{reality_line}
 **Project:** {project}
 **Prepared:** {datetime.now().strftime('%Y-%m-%d %H:%M')}
 **Review status:** {get_sprint_hitl(status).get('review_status') or 'not started'}
@@ -614,39 +623,56 @@ def _feedback_themes(tokens: set) -> set:
     return themes
 
 
+def _feedback_similarity(text: str, item: Dict) -> float:
+    new_tokens = _feedback_tokens(text)
+    old_text = " ".join(
+        filter(None, [item.get("raw", ""), item.get("draft_title") or "", item.get("draft_scope") or ""])
+    )
+    old_tokens = _feedback_tokens(old_text)
+    if not new_tokens or not old_tokens:
+        return 0.0
+    shared = new_tokens & old_tokens
+    score = len(shared) / max(len(new_tokens | old_tokens), 1)
+    theme_overlap = _feedback_themes(new_tokens) & _feedback_themes(old_tokens)
+    if len(theme_overlap) >= 2 and len(shared) >= 3:
+        score = max(score, 0.5)
+    return score
+
+
 def find_similar_feedback(project: str, sprint: str, text: str, threshold: float = 0.32) -> Optional[Dict]:
     """Find active feedback item similar to new text (dedupe per sprint)."""
-    new_tokens = _feedback_tokens(text)
-    if not new_tokens:
-        return None
-    new_themes = _feedback_themes(new_tokens)
     best: Optional[Dict] = None
     best_score = 0.0
     for item in load_feedback_queue(project, sprint):
         if item.get("status") in (FEEDBACK_TICKETED, FEEDBACK_REJECTED):
             continue
-        old_text = " ".join(
-            filter(
-                None,
-                [
-                    item.get("raw", ""),
-                    item.get("draft_title") or "",
-                    item.get("draft_scope") or "",
-                ],
-            ),
-        )
-        old_tokens = _feedback_tokens(old_text)
-        if not old_tokens:
-            continue
-        union = new_tokens | old_tokens
-        score = len(new_tokens & old_tokens) / max(len(union), 1)
-        theme_overlap = new_themes & _feedback_themes(old_tokens)
-        if len(theme_overlap) >= 2 and len(new_tokens & old_tokens) >= 3:
-            score = max(score, 0.5)
+        score = _feedback_similarity(text, item)
         if score >= threshold and score > best_score:
             best_score = score
             best = item
     return best
+
+
+FEEDBACK_SEVERITIES = ("blocker", "major", "minor", "polish")
+SEVERITY_PRIORITY = {"blocker": "P0", "major": "P1", "minor": "P2", "polish": "P3"}
+
+
+def recurring_feedback(project: str, sprint: str, text: str, threshold: float = 0.32) -> List[str]:
+    """Earlier sprints where the human said the same thing, any status: `SPRINT-02/FB-003 (ticketed DEMO-0012)`."""
+    root = sprint_directory(project, sprint).parent
+    hits: List[str] = []
+    if not root.is_dir():
+        return hits
+    for folder in sorted(root.glob("SPRINT-*")):
+        if folder.name == sprint or not folder.is_dir():
+            continue
+        for item in load_feedback_queue(project, folder.name):
+            if _feedback_similarity(text, item) >= threshold:
+                state = item.get("status") or "raw"
+                if item.get("linked_ticket"):
+                    state += f" {item['linked_ticket']}"
+                hits.append(f"{folder.name}/{item.get('id')} ({state})")
+    return hits
 
 
 def add_feedback(
@@ -701,7 +727,7 @@ def add_feedback(
 {text.strip()}
 
 ## Next steps
-1. Agent + human clarify: `./studio clarify {project} {fb_id} --title "..." --scope "..." --acceptance "..."`
+1. Agent + human clarify: `./studio clarify {project} {fb_id} --title "..." --scope "..." --acceptance "..." --severity blocker|major|minor|polish`
 2. Human approves draft: `./studio clarify {project} {fb_id} --approve`
 3. Create ticket: `./studio ticket {project} "<title>" --from-feedback {fb_id}`
    (ticket lands in **backlog** — sprint assigned at `./studio sprint`)
@@ -740,8 +766,14 @@ def clarify_feedback(
     acceptance: Optional[List[str]] = None,
     questions: Optional[List[str]] = None,
     approve: bool = False,
+    severity: str = "",
+    verbatim: Optional[List[str]] = None,
 ) -> Tuple[Optional[Dict], Path]:
-    """Draft or approve clarification for raw feedback."""
+    """Draft or approve clarification for raw feedback.
+
+    The human's words stay verbatim next to the agent's reading of them; severity
+    is the human impact; recurring lists earlier sprints that raised the same point.
+    """
     item = find_feedback(project, sprint, fb_id)
     if not item:
         return None, Path()
@@ -750,6 +782,17 @@ def clarify_feedback(
         raise ValueError(f"{fb_id} already linked to ticket {item.get('linked_ticket')}")
 
     updates: Dict = {"status": FEEDBACK_CLARIFYING}
+    if severity:
+        severity = severity.strip().lower()
+        if severity not in FEEDBACK_SEVERITIES:
+            raise ValueError(f"--severity must be one of {', '.join(FEEDBACK_SEVERITIES)}")
+        updates["severity"] = severity
+    quotes = list(item.get("verbatim") or [item.get("raw", "").strip()])
+    for quote in verbatim or []:
+        if quote.strip() and quote.strip() not in quotes:
+            quotes.append(quote.strip())
+    updates["verbatim"] = [q for q in quotes if q]
+    updates["recurring"] = recurring_feedback(project, sprint, item.get("raw", ""))
     if title:
         updates["draft_title"] = title.strip()
     if scope:
@@ -767,6 +810,8 @@ def clarify_feedback(
             raise ValueError(f"{fb_id}: draft_title required before --approve")
         if not merged.get("draft_acceptance"):
             raise ValueError(f"{fb_id}: at least one --acceptance required before --approve")
+        if not merged.get("severity"):
+            raise ValueError(f"{fb_id}: --severity ({'|'.join(FEEDBACK_SEVERITIES)}) required before --approve")
         updates["status"] = FEEDBACK_READY
 
     item = update_feedback(project, sprint, fb_id, updates)
@@ -776,12 +821,22 @@ def clarify_feedback(
     clarify_file = sprint_dir / f"{fb_id.lower()}-clarify.md"
     ac_lines = "\n".join(f"- [ ] {a}" for a in item.get("draft_acceptance", [])) or "- [ ] (define acceptance criteria)"
     q_lines = "\n".join(f"- {q}" for q in item.get("open_questions", [])) or "- (none)"
+    quote_lines = "\n".join(f"> {q}" for q in item.get("verbatim", [])) or "> (none)"
+    recurring = item.get("recurring") or []
+    recurring_lines = "\n".join(f"- {r}" for r in recurring) or "- first time raised"
 
     clarify_file.write_text(
         f"""# {fb_id} — Clarification draft
 
 **Status:** {item['status']}
-**Raw feedback:** {item.get('raw', '')}
+**Severity:** {item.get('severity') or f"(set via --severity {'|'.join(FEEDBACK_SEVERITIES)})"}
+**Recurring:** {len(recurring)} earlier sprint(s)
+
+## Verbatim (the human's words — never edit or summarize)
+{quote_lines}
+
+## Raised before
+{recurring_lines}
 
 ## Proposed ticket title
 {item.get('draft_title') or '(set via --title)'}
@@ -800,7 +855,7 @@ def clarify_feedback(
 
 ## Commands
 ```bash
-./studio clarify {project} {fb_id} --title "..." --scope "..." --acceptance "Criterion 1" --approve
+./studio clarify {project} {fb_id} --title "..." --scope "..." --acceptance "Criterion 1" --severity minor --approve
 ./studio ticket {project} "<title>" --from-feedback {fb_id}
 ```
 """,
@@ -844,6 +899,14 @@ def prepare_retro(project: str, sprint: str) -> Path:
 
     summary = sprint_ticket_summary(project, sprint)
     feedback_items = load_feedback_queue(project, sprint)
+    from retro_metrics import loop_metrics, metrics_lines
+    from studio_execute import load_execution_log
+
+    loop = "\n".join(metrics_lines(loop_metrics(load_execution_log(project, sprint), sprint_dir)))
+    from backlog_paths import PROJECTS_DIR as _PROJECTS
+    from design_feedback import retro_design_section
+
+    design_block = retro_design_section(_PROJECTS / project, [str(t.get("id") or "") for t in summary.get("tickets", [])])
 
     template = f"""# Retrospective — {sprint}
 
@@ -854,6 +917,9 @@ def prepare_retro(project: str, sprint: str) -> Path:
 - Completed: {summary['done']}/{summary['total']} tickets
 - Feedback items: {len(feedback_items)} ({sum(1 for i in feedback_items if i.get('status') == FEEDBACK_TICKETED)} ticketed)
 
+## Loop metrics (execution-log.json)
+{loop}
+
 ## What went well?
 - ...
 
@@ -863,6 +929,7 @@ def prepare_retro(project: str, sprint: str) -> Path:
 ## What can we improve?
 - ...
 
+{design_block}
 ## Human feedback processed
 | FB ID | Status | Linked ticket |
 |-------|--------|---------------|

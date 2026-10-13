@@ -29,7 +29,7 @@ Color, background, shadow, and transform only. Not `transition: all`.
 
 ## Mock (Team 10)
 
-The HTML mock imports the project token file and shows the closed frame and the open frame. The open frame uses the real transition. A screenshot of one resting frame is not the motion.
+The mock route renders the real component in the closed frame and the open frame. The open frame uses the real transition. A screenshot of one resting frame is not the motion.
 
 ```html
 <link rel="stylesheet" href="ui/tokens/design-tokens.css">

@@ -524,6 +524,21 @@ class CritiqueAndBaselineTests(unittest.TestCase):
             self.assertIn("visual baseline", (root / "docs" / "design" / "baseline.md").read_text(encoding="utf-8"))
             self.assertTrue(any(p.name == "baseline.md" for p in created))
 
+    def test_materialize_lands_in_the_payload_app(self):
+        with tempfile.TemporaryDirectory() as raw:
+            projects = Path(raw) / "projects"
+            root = projects / "demo"
+            page = root / "design" / "prototype" / "app" / "mocks" / "sign-in" / "page.tsx"
+            page.parent.mkdir(parents=True)
+            page.write_text("export default function Page(){return <h1>Sign in</h1>}\n", encoding="utf-8")
+            web = root / "apps" / "web"
+            (web / "src" / "app" / "(app)").mkdir(parents=True)
+            (web / "package.json").write_text("{}", encoding="utf-8")
+            with patch("pre_impl_workflow.PROJECTS_DIR", projects):
+                materialize_baseline("demo")
+            self.assertTrue((web / "src" / "app" / "(app)" / "sign-in" / "page.tsx").exists())
+            self.assertFalse((root / "app").exists())
+
     def test_receipt_requires_enhancement_when_baseline_is_rewritten(self):
         from studio_design_discovery import baseline_departure_issues
 

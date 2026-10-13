@@ -2,7 +2,7 @@
 
 Operators run **more than one project stack** on the same machine. Published host ports collide even when Compose `name:` prefixes container names.
 
-Do **not** ship `5432:5432`, `6379:6379`, `3000:3000`, or Supabase CLI defaults (`54321`–`54323`) without probing. Those bindings are often already taken.
+Do **not** ship `5432:5432`, `6379:6379`, `3000:3000`, or `54321`–`54323` without probing. Those bindings are often already taken.
 
 This is an agent rule, not a new `./studio` command.
 
@@ -10,7 +10,7 @@ This is an agent rule, not a new `./studio` command.
 
 - Writing or copying `docker-compose.yml`
 - `./studio env <project> init` follow-up (template defaults are not a reservation)
-- Pinning `next dev`, Filament, Mailpit, MinIO, or Supabase local URLs
+- Pinning `next dev`, Mailpit, MinIO, or the Payload app port
 - Gate 1 architecture notes that list local URLs
 
 ## Probe (before pinning)
@@ -31,7 +31,7 @@ Pick host ports that do not appear. Prefer a **project offset** (for example 15x
 
 1. Host ports live in the **project** `docker/.env` (or `.env.example`), not hardcoded in the studio template.
 2. Compose maps `${POSTGRES_HOST_PORT}:5432` (container port stays standard; host port moves).
-3. List the chosen host ports in project `RUNBOOK.md` (Postgres, Redis, HTTP apps, Supabase API/DB/Studio if used).
+3. List the chosen host ports in project `RUNBOOK.md` (Postgres, Redis, the Payload app, MinIO if that profile is on).
 4. App env (`DATABASE_URL`, `REDIS_URL`, `NEXT_PUBLIC_*`) must use those host ports on the host, and internal Compose DNS on the overlay network.
 5. Human smoke for UI tickets uses the **RUNBOOK compose URL**, not a guessed port. Do not hard-code another product’s host port into studio HQ.
 

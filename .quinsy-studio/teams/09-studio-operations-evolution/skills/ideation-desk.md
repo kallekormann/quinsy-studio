@@ -137,7 +137,7 @@ Write the build before the case. The case is the document the human reads. It is
 
 On yes, write the PRD. Promote refuses a thin brief and refuses an idea that is not approved. Saying yes is the approval. The human does not have to say the word approve.
 
-`./studio ideate prd I-001` writes `intake/<slug>.md` in the Rhodes shape: problem, audience, the full steps, user tasks, system tasks, backend, infrastructure, and scope modules. The first module is the focus. The later modules stay in the PRD. `./studio ideate promote` writes that same PRD and refuses when any of those parts is missing. Bootstrap is still a separate command.
+`./studio ideate prd I-001` writes `intake/<slug>.md` in the full PRD shape: problem, audience, the full steps, user tasks, system tasks, backend, infrastructure, and scope modules. The first module is the focus. The later modules stay in the PRD. `./studio ideate promote` writes that same PRD and refuses when any of those parts is missing. Bootstrap is still a separate command.
 
 `./studio ideate stop --reason "..."` closes the session and does not write a shortlist.
 

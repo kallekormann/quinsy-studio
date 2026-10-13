@@ -78,26 +78,14 @@ const SHARED_TYPO: DesignMdFrontmatter['typography'] = {
   'Utility/Code': { size: 13, lineHeight: 1.45, weight: 'Regular' },
 };
 
-/** On-disk aesthetic-presets + Moody Bloom default. */
+/** On-disk aesthetic presets; soft-ui is the default. */
 export const CORE_PROFILES: CoreProfile[] = [
-  {
-    id: 'moody-bloom',
-    name: 'Moody Bloom',
-    description: 'Warm soft Bloom grammar from Moody product design — default generate system.',
-    source: 'projects/moody/design/DESIGN.md + ui/tokens/',
-    style_dna_affinity: ['Soft', 'Warm', 'Consumer'],
-    whitespace_bias: 'generous',
-    borders: 'none',
-    shadows: 'soft',
-    corners: 'rounded',
-    asymmetry: false,
-    default: true,
-  },
   {
     id: 'soft-ui',
     name: 'Soft UI',
     description: 'Warm consumer premium, glass, bounce.',
     source: 'aesthetic-presets/soft-ui/SKILL.md',
+    default: true,
     whitespace_bias: 'generous',
     borders: 'none',
     shadows: 'soft',
@@ -118,7 +106,7 @@ export const CORE_PROFILES: CoreProfile[] = [
   {
     id: 'brutalist-ui',
     name: 'Brutalist UI',
-    description: 'Raw high-contrast editorial — contrast demo core, not Moody product skin.',
+    description: 'Raw high-contrast editorial — the contrast core.',
     source: 'aesthetic-presets/brutalist-ui/SKILL.md',
     style_dna_affinity: ['Bold', 'Editorial'],
     whitespace_bias: 'dense',
@@ -313,5 +301,5 @@ const YAML_DUMP_LINE_WIDTH = 100;
 export function renderDesignMdFile(profile: CoreProfile): string {
   const fm = profileToFrontmatter(profile);
   const yaml = dump(fm, { lineWidth: YAML_DUMP_LINE_WIDTH, noRefs: true });
-  return `---\n${yaml.trim()}\n---\n\n# ${profile.name}\n\n${profile.description}\n\n_Source: ${profile.source}_\n\n_Grammar only — Style DNA / board supplies values at generate time. Does not restyle Moody product chrome._\n`;
+  return `---\n${yaml.trim()}\n---\n\n# ${profile.name}\n\n${profile.description}\n\n_Source: ${profile.source}_\n\n_Grammar only — Style DNA / board supplies values at generate time. Does not restyle the product's own chrome._\n`;
 }

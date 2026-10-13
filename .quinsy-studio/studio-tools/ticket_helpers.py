@@ -37,6 +37,7 @@ SKILL_ROLE_MAP = {
     "FE-005": "Frontend Architect (Director)",
     "FE-006": "QA Specialist (Director)",
     "FE-007": "Frontend Security Engineer",
+    "FE-008": "Frontend Engineer (Lead)",
     # Team 02 — Backend & Systems
     "BE-001": "Backend Architect (Director)",
     "BE-002": "Database Specialist (Director)",
@@ -44,6 +45,9 @@ SKILL_ROLE_MAP = {
     "BE-004": "Backend Engineer (Lead)",
     "BE-005": "Backend Engineer (Lead)",
     "BE-006": "Backend Architect (Director)",
+    "BE-007": "Backend Architect (Director)",
+    "BE-008": "Backend Architect (Director)",
+    "BE-009": "Backend Engineer (Lead)",
     # Team 03 — Compliance & Legal
     "CL-001": "Legal & Privacy Officer (Director)",
     "CL-002": "Legal & Privacy Officer (Director)",
@@ -59,25 +63,34 @@ SKILL_ROLE_MAP = {
     "GM-002": "SEO/AEO Specialist (Director)",
     "GM-003": "Content Strategist (Director)",
     "GM-004": "Game-Dev Specialist (gamedev router)",
+    "GM-005": "Content Strategist (Director)",
+    "GM-006": "Content Strategist (Director)",
+    "GM-007": "Content Strategist (Director)",
     # Team 06 — Product Management
     "PM-001": "Product Manager (Director)",
     "PM-002": "Product Manager (Director)",
     "PM-003": "Product Manager (Director)",
+    "PM-004": "Product Manager (Director)",
     # Team 07 — AI & Autonomous Systems
     "AI-001": "Autonomous Systems Director",
     "AI-002": "LLM Prompt Engineer",
     "AI-003": "Studio Automation Engineer (Director)",
     "AI-004": "Autonomous Systems Director",
+    "AI-005": "Backend Security Specialist (Director)",
     # Team 08 — Platform & Enterprise Engineering
     "PE-001": "Platform Architect (Director)",
     "PE-002": "Platform Architect (Director)",
     "PE-003": "Backend Security Specialist (Director)",
     "PE-004": "Infrastructure Specialist (Director)",
+    "PE-005": "Backend Security Specialist (Director)",
+    "PE-006": "Backend Security Specialist (Director)",
+    "PE-007": "Infrastructure Specialist (Director)",
     # Team 09 — Studio Operations & Evolution
     "SO-001": "Studio Automation Engineer (Director)",
     "SO-002": "Process Guard (Director)",
     "SO-003": "Process Guard / Agile Coach (Directors)",
     "SO-004": "Documentation Writer (Lead)",
+    "SO-005": "QA Specialist (Director)",
     # Team 10 — Product Design & Experience
     "UX-001": "Product Designer (Director)",
     "UX-002": "UX Designer (Director)",
@@ -86,8 +99,12 @@ SKILL_ROLE_MAP = {
     "UX-005": "UI/Visual Designer (Director)",
     "UX-006": "Brand Guardian (Director)",
     "UX-007": "Visual Storyteller (Director)",
+    "UX-008": "UI/Visual Designer (Director)",
+    "UX-009": "UI/Visual Designer (Director)",
     "GD-001": "Growth Designer (Director)",
     "GD-002": "Growth Designer (Director)",
+    "GD-003": "Growth Designer (Director)",
+    "GD-004": "Growth Designer (Director)",
 }
 
 # Mandatory playbook reference per team (in the constraints block)
@@ -161,6 +178,8 @@ SKILL_EXTRA_PLAYBOOKS = {
     "BE-004": ["knowledge-base/backend_playbook.md"],
     "BE-005": ["knowledge-base/backend_playbook.md"],
     "BE-006": ["knowledge-base/backend_playbook.md"],
+    "BE-007": ["knowledge-base/payload-playbook.md", "knowledge-base/backend_playbook.md"],
+    "cms-migration": ["teams/02-backend-systems/skills/cms-migration/SKILL.md"],
     "GD-001": ["knowledge-base/growth-mechanics-playbook.md"],
     "GD-002": [
         "knowledge-base/growth-mechanics-playbook.md",
@@ -185,6 +204,18 @@ SKILL_EXTRA_PLAYBOOKS = {
         "knowledge-base/atomic-design-playbook.md",
         "knowledge-base/skill-extensions/motion-transitions.md",
     ],
+    "UX-006": [
+        "knowledge-base/brand-guardian-checklist.md",
+        "knowledge-base/design-system-compliance-checklist.md",
+    ],
+    "UX-008": [
+        "knowledge-base/anti-slop-design-ux.md",
+        "knowledge-base/learnings/design/craft.md",
+    ],
+    "UX-009": [
+        "knowledge-base/design-system-compliance-checklist.md",
+        "knowledge-base/learnings/design/interaction.md",
+    ],
     "UX-007": [
         "knowledge-base/visual-storytelling-playbook.md",
         "knowledge-base/delight-playbook.md",
@@ -192,6 +223,18 @@ SKILL_EXTRA_PLAYBOOKS = {
     ],
     "AI-003": ["knowledge-base/ai_automation_playbook.md"],
     "AI-004": ["knowledge-base/ai_automation_playbook.md"],
+    "AI-005": ["knowledge-base/skill-extensions/backend-security-auditor.md"],
+    "FE-008": ["knowledge-base/frontend_playbook.md"],
+    "BE-008": ["knowledge-base/backend_playbook.md"],
+    "BE-009": ["knowledge-base/backend_playbook.md"],
+    "GM-005": ["knowledge-base/launch-playbook.md", "knowledge-base/skill-extensions/marketing-law.md"],
+    "GM-006": [
+        "knowledge-base/skill-extensions/marketing-law.md",
+        "knowledge-base/skill-extensions/email-design.md",
+    ],
+    "GD-003": ["knowledge-base/growth-mechanics-playbook.md"],
+    "GD-004": ["knowledge-base/growth-mechanics-playbook.md", "knowledge-base/growth-content-playbook.md"],
+    "GM-007": ["knowledge-base/growth-content-playbook.md", "knowledge-base/skill-extensions/marketing-law.md"],
 }
 
 
@@ -306,6 +349,20 @@ def build_bdd_criteria(acceptance_criteria: List[str],
     for crit in acceptance_criteria:
         lines.append(f"- {crit}")
     return lines
+
+
+def render_staffing_section(staffing: Dict) -> str:
+    """`## Staffing` — why each companion skill is on the ticket (PM-004)."""
+    added = staffing.get("added") or []
+    dropped = staffing.get("dropped") or []
+    if not added and not dropped:
+        return ""
+    lines = ["", "## Staffing"]
+    for skill_id, reason in added:
+        lines.append(f"- {skill_id}: {reason}")
+    for skill_id, reason in dropped:
+        lines.append(f"- not staffed (over limit): {skill_id} — {reason}. Split the ticket or waive.")
+    return "\n".join(lines) + "\n"
 
 
 def render_ticket_markdown(ticket: Dict) -> str:

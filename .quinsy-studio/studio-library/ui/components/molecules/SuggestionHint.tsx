@@ -9,7 +9,7 @@ export type SuggestionHintProps = {
   disabled?: boolean;
 };
 
-/** Non-blocking AI/heuristic suggestion row — matches Moody accent tokens. */
+/** Non-blocking AI/heuristic suggestion row — uses the project accent tokens. */
 export function SuggestionHint({
   label,
   actionLabel = 'Apply suggestion',

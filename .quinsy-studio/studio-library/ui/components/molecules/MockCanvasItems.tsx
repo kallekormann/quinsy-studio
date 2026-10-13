@@ -36,7 +36,7 @@ export function MockStickyNote({ className = '' }: { className?: string }) {
     <div
       className={`w-40 rounded-[12px] border border-amber-200/80 bg-amber-50 p-3 shadow-md dark:border-amber-900/50 dark:bg-amber-950/40 ${className}`}
     >
-      <p className="text-sm font-medium text-amber-900 dark:text-amber-100">Mood direction</p>
+      <p className="text-sm font-medium text-amber-900 dark:text-amber-100">Visual direction</p>
       <p className="mt-1 text-xs text-amber-800/80 dark:text-amber-200/80">
         Soft brutalism · warm neutrals
       </p>

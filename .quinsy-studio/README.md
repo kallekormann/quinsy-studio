@@ -128,7 +128,7 @@ Pick one path. [GETTING_STARTED.md](GETTING_STARTED.md) is the script.
 
 Optional intent: copy [adopt_intent.md](studio-templates/adopt_intent.md) → `intake/<slug>.md` and pass `--intent`. Process: [brownfield-adopt.md](process/brownfield-adopt.md).
 
-`./studio resume my-project` prints a checklist. **`execute` is the driver** — see [The execute loop](#the-execute-loop). Start-of-project HITL: **gate 0 PRD → gate 1 architecture → gate 2a direction → gate 2b project kit** (`approve --gate N` needs N-1; bare `--gate 2` is refused). After the roadmap, each cycle is design, then architecture, then implementation. An empty phase is skipped. Product execute **INFORM**s open HQ LO counts; infuse with `./studio train` in a **HQ session**. `STUDIO_LO` only when idle. **Docker is required.** Desktop values live in gitignored `projects/<p>/.env`; `./studio env <p> up --approve` injects that file. Production values live in Coolify.
+`./studio resume my-project` prints a checklist. **`execute` is the driver** — see [The execute loop](#the-execute-loop). Start-of-project HITL: **gate 0 PRD → gate 1 architecture → gate 2a direction → gate 2b project kit** (`approve --gate N` needs N-1; bare `--gate 2` is refused). Gate 1 for a web project requires `Payload: in` or an ADR that opts out. The next execute writes `apps/web`. After the roadmap, each cycle is design, then architecture, then implementation. An empty phase is skipped. Product execute **INFORM**s open HQ LO counts; infuse with `./studio train` in a **HQ session**. `STUDIO_LO` only when idle. **Docker is required.** Desktop values live in gitignored `projects/<p>/.env`; `./studio env <p> up --approve` starts Postgres and, once the app exists, the Payload container. `migrate` runs `payload migrate` in that container. Optional Compose profiles: `redis`, `pooler`, `minio`, `rag` (from the blueprint, or `--profile`). Production values live in Coolify. Coolify builds the branch `./studio ship` pushed.
 
 Greenfield scaffold includes UI kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`). See `docs/setup/ui-kit.md`. Pending schema is agent-applied when the DB is reachable.
 
@@ -191,16 +191,16 @@ Adopted repo: agent fills `docs/as-built/`, synthesizes `docs/intake/prd.md`, th
 ### Step 6: Milestone roadmap
 
 ```bash
-# Agent drafts docs/phases/README.md + M0/M1 outlines
+# Agent drafts docs/phases/README.md and one file per version the PRD needs
 ./studio approve my-project --milestones         # human approves roadmap
-# Agent writes M0 tickets → product backlog (milestone: M0)
+# Agent writes tickets for the active milestone only
 ```
 
 ### Step 7: Library-first implementation
 
 ```bash
 ./studio library suggest my-project "auth button"
-./studio library pull my-project auth tokens button   # not stubs (billing, feature-gating)
+./studio library pull my-project tokens button billing auth-login   # not packages/auth or feature-gating
 # kit peers must already be in the app package.json (docs/setup/ui-kit.md)
 ./studio sprint my-project                            # next phase; an empty phase is skipped
 ./studio sprint my-project --approve-scope            # agent-owned; you may override
@@ -282,7 +282,7 @@ focus → execute → do NEXT → execute again → … until HITL
 | `MOVE_DONE` | Receipt + gate 5 → `move … done` **and a product git commit**. Then execute again (**agent**, not HITL) |
 | `INFORM` | Reuse / inbox drain / **N open HQ LOs** — loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key (`ledger=` HQ vs product) |
 | `STUDIO_LO` | Idle infusion in `.quinsy-studio/` only when there is no in-flight product ticket — classified path on the CARD |
-| `HITL` | **You:** gates 0 → 1 → 2a → 2b, batch `approve-design --phase` / `approve-arch --phase`, `./studio env … --approve`, cadence review. Not a morning brief |
+| `HITL` | **You:** gates 0 → 1 → 2a → 2b, milestone roadmap and reviews, batch `approve-design --phase`, `ship --to main --approve`, production migration / destructive data, tech-veto. Not a morning brief. `approve-arch`, cadence review, local env and ops are agent-run INFORM |
 
 **Priority:** HITL gates 0 → 1 → 2a → 2b → design phase, then architecture phase, then implementation (an empty phase is skipped) → finish in-progress ticket → next ready `IMPLEMENT` (INFORM open LOs). One unsigned ticket does not freeze a ready sibling. `STUDIO_LO` only when idle. Learnings are harvested when identified (see [§9](#9-optimizing-the-process) and [GETTING_STARTED — learnings](GETTING_STARTED.md#learnings-harvest-when-identified)).
 
@@ -305,7 +305,7 @@ See [GETTING_STARTED.md — prompt cheat sheet](GETTING_STARTED.md#talk-to-the-a
 | **Start from existing repo** | *"Adopt my-project from this folder and reconstruct as-built"* |
 | **Continue** | *"Focus &lt;project&gt; and execute — loop until HITL"* |
 | **Approve gate** | *"Gate 0 looks good — approve"* → `./studio approve <project> --gate 0` |
-| **Send back for revision** | *"Revise gate 1: no Supabase yet, IndexedDB only"* |
+| **Send back for revision** | *"Revise gate 1: opt out of Payload and write the ADR"* |
 | **Design** | *"Design &lt;project&gt; with scope core-views"* |
 | **Milestones** | *"Draft milestone roadmap"* → *"Approve milestones"* |
 | **Amendment** | *"Run amendment intake for amendment_01"* → review `docs/amendments/AM-001/` → *"Approve amendment AM-001"* |
@@ -351,7 +351,7 @@ Agent: milestone roadmap in docs/phases/ → you approve milestones → M0 ticke
 
 | You (human) | Agent |
 |-------------|-------|
-| Approve gates **0, then 1, then 2a, then 2b**, `approve-design` / `approve-arch`, **`env … --approve`**, cadence review, tech-veto, **`ship --to main --approve`** | Fill artifacts; **execute loop** on ready tickets. INFORM open HQ LOs. `MOVE_DONE` commits product git; `ship --to dev` before git-host review |
+| Approve gates **0, then 1, then 2a, then 2b**, milestone roadmap and each milestone review, `approve-design --phase` (per ticket `--reject --reason <code>`), tech-veto, **`ship --to main --approve`**, **`ops … migrate --prod --approve`** / destructive data. Fill `.env.local` production names (`env <p> prod --explain`) | Fill artifacts; **execute loop** on ready tickets. Sign architecture (`approve-arch --phase`, tech-veto window), write cadence briefs (`review --inform`), run local env and `ops` deploy/logs/status, INFORM open HQ LOs. `MOVE_DONE` commits product git; `ship --to dev` before the cadence brief |
 | Mid-sprint notes (`./studio note`) | ACK and continue; drain after `MOVE_DONE` |
 | Review PRs / mocks / shipped UI | Library pull before coding (not stubs); compact cards; receipts + gate 5 before `done` |
 | Final product decisions | `./studio train` in a **HQ session** when LOs are open (product chat stays IMPLEMENT) |
@@ -466,8 +466,12 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio design <project> --scope journey|core-views|as-built
 ./studio approve <project> --gate 0|1|2
 ./studio approve-design <project> <TICKET-ID>   # after spec + all-state mocks exist
-./studio approve-arch <project> <TICKET-ID>     # after docs/architecture/<TICKET>.md exists
+./studio approve-arch <project> <TICKET-ID>     # agent-signed after docs/architecture/<TICKET>.md exists (tech-veto window)
+./studio approve-design <project> <TICKET-ID> --reject --reason hierarchy|density|motion|copy|flow|uniqueness|a11y|brand
 ./studio approve <project> --milestones
+./studio milestone <project> plan|review|approve|list   # milestone roadmap → tickets → review → next
+./studio env <project> prod --explain           # production names for .env.local (values never read)
+./studio ops <project> readiness|deploy|logs|status|migrate --prod|db|cleanup [--approve]
 ./studio revise <project> --gate <n> --feedback "..."
 
 # Amendment intake (post gate 2)
@@ -479,7 +483,7 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 # Studio library (library-first)
 ./studio library list
 ./studio library suggest <project> <query>
-./studio library pull <project> auth tokens button   # not stubs (billing, feature-gating)
+./studio library pull <project> tokens button billing auth-login   # not packages/auth or feature-gating
 ./studio library promote <project> <path> [--force] [--ticket ID]
 ./studio library promote-design <project> [--force]
 ./studio promote-library <project> [--force]    # alias: design promotion
@@ -491,7 +495,7 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 ./studio note <project> "…"                     # mid-execute inbox (ACK; drain after MOVE_DONE)
 ./studio review <project> [--approve|--reject --reason "..."]
 ./studio feedback <project> "raw idea"
-./studio clarify <project> FB-001 [--title ...] [--acceptance ...] [--approve]
+./studio clarify <project> FB-001 [--title ...] [--acceptance ...] [--severity blocker|major|minor|polish] [--verbatim "..."] [--approve]
 ./studio feedback-list <project>
 ./studio ticket <project> "title" [--from-feedback FB-001]
 ./studio move <project> <id> <status> [--reason "..."]
@@ -505,6 +509,11 @@ Ticket types: `ia-feature-placement` (move/split surfaces), `ui-composition` (la
 
 # Quality & decisions
 ./studio gate <project> [--level N]
+./studio receipt <project> <id>                # scaffold the execution receipt
+./studio qa <project> <id> [--verdict PASS|FAIL]   # fresh-context review before done
+./studio qa <project> <id> --finish            # UX-009: shipped states vs signed mock shots
+./studio reality-check <project>               # walk the dev build before cadence review
+./studio lint-skills [--strict]                # HQ: skill lists and template in sync
 ./studio adr <project> "title"
 ./studio decide <project> "title"
 ./studio decisions <project>
@@ -546,6 +555,8 @@ The agent assigns matching skills to each ticket via trigger words
 2. Register skill in `skill-registry.md` (trigger words, phases, archetype)
 3. Run test: `python3 .quinsy-studio/studio-tools/test_skill_matching.py`
 
+Payload is an internal skill, BE-007, copied from [payloadcms/skills](https://github.com/payloadcms/skills) into `teams/02-backend-systems/skills/payload/`. `cms-migration` sits beside it and loads only on a ticket that moves content in from another CMS. `./studio install` checks both files. `./studio update-skills payload` downloads a fresh copy. They are not optional packages under `external-skills/`. The playbook is [payload-playbook.md](knowledge-base/payload-playbook.md).
+
 Motion is an internal skill, not an external subscription. [knowledge-base/skill-extensions/motion-transitions.md](knowledge-base/skill-extensions/motion-transitions.md) is loaded by UX-002, UX-005, FE-001, and FE-002. Every UI spec has **§2d Motion**. The kit uses `--motion-*` in `studio-library/ui/tokens/design-tokens.css`. HITL `motion: off` sets those durations to `0ms` in the project token file.
 
 ### External Skills (Skill Package Manager)
@@ -559,7 +570,6 @@ The studio subscribes to best-in-class skills from external repositories:
   "marketing_aeo":  "github:coreyhaines31/marketingskills@main",
   "gamedev":        "github:gamedev-skills/awesome-gamedev-agent-skills@main",
   "compliance":     "github:samir-abis/cookiecomply-skills@main",
-  "geo":            "github:bloomprotocol/agent-visibility-skill@main",
   "all_domains":    "github:seb1n/awesome-ai-agent-skills@main"
 }
 ```
@@ -684,7 +694,7 @@ Registry: [studio-library/library_registry.md](studio-library/library_registry.m
 
 **Example:**
 ```bash
-./studio library pull new-app auth tokens button   # not stubs
+./studio library pull new-app tokens button auth-login   # login is Payload; do not pull packages/auth
 ./studio library promote my-project packages/auth --ticket MY-0003 --force
 ```
 
@@ -709,7 +719,7 @@ studio-library/
 ```
 
 **Rules:**
-- **Pull** (library → project): `./studio library pull <project> auth tokens button` — **not** stubs (`billing`, `feature-gating`)
+- **Pull** (library → project): `./studio library pull <project> tokens button billing auth-login` — login is the Payload Users collection. Do not pull `packages/auth` or `feature-gating`.
 - **UI kit peers** (product app, on setup): `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (+ `@headlessui/react`) — `docs/setup/ui-kit.md`
 - **Host `packages/ui`:** product-local at reuse; do not treat it as an unpromoted studio-library path
 - **Project kit** (gate 2b): `./studio approve --gate 2b`. Do not promote the product look into studio-library.
@@ -725,7 +735,14 @@ See [library_registry.md](studio-library/library_registry.md).
 |-------|------|-----|
 | **Anti-Slop Audit** | Every commit | `python3 .quinsy-studio/studio-tools/validate_anti_slop.py .` |
 | **QA Gate** | Before `move … done` | `./studio gate <project> --level 5` |
-| **Execution receipt** | Before `move … done` | `./studio receipt <project> <ID>` — Plan, AC coverage, default flow |
+| **Execution receipt** | Before `move … done` | `./studio receipt <project> <ID>` — Plan, AC coverage, default flow, Security, Scope; Evidence and A11y on UI. Every result line is PASS / FAIL / NOT TESTED with a path or command that exists |
+| **Security and quality checks** | Gate 2 and 5 | Secret scan, client env leaks, insecure env fallbacks, Docker secret leaks, Payload access, webhook signatures, npm audit; accessibility and performance budgets. Waivers only in `docs/security/exceptions.md` with an expiry |
+| **QA review** | After gate 5 is green | `./studio qa <project> <ID>`: a reviewer without the chat; defaults to FAIL without proof |
+| **Finish gate (UX-009)** | Tickets with signed mock shots | `./studio qa <project> <ID> --finish` at 1440 and 390; HOLD counts as a fail |
+| **Retry budget** | Every ticket | Red gates, QA FAILs and HOLDs share 3 attempts; then `blocked` with `escalations/<ID>.md`, siblings continue |
+| **Reality check** | After `ship --to dev`, before cadence review | `./studio reality-check <project>`; FAILED files bug tickets instead of asking for sign-off |
+| **Staffing (PM-004)** | `./studio groom` | Owner skill plus required companions; refuses `SKILLS_MISSING`, `SKILL_UNKNOWN`, `STAFFING_GAP` |
+| **Skill lint** | After skill or matcher edits | `./studio lint-skills` (runs in the test suite) |
 | **Execute / health** | Each session / when stuck | `./studio execute <project>` · `./studio health <project>` |
 | **Skill Matching Test** | Every QA gate + registry change | `python3 .quinsy-studio/studio-tools/test_skill_matching.py` |
 | **Studio abstraction** | After studio doc/tool edits | `./studio verify-abstraction` |
@@ -773,6 +790,7 @@ See [library_registry.md](studio-library/library_registry.md).
 - `process/studio-overview.md` — the story: direction → case → yes writes the PRD → gates → phase train → production
 - `GETTING_STARTED.md` — Execute loop, **ideation desk**, **learnings / harvest**, **studio load caps (S–XL)**, **secrets / Docker / leases**, **motion**, prompts, session ritual
 - `process/hq-isolation-sprints.md` — HQ isolation epic (`LO-0314`–`LO-0326`)
+- `process/hq-session-binding.md` — open epic: one chat per product inside one window (`LO-0419`–`LO-0424`). Not built yet; focus isolation still applies
 - `process/lifecycle.md` — 7-phase lifecycle
 - `process/agent-context.md` — Session start + execute until HITL
 - `process/gates.md` — Gate definitions

@@ -1,7 +1,6 @@
 # Studio Library — Sticker Sheet Catalog
 
 Updated: 2026-09-25
-Gate 2 validated project: `justdone`
 **Components listed are studio-owned generics.**
 
 ## Components
@@ -40,7 +39,6 @@ Gate 2 validated project: `justdone`
 - `drawer`
 - `dropdown`
 - `dropdown-menu`
-- `emotion-strip`
 - `empty`
 - `field`
 - `file-preview`

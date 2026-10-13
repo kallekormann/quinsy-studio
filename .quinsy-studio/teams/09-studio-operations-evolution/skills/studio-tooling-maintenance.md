@@ -61,6 +61,20 @@ What to track:
   - Error logs
 ```
 
+### 4. Rules for the `./studio` CLI
+
+Agents call `./studio` dozens of times a session and parse what it prints. Every command follows these rules.
+
+- **Help in both blocks.** A new command gets a line in the module docstring and in the printed help of `studio.py`, same wording. `test_cli_help.py` fails otherwise.
+- **Exit codes.** `0` when the command did what it says, `1` when it refused or failed. A refusal never exits `0`.
+- **A refusal says why and what to run next.** Print the reason, then the exact next command (`./studio qa <p> <T> --finish`). Never a bare "error".
+- **No prompts.** Commands never wait for input. Human approval is a flag (`--approve`, `--verdict`, `--finish`) that the human's message authorises; without it the command prints what it would do and exits.
+- **Execute output is a contract.** `ACTION`, `NEXT`, `READ` and `CARD` lines from `./studio execute` are parsed by agents. Change their shape only with a CHANGELOG entry and updated tests.
+- **Idempotent writes.** Running a command twice leaves the same files. Templates are written only when missing; a filled file is never overwritten.
+- **Secrets are names only.** No command opens `.env`, `.env.local` or `*.pem`, and none prints a secret value. Values reach containers only through `./studio env … --approve`.
+- **Two worlds.** Product commands write under `projects/<p>/` and commit with `git -C projects/<p>`. HQ commands write under `.quinsy-studio/`. No command writes to a sibling project.
+- **Every new check has a pass and a fail fixture** in a `test_*.py` next to the tool, and NOT TESTED is a separate state from PASS.
+
 ---
 
 ## Toolbox (trained — TR-0001–TR-0007, TR-0011, TR-0077)

@@ -6,7 +6,7 @@
 
 | Role | Level | Responsibilities |
 |------|-------|------------------|
-| **Autonomous Systems Director** | Director | RAG pipelines, agent-loop monitoring, negative-constraint filters, Rhodes AI integration for post-experiment learnings |
+| **Autonomous Systems Director** | Director | RAG pipelines, agent-loop monitoring, negative-constraint filters, in-product AI that turns experiment results into learnings |
 | **LLM Prompt Engineer** | — | prompt engineering, token optimization, fallback strategies |
 
 ---
@@ -19,6 +19,7 @@
 | AI-002 | Anti-Slop Audit | Process Guard | `skills/anti-slop-audit.md` |
 | AI-003 | Automation Pipelines | Studio Automation Engineer | `skills/automation-pipelines.md` |
 | AI-004 | Eval and Context | Autonomous Systems Director | `skills/eval-and-context.md` |
+| AI-005 | AI-Code Security Audit | Backend Security Specialist | `skills/ai-code-security-audit.md` |
 
 ---
 

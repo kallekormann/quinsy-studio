@@ -44,13 +44,6 @@
     "team": "03-compliance-legal",
     "usage": "Cookie-Banner + Consent-Workflows für CL-002"
   },
-  "geo_visibility": {
-    "repo": "github:bloomprotocol/agent-visibility-skill@main",
-    "install": "npx skills add bloomprotocol/agent-visibility-skill",
-    "why": "GEO/AI-Visibility (vendor-neutral): llms.txt, JSON-LD-Schema, Comparison Pages, AI-Visibility-Audit. Referenz für AEO/GEO.",
-    "team": "05-growth-marketing-content",
-    "usage": "AI-Visibility-Audit, llms.txt, Vergleichsseiten (GM-002 AEO)"
-  },
   "superpowers": {
     "repo": "github:obra/superpowers@main",
     "install": "npx skills add obra/superpowers",

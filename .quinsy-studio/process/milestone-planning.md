@@ -43,9 +43,12 @@ Execution planning (agent)
 HITL — Approve milestone roadmap (human)
     │
     ▼
-Milestone kickoff (agent)
+Milestone kickoff (agent as Product Manager)
   • Write tickets for **active milestone only** → product backlog
   • Tag tickets: milestone: M0
+  • Staff every ticket (PM-004): owner skill first, required companions, `## Staffing`
+  • List the teams the milestone needs; add the missing tickets (legal pages,
+    consent, deploy, backups, a11y pass) instead of leaving a team unstaffed
     │
     ▼
 ┌─── Sprint loop (within milestone) ───────────────────────────┐
@@ -72,12 +75,14 @@ Back to sprint loop for M1
 
 ```
 projects/<p>/docs/phases/
-├── README.md           # Index: all milestones, status, current milestone
+├── README.md           # Index: every milestone, status, current milestone
 ├── revisions.md        # Gate iteration feedback (pre-implementation)
-├── M0-mvp-launch.md    # First shippable version — outline
-├── M1-pro.md           # Next version — outline
-└── M2-*.md             # Optional later versions
+├── M0-*.md             # First version
+├── M1-*.md             # Next version
+└── M2-*.md … Mn-*.md   # As many later versions as the PRD needs
 ```
+
+There is no cap of three or four. A large PRD, or a PRD with many source files, gets one milestone per version required to deliver that material.
 
 ### Milestone doc template
 
@@ -109,35 +114,23 @@ The index must show at a glance:
 | Gate | When | Human action | Agent may proceed when |
 |------|------|--------------|------------------------|
 | **Roadmap approval** | After gate 2, roadmap drafted | Review `docs/phases/README.md` + milestone outlines; approve | Roadmap marked `scope-approved` |
-| **Milestone kickoff** | Before first sprint of a milestone | Confirm milestone scope + ticket list for active milestone | Milestone tickets in product backlog |
 | **Milestone review** | All milestone tickets `done` | Try the build; approve milestone complete or reject with notes | Milestone marked `complete` |
-| **Next milestone planning** | After milestone review | Approve next milestone outline + new tickets before sprint | Next milestone `scope-approved` |
+| **Next milestone planning** | After milestone review | Covered by `--approve`; the agent runs `plan --next` and `plan` | Tickets stamped with the next milestone |
 
 Sprint-level HITL (scope proposal, groom, sprint review) is unchanged — see [human-in-the-loop.md](human-in-the-loop.md).
 
-### Proposed CLI (ceremony)
-
-Document-first; wire into `./studio` incrementally:
+### CLI (wired)
 
 ```bash
-# After gate 2 — agent drafts roadmap (files in docs/phases/)
-./studio milestones <project>              # validate / summarize roadmap status
-
-# Human approves milestone roadmap
-./studio approve <project> --milestones
-
-# Agent writes tickets for active milestone → product backlog
-./studio milestone <project> plan
-
-# When all milestone tickets are done
-./studio milestone <project> review
-./studio milestone <project> --approve --notes "..."
-
-# Plan next milestone (agent populates backlog)
-./studio milestone <project> plan --next
+./studio milestone <project>                       # roadmap table, active milestone, coverage gaps
+./studio approve <project> --milestones            # HITL — refuses an uncovered required area
+./studio milestone <project> plan                  # tickets from `## Tickets` lines, staffed, stamped milestone: M<n>
+./studio milestone <project> review                # when every M<n> ticket is done: state + recommendations
+./studio milestone <project> --approve --notes ".."# HITL — product decision
+./studio milestone <project> plan --next           # activate the next milestone
 ```
 
-Until CLI is wired, follow the same steps manually via files + `./studio resume`.
+Execute drives this: after gate 2b the next step is the roadmap (IMPLEMENT until coverage passes, then HITL); between sprints a finished milestone routes to `review` and then to the `--approve` HITL. `./studio sprint` refuses without an approved roadmap and an active milestone (hygiene sprints excepted). Coverage: [milestone-coverage-checklist.md](../knowledge-base/milestone-coverage-checklist.md). Template: `studio-templates/phases/milestone.md`.
 
 ---
 
@@ -151,6 +144,8 @@ Until CLI is wired, follow the same steps manually via files + `./studio resume`
 | Milestone kickoff | Tickets for **active milestone only** → `backlog/*.md` |
 | Sprint review feedback | `./studio feedback` → clarify → ticket (may tag current or next milestone) |
 | Next milestone planning | New milestone tickets + carry-over blocked items |
+
+Every ticket is staffed by the Product Manager with PM-004 ([ticket-staffing.md](../teams/06-product-management-operating-model/skills/ticket-staffing.md)). `./studio groom` refuses a sprint with an unstaffed ticket or a missing required companion.
 
 Gate 2 may still produce a **ticket manifest sketch** (`docs/ticket-manifest.json`) as input to milestone planning — not the execution backlog.
 
@@ -190,9 +185,9 @@ Example mapping:
 |----------|-------------------|
 | P0 core loop | M0 — MVP launch |
 | P1 Pro / monetization | M1 — Pro pass |
-| P2 growth / viral | M2 — Share & retention |
+| P2 growth / viral | a later milestone |
 
-One PRD tier may span two milestones (e.g. P0 MVP + P0 ship-readiness as M0a/M0b) when the human prefers smaller releases.
+One PRD tier may span many milestones. The count comes from the PRD and `docs/intake/sources/`, not from a fixed list.
 
 ---
 
@@ -200,11 +195,11 @@ One PRD tier may span two milestones (e.g. P0 MVP + P0 ship-readiness as M0a/M0b
 
 After gate 2:
 
-1. Draft `docs/phases/README.md` and at least **M0** + **M1 outline** (M1 may stay `planned`).
+1. Draft `docs/phases/README.md` and one outline per version the PRD needs. M0 is the first. Continue through M1, M2, M3, and further until the PRD and its source files are covered. Do not stop at three or four.
 2. Stop at roadmap approval — do not populate the full backlog or start sprints.
 3. After roadmap approval, write **M0 tickets only** with acceptance criteria.
 4. During sprints, only pull tickets for the **current milestone**.
-5. When milestone tickets are all `done`, surface **milestone review pending** — do not start next milestone tickets without human approval.
+5. When milestone tickets are all `done`, execute routes to `./studio milestone <p> review`; the human signs with `--approve` before `plan --next`.
 6. Log scope changes in `docs/phases/revisions.md` or the active milestone doc.
 7. **Post-launch direction** that is conceptual (not sprint-sized): use [amendment intake](amendment-intake.md) — not `./studio feedback` alone.
 

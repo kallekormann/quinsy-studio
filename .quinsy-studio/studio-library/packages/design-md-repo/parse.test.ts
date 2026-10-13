@@ -10,9 +10,9 @@ function systemDesignMd(id: string): string {
   return readFileSync(join(here, 'systems', id, 'Design.md'), 'utf8');
 }
 
-describe('parseDesignMdToLayoutParams (MOOD-0260)', () => {
-  it('parses Bloom and Brutalist into params without preset id branches', () => {
-    for (const id of ['moody-bloom', 'brutalist-ui', 'stripe-like-ui'] as const) {
+describe('parseDesignMdToLayoutParams', () => {
+  it('parses soft-ui and Brutalist into params without preset id branches', () => {
+    for (const id of ['soft-ui', 'brutalist-ui', 'stripe-like-ui'] as const) {
       const result = parseDesignMdToLayoutParams(systemDesignMd(id));
       expect(result.ok).toBe(true);
       if (!result.ok) continue;

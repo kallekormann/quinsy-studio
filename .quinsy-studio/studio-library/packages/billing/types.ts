@@ -7,6 +7,7 @@ export interface CheckoutSession {
 
 export interface BillingProvider {
   id: BillingProviderId;
-  createCheckout(planId: string, customerEmail: string): Promise<CheckoutSession>;
+  /** `userId` is the Payload user id; webhooks use it to find the subscriber. */
+  createCheckout(planId: string, customerEmail: string, userId?: string): Promise<CheckoutSession>;
   handleWebhook(payload: unknown, signature: string): Promise<void>;
 }

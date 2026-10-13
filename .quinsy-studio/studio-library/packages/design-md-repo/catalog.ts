@@ -1,5 +1,5 @@
 /**
- * Catalog index for curated Design.md systems (MOOD-0255).
+ * Catalog index for curated Design.md systems.
  */
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';

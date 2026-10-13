@@ -1,7 +1,7 @@
 ---
 schema_version: '1.0'
-id: moody-bloom-fixture
-name: Moody Bloom Fixture
+id: minimal-fixture
+name: Minimal Fixture
 description: Minimal valid Design.md for validator tests
 style_dna_affinity:
   - Soft

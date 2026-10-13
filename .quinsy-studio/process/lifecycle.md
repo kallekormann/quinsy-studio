@@ -223,6 +223,10 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 ### Rules
 
 - **No code without a ticket**
+- **Prototype is the baseline.** `design/prototype/` stays the visual baseline. `app/` is the gate-2b copy. Implementation wires that copy to real data and may enhance functionality, UI, interaction, and information architecture. A change that leaves the baseline follows `docs/design/baseline.md`.
+- **An empty design or architecture sprint does not erase a signed gate.** Gates 1 and 2 already covered direction, the kit, and the blueprint. If the signed stack must change before the first implementation sprint, write the blueprint and an ADR first. Do not build feature code on a stack the blueprint no longer describes.
+- **Separation of concerns.** A page or route handler does not embed the query, the storage call, or the business rule. Those live in an application service. The service does not know about HTTP or the screen. Infrastructure (database, queue, object storage, encoder) is reached from that service. See the backend playbook.
+- **Harvest generic work.** Realtime, collaboration, object storage, and authentication leave `./studio library promote` or `./studio learn` on the receipt. Project look stays in the project. See the learning loop.
 - **No human checkpoint between sprint tickets** — finish the sprint, then `./studio review`
 - **`./studio move … implement` blocked** when sprint review is pending or sprint is closed
 - **Test-first (TDD)**

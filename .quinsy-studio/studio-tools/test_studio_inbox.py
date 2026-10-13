@@ -25,7 +25,7 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(classify_note("not lemon, use Stripe"), "tech-veto")
         self.assertEqual(classify_note("also consider denser type"), "design")
         self.assertEqual(classify_note("we could add a digest email"), "feedback")
-        self.assertEqual(classify_note("nudge the copy later"), "note")
+        self.assertEqual(classify_note("tweak the copy later"), "note")
 
     def test_should_queue_as_note(self):
         self.assertTrue(should_queue_as_note("also consider denser type"))

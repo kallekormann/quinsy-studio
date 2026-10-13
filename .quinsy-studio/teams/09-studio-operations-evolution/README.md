@@ -21,6 +21,7 @@
 | SO-002 | Process Optimization | Process Guard | `skills/process-optimization.md` |
 | SO-003 | Dual-Loop Learning | Process Guard + Agile Coach | `skills/dual-loop-learning.md` |
 | SO-004 | Documentation Governance | Documentation Writer | `skills/documentation-governance.md` |
+| SO-005 | Release Reality Check | QA Specialist | `skills/release-reality-check.md` |
 
 ---
 

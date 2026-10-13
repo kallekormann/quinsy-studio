@@ -6,6 +6,8 @@
 
 **HQ isolation epic:** `LO-0314`–`LO-0326` shipped — [hq-isolation-sprints.md](hq-isolation-sprints.md). Resume product `./studio execute` in a **product** chat. Do not Read env **values**.
 
+**Same-window multi-project (not built):** [hq-session-binding.md](hq-session-binding.md) (`LO-0419`–`LO-0424`). Until it is done, do not run two product executes in one window — the second `focus` / `execute` rewrites isolation for everyone.
+
 ## Every turn (before session start)
 
 Run `./studio guard <project> "<verbatim user message>"` first. While implementation is in flight on that project, guard returns `INBOX_ACK`, queues the note, and the agent resumes `./studio execute`. Do not treat the bubble as a new assignment. Drain after `MOVE_DONE`. Exceptions: abort; “back on track”; explicit **gate / approve-design / approve-arch / cadence review** when execute already says `STOP`; `IDEATE` (`ideate`, `incubate`, `ideation`, or a section or dimension name while a session is open) which asks once when the session is waiting for a brief, and otherwise runs `./studio ideate` through the case in that turn and does not call `execute`. Ask a question only when a fact only the human knows would change the problem. If several ideas remain, ask which one to focus on. If one remains, write the case and ask whether it should become the intake PRD. On yes, run approve and promote. On no, reject or park. Do not write the PRD until they say yes. Builder time is not a ceiling: one solo builder, with AI agents for coding and design, ships in chunks of about two months. The first chunk is the MVP. Later chunks stay in the idea. Medicine and clinical care are out of reach. Other trades stay in reach. Do not ask the human to continue between sections. Mid-sprint “looks good” on a **feature** ticket is not HITL.
@@ -99,6 +101,9 @@ If the request is unrelated to active project **and** not studio-meta:
 After gate 2b:
 
 - **No code** without a ticket
+- **Wire the prototype.** After gate 2b, `app/` is the copy and `design/prototype/` stays the visual baseline. Implementation makes that copy work, then may enhance behavior, UI, interaction, and information architecture. See `docs/design/baseline.md`.
+- **Separation of concerns.** A page or route handler does not embed the query, the storage call, or the business rule. Those live in a service. Infrastructure sits behind that service. See the backend playbook.
+- **Harvest generic work.** Realtime, collaboration, object storage, and authentication leave a `./studio library promote` or a `./studio learn` on the receipt. Project look stays in the project. See the learning loop.
 - Sprint-review ideas: `./studio feedback` → `clarify` → `ticket --from-feedback` (never direct ticket)
 - Scoped new work: `./studio ticket <project> "..."` → groom → sprint
 - Emergency scope change: user explicitly approves; log in `docs/phases/revisions.md` or the active milestone doc
@@ -117,7 +122,7 @@ See [ticket-team-allocation.md](ticket-team-allocation.md) for the mapping table
 
 ## Milestones (post gate 2b)
 
-1. Agent drafts `docs/phases/README.md` + milestone outlines (M0, M1, …)
+1. Agent drafts `docs/phases/README.md` and one outline per version the PRD needs (M0, M1, M2, …). There is no fixed count.
 2. Human approves roadmap before sprints or milestone tickets
 3. Agent populates product backlog for **active milestone only** (`milestone: M0` in ticket frontmatter)
 4. Sprints run within the milestone; sprint review unchanged
@@ -143,6 +148,8 @@ Then continues **only** the first action in the resume list.
 ## Human gates block implementation
 
 Until gate 2b is approved, guard blocks implementation requests and redirects to pre-impl artifacts.
+
+Gate 1 for a web project needs `Payload: in` in the blueprint, or `Payload: out` plus an ADR that opts out. After that signature, `./studio execute` writes `apps/web` when Payload is in. Follow [payload-playbook.md](../knowledge-base/payload-playbook.md). Do not add a second auth system, ORM, or content-translation package.
 
 ## Library loop (after 2b)
 

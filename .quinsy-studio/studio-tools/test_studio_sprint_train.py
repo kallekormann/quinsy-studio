@@ -56,7 +56,7 @@ class TrainPhaseTests(unittest.TestCase):
     def test_architecture_delta_required(self):
         self.assertIsNone(architecture_delta("No line here"))
         self.assertEqual(architecture_delta("architecture delta: none"), "none")
-        self.assertEqual(architecture_delta("architecture delta: ARTH-0109"), "ARTH-0109")
+        self.assertEqual(architecture_delta("architecture delta: DEMO-0109"), "DEMO-0109")
 
     def test_reject_returns_to_design(self):
         text = "---\ndesign_status: approved\narchitecture_status: pending\nsprint: SPRINT-02\n---\n"

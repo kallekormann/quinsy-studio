@@ -1,8 +1,6 @@
 # Docker Base Template
 
-This directory contains the studio's **base docker template** with the essentials
-(PostgreSQL, Redis, optional app service). During project setup it is copied into
-the project folder as the foundation and extended there per project.
+This directory contains the studio's **base docker template**: Postgres with pgvector, and optional profiles for Redis, PgBouncer, MinIO, and the Python embedding worker. The Payload app is a second Compose file written into the project after gate 1. During project setup the base is copied into the project folder.
 
 ## Flow (Base → Project)
 
@@ -12,9 +10,7 @@ the project folder as the foundation and extended there per project.
    `python3 .quinsy-studio/studio-tools/init_project_env.py <project>`)
    → result: `projects/<name>/docker/docker-compose.yml` + `.env.example`
    with the real project name.
-3. **Project extends ONLY in the project folder:** additional services (Mailpit, MinIO,
-   queue workers), build contexts, custom volumes belong in
-   `projects/<name>/docker/` — the template stays generic.
+3. **Project extends ONLY in the project folder:** `payload-app.compose.yml` is written there after gate 1. Further services belong in `projects/<name>/docker/`. The template stays generic. `./studio env init` does not overwrite a Compose file that already exists.
 
 ## Running (from quinsy-studio root)
 
@@ -28,19 +24,21 @@ the project folder as the foundation and extended there per project.
 
 Compose file sets `name: <project>` and `container_name: <project>-postgres` so containers are **not** prefixed `docker-`.
 
-## Supabase local (projects using Supabase CLI)
+## Payload local
 
-This template is **generic Postgres**. **Do not leave host `5432` / `6379` if those ports are already published** on the machine (normal when several project stacks run). Probe, then set `POSTGRES_HOST_PORT` / `REDIS_HOST_PORT` in the **project** `docker/.env`. Procedure: [host-port-allocation.md](../../knowledge-base/host-port-allocation.md).
+`./studio env <project> up --approve` starts Postgres. After gate 1 signs `Payload: in`, the same command also starts the app container (`next dev` inside Docker, not on the host). `./studio env <project> migrate --approve` runs `payload migrate` in that container. Production Coolify runs migrate, then `node server.js`.
 
-Supabase-local projects use the **Supabase stack** on **unclaimed** host ports (defaults 54321–54323 are often taken). Not legacy `db:migrate` against port 54320.
+Do not publish host `5432` / `6379` / `3000` if those ports are already taken. Probe, then set `POSTGRES_HOST_PORT` / `REDIS_HOST_PORT` / `APP_HOST_PORT`. See [host-port-allocation.md](../../knowledge-base/host-port-allocation.md).
 
-| Task | Command (in project repo) |
-|------|---------------------------|
-| Start Supabase | `npx supabase start` or project `npm run supabase:start` |
-| Apply migrations | `npm run db:migrate:supabase` (not `db:migrate` on 54320) |
-| Env | Copy from `supabase status` → `.env.local` |
+| Profile | Starts | When |
+|---------|--------|------|
+| (none) | Postgres, and the Payload app when `payload-app.compose.yml` exists | Always |
+| `redis` | Redis 7 | Cache, rate limit, or the Python queue. Payload jobs do not need it |
+| `pooler` | PgBouncer, session mode | Connection pressure. Local app traffic uses Postgres directly |
+| `minio` | MinIO | Local stand-in for Cloudflare R2. Same `@payloadcms/storage-s3` adapter |
+| `rag` | Python embedding worker, plus Redis | Long work. Vectors go in pgvector on this Postgres |
 
-Document the project's migrate script in `docs/architecture/` at gate 1. Agents: load `.env.local` before `psql` / connection tests.
+Turn a profile on from the blueprint `Profiles:` line, or `./studio env <project> up --approve --profile minio`.
 
 ## Placeholders
 

@@ -7,8 +7,8 @@ Detects AI-typical patterns, clichés and code anti-patterns.
 
 Usage:
   python3 validate_anti_slop.py <project> [--fix] [--json]
-  python3 validate_anti_slop.py nudge
-  python3 validate_anti_slop.py nudge --fix
+  python3 validate_anti_slop.py demo
+  python3 validate_anti_slop.py demo --fix
 
 Exit code:
   0 = no violations
@@ -21,7 +21,7 @@ import json
 import re
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict
 
 # =============================================================================
@@ -85,8 +85,51 @@ UI_PLACEHOLDER_PATTERNS = [
     (r"'(?:Proceed|Let's go|Let us go)'", "Vague CTA: state what happens on click"),
 ]
 
+# Microcopy that must fail the gate: forced whimsy, and error lines that break the
+# UX-002 rubric (what happened, why, what to do next). Fixtures:
+# studio-tools/fixtures/anti-slop/microcopy-must-{fail,pass}.txt
+MICROCOPY_PATTERNS = [
+    (r"\b(?:oops|whoops|uh[- ]oh|yikes|woo-?hoo|yay|hooray|huzzah|hoppla)\b", "Whimsy interjection: state the fact and the next step"),
+    (r"(?<![\w-])ups[!,]", "Whimsy interjection: state the fact and the next step"),
+    (r"\b(?:work(?:ing)?|weav(?:e|ing)) (?:our|its|some|a little) magic\b", "Whimsy: 'magic' hides what the system is doing"),
+    (r"\bsprinkl\w* (?:some |a little )?magic\b", "Whimsy: 'magic' hides what the system is doing"),
+    (r"\bmagic happens\b", "Whimsy: 'magic' hides what the system is doing"),
+    (r"\b(?:hang|sit) tight\b", "Whimsy wait copy: say what is loading and how long"),
+    (r"\bgrab a (?:coffee|cup)\b", "Whimsy wait copy: say what is loading and how long"),
+    (r"\b(?:high five|nailed it|you rock|crush(?:ed|ing) it)\b", "Forced praise: confirm what was saved or sent"),
+    (r"[🎉🙈✨🚀🥳]", "Emoji in UI copy (LO-0037): use words or an SVG icon"),
+    (r"\bsomething went wrong\b", "Error rubric (UX-002): say what happened and what to do next"),
+    (r"\bschief\s?gelaufen\b", "Error rubric (UX-002): say what happened and what to do next"),
+    (r"\ban? (?:unknown |unexpected )?error (?:has )?occurred\b", "Error rubric (UX-002): say what happened and what to do next"),
+    (r"\b(?:ein )?(?:unerwarteter |unbekannter )?Fehler ist aufgetreten\b", "Error rubric (UX-002): say what happened and what to do next"),
+    (r"(?:^|[>'\"`])\s*Error \d{3}\s*(?:[<'\"`]|$)", "Error rubric (UX-002): a status code alone is not a message"),
+    (r"\bwe'?re sorry,? but\b", "Throat-clearing: state the fact and the next step"),
+    (r"\byou (?:have )?entered an invalid\b", "Error rubric (UX-002): blame — name the fix instead"),
+    (r"\binvalid (?:input|data|value)\b", "Error rubric (UX-002): say which field and what it expects"),
+]
+
+# A spec line that quotes a bad example as a rule is not shipped copy.
+_RULE_LINE = re.compile(r"\b(?:never|not|avoid|don'?t|instead of|banned|fail(?:s)?|nicht|statt)\b|❌", re.I)
+
 # Files scanned for placeholder / fluff copy in UI strings
 COPY_SCAN_EXTENSIONS = {'.md', '.mdx', '.tsx', '.jsx', '.html'}
+
+
+def copy_findings(line: str, suffix: str = ".tsx") -> List[Tuple[str, str, str]]:
+    """(pattern_name, message, severity) for one line of user-facing copy."""
+    found: List[Tuple[str, str, str]] = []
+    for pattern, message in TEXT_SLOP_PATTERNS:
+        if re.search(pattern, line, re.IGNORECASE):
+            found.append(("copy-slop", message, "warning"))
+    for pattern, message in UI_PLACEHOLDER_PATTERNS:
+        if re.search(pattern, line, re.IGNORECASE):
+            found.append(("ui-placeholder", message, "warning"))
+    if suffix in (".md", ".mdx") and _RULE_LINE.search(line):
+        return found
+    for pattern, message in MICROCOPY_PATTERNS:
+        if re.search(pattern, line, re.IGNORECASE):
+            found.append(("microcopy", message, "error"))
+    return found
 
 
 def is_copy_scan_path(rel_path: str) -> bool:
@@ -104,8 +147,8 @@ CODE_SLOP_PATTERNS = [
     (r'(?://|#)\s*(?:This function|This method|This class)\b',
      "AI slop: redundant leading comment"),
     
-    # Redundant variables
-    (r'const\s+\w+\s*=\s*\w+\s*;\s*\n\s*const\s+\w+\s*=\s*\w+\s*;',
+    # Redundant variables. A numeric constant is not an alias.
+    (r'const\s+\w+\s*=\s*[A-Za-z_]\w*\s*;\s*\n\s*const\s+\w+\s*=\s*[A-Za-z_]\w*\s*;',
      "AI slop: possibly redundant variables"),
     
     # Excessive console logs
@@ -120,8 +163,10 @@ CODE_SLOP_PATTERNS = [
     (r'(?m)^(\s*)return\s+[^;\n]+;\s*\n\1(?:const|let|var|function|return)\b',
      "AI slop: possible dead code after return"),
     
-    # Excessive type assertions
-    (r'(?:as\s+\w+){2,}',
+    # Two type assertions in a row. A word boundary keeps this off translated
+    # words such as "fechas", and the pattern is written out twice because a
+    # quantified group that contains its own repeats miscompiles on Python 3.14.
+    (r'\bas\s+[A-Za-z_][A-Za-z0-9_]*\s+as\s+[A-Za-z_][A-Za-z0-9_]*',
      "AI slop: excessive type assertions"),
     
     # Magic numbers (LO-0029: fix with named consts — not test-file exemptions)
@@ -136,6 +181,7 @@ CODE_SLOP_PATTERNS = [
 # Dateien die ignoriert werden
 IGNORE_PATTERNS = [
     r'node_modules',
+    r'\.venv',
     r'\.next',
     r'dist',
     r'build',
@@ -145,8 +191,10 @@ IGNORE_PATTERNS = [
     r'pnpm-lock\.yaml',
     r'[/\\]vendor[/\\]',
     r'public[/\\](js|css|fonts)[/\\]filament',
-    r'apps[/\\]command-center',
 ]
+
+# A product lists its own vendored folders here (one path or regex per line); HQ never names them.
+PROJECT_IGNORE_FILE = "docs/anti-slop-ignore.txt"
 
 # File extensions that are checked
 CHECK_EXTENSIONS = [
@@ -186,9 +234,17 @@ class SlopReport:
 # SCANNER
 # =============================================================================
 
-def should_ignore(filepath: str) -> bool:
+def project_ignore_patterns(project_dir: Path) -> List[str]:
+    path = project_dir / PROJECT_IGNORE_FILE
+    if not path.is_file():
+        return []
+    lines = [l.strip() for l in path.read_text(encoding="utf-8").splitlines()]
+    return [l for l in lines if l and not l.startswith("#")]
+
+
+def should_ignore(filepath: str, extra: Optional[List[str]] = None) -> bool:
     """Check whether a file should be ignored."""
-    for pattern in IGNORE_PATTERNS:
+    for pattern in IGNORE_PATTERNS + (extra or []):
         if re.search(pattern, filepath):
             return True
     return False
@@ -209,30 +265,16 @@ def scan_file(filepath: Path, project_dir: Path) -> List[SlopViolation]:
     # Copy slop — scoped to UI / design-spec paths only
     if filepath.suffix in COPY_SCAN_EXTENSIONS and is_copy_scan_path(rel_path):
         for line_num, line in enumerate(lines, 1):
-            for pattern, message in TEXT_SLOP_PATTERNS:
-                matches = re.finditer(pattern, line, re.IGNORECASE)
-                for match in matches:
-                    violations.append(SlopViolation(
-                        file=rel_path,
-                        line=line_num,
-                        column=match.start(),
-                        pattern_name="copy-slop",
-                        message=message,
-                        severity="warning",
-                        context=line.strip()[:100]
-                    ))
-            for pattern, message in UI_PLACEHOLDER_PATTERNS:
-                matches = re.finditer(pattern, line, re.IGNORECASE)
-                for match in matches:
-                    violations.append(SlopViolation(
-                        file=rel_path,
-                        line=line_num,
-                        column=match.start(),
-                        pattern_name="ui-placeholder",
-                        message=message,
-                        severity="warning",
-                        context=line.strip()[:100]
-                    ))
+            for name, message, severity in copy_findings(line, filepath.suffix):
+                violations.append(SlopViolation(
+                    file=rel_path,
+                    line=line_num,
+                    column=0,
+                    pattern_name=name,
+                    message=message,
+                    severity=severity,
+                    context=line.strip()[:100]
+                ))
     
     # Code slop (for TS, JS, TSX, JSX)
     if filepath.suffix in ['.ts', '.tsx', '.js', '.jsx']:
@@ -263,11 +305,12 @@ def scan_project(project: str) -> SlopReport:
     
     all_violations = []
     files_scanned = 0
+    extra_ignores = project_ignore_patterns(project_dir)
     
     for filepath in project_dir.rglob('*'):
         if not filepath.is_file():
             continue
-        if should_ignore(str(filepath)):
+        if should_ignore(str(filepath), extra_ignores):
             continue
         if filepath.suffix not in CHECK_EXTENSIONS:
             continue

@@ -12,11 +12,22 @@ _Describe the system in plain language. Who uses it, what runs where._
 
 | Layer | Choice | Rationale |
 |-------|--------|-----------|
-| Frontend | | |
-| Styling | | |
-| Data / storage | | |
-| Backend / sync | | |
-| Deployment | | |
+| Frontend | Next.js App Router | Product routes. Studio-library styles them. |
+| Styling | Project tokens + studio-library | `/admin` stays Payload's own UI. |
+| Data / storage | Postgres via Payload | Uploads: local disk in dev, Cloudflare R2 in production. |
+| Backend / sync | Payload | Auth, collections, Local API, jobs. |
+| Deployment | Coolify on a VPS | Local boot is Docker Desktop. |
+
+## Payload
+
+Payload: in
+Locales: en
+Fallback locale: en
+Surfaces: website, webapp
+Plugins: stripe later, seo later, multi-tenant n/a, import-export n/a, mcp n/a
+Profiles: base
+
+Change `Payload: in` to `Payload: out` only with an ADR that opts out. A game or an API service may omit this section. Add a locale to `Locales:` only when the PRD names that language. List a Compose profile (`redis`, `pooler`, `minio`, `rag`) on `Profiles:` when the product uses it.
 
 ## Architecture diagram
 

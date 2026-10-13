@@ -1,6 +1,6 @@
 # Chrome MV3 + Vite — content script packaging
 
-**Signal:** tooling-gap (LO-0011, source: moody)  
+**Signal:** tooling-gap (LO-0011)  
 **Audience:** agents shipping browser extensions from Vite multi-entry builds
 
 ## Problem

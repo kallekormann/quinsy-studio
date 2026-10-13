@@ -1,5 +1,5 @@
 /**
- * Moody Design.md frontmatter types (AM-008 / MOOD-0254).
+ * Design.md frontmatter types.
  * Rules & hooks only — board Style DNA supplies values at generate time.
  */
 

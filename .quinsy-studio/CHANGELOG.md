@@ -1,3 +1,237 @@
+## 2026-10-13 — Opened HQ epic: session-scoped binding (not built yet)
+
+Same-window multi-product work still shares one `.cursorignore` and one active project. The fix is specified, not implemented.
+
+### Added
+
+- **Epic** `process/hq-session-binding.md`. Tickets `LO-0419`–`LO-0424` in `backlog/open/`: record the Cursor hook session id, `./studio bind`, session leases that do not rewrite global isolation, deny hooks for sibling reads and git, guard + manuals, then a two-session dry run. Cursor only — the switch is HQ `runtime: cursor` in `.quinsy-studio/studio.settings.yaml`, not a new key. Claude Code and the CLI keep today's `focus` / `execute` isolation. If the hook payload has no stable session id, multi-project mode stays off.
+
+## 2026-10-13 — Interactive design mocks: always a running prototype
+
+A design mock is now an interactive prototype in the product app, not a folder of screenshots. The human reviews the running route; the implementation sprint ports the mock code.
+
+### Added
+
+- **Interactivity gate.** `design_mocks_interactive_error` (design_ticket_helpers): approve-design refuses mocks without a `'use client'` page with wired handlers, without scenario states reachable in the running route (`?state=` / `useSearchParams` / `data-state` / `mock-scenario-panel`), or — when §2d is not `motion: off` — without wired transitions. Static per-state frames fail.
+- **`mock-scenario-panel`** studio-library primitive (`ui/components/mock-scenario-panel/`): dev-only floating state switcher driven by `?state=`, so the human clicks through scenario states and Playwright captures each state by URL. Registered in manifest and registry.
+- **Spec §2e Interaction walkthrough** (design-spec-template): the review script — mock route URL plus ordered `do X → expect Y` steps (3 minimum, naming §2d transitions). Checked by `design_spec_interaction_walkthrough_error`.
+- **`./studio mock <p> <T>`**: verifies the interactive mock packet and prints the review script (dev-server hint, route URLs with `?state=` variants, §2e walkthrough). `approve-design` prints the same block before the signature — the human reviews the running route, screenshots are the record.
+- **Handoff.** The execute IMPLEMENT CARD on a ticket with a signed design adds the mock route dir + spec to READ and informs that the mock code is the reference implementation (port interactions, transitions, wiring — do not rebuild from screenshots). The UX-009 finish gate gains a `## Behavior` table: every §2e step run on the shipped surface against the signed mock route; a missing table or a HOLD row blocks PASS (`qa_review.py`).
+
+### Changed
+
+- Design CARDs, `design_deliverables_status`, `design_playbook.md`, `ticket-team-allocation.md`, UX-005 / UX-009 / UX-001 skills, `AGENTS.md`, `.cursor/rules/quinsy-studio.mdc`: mocks are interactive prototypes; screenshots are the record, never the deliverable.
+- Tests: interactivity gate, walkthrough checker, finish-gate behavior rows (`test_design_ticket_helpers.py`, `test_design_loop.py`).
+
+## 2026-10-13 — HQ autonomy program: PM, Engineering, Design, Growth (LO-0395 … LO-0418)
+
+The human now stops on product and design decisions and on irreversible production steps. Everything else runs from the agent seat and INFORMs. Program: `process/hq-autonomy-program.md`. Matrix: `process/human-in-the-loop.md#when-is-hitl-needed`.
+
+### Added
+
+- **Milestones (PM).** `knowledge-base/milestone-coverage-checklist.md` (21 areas, when each is required, owner skills) and `studio-templates/phases/milestone.md`. `./studio milestone <p> plan|review|approve|list` writes the active milestone's tickets, writes `docs/phases/M<n>-review.md` when every ticket is done, and lets the human re-plan, re-order, or open a design sprint before the next milestone. `approve --milestones` refuses roadmaps with coverage gaps; `sprint` refuses without an approved roadmap and active milestone. Execute carries a PM CARD (PM-002, PM-004, PS-002) at roadmap and milestone boundaries. PM-002 rewritten to the skill template.
+- **Done bar (Engineering).** `move … done` runs the full bar on every ticket and refuses a ticket whose sprint does not match. UI tickets make `skill_application` a hard check; a new `ui_motion` level-5 check requires §2d motion tokens and a `prefers-reduced-motion` path in product UI and fails a second animation layer (`gate_ui_checks.py`). QA verdicts carry `Reviewer: <id>` that must differ from the implementing context (`./studio whoami`, `implement-start` event). Receipts list every CARD skill file and playbook under `## Skills read` with the rule applied; a file not on the CARD or a blank rule fails. Reality check `NEEDS WORK` files bug tickets instead of asking.
+- **Production path (Engineering).** `studio-templates/docker/compose.prod.yml` (no data ports, restart, bounded logs, built image, migrate before start, healthcheck) is copied by `env init`. `./studio ops <p> readiness|deploy|logs|status|migrate --prod|db|cleanup [--dry-run]` with one log line per run in `docs/ops/ops-log.md`; only `migrate --prod --approve`, `db --reset`, `cleanup --prune-volumes` wait for the human. `env.schema.json` gains the `prod` group (`VPS_SSH_HOST`, `VPS_SSH_USER`, `VPS_SSH_KEY_PATH`, `VPS_COMPOSE_DIR`, `COOLIFY_URL`, `COOLIFY_TOKEN`, `COOLIFY_APP_UUID`, `PROD_DATABASE_URL`) stored in gitignored `projects/<p>/.env.local`; `./studio env <p> prod --explain` tells the human which names to fill and what each does, without ever printing a value. `ship --to main` refuses on a readiness FAIL. PE-001, PE-007, BE-002 updated.
+- **Design loop (Design).** `approve-design <p> <T> --reject --reason hierarchy|density|motion|copy|flow|uniqueness|a11y|brand`, `feedback`/`clarify --design-reason <code>`, and a finish-gate HOLD (`Reason:` line) write `docs/design-specs/pushback-log.md` and harvest into `knowledge-base/learnings/design/` (`design_feedback.py`; new topics `interaction.md`, `craft.md`; harvest kind `craft`). Retro gets a `## Design` section with counts per code. Design specs need `## 7b. Catalog applied` with PB-/LO- ids (or `catalog: none` with a reason). UX-001, UX-002, UX-003, UX-004, UX-005, UX-006, UX-008 rewritten to the skill template; UX-006/008/009 load their playbooks.
+- **Growth.** Skills GD-004 In-product growth loops (`teams/11-growth-design/skills/in-product-growth-loops.md`) and GM-007 Positioning & messaging (`teams/05-growth-marketing-content/skills/positioning-messaging.md`), registered in matcher, roles, playbooks, registry; staffing adds GM-007 on commercial surfaces and proposes GD-004 on signup/share/invite/upgrade flows. `docs/definitions/12-positioning.md` is a gate-0 requirement; `02-personas.md` is a task-segment table; the PRD template gains a Positioning section. `knowledge-base/growth-content-playbook.md`; in-product loops section in `growth-mechanics-playbook.md`; Payload content-engine collections in `payload-playbook.md`; templates `studio-templates/growth/growth-loop-map.md`, `persona-page-set.md`, `seo-foundation-pack.md`, `content-engine-pack.md`; anti-slop rule 2.4 (feature-list pages are slop).
+- **Autonomy.** `approve-arch --phase` and per-ticket `approve-arch` are agent-signed VERIFY steps with a tech-veto window. Cadence review is `./studio review <p> --inform`: the brief is written, the stop closes, feedback arrives through `feedback`/`clarify`. Local `env up|migrate|dev` runs without `--approve` (accepted as a no-op). Guard classifies HQ work that mentions ideation as `STUDIO_META`, not `IDEATE`. `verify-worlds` checks loop separation (`loop_separation_issues`: `.gitignore` lists `projects/`, `intake/`, `ideation/`; no build folders in `ideation/`; no HQ or desk folders inside a product; no product or desk folders inside HQ).
+
+### Changed
+
+- Human stops are gates 0/1/2a/2b, milestone roadmap and reviews, `approve-design --phase`, `ship --to main --approve`, production migration and destructive data steps, tech-veto, abort. `AGENTS.md`, `CLAUDE.md`, `.cursor/rules/quinsy-studio.mdc`, `README.md`, `GETTING_STARTED.md`, `process/studio-overview.md`, `process/human-in-the-loop.md` say so.
+- Tests: `test_studio_milestones.py`, `test_done_bar.py`, `test_studio_ops.py`, `test_design_feedback.py`, `test_growth_skills.py`, `test_hq_autonomy.py`; cadence and env tests assert the INFORM contract.
+
+## 2026-10-13 — HQ holds no product references; gate-2b mocks land in the Payload app
+
+### Fixed
+
+- **Gate 2b materialize on Payload projects.** `materialize_baseline` copied the signed mock pages into a stray `projects/<p>/app/`. It now prefers `apps/web/src/app/(app)/` when `apps/web/package.json` exists. `design/prototype/` stays as the reference that `docs/design/baseline.md` names.
+
+### Changed
+
+- **No product references anywhere studio git commits.** `verify-abstraction` scans every tracked and untracked-but-not-ignored file outside `projects/`, `intake/` and `ideation/`, every text suffix, with no provenance exemption. It matches product folder names, including names glued to hyphens (`--name`, `name-spark`), and product ticket IDs (first four letters of the folder, uppercased). Policy: `process/studio-abstraction.md`.
+- **Provenance stays in the product.** Harvest, `library promote` and `sync_global_assets` no longer write the source project or ticket into the learnings inbox, `manifest.json`, titles or CHANGELOGs. The product's own `docs/library-promotions.json` keeps that record. Existing manifest fields, inbox Source lines and playbook Signal lines were stripped.
+- **Product surface names** come from a product-local `docs/portability-nouns.txt` instead of a list in HQ code. Vendored folders the anti-slop gate should skip go in the product's `docs/anti-slop-ignore.txt`; the hard-coded product folder ignore is gone.
+- Examples, help text and tests use `demo` / `DEMO-0001` or `acme-app` instead of real products.
+- **`design-md-repo`**: the default system is `soft-ui`. The product brand system is removed.
+- **Library assets made neutral.** `canvas-export` watermark falls back to `Preview`; products pass their name as `text`. `sendMailpitEmail` takes `fromName`. `celebration` class and attribute names are `celebration-*`. `AvatarStack` uses `--accent-secondary`. Ticket IDs and brand names are gone from component comments, and `ui/docs/shadcn-coverage.md` is rewritten against shadcn only.
+
+### Removed
+
+- `studio-library/packages/capture-types/` and `studio-library/ui/components/emotion-strip/` (one product's domain types and chrome). Products that pulled them keep their copies.
+
+## 2026-10-13 — Agency integration closed: launch pack, CLI rules, bloomprotocol retired (LO-0391, LO-0392, LO-0393)
+
+### Added
+
+- **Launch playbook** (`knowledge-base/launch-playbook.md`): when a launch exists, the T-21 to T+7 timeline, and what the studio enforces. Templates `studio-templates/growth/launch-plan.md` and `launch-ticket-pack.md` give eight staffed launch tickets (plan, landing page, waitlist, analytics, lifecycle email, legal review, pre-ship, results). GM-005 loads the playbook with marketing-law. `test_launch_pack.py` runs every draft through PM-004 staffing, so the pack cannot drift from the staffing rules.
+- **CLI rules for `./studio`** in SO-001 rule 4: help line in both help blocks, exit code 1 on refusal, refusals name the next command, no prompts, `execute` output is a contract, idempotent writes, secrets as names only, two worlds, pass and fail fixtures for every check. `test_cli_help.py` checks that every dispatched command has help in both blocks and every help line has a handler.
+- LO-0394: migrate the 47 skill files that still warn on template sections.
+
+### Changed
+
+- **Staffing:** "UTM register" and "risk register" no longer trigger the account-registration companions (PE-003, CL-001).
+- **Help:** `decisions` and `update-skills` were missing from the module help in `studio.py`.
+
+### Removed
+
+- **bloomprotocol `agent-visibility-skill`** (`geo_visibility`). It bundled an MCP server for paid agent missions with wallet provisioning and sent URLs to a third-party API. GM-002 already owns llms.txt, crawler policy and the citation audit. Removed from `skill-dependencies.json`, README, matcher, registry and GM-002; the conflict matrix keeps a "retired" note.
+
+S5 (LO-0391) was verified complete: BE-008, BE-009, FE-008, the BE-007 admin layout, the private-page caching rule, BE-002 reliability, BE-003 identity and the AI-001/AI-004 cost rules were all in place.
+
+## 2026-10-13 — Design workflow: imagery rules, must-fail microcopy, clarify fields (LO-0390)
+
+### Changed
+
+- **UX-007 Visual Storyteller** is rewritten to the skill template and gains generated-imagery rules. Every image has a job and a brief in spec §5 `### Imagery`. People in images match the PRD personas and are never given names or quotes, because a generated customer is a fake testimonial. Product screens are captures of the running app, never generated. Words are never baked into a generated image. Every image is logged in `docs/design-specs/imagery.md` with source, licence or model, alt text, and the AI label required by EU AI Act Art. 50(4). New triggers: hero image, illustration, imagery, generated image, OG image, stock photo.
+- **Anti-slop gate**: microcopy is now a gate **error**, not a warning. It fails whimsy interjections, "magic" wait copy, forced praise, celebration emoji, and error lines that break the UX-002 rubric, in English and German. A spec line that quotes a bad example as a rule is skipped. Playbook §2.2b lists the patterns.
+- **`./studio clarify`** takes `--severity blocker|major|minor|polish` (required before `--approve`) and `--verbatim "..."`. The human's words stay unedited, separate from the agent's reading of them. Recurring feedback from earlier sprints is found automatically and listed. A ticket made from feedback carries the quotes, severity and recurrence, and severity sets its priority (P0–P3) unless one was given.
+
+### Added
+
+- `studio-tools/fixtures/anti-slop/microcopy-must-fail.txt` and `microcopy-must-pass.txt`; tests `test_anti_slop_microcopy.py`, `test_feedback_clarify.py`.
+
+## 2026-10-12 — Trustworthy done bar: receipts, QA review, security and quality checks, finish gate, reality check (LO-0387–LO-0389)
+
+Rows L1–L14 of `process/hq-agency-agents-integration.md`.
+
+### Changed
+
+- **Receipts (L1, L6).** Untouched stub text counts as empty. Every result line under Skill QA, A11y, API proof and Evidence is PASS, FAIL or NOT TESTED; FAIL blocks done, NOT TESTED needs a reason, PASS needs a path or a command. Cited files in AC coverage, Evidence, API proof and citations must exist, and so must every screenshot. The stub only adds the sections the ticket needs: Security and Scope always, Evidence and A11y on UI, API proof for BE-001/003/007, Threat delta for PE-005, Risk & rollback for migrations, auth and infra.
+- **Gate (L4, L5).** Smoke without `smoke-routes.json`, or with `QUINSY_SKIP_SMOKE`, reports NOT TESTED instead of passing. Level 2 adds `secret_scan`, `client_env_leak`, `insecure_env_fallback` and `docker_secret_leak`. Level 5 adds `payload_access`, `local_api_override`, `webhook_signature`, `npm_audit_policy`, `a11y_axe`, `e2e_hygiene` and `api_contract`; `llm_sink`, `sensitive_log`, `security_headers` and `perf_budget` warn. `.env` files are never opened. A finding is waived only by a row in `docs/security/exceptions.md` with an expiry date.
+- **Failure loop (L3).** The debug file is Issue / Expected / Actual / Evidence / Fix / Files, and the next attempt fixes only those. Red gates, QA FAILs and finish-gate HOLDs share 3 attempts; two identical failures escalate early. Escalation writes `sprints/SPRINT-NN/escalations/<T>.md` and moves the ticket to `blocked`; siblings continue. The human is asked only when every remaining ticket is blocked.
+- **Architecture (L7, L8).** Gate 1 needs `threat-model.md` (System, Data map, Trust boundaries, STRIDE, Requirements, Tenant model, Change log), `data-map.md`, `secrets-inventory.md` and `docs/workflows/REGISTRY.md`. An architecture packet cannot claim `threat delta: none` when it touches a webhook, upload, endpoint, role, tenant, job or collection. A flow ticket links a `WORKFLOW-*.md` with TC-nn cases and cites one.
+- **Design packets (L9).** `approve-design` needs a five-second test at 390 and 1440 on every packet, and the GD-003 persona walkthrough appendix on commercial ones. The design-spec template has the table.
+- **Gate 0 (L10).** `prd.md` ends with `## Gate 0 frame`: press release, non-goals, a Metric / Baseline / Target / Window table (`unknown` allowed, blanks not, at least one target) and a three-reason pre-mortem. Only the frame block counts, not headings inside inlined source files.
+- **`ship --to main` (L12)** refuses on a secret in git history, an incomplete secrets inventory, a missing `docs/ops/incident-runbook.md`, an expired security exception, or a database port not bound to `127.0.0.1`.
+- **Retro (L14).** `retro.md` opens with loop metrics from `execution-log.json`: first-pass gate rate overall and per failing check, average retries, QA fails, finish holds and blocked tickets.
+- Templates: the Payload app ships a `.dockerignore` and security headers (CSP, HSTS, nosniff, Referrer-Policy, frame and permissions policy); the Docker compose template binds ports to `127.0.0.1`.
+
+### Added
+
+- `./studio qa <p> <T> [--verdict PASS|FAIL]` (L2): execute step `QA_REVIEW` after a green gate. A fresh-context reviewer writes `sprints/SPRINT-NN/qa/<T>.md`, defaulting to FAIL without proof. Move done refuses without a QA PASS after the last green gate.
+- `./studio qa <p> <T> --finish [PASS|HOLD]` (L9): the UX-009 finish gate on tickets with signed mock shots. `qa/<T>-finish-gate.md` compares every mock state with a shipped capture at 1440 and 390, with a Keep list; HOLD is a QA fail.
+- `./studio reality-check <p>` (L11): execute step `REALITY_CHECK` after `ship --to dev` and before the cadence review, tied to the commit SHA. FAILED files bug tickets and keeps building instead of asking for sign-off.
+- `./studio lint-skills [--strict]` (L13) and `knowledge-base/skill-template.md`. Drift between `skill_matcher`, `SKILL_ROLE_MAP`, the skill files, team prefixes, staffing rules and `skill-registry.md` is an error; missing template sections warn (48 older skill files today).
+- Modules `receipt_checks`, `qa_review`, `security_checks`, `quality_checks`, `architecture_checks`, `ship_checks`, `reality_check`, `retro_metrics`, `lint_skills`; tests `test_loop_trust`, `test_security_gate`, `test_design_loop`.
+
+## 2026-10-12 — Ticket staffing (PM-004); 13 new skills from the agency-agents review
+
+### Changed
+
+- Skill triggers match whole words. Short triggers must stand alone, so `ai` no longer hits `email`, `detail` or `main`, `test` no longer hits `latest`, and `form` no longer hits `format`. Noisy triggers were narrowed (PE-002 `build`, PS-004 `scope`, GM-003 `content`).
+- The Product Manager staffs every ticket (PM-004). `./studio ticket` adds companion skills from the ticket text and writes `## Staffing` with a reason for each. `./studio groom` treats `SKILLS_MISSING`, `SKILL_UNKNOWN` and `STAFFING_GAP` as errors; `STAFFING_SUGGEST` is info. The required companions are PE-003 + AI-005 (auth, access, tenants, uploads, webhooks, keys), CL-001 (personal data), CL-002 (tracking), PE-006 (secrets), BE-008 + CL-003 (payments), GM-006 (marketing email), and FE-004 + FE-006 (UI). Waive one with `staffing_waive:` and a reason. A ticket carries at most eight skills.
+- The execute CARD lists the **skill files** to read, not only team playbooks, and adds a required companion the ticket lacks (`staffed by PM-004`).
+- Billing package (`studio-library/packages/billing`): Stripe webhooks refuse a signature timestamp more than 300 s off and accept any `v1` value (key rotation). `createCheckout(planId, email, userId)` sends the Payload user ID (`client_reference_id` / `metadata.user_id`, Lemon Squeezy `custom.user_id`). The README no longer documents a `subscription`/`metering` API that does not exist.
+- Skill rewrites:
+  - FE-003, FE-004 (BFSG / EN 301 549) and FE-006 rewritten.
+  - BE-001 and BE-004 share one error shape. BE-002 drops its Supabase leftovers. BE-003 follows NIST SP 800-63B.
+  - PE-001 gets a Coolify/VPS posture checklist. PE-002 uses forward-fix migrations. PE-003 gets a PASS/FAIL/N/A catalog.
+  - CL-003 citations updated (§ 18(2) MStV, § 5 DDG). CL-001 gets DPIA and breach decisions. CL-004 gets a data map.
+  - GM-001 no longer promises FAQ rich results. GM-002 adds a crawler policy and `llms.txt`.
+  - GD-001 adds sample size. GD-002 adds PAngV. UX-002 adds an error-message rubric.
+  - The Payload notes and AI-001/AI-004 get updates.
+- The archetype table now uses the Payload stack and PWA-first mobile. The Payload playbook notes the Postgres adapter, no caching of private pages, and AI-005 checks.
+
+### Added
+
+- Skills: FE-008 i18n, BE-008 payments and billing, BE-009 document generation, GM-005 launch and community, GM-006 lifecycle email, PM-004 ticket staffing, AI-005 AI-code security audit, PE-005 threat modeling, PE-006 secrets hygiene, PE-007 incident and breach response, SO-005 release reality check, UX-009 UI finish gate, GD-003 persona walkthrough. UX-008 is registered for matching (64 skills).
+- `knowledge-base/skill-extensions/marketing-law.md` (UWG, TDDDG § 25, PAngV § 11, reviews, influencer disclosure).
+- `test_staffing.py`: trigger matching, companions, groom findings, and every ID has a role and a skill file.
+
+## 2026-10-12 — Real-UI design mocks; agency-agents integration plan
+
+### Changed
+
+- Design mocks must be the real app. A mock is a route in the product app at `app/(design-mocks)/design-mocks/<TICKET>/<state>/page.tsx` that imports the real shell or view and real components, with the design solution woven in. `(design-mocks)/layout.tsx` returns 404 in production. Screenshots of every state, newer than the mock code, go in `docs/design-specs/mocks/<TICKET>/`.
+- `approve-design` refuses standalone HTML mocks, mocks without app or shell imports, inline styles, hex or arbitrary colours, and missing or stale screenshots (`design_ticket_helpers.design_mocks_real_ui_error`). The design-spec stub writes the production guard layout.
+- Design-spec template §2c, Team 10 README and anti-slop skill, design playbook, compliance checklist, component-creation playbook, motion extension, GETTING_STARTED, human-in-the-loop, AGENTS.md, and the Cursor rule describe real-UI mocks.
+- Payload template: `Users` access is admin-or-self with an admin-only `role` field; the first user becomes admin; login lockout. `Media` needs a login. `PAYLOAD_SECRET`, `DATABASE_URL`, and S3 keys fail loudly instead of falling back to `''`, except during `next build`.
+
+### Added
+
+- `process/hq-agency-agents-integration.md`: review of the agency-agents repo by division, 12 new skill IDs, 14 loop changes, fixes, and sprints S0–S7 (`LO-0386` … `LO-0393`).
+
+## 2026-10-12 — Compose `next dev`; MOVE_DONE arbitrary space
+
+### Changed
+
+- Prefer `next dev` in Compose for UI tickets when the app image can boot it. Production `build` + `start` with a named `.next` volume hides bind-mounted source until rebuild (`LO-0384`, `PB-20261012-001`).
+- MOVE_DONE flags newly added `[Nrem]` / `[Npx]` classNames. Moving a line counts as added; use a scale utility or keep the original line unchanged (`LO-0385`).
+
+## 2026-10-08 — UUID test keys; parked tickets stay out of implementation
+
+### Changed
+
+- Test helpers that stand in for primary keys must match the column type (UUID when the schema is UUID). Design-track and parked tickets stay out of an implementation sprint until that phase is open (`LO-0383`).
+
+## 2026-10-08 — Hosted type and pipe tables in PDF
+
+### Changed
+
+- When HTML-to-PDF does not implement tables, parse pipe rows in the writer and draw cells (`LO-0381`, `PB-20261008-001`).
+- Register every style of a custom PDF face. Host SIL webfonts in the product tree and reuse them in PDF export so a public page does not call a font CDN (`LO-0382`, `PB-20261008-002`).
+
+## 2026-10-07 — A failed export is visible
+
+### Changed
+
+- A failed export shows a notice the member can see. A relationship list is done only when every row is a saved document, not a derived label (`LO-0380`).
+
+## 2026-10-07 — Payload is the web foundation
+
+### Changed
+
+- A web blueprint says `Payload: in` or opts out in an ADR. After gate 1, execute writes `apps/web`. Local boot is Docker Desktop. Production is Coolify. Getting Started, the READMEs, and the playbooks describe that path.
+- The Payload and CMS-migration skills are copied from payloadcms/skills. `./studio update-skills payload` refreshes that copy. The app image runs migrate, then the server, and registers S3 storage.
+- Login for a new project is the Payload Users collection. `packages/auth` is not pullable. The login form posts to Payload.
+- Intake keeps a file, a folder, or several files. The PRD indexes them and keeps the text. The milestone roadmap has as many versions as that material needs.
+
+## 2026-10-07 — Two acceptance lines before a sprint
+
+### Changed
+
+- A behavior the review already specified should start with two concrete acceptance lines (`LO-0379`).
+
+## 2026-10-07 — Dialog for a value, mock before a mark
+
+### Changed
+
+- A control that asks for a value uses the design-system dialog, not a browser prompt. A mark's look is signed in a mock before a build changes how that mark appears (`LO-0378`).
+
+## 2026-10-05 — Close an approved design ticket
+
+### Changed
+
+- When a design ticket is approved, close it. A build ticket must not stay blocked on a design session that does not ship code (`LO-0377`).
+
+## 2026-10-05 — A failed check still restores queued work
+
+### Changed
+
+- A test that marks ready work as queued restores that work when an assertion throws. The restore sits in a finally, not after the assertion (`LO-0376`).
+
+## 2026-10-04 — A signed rail is the frame, and a deferred ticket stays deferred
+
+### Changed
+
+- Do not restyle a second side rail until that surface is signed. The signed rail's width, padding, surface, and left border are the frame (`LO-0373`).
+- Leave a deferred ticket deferred. Do not pull that surface into the ticket that is open (`LO-0374`).
+- A service the current sprint just built stays in that product until a second product needs it (`LO-0375`).
+
+## 2026-10-04 — Domain services stay in the product
+
+### Changed
+
+- A service built in the current sprint stays in that product until a second product needs the same behavior (`LO-0372`).
+
+## 2026-10-03 — Signed prototype on the first pass, and isolated requeue tests
+
+### Changed
+
+- When a signed prototype is the visual baseline, the first build uses that editor, those controls, and optional modules that start off (`LO-0370`).
+- A requeue test uses the rows it created and restores any other rows it marked queued (`LO-0371`).
+
 ## 2026-10-02 — Motion skill is internal
 
 ### Changed
@@ -295,7 +529,7 @@
 
 ### Changed
 
-- HQ harvest only accepts must/should/never/prefer/generalize principles. Hosts, product tickets, Ratgeber/Command Center, and `when`/`chrome`/`inbox` cue-only incidents stay in the project local log (`studio_portability`).
+- HQ harvest only accepts must/should/never/prefer/generalize principles. Hosts, product tickets, named product surfaces, and `when`/`chrome`/`inbox` cue-only incidents stay in the project local log (`studio_portability`).
 - `inbox.md` is the **open queue**. Infused rows archive to `knowledge-base/learnings/archive/`. Durable principles live in `knowledge-base/learnings/<domain>/<topic>.md` with `index.md`. CARD lists the domain README. `./studio learn-find` / `learn-compact`. Dropped `./studio learn` prints the reason instead of "already open".
 
 ### Added
@@ -305,7 +539,7 @@
 
 ### Changed
 
-- Command Center operator-loop network tokens live in per-host `api_credentials` (encrypted) plus `sourcing_configs.networks`, not process `.env` (`PB-20260916-005` backend).
+- Per-tenant third-party API credentials live in encrypted rows, not process `.env` (`PB-20260916-005` backend).
 
 ## 2026-09-16 — New domain_id FKs target properties (LO-0312)
 
@@ -595,7 +829,7 @@
 
 - New: `knowledge-base/ticket-authoring-playbook.md` — six failure modes (invention, wrong path, unverified done, scope drift, context loss, silent assumption) each with a ticket-level antidote; required sections; sizing (no XL); `executable_by: composer|opus|human`.
 - Groom checklist (`process/ticket-team-allocation.md`) and `ticket-workflow.md` point at the playbook.
-- Provenance: derived from scoping a 66-ticket programme for small-model execution (`source: affiliate-platform` on LO-0230 only).
+- Provenance: derived from scoping a 66-ticket programme for small-model execution (LO-0230).
 
 ## 2026-09-12 — Team 10 desk-canon playbooks (Do / Don’t / fail)
 
@@ -633,9 +867,9 @@
 
 ### Changed
 
-- Styled `ui/components/*` kit is shadcn/Radix + CVA, themed via CSS variables (`--primary`, `--background`, …) aliased from studio tokens. Bloom-hardcoded Button/Input/Badge/Checkbox/etc. lost the “generic + themable” comparison vs Command Center.
+- Styled `ui/components/*` kit is shadcn/Radix + CVA, themed via CSS variables (`--primary`, `--background`, …) aliased from studio tokens. Brand-hardcoded Button/Input/Badge/Checkbox/etc. lost the “generic + themable” comparison vs a shadcn kit.
 - Headless UI primitives stay under `ui/primitives/headless/`. Headless molecules (`dialog-shell`, `search-command`, Listbox `dropdown`, `segmented-toggle`) remain.
-- Not vendored (need `@shadcn/react`): Questionnaire, Message Scroller. Product CC files (inspector-sheet, host-scope) were not copied.
+- Not vendored (need `@shadcn/react`): Questionnaire, Message Scroller. Product-specific files were not copied.
 - Inventory: `studio-library/ui/docs/shadcn-coverage.md`.
 
 ## 2026-09-12 — Design-track HITL; other tickets stay on the system
@@ -777,11 +1011,11 @@
 
 - LO-0175 infused.
 
-## 2026-09-10 — Anti-slop ignores vendored command-center shells
+## 2026-09-10 — Anti-slop ignores vendored admin shells
 
 ### Changed
 
-- `studio-tools/validate_anti_slop.py` — ignore `apps/command-center` the same way as Filament public assets (vendored admin UI).
+- `studio-tools/validate_anti_slop.py` — ignore a vendored admin UI the same way as Filament public assets (now listed per product in `docs/anti-slop-ignore.txt`).
 
 ## 2026-09-10 — Residual UI needs a render-path ticket (LO-0174)
 
@@ -793,11 +1027,11 @@
 
 - LO-0174 infused.
 
-## 2026-09-10 — Kit-token Dropdown (AFFI-0071)
+## 2026-09-10 — Kit-token Dropdown
 
 ### Changed
 
-- `studio-library/ui/components/dropdown/` — Listbox paints from kit CSS variables (`--color-border`, `--color-background`, `--color-foreground`, `--color-muted`, `--color-accent`, `--font-ui`) instead of Moody class names.
+- `studio-library/ui/components/dropdown/` — Listbox paints from kit CSS variables (`--color-border`, `--color-background`, `--color-foreground`, `--color-muted`, `--color-accent`, `--font-ui`) instead of one product's class names.
 - `studio-library/ui/tokens/design-tokens.css` — aliases those kit names onto the canonical surface/text/primary tokens.
 
 ## 2026-09-10 — Deployed review push; reuse inform-auto; gutter; pooler (LO-0167–0173)
@@ -1303,7 +1537,7 @@
 - `studio-tools/run_qa_gate.py` — smoke sets `PLAYWRIGHT_BROWSERS_PATH` to `.quinsy-studio/.cache/playwright/<project>/` and clears `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE`, so gate smoke does not reinstall into ephemeral Cursor sandbox caches or hit mac-x64/arm64 mismatches.
 - `process/gates.md` — documents durable cache + `QUINSY_SKIP_SMOKE` opt-out.
 - `.gitignore` — ignores `.quinsy-studio/.cache/`.
-- Provenance: moody SPRINT-111 review (process-gap).
+- Provenance: a product sprint review (process-gap).
 
 ## 2026-09-04 — Visible-outcome DoD: real end-to-end walkthrough required, not just green tests (LO-0051)
 
@@ -1468,18 +1702,18 @@
 - `process/human-in-the-loop.md` — sprints target **3–6** tickets; agents must not narrow proposals to 1–2 unless human asks for hotfix
 - `studio-tools/sprint_backlog_validate.py` — `UNDER_CAPACITY` warning when sprint has fewer than 3 tickets
 
-- 2026-09-14: LO-0232 infused — T0 edit-diff capture section added to knowledge-base/agentic-loop-playbook.md (edit distance as headline zero-traffic learning metric). Source: affiliate-platform.
-- 2026-09-14: LO-0233 infused — Quality ratchet section (error-analysis-first, judge discipline) added to knowledge-base/agentic-loop-playbook.md. Source: affiliate-platform.
-- 2026-09-14: LO-0234 infused — design lead-time rule + reject rubric added to knowledge-base/design_playbook.md; sprint-planning checklist updated in process/human-in-the-loop.md. Source: affiliate-platform.
-- 2026-09-14: LO-0238 infused — composer-executable contract made a sprint-entry requirement in process/ticket-workflow.md. Source: affiliate-platform.
-- 2026-09-14: LO-0239 infused — UI done requires commit+push to deploy-tracked branch (process/ticket-workflow.md). Source: affiliate-platform.
-- 2026-09-14: LO-0240 infused — push main on done when auto-deploy tracks it (same section). Source: affiliate-platform.
-- 2026-09-14: LO-0241 infused — manual pass in external render targets required before done (process/ticket-workflow.md). Source: moody.
-- 2026-09-14: LO-0242 infused — shared model before parallel consumers (process/ticket-workflow.md). Source: moody.
-- 2026-09-14: LO-0245 infused — batch IA design-track specs ahead of dependent feature work (knowledge-base/contextual-ia-playbook.md). Source: moody.
-- 2026-09-14: LO-0246+LO-0248 infused — ticket state parity rule (process/gates.md); close receipt+gate+done in-session. Source: affiliate-platform.
-- 2026-09-14: LO-0249+LO-0250 infused — assertion sweep + literal verify rules (process/ticket-workflow.md). Source: affiliate-platform.
-- 2026-09-14: LO-0247 infused — symlinked layouts stay complete (knowledge-base/design_playbook.md). Source: affiliate-platform.
-- 2026-09-14: LO-0235 infused — sprint-planning-playbook.md authored (proof surface, truth before polish, disjoint file lists). Source: affiliate-platform.
-- 2026-09-14: LO-0251 infused — approve-scope reads scope-proposal.json; refresh after splitting an epic. Source: affiliate-platform.
-- 2026-09-14: LO-0252 infused — park parent epics with sprint_deferred before first scope proposal. Source: affiliate-platform.
+- 2026-09-14: LO-0232 infused — T0 edit-diff capture section added to knowledge-base/agentic-loop-playbook.md (edit distance as headline zero-traffic learning metric).
+- 2026-09-14: LO-0233 infused — Quality ratchet section (error-analysis-first, judge discipline) added to knowledge-base/agentic-loop-playbook.md.
+- 2026-09-14: LO-0234 infused — design lead-time rule + reject rubric added to knowledge-base/design_playbook.md; sprint-planning checklist updated in process/human-in-the-loop.md.
+- 2026-09-14: LO-0238 infused — composer-executable contract made a sprint-entry requirement in process/ticket-workflow.md.
+- 2026-09-14: LO-0239 infused — UI done requires commit+push to deploy-tracked branch (process/ticket-workflow.md).
+- 2026-09-14: LO-0240 infused — push main on done when auto-deploy tracks it (same section).
+- 2026-09-14: LO-0241 infused — manual pass in external render targets required before done (process/ticket-workflow.md).
+- 2026-09-14: LO-0242 infused — shared model before parallel consumers (process/ticket-workflow.md).
+- 2026-09-14: LO-0245 infused — batch IA design-track specs ahead of dependent feature work (knowledge-base/contextual-ia-playbook.md).
+- 2026-09-14: LO-0246+LO-0248 infused — ticket state parity rule (process/gates.md); close receipt+gate+done in-session.
+- 2026-09-14: LO-0249+LO-0250 infused — assertion sweep + literal verify rules (process/ticket-workflow.md).
+- 2026-09-14: LO-0247 infused — symlinked layouts stay complete (knowledge-base/design_playbook.md).
+- 2026-09-14: LO-0235 infused — sprint-planning-playbook.md authored (proof surface, truth before polish, disjoint file lists).
+- 2026-09-14: LO-0251 infused — approve-scope reads scope-proposal.json; refresh after splitting an epic.
+- 2026-09-14: LO-0252 infused — park parent epics with sprint_deferred before first scope proposal.

@@ -1,5 +1,5 @@
 /**
- * Docked Studio rail + panel — MOOD-0413 mock `.studio-rail` / `.studio-panel`.
+ * Docked Studio rail + panel.
  * Solid `--color-chrome`; 52px rail · 300px panel.
  */
 

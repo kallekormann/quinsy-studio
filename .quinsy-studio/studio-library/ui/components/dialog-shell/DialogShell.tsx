@@ -1,5 +1,5 @@
 /**
- * Moody Bloom — DialogShell molecule
+ * DialogShell molecule
  * Header (title) + body + footer (actions). Primary action should be rightmost.
  */
 'use client';

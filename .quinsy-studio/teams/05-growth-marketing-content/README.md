@@ -18,6 +18,11 @@ SEO, AEO, and content strategy. **Does not own** pricing-table layout, checkout 
 | GM-001 | SEO Optimization | SEO Specialist | `skills/seo-optimization.md` |
 | GM-002 | AEO (Answer Engine Optimization) | SEO Specialist | `skills/aeo-answer-engine-optimization.md` |
 | GM-003 | Content Strategy | Content Strategist | `skills/content-strategy.md` |
+| GM-004 | Game Development (gamedev router) | Game-Dev Specialist | `skills/game-development.md` |
+| GM-005 | Launch and Community | Content Strategist | `skills/launch-community.md` |
+| GM-006 | Lifecycle Email | Content Strategist | `skills/lifecycle-email.md` |
+
+Marketing claims, reviews, email consent and price displays follow [marketing-law.md](../../knowledge-base/skill-extensions/marketing-law.md) (UWG, TDDDG § 25, PAngV § 11).
 
 ---
 

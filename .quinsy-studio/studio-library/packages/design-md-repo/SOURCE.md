@@ -1,11 +1,10 @@
 # Design.md SOURCE map
 
-Maps curated **Design.md** cores → editorial sources (MOOD-0256).
+Maps curated **Design.md** cores → editorial sources.
 
 | System id                | Source                                            | Notes                        |
 | ------------------------ | ------------------------------------------------- | ---------------------------- |
-| `moody-bloom`            | projects/moody/design/DESIGN.md + ui/tokens/      | **Default** generate grammar |
-| `soft-ui`                | aesthetic-presets/soft-ui/SKILL.md                | Catalog choice               |
+| `soft-ui`                | aesthetic-presets/soft-ui/SKILL.md                | **Default**                     |
 | `minimalist-ui`          | aesthetic-presets/minimalist-ui/SKILL.md          | Catalog choice               |
 | `brutalist-ui`           | aesthetic-presets/brutalist-ui/SKILL.md           | Catalog choice               |
 | `apple-like-ui`          | aesthetic-presets/apple-like-ui/SKILL.md          | Catalog choice               |

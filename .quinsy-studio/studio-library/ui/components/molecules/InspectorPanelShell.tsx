@@ -19,9 +19,9 @@ export type InspectorPanelShellProps = {
   subtitle?: string;
   children: ReactNode;
   className?: string;
-  /** Exclusive accordion: which section id is open (MOOD-0237). */
+  /** Exclusive accordion: which section id is open. */
   defaultOpenSection?: string;
-  /** Dismiss control — clears selection / closes panel (MOOD-0344). */
+  /** Dismiss control — clears selection / closes panel. */
   onClose?: () => void;
 };
 
@@ -43,7 +43,7 @@ export function useInspectorAccordion(): AccordionCtx {
   return ctx;
 }
 
-/** Floating metadata panel chrome — board item + idea zone inspectors (MOOD-0377 rail family). */
+/** Floating metadata panel chrome for item inspectors (studio rail family). */
 export function InspectorPanelShell({
   eyebrow,
   title,
@@ -110,7 +110,7 @@ export function InspectorPanelSection({
   );
 }
 
-/** Exclusive accordion row — only one open at a time within the shell (MOOD-0237). */
+/** Exclusive accordion row — only one open at a time within the shell. */
 export function InspectorAccordionSection({
   id,
   title,

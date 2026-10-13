@@ -1,0 +1,14 @@
+Your card was declined. Use another card or update the expiry date.
+Saved. The invoice is in Drafts.
+Enter an email like name@example.com.
+Export CSV
+We could not reach the bank. Try again in a minute or upload the statement as CSV.
+Loading invoices…
+No invoices yet. Create the first one from a job.
+The upload failed because the file is larger than 10 MB. Choose a smaller file.
+Reminder sent to Müller GmbH. They will get a second one on 24 October if the invoice is still open.
+Die Rechnung wurde gespeichert.
+Die Bank antwortet gerade nicht. Versuche es in einer Minute erneut oder lade den Kontoauszug als CSV hoch.
+Bitte gib eine E-Mail-Adresse wie name@beispiel.de ein.
+Manage sign-ups, pop-ups and follow-ups.
+Error code 402 · Payment required — update the card under Billing.

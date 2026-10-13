@@ -41,12 +41,31 @@ STUDIO_HQ_RE = re.compile(
     r"\bHQ-T\d+\b|"
     r"\bLO-\d{3,}\b|"
     r"\.quinsy-studio\b|"
+    r"\bstudio-(?:tools|library|templates)/|"
+    r"\bknowledge-base/|"
+    r"\bteams/\d{2}-[a-z-]+|"
     r"\bstudio[- ]hq\b|"
     r"\bstudio-meta\b|"
     r"\bback to (?:the )?quinsy[- ]studio process\b|"
     r"\bquinsy[- ]studio\b"
     r")"
 )
+
+
+STUDIO_DOCS_RE = re.compile(
+    r"(?i)("
+    r"\bgetting[ _-]started\b|"
+    r"\b(?:AGENTS|CLAUDE|GEMINI)\.md\b|"
+    r"\boperations manual\b|"
+    r"\bstudio-overview\b|"
+    r"\b(?:all |the )?readme(?:s| files)\b"
+    r")"
+)
+
+
+def is_studio_docs_request(text: str) -> bool:
+    """True when the bubble is about the studio's own guides, even if it mentions ideation."""
+    return bool(STUDIO_DOCS_RE.search(text or ""))
 
 
 def is_ideate_request(text: str) -> bool:

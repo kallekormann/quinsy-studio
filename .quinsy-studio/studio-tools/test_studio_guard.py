@@ -181,6 +181,39 @@ class GuardInboxAckTests(unittest.TestCase):
         ack.assert_not_called()
         self.assertEqual(verdict, "ideate")
 
+    def test_question_about_studio_docs_is_not_the_desk(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context.implementation_in_flight", return_value=True), patch(
+            "studio_context._ack_inbox"
+        ) as ack:
+            verdict, _msg = guard_request(
+                "demo",
+                "do we need to update Getting started guide and all readme files so that users "
+                "understand the whole system and how to start ideation and/or product development?",
+                status,
+            )
+            desk, _ = guard_request("demo", "ideate on tools for wedding planners", status)
+        ack.assert_not_called()
+        self.assertEqual(verdict, "studio_meta")
+        self.assertEqual(desk, "ideate")
+
+    def test_hq_folder_paths_are_studio_meta(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context.implementation_in_flight", return_value=True), patch(
+            "studio_context._ack_inbox"
+        ) as ack:
+            ack.return_value = ("inbox_ack", "")
+            for text in (
+                "studio-tools/materialize_x.py doesnt belong into studio, delete it?",
+                "teams/07-ai-autonomous-systems/README.md needs to be fixed",
+                "update knowledge-base/payload-playbook.md",
+            ):
+                verdict, _ = guard_request("demo", text, status)
+                self.assertEqual(verdict, "studio_meta", text)
+            product, _ = guard_request("demo", "add a teams page to the app", status)
+        self.assertEqual(product, "inbox_ack")
+        ack.assert_called_once()
+
     def test_build_upon_research_stays_on_the_desk(self):
         status = _review_pending_status(active_ticket="DEMO-0001")
         with patch("studio_context.implementation_in_flight", return_value=True), patch(

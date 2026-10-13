@@ -8,13 +8,13 @@ import { validateDesignMd } from './validate';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-describe('compiled Design.md cores (MOOD-0256)', () => {
-  it('catalog lists every profile with Bloom default', () => {
+describe('compiled Design.md cores', () => {
+  it('catalog lists every profile with soft-ui default', () => {
     const catalog = loadDesignMdCatalog();
-    expect(catalog.default_system_id).toBe('moody-bloom');
+    expect(catalog.default_system_id).toBe('soft-ui');
     expect(catalog.systems).toHaveLength(CORE_PROFILES.length);
-    const bloom = catalog.systems.find((s) => s.id === 'moody-bloom');
-    expect(bloom?.default).toBe(true);
+    const soft = catalog.systems.find((s) => s.id === 'soft-ui');
+    expect(soft?.default).toBe(true);
     expect(catalog.systems.filter((s) => s.default).length).toBe(1);
   });
 
@@ -27,7 +27,7 @@ describe('compiled Design.md cores (MOOD-0256)', () => {
         return false;
       }
     });
-    expect(ids.length).toBeGreaterThanOrEqual(17);
+    expect(ids.length).toBe(CORE_PROFILES.length);
     for (const id of ids) {
       const raw = readFileSync(join(systemsDir, id, 'Design.md'), 'utf8');
       const result = validateDesignMd(raw);
@@ -35,8 +35,8 @@ describe('compiled Design.md cores (MOOD-0256)', () => {
     }
   });
 
-  it('Bloom and Brutalist contrast pair both validate', () => {
-    for (const id of ['moody-bloom', 'brutalist-ui']) {
+  it('soft-ui and Brutalist contrast pair both validate', () => {
+    for (const id of ['soft-ui', 'brutalist-ui']) {
       const raw = readFileSync(join(here, 'systems', id, 'Design.md'), 'utf8');
       const result = validateDesignMd(raw);
       expect(result.ok).toBe(true);

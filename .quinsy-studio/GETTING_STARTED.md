@@ -4,9 +4,34 @@ This is the script. Each section is a situation, the words you type, and what yo
 
 You talk. The agent runs `./studio`. You do not type a long chain by hand unless you want to.
 
-The agent does not ask "should I continue?" After a product exists it runs `./studio execute <project>`, does that one next step, and runs execute again, until the action is HITL. HITL means it has stopped for you: a gate, a phase you sign, an env approval, or a cadence review.
+The agent does not ask "should I continue?" After a product exists it runs `./studio execute <project>`, does that one next step, and runs execute again, until the action is HITL. HITL means it has stopped for you: a gate, the milestone roadmap or a milestone review, the design phase you sign, `ship --to main`, a production migration or destructive data step, or a tech-veto. Architecture sign-off, local Docker, cadence briefs and production ops are agent-run and INFORM you.
 
 The start of a product stops at gate 0 (the product definition), then gate 1 (architecture), then gate 2a (direction), then gate 2b (the project kit). `approve --gate 2` is refused. Sign 2a, then 2b. After that, a note that says INFORM still loops. A lesson is infused in a separate studio chat with `./studio train`. The product chat keeps building. The agent reads one compact card per ticket, not the whole backlog.
+
+## Project foundation
+
+A website or web app runs on Payload inside one Next.js app (`apps/web`). That app is written after you sign gate 1, on the next `./studio execute`. It is not created at init.
+
+The blueprint says `Payload: in`, or `Payload: out` with an ADR that opts out. Gate 1 refuses a web project that has neither. A game or an API service may omit the line.
+
+| Piece | Where it lives |
+|-------|----------------|
+| Marketing pages | `apps/web/src/app/(marketing)` |
+| Signed-in product | `apps/web/src/app/(app)` |
+| Admin and REST | `apps/web/src/app/(payload)` — `/admin` and `/api` |
+| Auth, content, jobs | Payload. Users is an auth collection. |
+| Email | Resend, when `RESEND_API_KEY` is set |
+| Payments | Studio package `billing` (Stripe and Lemon Squeezy). Pull it. |
+| Database | Postgres in Docker Desktop locally. A Coolify database in production. |
+| Uploads | Local disk in dev. Cloudflare R2 in production. |
+| Long work (embeddings) | Python worker. Compose profile `rag`. A Payload job only enqueues it. |
+| Locales | One default (`en`) unless the blueprint lists more. Payload localizes the fields. |
+
+`./studio env <project> up` starts that local stack (agent-run; `--approve` is accepted, not required). `migrate` runs `payload migrate` in the app container. `dev` is the same stack. Production is Coolify: it installs the packages from `package.json` and runs migrate before the new container serves traffic. `./studio ship` still only pushes git.
+
+Desktop, a browser extension, and mobile call the REST or GraphQL API. They do not embed Payload.
+
+The how-to is [payload-playbook.md](knowledge-base/payload-playbook.md). Skill BE-007 is on the ticket card when Payload is in.
 
 ## Start here: tell the agent
 
@@ -24,22 +49,23 @@ Pick the row that matches what you have:
 
 Open **quinsy-studio** at the repo root (not `projects/<name>/` alone). Cursor rules: [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc). Claude Code: [`CLAUDE.md`](../CLAUDE.md). Gemini CLI: [`GEMINI.md`](../GEMINI.md).
 
-**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run and rewrite a **local** `.cursorignore` + generated isolation rule (Read/Grep). They are not a sandbox. **One chat (or IDE window) per product** — five concurrent products need five chats, not one ignore list. `parallel.max_projects` (default 5) file-leases executes; a sixth is queued. `./studio focus` will not clobber another live lease unless `--force`. Shell can still see other `projects/` trees. Guard returns `CROSS_PROJECT` if the request names a sibling. Product git runs **inside** `projects/<name>/`. Studio HQ git never stages `projects/`. HQ train stays in a **separate** session.
+**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run and rewrite a **local** `.cursorignore` + generated isolation rule (Read/Grep). They are not a sandbox. **One chat (or IDE window) per product** — five concurrent products need five chats, not one ignore list. Several chats in **one** window still share that ignore list; same-window binding is an open HQ epic ([hq-session-binding.md](process/hq-session-binding.md), `LO-0419`–`LO-0424`), not current behavior. `parallel.max_projects` (default 5) file-leases executes; a sixth is queued. `./studio focus` will not clobber another live lease unless `--force`. Shell can still see other `projects/` trees. Guard returns `CROSS_PROJECT` if the request names a sibling. Product git runs **inside** `projects/<name>/`. Studio HQ git never stages `projects/`. HQ train stays in a **separate** session.
 
-**Docker is required** for gate, migrate, and product boot (`./studio env <p> up|migrate|dev --approve`). Missing Docker stops those commands with install instructions — there is no host fallback that cats `.env` into the chat.
+**Docker is required** for gate, migrate, and product boot (`./studio env <p> up|migrate|dev`). Missing Docker stops those commands with install instructions — there is no host fallback that cats `.env` into the chat.
 
 ### Secrets, Docker, and concurrent products
 
 | Rule | What to do |
 |------|------------|
 | **Names, not values** | Agents Read `env.schema.json` / `*.env.example`. Do not Read `.env` / `.env.local` values (Cursor ignore: QUINSY-SECRETS). |
-| **Local dotenv** | Desktop: gitignored `projects/<p>/.env` (copy `.env.example`). `./studio env <p> up --approve` passes it to Compose. |
+| **Local dotenv** | Desktop: gitignored `projects/<p>/.env` (copy `.env.example`). `./studio env <p> up` passes it to Compose. |
+| **Production access** | Gitignored `projects/<p>/.env.local`: `VPS_SSH_HOST`, `VPS_SSH_USER`, `VPS_SSH_KEY_PATH`, `VPS_COMPOSE_DIR`, `COOLIFY_URL`, `COOLIFY_TOKEN`, `COOLIFY_APP_UUID`, `PROD_DATABASE_URL`. `./studio env <p> prod --explain` prints each name, whether it is set, and what the agent does with it. `./studio ops <p> readiness\|deploy\|logs\|status\|db\|cleanup` run from the agent seat; `migrate --prod --approve` and destructive steps wait for you. |
 | **Production** | Coolify environment variables. No project `.env` on the VPS. |
-| **Inject** | `./studio env <p> up\|migrate\|dev --approve`. Without `--approve` the command exits non-zero. |
+| **Inject** | `./studio env <p> up\|migrate\|dev` — agent-run, one INFORM line. `--approve` is accepted for older scripts. |
 | **Docker** | Required. Install Docker Desktop if the CLI is missing. Gate/QA output is redacted. |
 | **Leases** | `parallel.max_projects: 5` in `.quinsy-studio/studio.settings.yaml`. A sixth `./studio execute` is queued. HITL idle or `./studio execute <p> --release` frees a slot. |
 | **Focus** | `./studio focus` will not rewrite `.cursorignore` while another product holds a lease, unless `--force`. |
-| **HITL packets** | Sign-off is spec/mocks, `docs/architecture/<TICKET>.md`, or env `--approve` intent — not a morning-brief dashboard. |
+| **HITL packets** | Sign-off is spec/mocks (`approve-design --phase`), the milestone review, `ship --to main`, or a production migration — not a morning-brief dashboard. Architecture notes are agent-signed with a tech-veto window. |
 
 Plan: [hq-isolation-sprints.md](process/hq-isolation-sprints.md) (`LO-0314`–`LO-0326`).
 
@@ -56,8 +82,9 @@ Plan: [hq-isolation-sprints.md](process/hq-isolation-sprints.md) (`LO-0314`–`L
 `intake/` is gitignored (local only).
 
 ```bash
-cp .quinsy-studio/studio-templates/prd_template.md intake/my-project.md
-# Edit intake/my-project.md — slug should match the project name
+mkdir -p intake/my-project
+# Drop every source file in that folder: markdown, text, PDF, and the rest.
+# A single intake/my-project.md still works.
 ./studio bootstrap my-project
 ./studio focus my-project
 ./studio execute my-project         # HITL at gate 0 when definitions are ready
@@ -162,9 +189,12 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 | `IMPLEMENT` / `IMPLEMENT <id>` | Adopt: fill `docs/as-built/`. Pre-impl: `./studio blueprint` or `./studio design --discovery` then `./studio design`. Sprint: next unblocked ticket — **or write missing design spec+mocks**. Read the **CARD** (and that one `.md` only) | Agent |
 | `VERIFY` | Adopt: synthesize `docs/intake/prd.md`. Sprint: fill the **execution receipt** (`./studio receipt`) | Agent |
 | `GATE` | Run `./studio gate <p> --level 5` (build + smoke + tests). Must be **fresh** after this ticket’s implement | Agent |
-| `DEBUG` | Gate went red. Write hypotheses in `sprints/SPRINT-NN/debug/<id>.md`, fix, re-gate (max 3 tries) | Agent |
-| `MOVE_DONE` | Receipt + gate 5 → `move … done` (product git commit). Then execute again | Agent |
+| `DEBUG` | Gate went red, or QA failed. The debug file is Issue / Expected / Actual / Evidence / Fix / Files; fix only those findings, then re-gate | Agent |
+| `QA_REVIEW` | Gate is green. `./studio qa <p> <id>`: a reviewer **without this chat** judges the AC from the receipt and the running app, and defaults to FAIL without proof. Record with `--verdict`. Tickets with signed mock shots also run `./studio qa <p> <id> --finish` (UX-009): shipped states at 1440 and 390 next to the mocks, PASS or HOLD | Agent (subagent) |
+| `BLOCK` | Red gates, QA FAILs and finish HOLDs share **3 attempts** (or two identical failures). The agent writes `escalations/<id>.md`, moves the ticket to `blocked`, and continues with sibling tickets. You are asked only when nothing else can run | Agent |
+| `MOVE_DONE` | Receipt (every result line PASS / FAIL / NOT TESTED with a real path) + fresh gate 5 + QA PASS (+ finish PASS) → `move … done` (product git commit). Then execute again | Agent |
 | `VERIFY` (ship) | Before cadence HITL: `./studio ship <p> --to dev` when origin is behind `dev` | Agent |
+| `REALITY_CHECK` | After `ship --to dev`: `./studio reality-check <p>`. A fresh-context agent walks one journey and every done ticket's default flow on the dev URL. FAILED files bug tickets into the sprint and keeps the review closed; it is not a sign-off request | Agent (subagent) |
 | `STUDIO_LO <id>` | Idle infusion in `.quinsy-studio/` when there is no in-flight product ticket | Agent (HQ chat) |
 | `INFORM` | Reuse / inbox drain / **N open HQ LOs** — do NEXT, loop; **not** architecture or design. **`cost-cap`:** stop; raise the named key | Agent or **you** |
 | `HITL` | **Stop.** Gates 0 → 1 → 2a → 2b (sequential), batch **`approve-design --phase` / `approve-arch --phase`** after every packet in that phase is written, **`env --approve`**, cadence review. Not a morning brief. Not a feature-ticket ACK. | **You** |
@@ -176,7 +206,7 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 3. **Architecture (gate 1)** — `IMPLEMENT` `./studio blueprint` until artifacts are ready, then **HITL** `./studio approve --gate 1`
 4. **Design direction (gate 2a)** — unanswered questions in `docs/design/discovery.md`, then **HITL** `./studio approve --gate 2a`. Do not scaffold prototype.
 5. **Design kit (gate 2b)** — `IMPLEMENT` `./studio design` (CSS tokens, coded A/M/O, sticker all-states), then **HITL** `./studio approve --gate 2b`. Iterate with `./studio revise --gate 2b`
-6. **Finish in-progress** — a ticket already in `implement` still runs VERIFY → GATE → DEBUG → MOVE_DONE (inbox notes wait)
+6. **Finish in-progress** — a ticket already in `implement` runs VERIFY (receipt) → GATE → DEBUG → QA_REVIEW (→ finish) → MOVE_DONE, or BLOCK after 3 attempts (inbox notes wait)
 7. **Design phase** — write every spec and all-state mock, then one HITL `./studio approve-design <p> --phase`. An empty design backlog skips to architecture in the same turn.
 8. **Architecture phase** — write the notes the design phase filed, plus boundary tickets with no screen, then one HITL `./studio approve-arch <p> --phase`. `./studio approve-arch <p> <TICKET> --reject` sends an infeasible design to the next design cycle. An empty architecture backlog skips to implementation.
 9. **`IMPLEMENT`** — next unblocked ticket whose design and architecture are `approved` or `n/a`. One unsigned ticket does not freeze a ready sibling. INFORM open HQ LO count; do **not** `STUDIO_LO` in this chat
@@ -189,6 +219,9 @@ Each product is its own git repo under `projects/<name>/`. Studio HQ git never s
 ./studio env <project> up --approve  # inject named vars into Compose
 ./studio ticket-card <project> <ID>  # compact card only (~AC, files, deps)
 ./studio receipt <project> <ID>      # scaffold receipt before done
+./studio qa <project> <ID>           # fresh-context review; then --verdict PASS|FAIL
+./studio qa <project> <ID> --finish  # UX-009: shipped screen vs signed mock shots
+./studio reality-check <project>     # dev build walk before the cadence review
 ./studio health <project>            # state-graph: open LOs, missing receipts, deps
 ./studio settings                    # HQ train ledger
 ./studio settings <project>        # product execute ledger
@@ -321,7 +354,7 @@ Use natural language. The agent maps your intent to `./studio` commands.
 | Gate | You say when ready | You say when not ready |
 |------|--------------------|-------------------------|
 | **0** PRD + definitions **or** as-built (adopt) | *"Approve gate 0"* | *"Revise gate 0: …"* |
-| **1** Architecture (as-is on adopt) | *"Approve gate 1"* | *"Revise gate 1: use IndexedDB only, no Supabase yet"* |
+| **1** Architecture (as-is on adopt) | *"Approve gate 1"* | *"Revise gate 1: opt out of Payload, local-only, and write the ADR"* |
 | **2a** Design direction (discovery + DESIGN.md) | *"Approve gate 2a"* | *"Revise gate 2a: …"* |
 | **2b** Project kit (tokens, A/M/O, sticker) | *"Approve gate 2b"* | *"Revise gate 2b: …"* |
 | **Milestones** | *"Approve milestones"* / *"Roadmap looks good"* | *"Revise M0 scope: defer legal pages to M1"* |
@@ -423,7 +456,7 @@ Full process: [amendment-intake.md](process/amendment-intake.md) · Example: [st
 - Commit `projects/` to the studio repo (product git is `git -C projects/<name>`)
 - Implement features with no backlog ticket (after gate 2)
 - Dump the whole backlog into context (use `ticket-card` / execute CARD)
-- Pull library **stubs** (`billing`, `feature-gating`) — build in-project, then promote a working generic
+- Pull the **`feature-gating` stub** — build in-project, then promote a working generic
 - Leave open LO-* piled for a later human `learn` prompt — harvest immediately; INFORM the count; infuse with `./studio train` in a **HQ** session
 - Treat a mid-execute chat message as a new assignment. Run `./studio guard <p> "<verbatim>"` first. On `INBOX_ACK`, resume the current ACTION. `FEEDBACK_ONLY` / `NEEDS_TICKET` must not preempt an in-flight ticket.
 - Wait for a feature-ticket ACK / “looks good” after `MOVE_DONE` — loop `./studio execute` until HITL (cadence review, or the batch phase signature **after every packet in that phase exists**)
@@ -457,7 +490,7 @@ You can run these yourself; in Cursor the agent usually runs them for you.
 | Sprint | `./studio sprint <p>` (next phase; empty phases skip) · `--kind design\|architecture\|implementation\|hygiene` · `--approve-scope` · `./studio execute <p>` · `./studio move <p> <ID> implement\|done` · `./studio ship <p> --to dev` |
 | Ticket card / receipt | `./studio ticket-card <p> <ID>` · `./studio receipt <p> <ID>` |
 | Mid-execute chat | `./studio guard <p> "…"` → `INBOX_ACK` (queued). Drain: `./studio note <p> --drain` |
-| Library-first | `./studio library suggest <p> "auth button"` · `./studio library pull <p> auth tokens button` (not stubs). Kit peers must already be in the app. |
+| Library-first | `./studio library suggest <p> "button"` · `./studio library pull <p> tokens button auth-login`. Login is the Payload Users collection. Do not pull `packages/auth`. |
 | Schema migrate | `./studio env <p> migrate --approve` (or project migrate inside Compose). INFORM. Do not Read `.env` values. |
 | Product git / production | `./studio ship <p> --to dev` · `./studio ship <p> --to main --approve` (HITL) |
 | Your feedback → backlog | `./studio feedback <p> "..."` · `./studio clarify <p> FB-001 --approve` · `./studio ticket <p> "..." --from-feedback FB-001` |
@@ -568,7 +601,7 @@ Screens move. You turn that off by writing `motion: off` in the spec or the tick
 
 - Skill: [knowledge-base/skill-extensions/motion-transitions.md](knowledge-base/skill-extensions/motion-transitions.md)
 - Tokens: `--motion-duration-*`, `--motion-ease-*`, `--motion-scale-*` in `studio-library/ui/tokens/design-tokens.css`
-- Spec: **§2d Motion** in [design-spec-template.md](knowledge-base/design-spec-template.md). The HTML mock shows closed and open with those tokens.
+- Spec: **§2d Motion** in [design-spec-template.md](knowledge-base/design-spec-template.md). The mock route shows the real component closed and open with those tokens.
 - Kit: dialogs, menus, and tooltips already scale on open and close. Pull them. Do not add a second fade.
 - Reduced motion is always on: same content, durations at `0ms`.
 
@@ -591,12 +624,12 @@ Tickets for the **active milestone** are written after you approve the roadmap (
 
 A milestone is a version. M0 is the first. The agent writes tickets for that version only, after you sign the roadmap.
 
-1. Agent drafts `docs/phases/README.md` + M0/M1 outlines from PRD + blueprint **or** the as-built gap matrix
+1. Agent drafts `docs/phases/README.md` and one outline per version the PRD and its source files need. M0 is the first. Add M1, M2, M3, and further versions until that material is covered.
 2. You approve: `./studio approve <p> --milestones`
-3. Agent writes **M0 tickets only** → product backlog (`backlog/*.md`, `milestone: M0`)
+3. Agent writes tickets for the **active** milestone only → product backlog (`backlog/*.md`, `milestone: M0` for the first)
 4. Sprint planning: `./studio sprint <p>` → agent `--approve-scope` (you may override) → groom → execute
 
-When all M0 tickets are done → **milestone review** → plan M1 tickets → sprints resume.
+When that milestone’s tickets are done → **milestone review** → plan the next milestone’s tickets → sprints resume.
 
 If strategic direction changes before the next milestone, use **amendment intake** (not sprint feedback alone). Amendments produce a revised `docs/phases/` patch and groomed ticket drafts before backlog materialization.
 
@@ -652,21 +685,21 @@ An amendment is a change of direction. A sprint note is a small idea. They use d
 ## Iteration at any gate
 
 ```bash
-./studio revise my-project --gate 1 --feedback "Use IndexedDB only, defer Supabase"
+./studio revise my-project --gate 1 --feedback "Opt out of Payload and record the ADR"
 ```
 
 Logged in `projects/<p>/docs/phases/revisions.md`.
 
 ## Library-first (UI + code)
 
-Before writing a new screen or a new package, look in the studio library. Pull what is there and adapt it. Do not pull the stubs named `billing` and `feature-gating`.
+Before writing a new screen or a new package, look in the studio library. Pull what is there and adapt it. Do not pull the stub named `feature-gating`. `billing` is pullable.
 
 | Step | Command |
 |------|---------|
 | Discover | `./studio library list` |
 | Before coding | `./studio library suggest <p> "auth button"` |
-| Pull boilerplate | `./studio library pull <p> auth tokens button` — **not** stubs (`billing`, `feature-gating`) |
-| Promote code | `./studio library promote <p> packages/auth [--force] [--ticket ID]` only if the **generic** asset improved |
+| Pull boilerplate | `./studio library pull <p> tokens button billing auth-login` — **not** `packages/auth` or `feature-gating` |
+| Promote code | `./studio library promote <p> packages/billing [--force] [--ticket ID]` only if the **generic** asset improved |
 | Promote design | `./studio promote-library <p> [--force]` |
 
 On `./studio move <p> <ID> implement` → library hint. Kit peers (`radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`) are **setup**, not an afterthought — see `docs/setup/ui-kit.md`.
@@ -684,7 +717,7 @@ On `./studio move … done` → requires gate level 5 **and** a filled execution
 | Architecture | `docs/architecture/` |
 | ADRs | `docs/adr/` |
 | Design spec (per ticket) | `docs/design-specs/<TICKET>.md` |
-| Design mocks (per ticket) | `docs/design-specs/mocks/<TICKET>/*.html` (project tokens, in-context, all states) |
+| Design mocks (per ticket) | Routes in the product app at `app/(design-mocks)/design-mocks/<TICKET>/` (real views and components, all states); screenshots in `docs/design-specs/mocks/<TICKET>/` |
 | IA surface map | `docs/ia/surface-map.md` |
 | Design blueprint | `design/DESIGN.md` |
 | Mock scope | `design/DESIGN-SCOPE.md` |
@@ -692,7 +725,7 @@ On `./studio move … done` → requires gate level 5 **and** a filled execution
 | Tokens | `ui/tokens/design-tokens.json` |
 | Atomic UI | `ui/components/atoms\|molecules\|organisms/` |
 | Sticker sheet | `design/prototype/app/sticker-sheet/` |
-| Packages | `packages/auth/`, `packages/billing/`, … |
+| Packages | `packages/billing/`, `packages/slug/`, … `packages/auth/` is not pulled. |
 | Milestone roadmap | `docs/phases/README.md`, `docs/phases/M0-*.md`, … |
 | Amendments | `docs/amendments/AM-NNN-*/`, `docs/amendments/registry.json` |
 | Revisions log | `docs/phases/revisions.md` |

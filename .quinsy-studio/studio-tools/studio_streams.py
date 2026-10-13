@@ -97,16 +97,17 @@ def architecture_note_path(project: str, ticket_id: str) -> Path:
     return PROJECTS_DIR / project / "docs" / "architecture" / f"{ticket_id}.md"
 
 
+def architecture_packet_issues(project: str, ticket_id: str) -> List[str]:
+    from architecture_checks import architecture_packet_issues as packet_issues
+    from backlog_paths import find_ticket
+
+    ticket, _status = find_ticket(project, ticket_id)
+    ticket_text = ticket.read_text(encoding="utf-8", errors="ignore") if ticket else ""
+    return packet_issues(PROJECTS_DIR / project, ticket_id, ticket_text)
+
+
 def architecture_packet_ready(project: str, ticket_id: str) -> bool:
-    path = architecture_note_path(project, ticket_id)
-    if not path.is_file():
-        return False
-    text = path.read_text(encoding="utf-8", errors="ignore")
-    if len(text.strip()) < 280:
-        return False
-    if re.search(r"stub\s*—|TODO fill", text, re.I):
-        return False
-    return True
+    return not architecture_packet_issues(project, ticket_id)
 
 
 def set_architecture_approved(content: str) -> str:

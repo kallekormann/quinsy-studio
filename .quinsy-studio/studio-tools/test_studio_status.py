@@ -61,7 +61,7 @@ class PeelTests(unittest.TestCase):
         self.assertFalse(is_valid_project_slug("-h"))
         self.assertFalse(is_valid_project_slug("--level"))
         self.assertFalse(is_valid_project_slug(""))
-        self.assertTrue(is_valid_project_slug("affiliate-platform"))
+        self.assertTrue(is_valid_project_slug("acme-app"))
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             with patch("studio_status.PROJECTS_DIR", root / "projects"):
@@ -73,8 +73,8 @@ class PeelTests(unittest.TestCase):
         self.assertTrue(cli_wants_help("--help", []))
         self.assertTrue(cli_wants_help("gate", ["--help"]))
         self.assertTrue(cli_wants_help("retro", ["-h"]))
-        self.assertFalse(cli_wants_help("gate", ["affiliate-platform", "--level", "5"]))
-        self.assertFalse(cli_wants_help("retro", ["affiliate-platform", "--complete"]))
+        self.assertFalse(cli_wants_help("gate", ["acme-app", "--level", "5"]))
+        self.assertFalse(cli_wants_help("retro", ["acme-app", "--complete"]))
 
 
 if __name__ == "__main__":

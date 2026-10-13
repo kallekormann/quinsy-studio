@@ -114,7 +114,7 @@ class ExtractAndCardTests(unittest.TestCase):
                 "acceptance_criteria": ["Index shows a featured teaser"],
                 "scenarios": [
                     {
-                        "given": "A user in project affiliate-platform",
+                        "given": "A user in project acme-app",
                         "when": "They use the feature 'Assemble start'",
                         "then": "'Assemble start' works as described and is tested",
                     }
@@ -212,7 +212,8 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.ticket_id, "DEMO-0001")
         self.assertTrue(step.loop)
 
-    def test_decide_hitl_on_sprint_review(self):
+    @patch("studio_execute._reality_step", return_value=None)
+    def test_decide_hitl_on_sprint_review(self, _reality):
         step = decide_from_state(
             "demo",
             _approved_status(
@@ -227,9 +228,10 @@ class DecideTests(unittest.TestCase):
             amendment_actions=[],
             prd_exists=True,
         )
-        self.assertEqual(step.kind, "HITL")
-        self.assertIn("sprint-review", step.reason)
-        self.assertFalse(step.loop)
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertIn("cadence review brief", step.reason)
+        self.assertIn("--inform", step.command)
+        self.assertTrue(step.loop)
 
     def test_decide_verify_receipt_then_gate_then_done(self):
         tickets = [{"id": "DEMO-0002", "status": "implement", "deps": [], "card": {"id": "DEMO-0002"}}]
@@ -266,6 +268,24 @@ class DecideTests(unittest.TestCase):
                     {"ticket": "DEMO-0002", "event": "gate-pass", "ts": "2026-09-07T10:10:00"},
                 ]
             },
+            receipts_ok={"DEMO-0002": True},
+            open_los=[],
+            amendment_actions=[],
+            prd_exists=True,
+        )
+        self.assertEqual(step.kind, "QA_REVIEW")
+        passed = {
+            "entries": [
+                {"ticket": "DEMO-0002", "event": "implement", "ts": "2026-09-07T10:00:00"},
+                {"ticket": "DEMO-0002", "event": "gate-pass", "ts": "2026-09-07T10:10:00"},
+                {"ticket": "DEMO-0002", "event": "qa-pass", "ts": "2026-09-07T10:20:00"},
+            ]
+        }
+        step = decide_from_state(
+            "demo",
+            _approved_status(),
+            tickets,
+            log=passed,
             receipts_ok={"DEMO-0002": True},
             open_los=[],
             amendment_actions=[],
@@ -367,7 +387,8 @@ class DecideTests(unittest.TestCase):
         self.assertEqual(step.kind, "VERIFY")
         self.assertEqual(step.ticket_id, "DEMO-0002")
 
-    def test_decide_sprint_review_beats_open_lo(self):
+    @patch("studio_execute._reality_step", return_value=None)
+    def test_decide_sprint_review_beats_open_lo(self, _reality):
         step = decide_from_state(
             "demo",
             _approved_status(
@@ -382,8 +403,8 @@ class DecideTests(unittest.TestCase):
             amendment_actions=[],
             prd_exists=True,
         )
-        self.assertEqual(step.kind, "HITL")
-        self.assertIn("sprint-review", step.reason)
+        self.assertEqual(step.kind, "VERIFY")
+        self.assertIn("cadence review brief", step.reason)
 
     def test_decide_ship_dev_before_cadence_review(self):
         with patch("studio_product_git.needs_dev_push", return_value=True):
@@ -594,8 +615,39 @@ class DecideTests(unittest.TestCase):
         )
         text = format_execute_step("demo", step)
         self.assertIn("not learnings/inbox.md", text)
-        self.assertIn("READ only these playbooks", text)
+        self.assertIn("READ the skill files and these playbooks", text)
         self.assertNotIn("READ:    knowledge-base/learnings/inbox.md", text)
+
+    def test_card_lists_skill_files_and_staffed_companions(self):
+        from studio_execute import staff_card
+
+        ticket = (
+            "---\nid: DEMO-0002\ntitle: Authentication & Authorization\nskills: [BE-003]\n---\n\n"
+            "## Target\nLogin and registration with RBAC.\n"
+        )
+        card = staff_card(
+            {"id": "DEMO-0002", "title": "Authentication & Authorization", "skills": ["BE-003"]},
+            ticket,
+        )
+        self.assertIn("PE-003", card["staffed"])
+        self.assertIn("CL-001", card["staffed"])
+        self.assertIn("teams/08-platform-enterprise-engineering/skills/security-audit.md", card["skill_files"])
+        text = format_execute_step(
+            "demo",
+            ExecuteStep(kind="IMPLEMENT", ticket_id="DEMO-0002", reason="r", command="c", card=card),
+        )
+        self.assertIn("staffed by PM-004", text)
+        self.assertIn("skill files:", text)
+
+    def test_waived_companion_is_not_staffed(self):
+        from studio_execute import staff_card
+
+        ticket = (
+            "---\nid: DEMO-0003\ntitle: Login page\nskills: [BE-003, FE-001]\n"
+            "staffing_waive: [CL-001]\n---\n\n## Target\nLogin form.\n"
+        )
+        card = staff_card({"id": "DEMO-0003", "title": "Login page", "skills": ["BE-003", "FE-001"]}, ticket)
+        self.assertNotIn("CL-001", card["skills"])
 
     def test_decide_backend_sprint_skips_review_hitl(self):
         step = decide_from_state(

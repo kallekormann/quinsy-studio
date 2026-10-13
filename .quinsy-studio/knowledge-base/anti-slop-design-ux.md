@@ -69,10 +69,18 @@ Also banned: `Lorem ipsum`, generic `Feature 1/2/3`, `Primary action`, `Make mag
 - Buttons state **what happens**: `Save changes`, `Export CSV`, `Post journal entry` — not `Proceed`, `Let's go`, `Make magic happen`.
 - System messages: no throat-clearing (“We're sorry, but…”). State fact + next step.
 
+### 2.2b Must-fail microcopy (gate error, not a warning)
+
+`gate --anti-slop` fails shipped copy in `src/` and design specs on: whimsy interjections (Oops, Whoops, Uh-oh, Yikes, Woohoo, Yay, Hooray, Hoppla, Ups!), "magic" wait copy (work our magic, sprinkling magic, hang tight, sit tight, grab a coffee), forced praise (high five, nailed it, you rock), celebration emoji in copy, and error lines that break the UX-002 rubric (Something went wrong, An unexpected error occurred, a bare status code, We're sorry but, You entered an invalid…, Invalid input, Etwas ist schiefgelaufen, Ein Fehler ist aufgetreten). A spec line that quotes one of these as a rule ("never", "not", "instead of") is not flagged. Fixtures: `studio-tools/fixtures/anti-slop/microcopy-must-{fail,pass}.txt`; add a line to both files when you add a pattern.
+
 ### 2.3 Tone
 
 - **Expert peer** — senior engineer / domain expert to a professional peer.
 - **Conciseness** — five words beat ten when meaning is preserved.
+
+### 2.4 Feature-list pages are slop (public surfaces)
+
+A landing, persona, or product page that opens with a grid of features, icons, and three-word captions fails `approve-design`. Order is **problem (in the persona's words) → today's alternative → mechanism in the real UI → proof next to the claim → one ask** (`growth-content-playbook.md` § 2, GM-007). A feature grid may appear after the mechanism and proof, never above the fold. Multi-persona products get one page per persona, not one page for everyone.
 
 ---
 
@@ -88,7 +96,7 @@ Also banned: `Lorem ipsum`, generic `Feature 1/2/3`, `Primary action`, `Make mag
 
 - [ ] Spec file on disk and filled (never ask to approve a path that does not exist)
 - [ ] §2 + §2c in design spec filled (in-context mocks, not orphan artboards)
-- [ ] HTML mocks use **project** `ui/tokens` / CSS variables
+- [ ] Mocks render the **real app** (views, components, project tokens), not hand-drawn HTML
 - [ ] All interaction and surface states mocked (rest, hover, pressed, disabled, focus; open/closed; empty/loading/error)
 - [ ] Atomic inventory maps to studio-library or approved new components
 - [ ] Spacing on 8pt grid; tokens only (no one-off hex in spec)

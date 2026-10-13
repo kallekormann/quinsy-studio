@@ -17,27 +17,17 @@ QUINSY_STUDIO = TOOLS_DIR.parent
 REPO_ROOT = QUINSY_STUDIO.parent
 PROJECTS_DIR = REPO_ROOT / "projects"
 
-# Product / surface nouns that make a *title* project-local unless rewritten away.
-# Project folder names are loaded dynamically from projects/.
-STATIC_PRODUCT_NOUNS: Tuple[str, ...] = (
-    "mood direction",
-    "mood-direction",
-    "suggested tab",
-    "kit imagery",
-    "caziro",
-    "roven",
-    "northwind",
-    "sprint-119",
-    "sprint-120",
-)
+# Product nouns are never written into HQ. Folder names come from projects/; a product's
+# own surface names (screens, brands, hosts) live in its repo, one per line.
+LOCAL_NOUNS_FILE = "docs/portability-nouns.txt"
+NON_PRODUCT_FOLDERS = frozenset({"demo", "example", "sample", "testproj", "lo-0042", "--help"})
 
-# Brands OK as *examples inside playbooks* after generalization, but LO *titles*
+# Vendor brands OK as *examples inside playbooks* after generalization, but LO *titles*
 # should use the generic rewrite — not the brand as the subject.
 TITLE_BRAND_REWRITES: Tuple[Tuple[str, str], ...] = (
     (r"\bopenverse\b", "stock-media provider"),
     (r"\bunsplash\b", "optional stock provider"),
     (r"\bpexels\b", "optional stock provider"),
-    (r"\bmoody\b", "the product"),
 )
 
 # Kinds that imply an agent skill/tooling ability gap → enqueue train.
@@ -65,15 +55,8 @@ HQ_SCAN_GLOBS: Tuple[str, ...] = (
     "teams/**/skills/*.md",
 )
 
-# Allow project names only in provenance-style lines.
-_SOURCE_LINE = re.compile(
-    r"(?i)^\s*(- )?(\*\*)?(source|provenance|from_feedback|project)(\*\*)?\s*[:`]",
-)
-
-
 def list_project_names() -> List[str]:
     """Real product projects — used to refuse HQ body text naming them."""
-    placeholders = {"nudge", "demo", "example", "testproj", "sample"}
     if not PROJECTS_DIR.is_dir():
         return []
     names: List[str] = []
@@ -81,7 +64,7 @@ def list_project_names() -> List[str]:
         if not path.is_dir() or path.name.startswith("."):
             continue
         name = path.name.lower()
-        if name in placeholders or name in ("--help", "lo-0042"):
+        if name in NON_PRODUCT_FOLDERS:
             continue
         if (
             (path / "status.json").exists()
@@ -92,8 +75,27 @@ def list_project_names() -> List[str]:
     return sorted(set(names))
 
 
+def local_product_nouns() -> List[str]:
+    """Surface names each product lists in its own repo (never in HQ)."""
+    nouns: List[str] = []
+    for name in list_project_names():
+        path = PROJECTS_DIR / name / LOCAL_NOUNS_FILE
+        if not path.is_file():
+            continue
+        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            line = line.strip().lower()
+            if line and not line.startswith("#"):
+                nouns.append(line)
+    return nouns
+
+
+def ticket_prefixes() -> List[str]:
+    """Ticket ID prefixes of the real products (first four letters, upper case)."""
+    return sorted({n[:4].upper() for n in list_project_names() if len(n) >= 4})
+
+
 def product_nouns() -> List[str]:
-    nouns = list(STATIC_PRODUCT_NOUNS)
+    nouns = local_product_nouns()
     nouns.extend(list_project_names())
     # longest first for rewrite stripping
     return sorted(set(nouns), key=len, reverse=True)
@@ -129,7 +131,6 @@ _INCIDENT_MARKERS = re.compile(
     r"\b(screenshot|ticket\s*#|fb-\d+|n-\d{3}|sprint-\d+|[a-z]{3,5}-\d{4,})\b"
     r"|\bboard\s+[a-f0-9]{8,}(-[a-f0-9]+)+"
     r"|\bboard/[a-z0-9_-]{4,}\b"
-    r"|\b(awin|filament|ratgeber|command center|im-sucher|usemoody)\b"
     r"|\b(?:[a-z0-9-]+\.)+(?:com|app|io|dev|net|org)\b"
     r")"
 )
@@ -150,6 +151,10 @@ def find_incident_markers(text: str) -> List[str]:
         token = match.group(0).strip()
         if token and token.lower() not in {m.lower() for m in found}:
             found.append(token)
+    lower = blob.lower()
+    for noun in local_product_nouns():
+        if noun in lower and noun not in {m.lower() for m in found}:
+            found.append(noun)
     return found[:8]
 
 
@@ -172,10 +177,9 @@ def sanitize_observation(text: str) -> str:
         out,
     )
     out = re.sub(r"\b[A-Z]{2,5}-\d{3,}\b", "<ticket>", out)
+    names = set(list_project_names())
     for noun in product_nouns():
-        if " " in noun or noun in list_project_names():
-            out = re.sub(re.escape(noun), "<product>", out, flags=re.I)
-    out = re.sub(r"(?i)\b(awin|filament|ratgeber|command center)\b", "<surface>", out)
+        out = re.sub(re.escape(noun), "<product>" if noun in names else "<surface>", out, flags=re.I)
     return re.sub(r"\s{2,}", " ", out).strip()[:600]
 
 
@@ -279,49 +283,53 @@ def append_project_local_learning(
     return path
 
 
-def line_is_provenance(line: str) -> bool:
-    lower = line.lower()
-    if _SOURCE_LINE.match(line):
-        return True
-    if "`source:" in lower or "--source" in lower:
-        return True
-    # Playbook "Signal (LO-NNNN / <project>):" provenance headers
-    if re.search(r"\bsignal\s*\(lo-\d+", lower):
-        return True
-    if re.search(r"\bsource:\s*[a-z0-9_-]+", lower):
-        return True
-    # Process docs using example project placeholders in command samples
-    if "./studio " in lower and re.search(r"\b(nudge|demo|example)\b", lower):
-        return True
-    return False
+# A product folder name that is also an ordinary word, inside a fixed phrase that is not the product.
+ORDINARY_PHRASES: Tuple[str, ...] = ("behavioral nudge engine",)
 
 
-def find_product_nouns_in_hq_text(text: str, *, nouns: Optional[Sequence[str]] = None) -> List[Tuple[int, str, str]]:
-    """Return (line_no, noun, line) for non-provenance hits of *project folder* names only."""
-    # Infusion refuse: project folder names in HQ body (not static surface phrases —
-    # playbooks may say "Suggested copy" generically). Strict on project ids.
+def find_product_nouns_in_hq_text(
+    text: str,
+    *,
+    nouns: Optional[Sequence[str]] = None,
+    prefixes: Optional[Sequence[str]] = None,
+) -> List[Tuple[int, str, str]]:
+    """Return (line_no, noun, line) for every product folder name or product ticket ID.
+
+    HQ has no provenance exception: the name lives in the local LO, never in committed text.
+    """
     project_names = nouns if nouns is not None else list_project_names()
+    if prefixes is None:
+        prefixes = [n[:4].upper() for n in project_names if len(n) >= 4]
+    ticket_re = (
+        re.compile(rf"\b(?:{'|'.join(re.escape(p) for p in prefixes)})-\d{{3,}}\b") if prefixes else None
+    )
     hits: List[Tuple[int, str, str]] = []
     for i, line in enumerate((text or "").splitlines(), start=1):
-        if line_is_provenance(line):
-            continue
         lower = line.lower()
+        for phrase in ORDINARY_PHRASES:
+            lower = lower.replace(phrase, "")
+        found = ""
         for name in project_names:
-            # word-ish boundary
-            if re.search(rf"(?<![a-z0-9-]){re.escape(name)}(?![a-z0-9-])", lower):
-                hits.append((i, name, line.strip()[:120]))
+            if re.search(rf"(?<![a-z0-9]){re.escape(name)}(?![a-z0-9])", lower):
+                found = name
                 break
+        if not found and ticket_re:
+            match = ticket_re.search(line)
+            if match:
+                found = match.group(0)
+        if found:
+            hits.append((i, found, line.strip()[:120]))
     return hits
 
 
 def refuse_product_nouns_in_hq_body(text: str, *, nouns: Optional[Sequence[str]] = None) -> None:
-    """Raise if a project folder name appears outside provenance (infusion/learn writes)."""
+    """Raise if a product name or product ticket ID appears in text bound for HQ."""
     hits = find_product_nouns_in_hq_text(text, nouns=nouns)
     if hits:
         _line, noun, snippet = hits[0]
         raise ValueError(
-            f"HQ write aborted: product noun {noun!r} outside provenance ({snippet!r}). "
-            "Keep incidents in projects/<p>/docs/studio-learnings-local.md."
+            f"HQ write aborted: product reference {noun!r} ({snippet!r}). "
+            "Write <project> instead; keep incidents in projects/<p>/docs/studio-learnings-local.md."
         )
 
 
@@ -329,7 +337,7 @@ def scan_hq_for_project_nouns(
     *,
     roots: Optional[Sequence[str]] = None,
 ) -> List[Dict[str, object]]:
-    """Scan studio HQ markdown for bare project folder names outside provenance lines."""
+    """Scan studio HQ markdown for product folder names and product ticket IDs."""
     findings: List[Dict[str, object]] = []
     names = list_project_names()
     if not names:
@@ -338,9 +346,6 @@ def scan_hq_for_project_nouns(
     for pattern in globs:
         for path in QUINSY_STUDIO.glob(pattern):
             if not path.is_file():
-                continue
-            # CHANGELOG and inbox archive cite projects as provenance
-            if path.name == "CHANGELOG.md":
                 continue
             try:
                 rel_check = str(path.relative_to(QUINSY_STUDIO)).replace("\\", "/")
