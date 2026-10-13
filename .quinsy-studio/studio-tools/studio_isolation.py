@@ -323,6 +323,31 @@ def install_studio_hq_git_hook(studio_root: Optional[Path] = None) -> Optional[P
     return hook
 
 
+SESSION_ISOLATION_RULE = """---
+description: Quinsy Studio — session-scoped product isolation (Cursor runtime)
+alwaysApply: true
+---
+
+# Project isolation (session)
+
+HQ `runtime` is `cursor`. Each chat binds its own product with `./studio bind <project>`.
+This rule does not name a single active product. Hooks deny sibling reads and sibling git.
+
+- Bind once per chat. Do not `./studio focus` a sibling from this chat.
+- Product git runs inside `projects/<bound>/` (`git -C projects/<bound>`).
+- Studio HQ (`.quinsy-studio/`) is allowed for LO/process/tooling.
+- **Secrets:** do not Read `.env` / `.env.local` / `*.pem` values. Names live in `env.schema.json`.
+- Claude Code and the CLI do not use this rule. They keep workspace focus isolation when `runtime` is not `cursor`.
+"""
+
+
+def write_session_isolation_surface() -> None:
+    """Cursor multi-project: stop hiding siblings in .cursorignore; hooks enforce the chat."""
+    write_cursorignore([])
+    ISOLATION_RULE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    ISOLATION_RULE_PATH.write_text(SESSION_ISOLATION_RULE, encoding="utf-8")
+
+
 def apply_project_isolation(project: str) -> Tuple[List[str], Path, Path]:
     """Hide sibling projects from the IDE agent and stamp the focus rule."""
     siblings = sibling_projects(project)

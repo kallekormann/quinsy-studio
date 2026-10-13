@@ -6,6 +6,7 @@ Read this page once. The other pages are the words you type, and the command lis
 
 | You want | Read |
 |----------|------|
+| The manual (setup, loops, commands, the path) | [docs/README.md](../docs/README.md) |
 | This story | This file |
 | The words you type | [GETTING_STARTED.md](../GETTING_STARTED.md) |
 | Every command, skill, and folder | [Operations manual](../README.md) |

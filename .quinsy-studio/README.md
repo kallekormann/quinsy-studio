@@ -787,10 +787,11 @@ See [library_registry.md](studio-library/library_registry.md).
 
 ## Further Documentation
 
+- `docs/README.md` — the user manual: setup, the three loops, several products, the path, every command in plain language
 - `process/studio-overview.md` — the story: direction → case → yes writes the PRD → gates → phase train → production
 - `GETTING_STARTED.md` — Execute loop, **ideation desk**, **learnings / harvest**, **studio load caps (S–XL)**, **secrets / Docker / leases**, **motion**, prompts, session ritual
 - `process/hq-isolation-sprints.md` — HQ isolation epic (`LO-0314`–`LO-0326`)
-- `process/hq-session-binding.md` — open epic: one chat per product inside one window (`LO-0419`–`LO-0424`). Not built yet; focus isolation still applies
+- `process/hq-session-binding.md` — Cursor-only session bind (`runtime: cursor`). Other runtimes keep workspace focus isolation
 - `process/lifecycle.md` — 7-phase lifecycle
 - `process/agent-context.md` — Session start + execute until HITL
 - `process/gates.md` — Gate definitions

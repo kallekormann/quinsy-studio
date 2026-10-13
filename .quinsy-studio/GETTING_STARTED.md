@@ -1,6 +1,6 @@
 # Quinsy Studio — Getting Started
 
-This is the script. Each section is a situation, the words you type, and what you get back. The story of the whole path is [How Quinsy Studio works](process/studio-overview.md). Every command, in one list, is the [operations manual](README.md). The agent contract is [AGENTS.md](../AGENTS.md).
+This is the script. Each section is a situation, the words you type, and what you get back. The book, if you want the whole map in one place, is the [manual](docs/README.md). The story of the whole path is [How Quinsy Studio works](process/studio-overview.md). Every command flag is in the [operations manual](README.md). The agent contract is [AGENTS.md](../AGENTS.md).
 
 You talk. The agent runs `./studio`. You do not type a long chain by hand unless you want to.
 
@@ -49,7 +49,7 @@ Pick the row that matches what you have:
 
 Open **quinsy-studio** at the repo root (not `projects/<name>/` alone). Cursor rules: [`.cursor/rules/quinsy-studio.mdc`](../.cursor/rules/quinsy-studio.mdc). Claude Code: [`CLAUDE.md`](../CLAUDE.md). Gemini CLI: [`GEMINI.md`](../GEMINI.md).
 
-**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run and rewrite a **local** `.cursorignore` + generated isolation rule (Read/Grep). They are not a sandbox. **One chat (or IDE window) per product** — five concurrent products need five chats, not one ignore list. Several chats in **one** window still share that ignore list; same-window binding is an open HQ epic ([hq-session-binding.md](process/hq-session-binding.md), `LO-0419`–`LO-0424`), not current behavior. `parallel.max_projects` (default 5) file-leases executes; a sixth is queued. `./studio focus` will not clobber another live lease unless `--force`. Shell can still see other `projects/` trees. Guard returns `CROSS_PROJECT` if the request names a sibling. Product git runs **inside** `projects/<name>/`. Studio HQ git never stages `projects/`. HQ train stays in a **separate** session.
+**Several products in one workspace:** `./studio focus <project>` / `execute <project>` assign which product the loop should run and rewrite a **local** `.cursorignore` + generated isolation rule (Read/Grep). They are not a sandbox. **One chat (or IDE window) per product** — five concurrent products need five chats, not one ignore list. When HQ `runtime` is `cursor`, each chat in that window binds its own product (`./studio bind <project> --session <conversation_id>`, [hq-session-binding.md](process/hq-session-binding.md)). Hooks deny the other products. Any other runtime keeps this shared ignore list. `parallel.max_projects` (default 5) file-leases executes; a sixth is queued. `./studio focus` will not clobber another live lease unless `--force`. Shell can still see other `projects/` trees. Guard returns `CROSS_PROJECT` if the request names a sibling. Product git runs **inside** `projects/<name>/`. Studio HQ git never stages `projects/`. HQ train stays in a **separate** session.
 
 **Docker is required** for gate, migrate, and product boot (`./studio env <p> up|migrate|dev`). Missing Docker stops those commands with install instructions — there is no host fallback that cats `.env` into the chat.
 

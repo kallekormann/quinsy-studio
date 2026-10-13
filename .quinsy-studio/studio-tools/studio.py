@@ -39,6 +39,7 @@ Commands:
   ./studio reality-check <project> [--check]      Dev-build journey check before cadence review
   ./studio health <project>                      Sprint state-graph check
   ./studio focus <project>                       Set active project + isolate siblings
+  ./studio bind <project> --session <id>         Cursor only: bind this chat to one product
   ./studio isolate <project>                     Hide sibling projects/ from the agent
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
@@ -833,11 +834,12 @@ class StudioOrchestrator:
         print("  Do NEXT, then execute again, until ACTION is HITL. Do not ask to continue.")
         return True
 
-    def cmd_execute(self, project: str, as_json: bool = False, release: bool = False):
+    def cmd_execute(self, project: str, as_json: bool = False, release: bool = False, session: str = ""):
         """Emit exactly one next action. Agent must loop until HITL."""
         if not (PROJECTS_DIR / project).exists():
             print(f"\n  ❌ Project '{project}' not found.")
             return False
+        from studio_agent_sessions import bound_project, cursor_multi_project_enabled
         from studio_execute_leases import acquire_execute_lease, release_execute_lease
         from studio_isolation import apply_project_isolation
 
@@ -847,13 +849,24 @@ class StudioOrchestrator:
             print("  Next queued project may acquire a lease.")
             return True
 
-        granted, lease_msg = acquire_execute_lease(project)
+        cursor = cursor_multi_project_enabled()
+        sid = (session or "").strip() if cursor else ""
+        bound = bound_project(sid) if sid else ""
+        if bound and bound != project:
+            print_header(f"EXECUTE REFUSED: {project}")
+            print(f"\n  This chat is bound to {bound}. Run ./studio execute {bound}.")
+            print("  A sibling product needs its own chat and ./studio bind.")
+            return False
+
+        granted, lease_msg = acquire_execute_lease(project, session_id=sid)
         if not granted:
             print_header(f"EXECUTE QUEUED: {project}")
             print(f"\n  {lease_msg}")
             return False
 
-        apply_project_isolation(project)
+        # A bound Cursor chat must not rewrite the workspace sibling list.
+        if not bound:
+            apply_project_isolation(project)
         from payload_foundation import scaffold_needed, scaffold_payload_app
 
         if scaffold_needed(project):
@@ -870,7 +883,8 @@ class StudioOrchestrator:
             print_header(f"EXECUTE: {project}")
             print(format_execute_step(project, step))
             print(f"  LEASE:   {lease_msg}")
-        set_active_project(project, status)
+        if not bound:
+            set_active_project(project, status)
         if step.kind == "HITL":
             release_execute_lease(project)
             if not as_json:
@@ -1128,13 +1142,49 @@ class StudioOrchestrator:
         print(f"  {result['op']} {result['id']} → {result['path']}")
         return True
 
-    def cmd_focus(self, project: str, force: bool = False):
+    def cmd_bind(self, project: str, session: str = "", show: bool = False, clear: bool = False) -> bool:
+        """Bind this Cursor chat to one product. Refuses when HQ runtime is not cursor."""
+        from studio_agent_sessions import bind_session, bound_project, clear_session
+        from studio_isolation import write_session_isolation_surface
+
+        if show:
+            bound = bound_project(session) if session else ""
+            print(bound or "(unbound)")
+            return True
+        if clear:
+            if not session:
+                print("  bind --clear needs --session <id>")
+                return False
+            print("  cleared" if clear_session(session) else "  no binding")
+            return True
+        ok, message = bind_session(project, session)
+        if not ok:
+            print(f"  {message}")
+            return False
+        write_session_isolation_surface()
+        print(f"  {message}")
+        print("  Sibling trees stay visible. Hooks deny the other chats' projects.")
+        return True
+
+    def cmd_focus(self, project: str, force: bool = False, session: str = ""):
         """Set active project context for IDE agent (scope banner)."""
         project_dir = PROJECTS_DIR / project
         if not project_dir.exists():
             print(f"\n  ❌ Project '{project}' not found.")
             return False
+        from studio_agent_sessions import bound_project, cursor_multi_project_enabled
         from studio_execute_leases import focus_isolation_blocked
+
+        sid = (session or "").strip() if cursor_multi_project_enabled() else ""
+        bound = bound_project(sid) if sid else ""
+        if bound and bound != project:
+            print_header(f"FOCUS REFUSED: {project}")
+            print(f"\n  This chat is bound to {bound}. Do not focus {project} from this chat.")
+            return False
+        if bound == project:
+            print_header(f"FOCUS: {project}")
+            print("\n  Session already bound. Isolation stays per chat; .cursorignore was not rewritten.")
+            return True
 
         blocked = focus_isolation_blocked(project, force=force)
         if blocked:
@@ -1180,8 +1230,17 @@ class StudioOrchestrator:
         print("  Git: only `git -C projects/{p} …` — never add a sibling into this repo.".format(p=project))
         return True
 
-    def cmd_guard(self, project: str, request: str):
+    def cmd_guard(self, project: str, request: str, session: str = ""):
         """Check if a user request is in project/sprint scope."""
+        from studio_agent_sessions import bound_project, cursor_multi_project_enabled
+
+        sid = (session or "").strip() if cursor_multi_project_enabled() else ""
+        bound = bound_project(sid) if sid else ""
+        if bound and bound != project:
+            print_header(f"GUARD: {project}")
+            print("\n  🚧 SESSION_BOUND")
+            print(f"  This chat is bound to {bound}. Stay there. A sibling needs its own chat and ./studio bind.")
+            return False
         status = load_status(project)
         verdict, message = guard_request(project, request, status)
         icons = {
@@ -4419,6 +4478,7 @@ Commands:
   ./studio reality-check <project> [--check]      Dev-build journey check before cadence review
   ./studio health <project>                      Sprint state-graph check
   ./studio focus <project>                       Set active project + isolate siblings
+  ./studio bind <project> --session <id>         Cursor only: bind this chat to one product
   ./studio isolate <project>                     Hide sibling projects/ from the agent
   ./studio guard <project> "request text"        Check if request is in scope
   ./studio verify-worlds                         Studio vs project git separation
@@ -4532,6 +4592,21 @@ def cli_wants_help(command: str, args: list) -> bool:
     return bool(args) and args[0] in HELP_FLAGS
 
 
+def _pop_flag(args: list, flag: str) -> tuple:
+    """Return (value, args_without_flag). Missing flag yields ('', args)."""
+    out = []
+    value = ""
+    i = 0
+    while i < len(args):
+        if args[i] == flag and i + 1 < len(args):
+            value = args[i + 1]
+            i += 2
+            continue
+        out.append(args[i])
+        i += 1
+    return value, out
+
+
 def first_project_arg(args: list) -> str:
     """First positional that can be a project name; empty if only flags."""
     from studio_status import is_valid_project_slug
@@ -4599,11 +4674,12 @@ def main():
     elif command == "execute" and len(args) >= 1:
         as_json = "--json" in args
         release = "--release" in args
-        positional = [a for a in args if not a.startswith("--")]
+        session, rest = _pop_flag(args, "--session")
+        positional = [a for a in rest if not a.startswith("--")]
         if not positional:
-            print("  Usage: ./studio execute <project> [--json] [--release]")
+            print("  Usage: ./studio execute <project> [--json] [--release] [--session <id>]")
             sys.exit(2)
-        ok = orchestrator.cmd_execute(positional[0], as_json=as_json, release=release)
+        ok = orchestrator.cmd_execute(positional[0], as_json=as_json, release=release, session=session)
         if ok is False:
             sys.exit(2)
 
@@ -4741,13 +4817,27 @@ def main():
     elif command == "health" and len(args) >= 1:
         orchestrator.cmd_health(args[0])
 
+    elif command == "bind":
+        show = "--show" in args
+        clear = "--clear" in args
+        session, rest = _pop_flag(args, "--session")
+        positional = [a for a in rest if not a.startswith("--")]
+        project = positional[0] if positional else ""
+        if not project and not show and not clear:
+            print("  Usage: ./studio bind <project> --session <id> | --show --session <id> | --clear --session <id>")
+            sys.exit(2)
+        ok = orchestrator.cmd_bind(project, session=session, show=show, clear=clear)
+        if ok is False:
+            sys.exit(2)
+
     elif command == "focus" and len(args) >= 1:
         force = "--force" in args
-        positional = [a for a in args if not a.startswith("--")]
+        session, rest = _pop_flag(args, "--session")
+        positional = [a for a in rest if not a.startswith("--")]
         if not positional:
-            print("  Usage: ./studio focus <project> [--force]")
+            print("  Usage: ./studio focus <project> [--force] [--session <id>]")
             sys.exit(2)
-        ok = orchestrator.cmd_focus(positional[0], force=force)
+        ok = orchestrator.cmd_focus(positional[0], force=force, session=session)
         if ok is False:
             sys.exit(2)
 
@@ -4755,7 +4845,11 @@ def main():
         orchestrator.cmd_isolate(args[0])
 
     elif command == "guard" and len(args) >= 2:
-        orchestrator.cmd_guard(args[0], " ".join(args[1:]))
+        session, rest = _pop_flag(args, "--session")
+        if len(rest) < 2:
+            print("  Usage: ./studio guard <project> \"<request>\" [--session <id>]")
+            sys.exit(2)
+        orchestrator.cmd_guard(rest[0], " ".join(rest[1:]), session=session)
 
     elif command == "ideate":
         from studio_ideate import dispatch as ideate_dispatch

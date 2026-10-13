@@ -2,7 +2,7 @@
 
 You name a direction. The studio researches it, writes the product down, and builds it. You stop at named gates. Between those gates the agent keeps going.
 
-The story, in order, is [How Quinsy Studio works](.quinsy-studio/process/studio-overview.md). The words you type are in [Getting Started](.quinsy-studio/GETTING_STARTED.md). Every command is in the [operations manual](.quinsy-studio/README.md). The agent contract is [AGENTS.md](AGENTS.md).
+The book is the [manual](.quinsy-studio/docs/README.md): setup, the three loops, several products in one window, the path from a direction to a lesson, and what each command does. The story, in order, is [How Quinsy Studio works](.quinsy-studio/process/studio-overview.md). The words you type are in [Getting Started](.quinsy-studio/GETTING_STARTED.md). Every command flag is in the [operations manual](.quinsy-studio/README.md). The agent contract is [AGENTS.md](AGENTS.md).
 
 ## What is in this repo
 
@@ -56,14 +56,14 @@ The walk-through is in [the story](.quinsy-studio/process/studio-overview.md). T
 4. **Execute until it stops.** `./studio execute` is the driver. `./studio resume` is only a checklist. The agent does not wait for "looks good" on a ticket.
 5. **Done means proven.** A receipt with PASS / FAIL / NOT TESTED lines and real paths, a green gate 5 (including security and quality checks), a QA PASS from a reviewer that has not seen the chat, and on UI tickets a screen that matches the signed mock. Three failed attempts move a ticket to `blocked`; the others continue. Before a cadence review a fresh agent walks the dev build (`./studio reality-check`).
 6. **Every ticket is staffed.** An owner skill plus companions from other teams (security, privacy, accessibility, tests) with reasons. `./studio groom` refuses gaps.
-7. **Mocks are the real app.** Design mocks are routes in the product app with screenshots of every state. Standalone HTML is refused.
+7. **Mocks are a prototype you can click.** A design mock is a route in the product app, with the real components, working handlers, and the motion the spec names. Screenshots are the record. You review the running route.
 8. **You sign packets, not every ticket.** Design phase, architecture phase, then a cadence review every few implementation phases. Hygiene sits outside that train.
 9. **Milestones** after gate 2b. Finish a milestone review before the next version's tickets.
 10. **Amendments** are a change of direction. Sprint feedback is a small note. They are different commands.
 11. **Placement before layout.** A UI spec is a file on disk, with every state, using the project's tokens. Motion is on unless the spec says `motion: off`.
 12. **A lesson is infused while the product keeps building.** The catalog, the playbook, or the skill is what gets committed. The ticket stays local.
 13. **Two git repos.** Product commits live in `projects/<name>/`. Studio commits never include `projects/`, `intake/`, or `ideation/`.
-14. **One chat per product.** `./studio focus` hides the other products from the agent. It is an assignment, not a sandbox. The default is five products at once.
+14. **One chat per product.** In Cursor, bind that chat (`./studio bind <project>` from the agent — you do not look up an id). Elsewhere, `./studio focus` hides the other products. Five products can execute at once. See [Several products at once](.quinsy-studio/docs/03-several-products.md).
 15. **Load caps** are in `studio.settings.yaml`. On `INFORM cost-cap`, raise the named key. Do not paste more files in.
 16. **Docker is required** to boot, migrate, and pass a gate. Env names live in `env.schema.json`. Values go in with `./studio env … --approve`. Do not read `.env` values into chat.
 
@@ -71,6 +71,7 @@ The walk-through is in [the story](.quinsy-studio/process/studio-overview.md). T
 
 | Topic | Document |
 |-------|----------|
+| The manual | [docs/README.md](.quinsy-studio/docs/README.md) |
 | The path | [process/studio-overview.md](.quinsy-studio/process/studio-overview.md) |
 | Words you type | [GETTING_STARTED.md](.quinsy-studio/GETTING_STARTED.md) |
 | Ideation desk | [Getting Started § ideation](.quinsy-studio/GETTING_STARTED.md#ideation-desk) · [ideation-desk.md](.quinsy-studio/teams/09-studio-operations-evolution/skills/ideation-desk.md) |

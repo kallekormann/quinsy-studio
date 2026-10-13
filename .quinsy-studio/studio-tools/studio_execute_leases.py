@@ -95,21 +95,33 @@ def acquire_execute_lease(
     max_projects: Optional[int] = None,
     now: Optional[float] = None,
     stale_seconds: int = STALE_SECONDS,
+    session_id: str = "",
 ) -> Tuple[bool, str]:
-    """Return (granted, message). Same project refreshes. Sixth distinct project is queued."""
+    """Return (granted, message). Same project refreshes for the same session. Sixth distinct project is queued.
+
+    A different session_id cannot take a project another session already holds (one driver per product).
+    Empty session_id is the unbound CLI / non-Cursor driver.
+    """
     from studio_hq_lock import hq_write_lock
 
     cap = max_projects if max_projects is not None else max_concurrent_projects()
     root = lease_dir or LEASE_DIR
     stamp = time.time() if now is None else now
+    sid = (session_id or "").strip()
     with hq_write_lock("execute-leases", cache_dir=root.parent if root else None):
         root.mkdir(parents=True, exist_ok=True)
         active = list_active_leases(lease_dir=root, now=stamp, stale_seconds=stale_seconds)
         mine = lease_path(project, lease_dir=root)
         if project in active:
+            held = str((_read_lease(mine) or {}).get("session_id") or "")
+            if held != sid:
+                return False, (
+                    f"REFUSED: {project} already has an execute driver "
+                    f"(session {held or 'unbound'}). One session per product."
+                )
             mine.write_text(
                 json.dumps(
-                    {"project": project, "acquired_at": stamp, "pid": os.getpid()},
+                    {"project": project, "acquired_at": stamp, "pid": os.getpid(), "session_id": sid},
                     indent=2,
                 )
                 + "\n",
@@ -126,7 +138,7 @@ def acquire_execute_lease(
             )
         mine.write_text(
             json.dumps(
-                {"project": project, "acquired_at": stamp, "pid": os.getpid()},
+                {"project": project, "acquired_at": stamp, "pid": os.getpid(), "session_id": sid},
                 indent=2,
             )
             + "\n",

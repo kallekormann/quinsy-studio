@@ -506,11 +506,33 @@ def verify_worlds() -> Tuple[bool, List[str]]:
     active = load_active_project()
     name = (active or {}).get("project") if isinstance(active, dict) else None
     if name and (PROJECTS_DIR / name).is_dir():
-        apply_project_isolation(name)
+        from studio_agent_sessions import cursor_multi_project_enabled
+
+        # Cursor session binding must not have verify-worlds hide every sibling again.
+        if not cursor_multi_project_enabled():
+            apply_project_isolation(name)
         issues.extend(project_git_isolation_issues(name))
 
     issues.extend(loop_separation_issues())
+    issues.extend(session_hook_issues())
     return len(issues) == 0, issues
+
+
+def session_hook_issues(root: Optional[Path] = None) -> List[str]:
+    """Cursor session hooks are committed and no-op unless HQ runtime is cursor (LO-0422, LO-0424)."""
+    root = root or STUDIO_ROOT
+    hooks = root / ".cursor" / "hooks.json"
+    script = root / ".cursor" / "hooks" / "session_bind.py"
+    if not hooks.is_file() or not script.is_file():
+        return ["Cursor session-binding hooks missing (.cursor/hooks.json and .cursor/hooks/session_bind.py)"]
+    text = hooks.read_text(encoding="utf-8", errors="ignore")
+    missing = [name for name in ("sessionStart", "beforeReadFile", "beforeShellExecution") if name not in text]
+    if missing:
+        return ["hooks.json missing " + ", ".join(missing)]
+    body = script.read_text(encoding="utf-8", errors="ignore")
+    if "cursor" not in body or "hook_response" not in body:
+        return ["session hook does not gate on the Cursor runtime"]
+    return []
 
 
 def loop_separation_issues(root: Optional[Path] = None) -> List[str]:

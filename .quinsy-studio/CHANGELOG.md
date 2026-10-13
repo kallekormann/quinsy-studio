@@ -1,3 +1,18 @@
+## 2026-10-13 — User manual
+
+`.quinsy-studio/docs/` is the book: setup, the three loops, how to bind a Cursor chat without looking up an id, the path from a direction to a studio lesson, what each command does, and what to do when the agent stops. The repo README, Getting Started, the operations manual, and the studio overview point at it.
+
+## 2026-10-13 — Cursor session bind for one window, many products
+
+HQ `runtime: cursor` is the switch. Each Cursor chat binds one product. Claude Code and the CLI keep workspace focus isolation.
+
+### Added
+
+- **`./studio bind <project> --session <id>`** (`studio_agent_sessions.py`). The id is Cursor's `conversation_id` (`session_id` on `sessionStart` is the same value). `--show` and `--clear` are per session. A non-cursor HQ runtime refuses and writes nothing.
+- **Leases** record `session_id`. A second session cannot execute a product the first session already holds. Two sessions can execute two products. A bound Cursor `execute` / `focus` does not rewrite the sibling block in `.cursorignore`.
+- **Hooks** `.cursor/hooks.json` and `.cursor/hooks/session_bind.py`: deny sibling reads and sibling `git` for a bound chat, deny `.env` / `.pem`, inject `--session` onto `./studio bind|execute|guard|focus`. When HQ runtime is not `cursor`, every hook allows the call. `sessionStart` tells an unbound chat to bind and does not guess a project.
+- **Guard** returns `SESSION_BOUND` when the named project is not this chat's binding. `verify-worlds` checks the hook files exist and does not re-hide siblings while runtime is `cursor`.
+
 ## 2026-10-13 — Opened HQ epic: session-scoped binding (not built yet)
 
 Same-window multi-product work still shares one `.cursorignore` and one active project. The fix is specified, not implemented.

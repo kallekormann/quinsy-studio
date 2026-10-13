@@ -6,7 +6,7 @@
 
 **HQ isolation epic:** `LO-0314`–`LO-0326` shipped — [hq-isolation-sprints.md](hq-isolation-sprints.md). Resume product `./studio execute` in a **product** chat. Do not Read env **values**.
 
-**Same-window multi-project (not built):** [hq-session-binding.md](hq-session-binding.md) (`LO-0419`–`LO-0424`). Until it is done, do not run two product executes in one window — the second `focus` / `execute` rewrites isolation for everyone.
+**Same-window multi-project (Cursor only):** [hq-session-binding.md](hq-session-binding.md). When HQ `runtime` is `cursor`, each chat runs `./studio bind <project> --session <conversation_id>` once. Hooks deny sibling reads and sibling git. A bound `execute` does not rewrite `.cursorignore`. Claude Code and the CLI (`runtime` other than `cursor`) keep workspace focus isolation.
 
 ## Every turn (before session start)
 

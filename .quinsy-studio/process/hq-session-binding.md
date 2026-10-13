@@ -38,6 +38,14 @@ Claude Code reads `CLAUDE.md` and does not run `.cursor/hooks`. A terminal CLI d
 
 Human stops do not change. This epic does not pause product execute. Implement it in an **HQ session** (`STUDIO_META`).
 
+## Session id
+
+Cursor documents a stable per-chat id. `conversation_id` is on every tool hook (`beforeReadFile`, `beforeShellExecution`, `preToolUse`) and stays the same across turns. `sessionStart` sends `session_id` and documents it as the same value. `generation_id` changes every user message, so it is not the bind key.
+
+`multi_project_mode: on` when HQ `runtime` is `cursor`. The hook script and `./studio bind` no-op or refuse for any other runtime. Hooks stay in git so Cursor can load them; they allow the call when runtime is not `cursor`.
+
+Field path: `conversation_id` (fallback `session_id`).
+
 ## 3. Waves
 
 | Wave | LO | Scope |
