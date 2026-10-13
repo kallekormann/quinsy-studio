@@ -14,17 +14,10 @@ _ALL_STATES = (
     "rest", "hover", "pressed", "disabled", "focus",
     "closed", "open", "empty", "loading", "error",
 )
-
-
-def _write_real_ui_mock(root, ticket_id, page_body=None, states=_ALL_STATES, shots=True):
-    """A Payload-style app with mock routes that render the real shell and components."""
-    from design_ticket_helpers import ensure_design_mocks_layout
-
-    app = root / "apps" / "web"
-    (app / "src" / "app" / "(app)").mkdir(parents=True, exist_ok=True)
-    (app / "package.json").write_text('{"name": "web"}', encoding="utf-8")
-    ensure_design_mocks_layout(root)
-    body = page_body or (
+def _legal_mock_page(ticket_id, motion=True, scenarios=None):
+    listed = "[" + ", ".join(repr(s) for s in (scenarios or _ALL_STATES)) + "]"
+    motion_cls = '\n        className="transition-opacity duration-150"' if motion else ""
+    return (
         "'use client'\n"
         "import { useState } from 'react'\n"
         "import AppLayout from '@/app/(app)/layout'\n"
@@ -35,19 +28,27 @@ def _write_real_ui_mock(root, ticket_id, page_body=None, states=_ALL_STATES, sho
         "  const [open, setOpen] = useState(false)\n"
         "  return (\n"
         "    <AppLayout>\n"
-        "      <FilterMenu data-state=\"{state}\" open={open} onClick={() => setOpen(!open)}\n"
-        "        className=\"transition-opacity duration-150\" />\n"
-        "      <MockScenarioPanel scenarios={['rest', 'empty', 'loading', 'error']}\n"
+        f"      <FilterMenu open={{open}} onClick={{() => setOpen(!open)}}{motion_cls} />\n"
+        f"      <MockScenarioPanel ticketId={ticket_id!r} scenarios={{{listed}}}\n"
         "        value={scenario} onValueChange={setScenario} />\n"
         "    </AppLayout>\n"
         "  )\n"
         "}\n"
     )
+
+
+def _write_real_ui_mock(root, ticket_id, page_body=None, states=_ALL_STATES, shots=True):
+    """A Payload-style app with one ticket-root mock page plus mock-scenario-panel."""
+    from design_ticket_helpers import ensure_design_mocks_layout
+
+    app = root / "apps" / "web"
+    (app / "src" / "app" / "(app)").mkdir(parents=True, exist_ok=True)
+    (app / "package.json").write_text('{"name": "web"}', encoding="utf-8")
+    ensure_design_mocks_layout(root)
+    body = page_body or _legal_mock_page(ticket_id, scenarios=states)
     mock_root = app / "src" / "app" / "(design-mocks)" / "design-mocks" / ticket_id
-    for state in states:
-        page = mock_root / state / "page.tsx"
-        page.parent.mkdir(parents=True, exist_ok=True)
-        page.write_text(body.replace("{state}", state), encoding="utf-8")
+    mock_root.mkdir(parents=True, exist_ok=True)
+    (mock_root / "page.tsx").write_text(body, encoding="utf-8")
     if shots:
         shot_dir = root / "docs" / "design-specs" / "mocks" / ticket_id
         shot_dir.mkdir(parents=True, exist_ok=True)
@@ -236,7 +237,7 @@ Mock route: http://localhost:3000/design-mocks/DEMO-0001/
 
 ## 7b. Catalog applied
 
-- LO-0172 — scrollbar gutter reserved on the list well (§4)
+- PB-20261013-001 — scrollbar gutter reserved on the list well (§4)
 """
 
 
@@ -409,7 +410,7 @@ def test_interactive_mock_without_scenario_states_is_refused(tmp_path):
         ),
     )
     err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
-    assert err and "scenario states" in err
+    assert err and "MockScenarioPanel" in err
 
 
 def test_interactive_mock_without_wired_motion_is_refused(tmp_path):
@@ -417,29 +418,38 @@ def test_interactive_mock_without_wired_motion_is_refused(tmp_path):
     _write_real_ui_mock(
         tmp_path,
         "DEMO-0001",
-        page_body=(
-            "'use client'\n"
-            "import { useState } from 'react'\n"
-            "import AppLayout from '@/app/(app)/layout'\n"
-            "import { FilterMenu } from '@/components/filter-menu'\n"
-            "import { MockScenarioPanel, useMockScenario } from '@/components/mock-scenario-panel'\n\n"
-            "export default function Mock() {\n"
-            "  const [scenario, setScenario] = useMockScenario()\n"
-            "  const [open, setOpen] = useState(false)\n"
-            "  return (\n"
-            "    <AppLayout>\n"
-            "      <FilterMenu open={open} onClick={() => setOpen(!open)} />\n"
-            "      <MockScenarioPanel scenarios={['rest', 'empty']} value={scenario} onValueChange={setScenario} />\n"
-            "    </AppLayout>\n"
-            "  )\n"
-            "}\n"
-        ),
+        page_body=_legal_mock_page("DEMO-0001", motion=False),
     )
     err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
     assert err and "wires none" in err
 
 
 def test_motion_off_mock_passes_without_transitions(tmp_path):
+    from design_ticket_helpers import design_mocks_interactive_error
+
+    _spec_in(tmp_path)
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=_legal_mock_page("DEMO-0001", motion=False),
+    )
+    err = design_mocks_interactive_error("motion: off", tmp_path, "DEMO-0001")
+    assert err is None
+
+
+def test_per_state_sibling_folders_are_refused(tmp_path):
+    from design_ticket_helpers import design_mocks_interactive_error
+
+    _spec_in(tmp_path)
+    mock_root = _write_real_ui_mock(tmp_path, "DEMO-0001")
+    nested = mock_root / "empty" / "page.tsx"
+    nested.parent.mkdir(parents=True, exist_ok=True)
+    nested.write_text(_legal_mock_page("DEMO-0001"), encoding="utf-8")
+    err = design_mocks_interactive_error(_filled_spec(), tmp_path, "DEMO-0001")
+    assert err and "per-state folders" in err
+
+
+def test_data_state_without_panel_is_refused(tmp_path):
     from design_ticket_helpers import design_mocks_interactive_error
 
     _spec_in(tmp_path)
@@ -457,8 +467,40 @@ def test_motion_off_mock_passes_without_transitions(tmp_path):
             "}\n"
         ),
     )
-    err = design_mocks_interactive_error("motion: off", tmp_path, "DEMO-0001")
+    err = design_mocks_interactive_error(_filled_spec(), tmp_path, "DEMO-0001")
+    assert err and "MockScenarioPanel" in err
+
+
+def test_one_page_plus_panel_covering_shots_passes(tmp_path):
+    spec = _spec_in(tmp_path)
+    _write_real_ui_mock(tmp_path, "DEMO-0001")
+    err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")
     assert err is None
+
+
+def test_panel_missing_a_shot_state_is_refused(tmp_path):
+    from design_ticket_helpers import design_mocks_interactive_error
+
+    _spec_in(tmp_path)
+    missing = [s for s in _ALL_STATES if s != "error"]
+    _write_real_ui_mock(
+        tmp_path,
+        "DEMO-0001",
+        page_body=_legal_mock_page("DEMO-0001", scenarios=missing),
+    )
+    err = design_mocks_interactive_error(_filled_spec(), tmp_path, "DEMO-0001")
+    assert err and "error" in err and "omits scenario" in err
+
+
+def test_mock_review_block_uses_query_state(tmp_path):
+    from design_ticket_helpers import mock_review_block
+
+    _write_real_ui_mock(tmp_path, "DEMO-0001")
+    block = mock_review_block(tmp_path, "DEMO-0001", _filled_spec())
+    assert "?state=rest" in block
+    assert "Use the mock-states panel" in block
+    assert "design-mocks/DEMO-0001/rest" not in block
+    assert "design-mocks/DEMO-0001/empty" not in block
 
 
 def test_interaction_walkthrough_checker():
@@ -493,7 +535,7 @@ def test_stale_screenshots_are_refused(tmp_path):
 
     spec = _spec_in(tmp_path)
     mock_root = _write_real_ui_mock(tmp_path, "DEMO-0001")
-    old = os.path.getmtime(mock_root / "rest" / "page.tsx") - 60
+    old = os.path.getmtime(mock_root / "page.tsx") - 60
     for shot in (tmp_path / "docs" / "design-specs" / "mocks" / "DEMO-0001").iterdir():
         os.utime(shot, (old, old))
     err = design_spec_completeness_error(spec, tmp_path, "DEMO-0001", "ui-composition")

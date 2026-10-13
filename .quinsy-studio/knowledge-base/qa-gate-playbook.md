@@ -33,6 +33,7 @@ See [`process/gates.md`](../process/gates.md) and [`process/human-in-the-loop.md
 
 ## Deltas
 
+- **PB-20261013-001** helpful=0 harmful=0 :: assumed: A source test that the copy or class name exists is enough for an acceptance criterion. signed: An AC on interactive UI passes only when a test asserts the handler or module the user actually hits. next: Independent QA must pass an AC only when a test asserts the handler the user triggers, never a copy string alone.
 - **PB-20260916-003** helpful=0 harmful=0 :: When host-scoped live chrome never leaves loading, default-flow proof is HTTP/API tests (curl, PHPUnit, Vitest) plus a recorded hang — not a click-through screenshot.
 - **PB-20260916-002** helpful=0 harmful=0 :: Default-flow proof for a host-scoped operator page is not a screenshot of Select a host. If host scope never left all, cite API or tests and record the hang — same class as a hung loading list.
 - **PB-20260916-001** helpful=0 harmful=0 :: Gold-path coverage includes the operator-authorized approve or publish path when the autonomous exploration cap is already exhausted. A cap that pauses unattended jobs is not the only test of the operator go.

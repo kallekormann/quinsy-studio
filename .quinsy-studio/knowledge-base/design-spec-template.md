@@ -52,7 +52,7 @@ Link to `docs/design-specs/<TICKET-ID>-workflow.md` or embed §2b below for shor
 >
 > - App: `apps/web` (Payload), else a Next app at the project root (adopted projects), else the gate-2b kit in `design/prototype` before any app exists.
 > - Route: `app/(design-mocks)/design-mocks/<TICKET>/page.tsx`. `(design-mocks)/layout.tsx` calls `notFound()` in production, so mocks never ship.
-> - **The mock is an interactive prototype, not a set of static frames.** The page is a client component with wired handlers: hover, open/close, selection, and flow steps work when the human uses it. Scenario states (empty / loading / error, open / closed) are reachable in the running route — pull `mock-scenario-panel` from the studio library and drive them with `?state=`. Transitions named in §2d are wired in the mock exactly as the product will move. Per-state static sibling pages alone do not pass.
+> - **The mock is an interactive prototype, not a set of static frames.** One `'use client'` `page.tsx` at the ticket root — never `<TICKET>/<state>/page.tsx`. Wire handlers: hover, open/close, selection, and flow steps work when the human uses it. Pull `mock-scenario-panel` and mount it on that page so every related state is a click (`?state=`). `scenarios` must list every name in **States shown** and every screenshot stem. Transitions named in §2d are wired in the mock exactly as the product will move. Folder-per-state packets fail `./studio mock` / `approve-design`.
 > - The page imports the real shell or view the feature ships in (the `(app)` or `(marketing)` layout, the page view) and the real components. A part that does not exist yet is built as a real component in the app (library-first) and imported. Nothing is redrawn: no `<style>`, no `style={{…}}`, no hex colours, no arbitrary colour classes, no standalone HTML.
 > - Screenshots of every state, captured from the running route at 1440 and 390 wide, go in `docs/design-specs/mocks/<TICKET>/`, named by state (`hover-1440.png`, `open-390.png`). They must be newer than the mock code. **Screenshots are the record; the running route is the review surface.**
 >
@@ -86,7 +86,7 @@ Disclosure controls (dropdown, menu, select, combobox, popover): **open** and **
 
 Surfaces / compositions (lists, boards, settings, marketing, IA): **empty**, **loading**, **error** (plus populated/success when there is a happy path).
 
-Put states in this table **and** in the mock routes and screenshot names (one route or screenshot per state). One rest-state frame is not approval.
+Put states in this table **and** in the panel `scenarios` list and screenshot names (`?state=<id>`, one screenshot per state). One rest-state frame is not approval. Folder-per-state routes are not approval.
 
 ## 2d. Motion (required)
 

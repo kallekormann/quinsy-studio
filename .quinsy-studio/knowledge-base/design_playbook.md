@@ -17,7 +17,7 @@ Do not ask a human to `./studio approve-design` until:
 1. `projects/<p>/docs/design-specs/<TICKET>.md` **exists and is filled** (a ticket stub is not enough)
 2. Mocks are routes in the product app (`app/(design-mocks)/design-mocks/<TICKET>/`) that render its real views and components. Screenshots of every state live in `docs/design-specs/mocks/<TICKET>/` — they are the record, not the deliverable
 3. The mock is **in the product view** the work ships in (chrome/nav/neighbors — not an orphan artboard)
-4. The mock is an **interactive prototype**: a client component with wired handlers, scenario states one click away (`mock-scenario-panel`, `?state=`), and every §2d transition moving as the product will. Static per-state frames are rejected
+4. The mock is an **interactive prototype**: one `page.tsx` at `design-mocks/<TICKET>/` (do not add `<state>/` folders) with `mock-scenario-panel` always mounted, `?state=` covering every §2c / screenshot state, wired handlers, and every §2d transition moving as the product will. Folder-per-state packets and static frames are rejected
 5. **Every state** is shown: rest/up, hover, pressed/down, disabled/inactive, focus; plus open/closed for menus; empty/loading/error for surfaces
 6. §2e **Interaction walkthrough** is written — the review script the human follows on the running route (`./studio mock <p> <TICKET>` verifies the packet and prints it)
 

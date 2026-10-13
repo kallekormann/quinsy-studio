@@ -972,10 +972,11 @@ def _production_step(project: str, prod: Dict, write_kind) -> ExecuteStep:
         ticket_id=tid,
         reason="write design packet (spec + interactive mock prototype) before implementation sprint",
         command=(
-            f"Write {spec_hint} and the mock routes app/(design-mocks)/design-mocks/{tid}/ in the "
-            f"product app (real views and components, solution woven in). The mock is an "
-            f"interactive prototype: `library pull {project} mock-scenario-panel`, wire handlers, "
-            f"states and §2d transitions, write §2e Interaction walkthrough, then capture every "
+            f"Write {spec_hint} and one page.tsx at app/(design-mocks)/design-mocks/{tid}/ in the "
+            f"product app (real views and components, solution woven in). Do not add <state>/ folders. "
+            f"The mock is an interactive prototype: `library pull {project} mock-scenario-panel` "
+            f"(mount it on that page), wire handlers, ?state= covering §2c and screenshot stems, "
+            f"§2d transitions, write §2e Interaction walkthrough, then capture every "
             f"state to docs/design-specs/mocks/{tid}/ as the record. "
             f"Verify with ./studio mock {project} {tid}; then HITL ./studio approve-design {project} {tid}"
         ),
@@ -1613,10 +1614,12 @@ def _decide_from_state_body(
                 ticket_id=tid,
                 reason="phase packet is still open — write it before the phase signature",
                 command=design_command or (
-                    f"Write {spec_hint} and the mock routes app/(design-mocks)/design-mocks/{tid}/ "
-                    f"in the product app (real views and components, solution woven in). Make the "
-                    f"mock an interactive prototype: `library pull {project} mock-scenario-panel`, "
-                    f"wire handlers, states and §2d transitions, write §2e Interaction walkthrough, "
+                    f"Write {spec_hint} and one page.tsx at app/(design-mocks)/design-mocks/{tid}/ "
+                    f"in the product app (real views and components, solution woven in). Do not add "
+                    f"<state>/ folders. Make the mock an interactive prototype: "
+                    f"`library pull {project} mock-scenario-panel` (mount it on that page), "
+                    f"wire handlers, ?state= covering §2c and screenshot stems, §2d transitions, "
+                    f"write §2e Interaction walkthrough, "
                     f"then capture every state to docs/design-specs/mocks/{tid}/ as the record. "
                     f"Verify with ./studio mock {project} {tid}. "
                     f"Do not ./studio approve-design {project} {tid} until those files exist."

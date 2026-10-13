@@ -56,14 +56,14 @@ An aesthetic preset may be cited in §4b and mapped onto project tokens. It neve
 1. Read the signed §1–§2 (UX-001, UX-003), DESIGN.md, tokens, catalog, push-back log.
 2. Write §3 inventory from the library (pull, do not invent primitives).
 3. Write §4 rationale with calculable values; §2d motion.
-4. Build the real-UI mock route as an **interactive prototype**: pull `mock-scenario-panel`, wire handlers, scenario states (`?state=`) and every §2d transition. A mock you cannot click is not done.
+4. Build one real-UI mock `page.tsx` at the ticket root as an **interactive prototype**: pull `mock-scenario-panel`, mount it on that page, wire handlers, `?state=` for every §2c / screenshot state, and every §2d transition. Do not add `<state>/` folders. A mock you cannot click through on one route is not done.
 5. Write §2e Interaction walkthrough (the review script), verify with `./studio mock <p> <TICKET>`, then capture every state at 1440 and 390 as the record.
 6. Fill §7 compliance and §7b catalog.
 
 ## Deliverables
 
 - Spec §2d, §2e, §3, §4, §4b (optional), §7, §7b.
-- Interactive real-UI mock route under `app/(design-mocks)/design-mocks/<TICKET>/` (wired handlers, reachable states, §2d motion) and screenshots of all states in `docs/design-specs/mocks/<TICKET>/`. The route is the review surface and the reference implementation; the screenshots are the record.
+- One interactive real-UI mock `page.tsx` under `app/(design-mocks)/design-mocks/<TICKET>/` with `mock-scenario-panel` (wired handlers, `?state=`, §2d motion) and screenshots of all states in `docs/design-specs/mocks/<TICKET>/`. The route is the review surface and the reference implementation; the screenshots are the record.
 
 ## Done evidence
 
@@ -81,7 +81,7 @@ An aesthetic preset may be cited in §4b and mapped onto project tokens. It neve
 - "Modern, clean, minimal" as rationale.
 - Framer Motion or another library wrapping kit components.
 - Hand-drawn HTML mocks.
-- Static per-state frames instead of a clickable prototype — the human must be able to feel the interaction, not infer it from screenshots.
+- Static per-state frames or `<TICKET>/<state>/page.tsx` folders instead of one page plus `mock-scenario-panel` — the human must click every related state on the running route.
 - Shipping the same hierarchy that was rejected on the sibling surface.
 
 ## Handoff

@@ -1,3 +1,18 @@
+## 2026-10-13 — One mock page plus mock-scenario-panel
+
+Design mocks have one legal shape: a ticket-root `'use client'` `page.tsx` with `MockScenarioPanel` mounted. Nested `design-mocks/<TICKET>/<state>/page.tsx` folders fail `./studio mock` and `approve-design`. HITL clicks every related state on the running route (`?state=`).
+
+### Changed
+
+- **`design_mocks_interactive_error`.** Requires ticket-root `page.tsx`, refuses nested state pages, requires a mounted `MockScenarioPanel` whose `scenarios` cover §2c States shown and every screenshot stem. `data-state` / `useSearchParams` without the panel is not enough.
+- **Review script.** `mock_review_block` prints `?state=` URLs only and tells HITL to use the mock-states panel before signing.
+- **CARD / skills / playbook / §2c / Team 10 README / library registry.** One page at the ticket root; do not add `<state>/` folders. Capture from `http://localhost:3000/design-mocks/<TICKET>/?state=<id>`.
+- Tests: nested folders fail; data-state-only fails; one page + panel covering shot stems passes; panel missing a shot state fails.
+
+## 2026-10-13 — QA AC must assert the handler, not copy
+
+`knowledge-base/qa-gate-playbook.md` **PB-20261013-001**: Independent QA passes an interactive AC only when a test asserts the handler the user triggers, never a copy string alone.
+
 ## 2026-10-13 — A lesson is done when the file the next project follows has changed
 
 The learnings catalog under `knowledge-base/learnings/` is retired, gitignored, and removed from the repo. A lesson is now one `PB-` bullet in the playbook, process file, skill, template, or tool it changes. The LO ticket stays a local work order.

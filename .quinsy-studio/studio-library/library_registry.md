@@ -89,7 +89,7 @@ Generic library UI/tokens are edited in `.quinsy-studio/studio-library/` directl
 
 `button` / `dialog` / `input` pull the **shadcn-style** folders. Headless copies are `headless-dialog`, `headless-input`, …
 
-`mock-scenario-panel` is the **design-mock state harness** (dev-only): every design-track mock route pulls it so scenario states (empty / loading / error, open / closed) are reachable in the running prototype via `?state=` — one click for the human, one URL per state for Playwright. It never ships outside the `(design-mocks)` route group.
+`mock-scenario-panel` is **required on every design-track mock**. One ticket-root `page.tsx` plus this panel is the only legal packet; folder-per-state routes fail `./studio mock` / `approve-design`. It is a dev-only harness: scenario states (empty / loading / error, open / closed) are reachable via `?state=` — one click for the human, one URL per state for Playwright. It never ships outside the `(design-mocks)` route group.
 
 - Copies **library → project** (never overwrites without `--force`)
 - Logs to `projects/<p>/docs/library-usage.json`

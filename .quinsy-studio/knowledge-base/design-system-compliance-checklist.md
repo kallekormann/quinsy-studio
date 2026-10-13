@@ -37,7 +37,7 @@ Canonical: [anti-slop-design-ux.md](anti-slop-design-ux.md) · Team 10 skill UX-
 - [ ] **Spec file exists and is filled** — not a missing path, not a stub. Do not ask for `approve-design` until `projects/<p>/docs/design-specs/<TICKET>.md` is on disk.
 - [ ] **§2 + §2c filled** — mocks alone do not pass `approve-design` (LO-0038)
 - [ ] **Real UI** — mocks are `(design-mocks)` routes in the product app that render its own views and components; no standalone HTML, inline styles, or hex colours
-- [ ] **Interactive** — the mock is a running prototype: wired handlers, scenario states reachable via `mock-scenario-panel` (`?state=`), §2d transitions moving; §2e walkthrough written; `./studio mock <p> <T>` green
+- [ ] **Interactive** — one ticket-root `page.tsx` plus `mock-scenario-panel` (no `<state>/` folders); wired handlers; `?state=` covering §2c and screenshot stems; §2d transitions moving; §2e walkthrough written; `./studio mock <p> <T>` green
 - [ ] **Mocks use project CSS tokens** (`ui/tokens`, `var(--…)`) — not a parallel hex palette
 - [ ] **In-context** — component shown in the product view it ships in (chrome/nav/neighbors visible)
 - [ ] **All states mocked** — rest/hover/pressed/disabled/focus; open/closed for menus; empty/loading/error for surfaces

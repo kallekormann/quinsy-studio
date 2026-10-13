@@ -696,7 +696,7 @@ def design_mocks_real_ui_error(project_root: Path, ticket_id: str) -> Optional[s
         return (
             f"No screenshots in docs/design-specs/mocks/{ticket_id}/. Capture every state from the "
             "running mock route, e.g. `npx playwright screenshot --viewport-size=1440,900 "
-            f"http://localhost:3000/{MOCK_ROUTE_SEGMENT}/{ticket_id}/<state> "
+            f"http://localhost:3000/{MOCK_ROUTE_SEGMENT}/{ticket_id}/?state=<id> "
             f"docs/design-specs/mocks/{ticket_id}/<state>-1440.png` (and 390,844 for mobile)."
         )
     newest_source = max(p.stat().st_mtime for p in sources)
@@ -714,13 +714,76 @@ _HANDLER_RE = re.compile(
     r"\buse(?:State|Reducer|Transition|Optimistic)\b"
     r"|\bon(?:Click|Change|KeyDown|KeyUp|PointerDown|PointerUp|MouseEnter|MouseLeave|Focus|Blur|Submit|OpenChange|ValueChange|CheckedChange|Select)\s*=",
 )
-_SCENARIO_RE = re.compile(
-    r"\buseSearchParams\b|\bsearchParams\b|[?&]state=|data-state|MockScenarioPanel|mock-scenario-panel",
+_PANEL_IMPORT_RE = re.compile(r"mock-scenario-panel|\bMockScenarioPanel\b")
+_PANEL_MOUNT_RE = re.compile(
+    r"<MockScenarioPanel\b|data-slot=['\"]mock-scenario-panel['\"]",
 )
+_SCENARIOS_ARRAY_RE = re.compile(r"scenarios=\{\s*\[(.*?)\]", re.S)
+_SCENARIO_ID_RE = re.compile(r"""['"]([a-z0-9][a-z0-9_-]*)['"]""")
+_STATES_SHOWN_RE = re.compile(
+    r"\*\*States shown\*\*\s*\|\s*([^|\n]+)",
+    re.I,
+)
+_STATE_ALIAS = {
+    "rest": "rest",
+    "up": "rest",
+    "hover": "hover",
+    "pressed": "pressed",
+    "down": "pressed",
+    "disabled": "disabled",
+    "inactive": "disabled",
+    "focus": "focus",
+    "open": "open",
+    "closed": "closed",
+    "collapsed": "closed",
+    "empty": "empty",
+    "loading": "loading",
+    "error": "error",
+}
 _MOTION_EVIDENCE_RE = re.compile(
     r"\btransition(?:-|\b)|\bduration-\d|\banimate-|\bmotion-|framer-motion|@/lib/motion"
     r"|data-\[state[=~]|\bease-(?:in|out|linear)",
 )
+
+
+def _nested_mock_pages(mock_dir: Optional[Path], sources: List[Path]) -> List[Path]:
+    """page.tsx files under <TICKET>/<state>/ — the illegal folder-per-state packet."""
+    if mock_dir is None:
+        return []
+    nested: List[Path] = []
+    for path in sources:
+        if path.stem != "page":
+            continue
+        try:
+            rel = path.relative_to(mock_dir)
+        except ValueError:
+            continue
+        if len(rel.parts) > 1:
+            nested.append(path)
+    return nested
+
+
+def mock_states_from_spec(spec_text: str) -> List[str]:
+    """State ids listed in §2c States shown."""
+    match = _STATES_SHOWN_RE.search(spec_text or "")
+    if not match:
+        return []
+    out: List[str] = []
+    for raw in re.split(r"[,/]", match.group(1)):
+        token = re.sub(r"[^a-z0-9_-]", "", raw.strip().lower())
+        name = _STATE_ALIAS.get(token, token)
+        if name and name not in out and name not in ("list", "every", "required", "state", "states"):
+            out.append(name)
+    return out
+
+
+def panel_scenario_ids(blob: str) -> List[str]:
+    ids: List[str] = []
+    for block in _SCENARIOS_ARRAY_RE.findall(blob or ""):
+        for token in _SCENARIO_ID_RE.findall(block):
+            if token not in ids:
+                ids.append(token)
+    return ids
 
 
 def design_mocks_interactive_error(
@@ -728,16 +791,32 @@ def design_mocks_interactive_error(
     project_root: Path,
     ticket_id: str,
 ) -> Optional[str]:
-    """A mock is a prototype the human can use — not a folder of static frames.
+    """A mock is one ticket-root page plus mock-scenario-panel — not a folder of frames.
 
-    Requires at least one client page with real interaction wiring, scenario
-    states reachable in the running route, and wired transitions when §2d
-    Motion is not `motion: off`.
+    Requires a client `page.tsx` at the ticket root, no nested `<state>/page.tsx`,
+    MockScenarioPanel mounted with scenarios covering §2c and screenshot stems,
+    and wired transitions when §2d Motion is not `motion: off`.
     """
     sources = _real_ui_mock_sources(project_root, ticket_id)
     if not sources:
         return None  # design_mocks_real_ui_error already covers the missing-route case
     route = f"{MOCK_ROUTE_GROUP}/{MOCK_ROUTE_SEGMENT}/{ticket_id}/"
+    mock_dir = real_ui_mock_dir(project_root, ticket_id)
+    root_page = mock_dir / "page.tsx" if mock_dir else None
+    if root_page is None or not root_page.is_file():
+        return (
+            f"Mock packet under {route} has no ticket-root `page.tsx`. "
+            "One client page at `design-mocks/<TICKET>/page.tsx` plus `mock-scenario-panel` "
+            "is the only legal shape. Do not add `<state>/` folders."
+        )
+    nested = _nested_mock_pages(mock_dir, sources)
+    if nested:
+        sample = nested[0].relative_to(mock_dir).as_posix()
+        return (
+            f"Mock packet under {route} uses per-state folders ({sample}). "
+            "HITL cannot click through related states on a URL tree. Collapse to one "
+            "`page.tsx` at the ticket root and pull `mock-scenario-panel` (`?state=`)."
+        )
     texts = {p: p.read_text(encoding="utf-8", errors="ignore") for p in sources}
     blob = "\n".join(texts.values())
     has_client = any(_USE_CLIENT_RE.search(t) for t in texts.values())
@@ -749,13 +828,21 @@ def design_mocks_interactive_error(
             "human can use: wire hover, open/close, selection, and flow steps so the design "
             "can be felt, not guessed from screenshots."
         )
-    if not _SCENARIO_RE.search(blob):
+    if not _PANEL_IMPORT_RE.search(blob) or not _PANEL_MOUNT_RE.search(blob):
         return (
-            f"Mock pages under {route} expose no way to reach scenario states in the running "
-            "route (no `?state=` / useSearchParams / data-state / MockScenarioPanel). "
-            "Pull `mock-scenario-panel` from the studio library (or wire in-mock controls) so "
-            "empty/loading/error and open/closed are one click away — per-state static sibling "
-            "pages are not a prototype."
+            f"Mock pages under {route} do not mount `MockScenarioPanel`. "
+            "Pull `mock-scenario-panel` from the studio library and render it on the ticket-root "
+            "page so every related state is one click away. `data-state` or `?state=` in code "
+            "without the panel is not enough — HITL must not type URLs."
+        )
+    required = list(dict.fromkeys(mock_states_from_shots(project_root, ticket_id) + mock_states_from_spec(spec_text)))
+    listed = panel_scenario_ids(blob)
+    missing = [s for s in required if s not in listed]
+    if missing:
+        return (
+            f"MockScenarioPanel under {route} omits scenario(s): {', '.join(missing)}. "
+            "`scenarios={{…}}` must list every §2c state and every screenshot stem so HITL "
+            "can click through the full packet."
         )
     motion_on = not _MOTION_OFF_RE.search(spec_text or "")
     if motion_on and not _MOTION_EVIDENCE_RE.search(blob):
@@ -788,7 +875,10 @@ def mock_review_block(project_root: Path, ticket_id: str, spec_text: str) -> str
     ]
     states = mock_states_from_shots(project_root, ticket_id)
     if states:
-        lines.append("    States:         " + "  ".join(f"{base}?state={s}" for s in states[:8]))
+        lines.append("    States:         " + "  ".join(f"{base}?state={s}" for s in states))
+    lines.append(
+        "    Use the mock-states panel; do not sign until you have clicked every listed state."
+    )
     match = _INTERACTION_WALKTHROUGH_RE.search(spec_text or "")
     if match:
         lines.append("    Walkthrough (§2e) — follow each step on the route:")
@@ -1072,10 +1162,11 @@ def design_deliverables_status(
         return "write", (
             f"\n  ✏️  Design-track deliverables missing for {ticket_id}.\n"
             f"    Write `{spec_rel}` from knowledge-base/design-spec-template.md\n"
-            f"    and the mock routes `app/{MOCK_ROUTE_GROUP}/{MOCK_ROUTE_SEGMENT}/{ticket_id}/` in the\n"
-            f"    **product app**: the real views and components with the solution woven in.\n"
-            f"    No hand-drawn HTML. The mock is an **interactive prototype**: pull\n"
-            f"    `mock-scenario-panel`, wire handlers, scenario states and §2d transitions,\n"
+            f"    and one `page.tsx` at `app/{MOCK_ROUTE_GROUP}/{MOCK_ROUTE_SEGMENT}/{ticket_id}/`\n"
+            f"    in the **product app**: the real views and components with the solution woven in.\n"
+            f"    Do not add `<state>/` folders. No hand-drawn HTML. The mock is an\n"
+            f"    **interactive prototype**: pull `mock-scenario-panel` (mounted on that page),\n"
+            f"    wire handlers, `?state=` scenarios covering §2c and screenshot stems, §2d transitions,\n"
             f"    write §2e Interaction walkthrough. Then capture every state as screenshots in\n"
             f"    `docs/design-specs/mocks/{ticket_id}/` (rest/hover/pressed/disabled/focus;\n"
             f"    open/closed for menus; empty/loading/error for surfaces) — the record,\n"

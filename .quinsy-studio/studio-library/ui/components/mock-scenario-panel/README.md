@@ -1,9 +1,10 @@
 # mock-scenario-panel
 
-Dev-only scenario harness for design mocks. Every design-track mock route in
-`app/(design-mocks)/design-mocks/<TICKET>/` must make its scenario states
-(empty / loading / error, open / closed, long-content) reachable in the running
-prototype — this panel is the standard way.
+Dev-only scenario harness for design mocks. Required on every design-track
+mock: one `page.tsx` at `app/(design-mocks)/design-mocks/<TICKET>/` plus this
+panel. Folder-per-state packets (`<TICKET>/<state>/page.tsx`) fail
+`approve-design`. Scenario states (empty / loading / error, open / closed,
+long-content) are reachable in the running prototype via `?state=`.
 
 - Floating panel of state buttons; active state lives in `?state=` so the human
   clicks through **and** Playwright captures each state by URL
