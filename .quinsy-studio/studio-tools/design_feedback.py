@@ -125,6 +125,8 @@ def harvest_pushback(project: str, ticket_id: str, code: str, note: str) -> Dict
         observation=observation,
         kind=kind,
         priority="P1",
+        assumed=stem,
+        signed=f"Human push-back ({label.lower()}): {detail or meaning}",
     )
 
 

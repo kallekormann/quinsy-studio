@@ -962,27 +962,31 @@ def design_spec_interaction_walkthrough_error(spec_text: str) -> Optional[str]:
 
 
 _CATALOG_HEADING_RE = re.compile(r"^##\s*7b?\.?\s*Catalog applied.*?$(.*?)(?=^##\s|\Z)", re.M | re.S | re.I)
-_CATALOG_ID_RE = re.compile(r"\b(PB-\d{8}-\d+|LO-\d{4})\b", re.I)
+_CATALOG_ID_RE = re.compile(r"\bPB-\d{8}-\d+\b", re.I)
+_LO_ID_RE = re.compile(r"\bLO-\d{4}\b", re.I)
 
 
 def design_spec_catalog_error(spec_text: str) -> Optional[str]:
-    """Team 10 proves it read the design catalog: §7b names the PB/LO ids it applied (LO-0408).
+    """Team 10 proves it read the design playbooks and UX skills: §7b names the PB- ids it applied.
 
-    `catalog: none` is allowed only when the section says why nothing in the catalog matched.
+    LO- ids are local work orders, not infused rules; they do not count.
+    `catalog: none` is allowed only when the section says why nothing matched.
     """
     match = _CATALOG_HEADING_RE.search(spec_text)
     if not match:
         return (
-            "Design spec missing `## 7b. Catalog applied`. List the PB-/LO- ids from "
-            "knowledge-base/design_playbook.md and knowledge-base/learnings/design/ you applied, "
+            "Design spec missing `## 7b. Catalog applied`. List the PB- ids from "
+            "knowledge-base/design_playbook.md, the other design playbooks, and teams/10-*/skills/ you applied, "
             "one line each with where in this spec they land."
         )
     body = match.group(1)
     if _CATALOG_ID_RE.search(body):
         return None
+    if _LO_ID_RE.search(body):
+        return "§7b Catalog applied cites only LO- ids. An LO is a local ticket; cite the PB- bullet it produced in the playbook or skill."
     if re.search(r"catalog:\s*none", body, re.I) and len(re.sub(r"\s+", " ", body).strip()) > 40:
         return None
-    return "§7b Catalog applied names no PB-/LO- id. Cite the catalog lines you applied, or write `catalog: none` with the reason."
+    return "§7b Catalog applied names no PB- id. Cite the playbook or skill bullets you applied, or write `catalog: none` with the reason."
 
 
 def design_spec_completeness_error(

@@ -90,7 +90,7 @@ Audit empty / wait / milestone moments with `delight-micro-interactions.md`. No 
 
 ## Deltas
 
-- Studio addition: push-back codes `flow` and `motion` are harvested into `learnings/design/interaction.md`; the source methods assume a designer who remembers.
+- Studio addition: push-back codes `flow` and `motion` open lesson candidates that land as PB- bullets in `design-science-playbook.md`; the source methods assume a designer who remembers.
 
 ## Error-message rubric
 

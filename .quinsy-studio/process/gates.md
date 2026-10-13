@@ -307,6 +307,9 @@ The gate history is logged in the project's `status.json`:
 
 ## Deltas
 
+- **PB-20261013-003** helpful=0 harmful=0 :: A PRD rewrite must keep the original specification unchanged and must not drop normative details to fit a length cap. (carried over from the retired learnings catalog, was PB-20260927-001)
+- **PB-20261013-002** helpful=0 harmful=0 :: A stack and host named in the PRD must win over the archetype default, and that delta must be an ADR. (carried over from the retired learnings catalog, was PB-20260927-002)
+- **PB-20261013-001** helpful=0 harmful=0 :: Gate feedback must be a gate revision and must not be queued as a sprint inbox note while execute is waiting on a human gate. (carried over from the retired learnings catalog, was PB-20260927-003)
 - **PB-20260922-001** helpful=0 harmful=0 :: A typeface placed in a composition zone is Primary until the operator picks another. Placement without promoting Primary is not done.
 - **PB-20260916-005** helpful=0 harmful=0 :: When host-scoped live chrome never leaves loading, default-flow proof is HTTP/API tests (curl, PHPUnit, Vitest) plus a recorded hang — not a click-through.
 - **PB-20260916-004** helpful=0 harmful=0 :: An automation browser stuck on the fleet empty state (select a host) on a host-only route is not proof the API failed. Cover AC with tests or curl; record the hang. Host-only routes belong in HOST_ONLY_PATHS so the host query is restored.

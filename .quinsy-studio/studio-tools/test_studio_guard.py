@@ -129,6 +129,13 @@ class GuardInboxAckTests(unittest.TestCase):
         ack.assert_not_called()
         self.assertEqual(verdict, "studio_meta")
 
+    def test_run_training_is_meta_while_implementing(self):
+        status = _review_pending_status(active_ticket="DEMO-0001")
+        with patch("studio_context._ack_inbox") as ack:
+            verdict, _msg = guard_request("demo", "run training", status)
+        ack.assert_not_called()
+        self.assertEqual(verdict, "studio_meta")
+
     def test_sibling_project_name_is_cross_project(self):
         status = {
             "human_gates": {

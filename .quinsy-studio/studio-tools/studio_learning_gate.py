@@ -104,7 +104,7 @@ def infusion_gate_message(open_items: Optional[List[Dict[str, str]]] = None) -> 
         [
             "",
             "Run: ./studio learn-list",
-            "Implement in .quinsy-studio/ → move LO to backlog/done/ → CHANGELOG entry",
+            "Per lesson: ./studio train <LO> (impact; high waits for --approve) → infusion-delta --lo <LO> → CHANGELOG line → ./studio train --done <LO>",
             "Then: ./studio infusion  (verify gate clear)",
         ],
     )

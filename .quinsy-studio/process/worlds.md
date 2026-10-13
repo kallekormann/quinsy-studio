@@ -12,9 +12,9 @@ Quinsy Studio enforces **strict separation** between meta-studio and client proj
 | `intake/` | **Never** |
 | `ideation/` | **Never** — the empty seed is `studio-templates/ideation/` |
 | `.quinsy-studio/backlog/`, `retros/`, `sprints/` | **Never** — local working notes |
-| `knowledge-base/learnings/archive/` and `train-queue.json` | **Never** |
+| `knowledge-base/learnings/` (retired catalog) and `.train-queue.json` | **Never** |
 
-A lesson is infused into the learnings catalog, a playbook, or a skill. That result is what the repo shares. The ticket, the retro, and the train job stay on the machine that did the work.
+A lesson is infused as a PB- bullet into the playbook, process file, skill, template, or tool it changes. That result is what the repo shares. The ticket, the retro, and the train job stay on the machine that did the work.
 
 ## World B — Project (own git repo)
 

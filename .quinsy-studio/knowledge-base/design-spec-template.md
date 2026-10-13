@@ -247,7 +247,7 @@ Agent contract (design-track): paste the block from `anti-slop-design-ux.md` § 
 
 ## 7b. Catalog applied (required)
 
-Proof that Team 10 read the studio design catalog before drawing. One line per entry: the id, and where in this spec it lands. Sources: `knowledge-base/design_playbook.md` (PB-ids), `knowledge-base/learnings/design/<topic>.md` (LO-ids), and the product's `docs/design-specs/pushback-log.md` (codes from earlier rejections on this surface).
+Proof that Team 10 read the design playbooks and UX skills before drawing. One line per entry: the PB- id, and where in this spec it lands. LO- ids are local tickets and do not count. Sources: `knowledge-base/design_playbook.md` and the other design playbooks (PB-ids), `teams/10-*/skills/` (PB-ids), and the product's `docs/design-specs/pushback-log.md` (codes from earlier rejections on this surface).
 
 - PB-YYYYMMDD-NNN — applied in §<n>: <one clause>
 - LO-NNNN — applied in §<n>: <one clause>

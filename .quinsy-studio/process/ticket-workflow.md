@@ -426,6 +426,10 @@ When a ticket is blocked:
 
 ## Deltas
 
+- **PB-20261013-004** helpful=0 harmful=0 :: Sprint `--approve-scope` reads `scope-proposal.json` against `backlog/*.md` only. (carried over from the retired learnings catalog, was PB-20260922-003)
+- **PB-20261013-003** helpful=0 harmful=0 :: Do not groom a control-specific ticket onto a surface that does not already show that control. File a design-track ticket and get the packet signed before the control is in grooming. (carried over from the retired learnings catalog, was PB-20260926-002)
+- **PB-20261013-002** helpful=0 harmful=0 :: Do not `--approve-scope` tickets that are blocked (unmet dependencies or not ready). Drop them from `proposed` before approve. (carried over from the retired learnings catalog, was PB-20260926-004)
+- **PB-20261013-001** helpful=0 harmful=0 :: In a mixed sprint, architecture phase sign-off must not untag tickets that still need implementation. Keep the sprint tag until MOVE_DONE of the last ticket. (carried over from the retired learnings catalog, was PB-20260930-002)
 - **PB-20261012-001** helpful=0 harmful=0 :: **PB-20261012-002** helpful=0 harmful=0 :: MOVE_DONE flags newly added `[Nrem]` / `[Npx]` classNames. Moving a line counts as added. Use a scale utility or keep the original className line unchanged.
 - **PB-20261008-001** helpful=0 harmful=0 :: Test helpers that stand in for primary keys must match the column type (UUID when the schema is UUID). Design-track and parked tickets stay out of an implementation sprint until that phase is open.
 - **PB-20260916-007** helpful=0 harmful=0 :: After the core entity rename, new tables that store domain_id must foreign-key properties, not the domains view. Constraining domains fails because it is no longer a table.

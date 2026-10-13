@@ -83,7 +83,7 @@ Reach × Impact × Confidence / Effort orders tickets inside a milestone. Must m
 - Security, privacy, operations or growth parked in "later" with no PRD sentence.
 - Writing M1 tickets while M0 is open.
 - Planning the next milestone without reading the reality-check verdict and the blocked tickets.
-- A review whose recommendations ignore the learnings catalog.
+- A review whose recommendations ignore the PB- bullets in the playbooks and skills it read.
 
 ## Handoff
 

@@ -49,7 +49,7 @@ An aesthetic preset may be cited in §4b and mapped onto project tokens. It neve
 
 ### 6. Read the catalog before drawing
 
-`design_playbook.md` PB-ids and `learnings/design/visual.md`, `layout.md`, `craft.md`, plus the push-back log for the surface. Cite in §7b.
+`design_playbook.md` and `anti-slop-design-ux.md` PB-ids, plus the push-back log for the surface. Cite in §7b.
 
 ## Workflow
 

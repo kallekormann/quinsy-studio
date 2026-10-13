@@ -351,7 +351,8 @@ def scan_hq_for_project_nouns(
                 rel_check = str(path.relative_to(QUINSY_STUDIO)).replace("\\", "/")
             except ValueError:
                 rel_check = str(path)
-            if "/learnings/archive/" in rel_check or rel_check.startswith("learnings/archive/"):
+            # The retired catalog folder is gitignored local history, not shared HQ.
+            if "knowledge-base/learnings/" in rel_check or rel_check.startswith("knowledge-base/learnings/"):
                 continue
             try:
                 text = path.read_text(encoding="utf-8", errors="ignore")

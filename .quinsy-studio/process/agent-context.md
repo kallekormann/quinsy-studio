@@ -24,7 +24,7 @@ Run `./studio guard <project> "<verbatim user message>"` first. While implementa
 8. Mid-execute human messages: `./studio guard` → `INBOX_ACK` (auto-queued). Resume NEXT. Drain after MOVE_DONE
 9. `./studio resume <project>` is a human-readable checklist; do not stop after printing it
 
-Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog. **READ only CARD playbooks.** Never open `knowledge-base/learnings/inbox.md` on IMPLEMENT.
+Do **not** ask “should I continue?” mid-sprint. Loop until HITL. Compact cards only — do not load the whole backlog. **READ only CARD playbooks.** Open studio LO tickets are not reading material on IMPLEMENT.
 
 **Docker / secrets:** Docker is required for gate, migrate, and boot. Do not Read `.env` values. `./studio env <p> up|migrate|dev --approve` injects named vars from gitignored `projects/<p>/.env` (seeded from the schema and `.env.example`). Production values live in Coolify. Before pinning Compose host ports or `next dev` ports, probe `docker ps` published ports. Operators run multiple stacks. See [host-port-allocation.md](../knowledge-base/host-port-allocation.md).
 
@@ -173,3 +173,7 @@ Gate 2b does **not** merge project UI into studio-library. Headless primitives s
 ```
 
 `./studio move … implement` is blocked during sprint review and after review until the next sprint is groomed.
+
+## Deltas
+
+- **PB-20261013-001** helpful=0 harmful=0 :: Execute leases must expire when the holder process is dead so focus is not blocked by a stale lease. (carried over from the retired learnings catalog, was PB-20260927-001)

@@ -41,7 +41,7 @@ If the job crosses two or more surfaces (route, dialog, email, extension), write
 
 ### 4. Read the catalog and the push-back log first
 
-Before drafting, read `knowledge-base/learnings/design/` topics for the surface and the product's `docs/design-specs/pushback-log.md`. Cite what you applied in spec §7b. A rejection code repeating on the same surface is a skill failure, not a taste difference.
+Before drafting, read the PB- bullets in `knowledge-base/design_playbook.md` and `design-science-playbook.md` for the surface and the product's `docs/design-specs/pushback-log.md`. Cite what you applied in spec §7b. A rejection code repeating on the same surface is a skill failure, not a taste difference.
 
 ### 5. Platform posture is explicit
 
@@ -95,5 +95,4 @@ On a flow that touches signup, sharing, invites, upgrade, or first success, brin
 ## References
 
 - [product-ux-playbook.md](../../../knowledge-base/product-ux-playbook.md) · [workflow-definition-playbook.md](../../../knowledge-base/workflow-definition-playbook.md) · [design-direction-playbook.md](../../../knowledge-base/design-direction-playbook.md)
-- [learnings/design/README.md](../../../knowledge-base/learnings/design/README.md)
 - External: `ux-design-process`, `ux-knowledge-work`, `ux-desktop-app`, `ux-web-app`

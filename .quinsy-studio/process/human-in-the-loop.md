@@ -52,7 +52,7 @@ The human stops on **product decisions** and **design decisions**, plus the few 
 
 ### Design feedback loop
 
-Every push-back is coded: `hierarchy`, `density`, `motion`, `copy`, `flow`, `uniqueness`, `a11y`, `brand`. `approve-design --reject --reason <code>`, a finish-gate HOLD (`Reason:` line), and `feedback` / `clarify --design-reason <code>` write `docs/design-specs/pushback-log.md` and harvest into `knowledge-base/learnings/design/`. Team 10 cites what it read in spec §7b. The retro has a `## Design` section; the milestone review carries the top codes forward.
+Every push-back is coded: `hierarchy`, `density`, `motion`, `copy`, `flow`, `uniqueness`, `a11y`, `brand`. `approve-design --reject --reason <code>`, a finish-gate HOLD (`Reason:` line), and `feedback` / `clarify --design-reason <code>` write `docs/design-specs/pushback-log.md` and open a lesson candidate (LO) whose verdict decides whether a design playbook or UX skill gets the PB- bullet. Team 10 cites what it read in spec §7b. The retro has a `## Design` section; the milestone review carries the top codes forward.
 
 ---
 

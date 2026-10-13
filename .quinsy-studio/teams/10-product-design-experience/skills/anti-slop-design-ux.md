@@ -60,11 +60,11 @@ A marketing or persona page that opens with a feature grid fails. Problem first,
 
 ### 8. The catalog is read, not remembered
 
-Spec §7b cites PB-/LO- ids and push-back codes applied. A `uniqueness` or `copy` rejection repeating on a surface means the rule above was not applied; fix the rule in `learnings/design/craft.md`.
+Spec §7b cites PB- ids and push-back codes applied. A `uniqueness` or `copy` rejection repeating on a surface means the rule above was not applied; fix the rule as a PB- bullet in `knowledge-base/anti-slop-design-ux.md` through the learning loop.
 
 ## Workflow
 
-1. Read `knowledge-base/anti-slop-design-ux.md`, `learnings/design/craft.md`, and the push-back log.
+1. Read `knowledge-base/anti-slop-design-ux.md` (its PB- bullets) and the push-back log.
 2. Paste the agent contract block into the ticket or spec header.
 3. Walk the draft against rules 1–7; list every hit with the fix.
 4. Run `./studio gate <p> --anti-slop` for copy and placeholder patterns.
@@ -106,4 +106,4 @@ Spec §7b cites PB-/LO- ids and push-back codes applied. A `uniqueness` or `copy
 ## References
 
 - [anti-slop-design-ux.md](../../../knowledge-base/anti-slop-design-ux.md) (canonical) · [design-system-compliance-checklist.md](../../../knowledge-base/design-system-compliance-checklist.md)
-- [learnings/design/craft.md](../../../knowledge-base/learnings/design/craft.md) · [growth-content-playbook.md](../../../knowledge-base/growth-content-playbook.md)
+- [growth-content-playbook.md](../../../knowledge-base/growth-content-playbook.md)

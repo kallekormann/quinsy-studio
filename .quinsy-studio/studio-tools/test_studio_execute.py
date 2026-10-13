@@ -772,7 +772,8 @@ class DecideTests(unittest.TestCase):
             prd_exists=True,
         )
         self.assertEqual(step.kind, "IMPLEMENT")
-        self.assertIn("1 open HQ learning", step.inform or "")
+        self.assertIn("TRAIN_DUE 1", step.inform or "")
+        self.assertIn("run training", step.inform or "")
         self.assertNotEqual(step.kind, "STUDIO_LO")
 
     def test_hitl_design_cites_packet_path(self):

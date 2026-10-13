@@ -181,13 +181,13 @@ A mistake in a product is harvested as soon as it is seen. The product chat keep
 ```
 a lesson is seen
     → it is classified
-    → the principle is written into the learnings catalog
+    → the rule is written as a PB- bullet into the file the next project follows
     → the product chat keeps building
     → a studio chat runs ./studio train
     → a playbook, a skill, or a tool changes
 ```
 
-The catalog is `knowledge-base/learnings/`. That file is what other people receive. The ticket, the retro, and the train queue stay on the machine that did the work. They are not in studio git.
+The bullet lands in a playbook under `knowledge-base/`, a `process/` file, a skill under `teams/`, a template, or a tool. That file is what other people receive. The ticket, the retro, and the train queue stay on the machine that did the work. They are not in studio git.
 
 - [learning-loop.md](learning-loop.md) — harvest, what may be shared, infusion
 - [agentic-loop-playbook.md](../knowledge-base/agentic-loop-playbook.md) — a lesson lands as a small change, not a rewritten file

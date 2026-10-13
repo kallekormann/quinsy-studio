@@ -1,6 +1,6 @@
 # Studio abstraction — project-agnostic HQ
 
-Quinsy Studio (`.quinsy-studio/`) is **permanent**. Client projects (`projects/<name>/`) are **temporary**. Nothing studio git commits may name a product or carry product logic. That covers the process, skills, playbooks, learnings catalog, library, templates, tools, tests, both READMEs, AGENTS.md, CLAUDE.md, GEMINI.md, and both CHANGELOGs. A product reference in any of them is a bug.
+Quinsy Studio (`.quinsy-studio/`) is **permanent**. Client projects (`projects/<name>/`) are **temporary**. Nothing studio git commits may name a product or carry product logic. That covers the process, skills, playbooks, library, templates, tools, tests, both READMEs, AGENTS.md, CLAUDE.md, GEMINI.md, and both CHANGELOGs. A product reference in any of them is a bug.
 
 ---
 

@@ -909,15 +909,26 @@ def implementation_in_flight(sprint_tickets: List[Dict[str, Any]]) -> bool:
 
 
 def _attach_lo_inform(step: ExecuteStep, open_los: List[Dict]) -> ExecuteStep:
-    if step.kind in ("HITL", "STUDIO_LO", "INFORM"):
+    """Open studio lessons ride along as INFORM. The HITL card after a retro says TRAIN_DUE out loud."""
+    if step.kind in ("STUDIO_LO", "INFORM"):
         return step
     n = len(open_los or [])
     if n <= 0:
         return step
-    extra = (
-        f"{n} open HQ learning ticket(s) — INFORM; open a separate HQ train session. "
-        "Do not switch this product chat to STUDIO_LO."
-    )
+    candidates = 0
+    try:
+        from studio_lesson import needs_verdict
+
+        for lo in open_los:
+            raw = lo.get("path") or ""
+            if raw and Path(raw).is_file() and needs_verdict(Path(raw).read_text(encoding="utf-8", errors="ignore")):
+                candidates += 1
+    except Exception:
+        candidates = 0
+    extra = f"TRAIN_DUE {n} — {n} open HQ learning ticket(s)"
+    if candidates:
+        extra += f", {candidates} need a verdict (./studio learn <LO> --verdict …)"
+    extra += ' — open a studio chat and say "run training". Do not switch this product chat to STUDIO_LO.'
     step.inform = f"{step.inform} | {extra}" if step.inform else extra
     return step
 
@@ -1012,7 +1023,7 @@ def _studio_lo_step(open_los: List[Dict]) -> ExecuteStep:
         kind="STUDIO_LO",
         ticket_id=lo_id,
         reason=reason,
-        command="./studio infusion",
+        command=f"./studio train {lo_id}" if lo_id else "./studio infusion",
         read=lo.get("path"),
         card={
             "id": lo_id,

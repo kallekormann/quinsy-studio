@@ -20,7 +20,7 @@ Three ideas hold the whole thing together.
 | Product | `projects/<name>/` | That product's own repo |
 | Research and intake | `ideation/`, `intake/` | Not committed |
 
-Studio git holds the method: process, teams, skills, the learnings catalog, the library, and the templates. A clone does not contain your products, your research notes, or the tickets that produced a lesson.
+Studio git holds the method: process, teams, skills, playbooks, the library, and the templates. A clone does not contain your products, your research notes, or the tickets that produced a lesson.
 
 The commit hook refuses to add the local rows. `./studio verify-worlds` checks the split. `./studio verify-abstraction` checks that studio docs say `<project>`, not a client name. A client name in the studio would teach the next product the wrong lesson.
 
@@ -37,7 +37,7 @@ The commit hook refuses to add the local rows. `./studio verify-worlds` checks t
 9. **Milestones** after gate 2b. Finish a milestone review before the next version's tickets.
 10. **Amendments** are a change of direction. Sprint feedback is a small note. They are different commands.
 11. **Placement before layout.** A UI spec is a file on disk, with every state, using the project's tokens. Motion is on unless the spec says `motion: off`.
-12. **A lesson is infused while the product keeps building.** The catalog, the playbook, or the skill is what gets committed.
+12. **A lesson is infused while the product keeps building.** The playbook, process file, skill, template, or tool that changed is what gets committed. A large change waits for your approve or defer.
 13. **Two git repos.** Product commits live in `projects/<name>/`. Studio commits never include `projects/`, `intake/`, or `ideation/`.
 14. **One chat per product.** In Cursor, bind the chat. Elsewhere, `./studio focus` hides the other products. Five products can execute at once.
 15. **Load caps** are in `studio.settings.yaml`. They are not your model bill. On `INFORM cost-cap`, raise the named key. See [Load caps](14-settings.md).

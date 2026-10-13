@@ -123,17 +123,14 @@ class HarvestPortabilityTests(unittest.TestCase):
             open_dir = tmp / "open"
             done_dir = tmp / "done"
             blocked = tmp / "blocked"
-            learnings = tmp / "learnings"
             projects = tmp / "projects" / "acme-app" / "docs"
-            for d in (open_dir, done_dir, blocked, learnings, projects):
+            for d in (open_dir, done_dir, blocked, projects):
                 d.mkdir(parents=True)
             with patch.multiple(
                 studio_harvest,
                 BACKLOG_OPEN=open_dir,
                 BACKLOG_DONE=done_dir,
                 BACKLOG_BLOCKED=blocked,
-                LEARNINGS_DIR=learnings,
-                INBOX_PATH=learnings / "inbox.md",
             ), patch.object(studio_portability, "PROJECTS_DIR", tmp / "projects"), patch.object(
                 studio_portability, "list_project_names", lambda: ["acme-app"]
             ):

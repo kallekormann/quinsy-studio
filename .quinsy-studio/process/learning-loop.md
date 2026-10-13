@@ -2,77 +2,98 @@
 
 > The studio learns from its mistakes. Every mistake is analyzed and turned into improvements.
 
-**Loop closes on a store (LO-0231):** infusion is a confirmed **delta** into a named playbook (`infusion_path`), merged without an LLM rewrite. See [agentic-loop-playbook.md](../knowledge-base/agentic-loop-playbook.md).
+**Loop closes on the file (LO-0231):** infusion is a confirmed **delta** into the named target (`infusion_path`), merged without an LLM rewrite. See [agentic-loop-playbook.md](../knowledge-base/agentic-loop-playbook.md).
 
 ## Core principle
 
 ```
-Learning identified → classify → inbox + LO (same session) → INFORM product chat + `./studio train` in a HQ session → CHANGELOG
+deviation seen → candidate LO → verdict: project or studio → (studio) next + target → TRAIN_DUE
+    → training chat: ## Impact → low: infuse / high: human --approve or --defer
+    → infusion-delta --lo writes the PB- bullet into the real file → CHANGELOG → train --done
 ```
 
-Do **not** wait for a human `./studio learn` prompt, retro close, or the next project sprint. If learnings pile up, the originating context is gone and the next project repeats the mistake.
+A lesson is finished when **the file the next project follows has changed**. There is no catalog. The LO ticket is a local work order (gitignored); the committed result is one `PB-YYYYMMDD-NNN` bullet in a playbook under `knowledge-base/`, a `process/` file, a skill under `teams/`, a template, or a tool.
+
+Do **not** wait for a human prompt or the next project sprint. The product agent captures, judges, and informs; the training chat applies.
 
 ---
 
-## Immediate harvest
-
-The moment a learning is identified, studio HQ captures it **only if portable**:
+## 1. Capture — every deviation becomes a candidate
 
 | Trigger | What happens |
 |---------|----------------|
-| `./studio learn "..."` | Portability gate → classify → inbox + LO (or project-local log) |
-| `./studio retro --complete` | Auto-harvest “went badly” / “improve” bullets through the same gate |
-| `./studio reuse` | Unpromoted `packages/` / `ui/components/` → classified LOs |
-| 3rd gate fail | Auto-harvest `signal: gate-fail` (kind: tooling) |
+| `./studio approve <p> --gate N` after **≥2** `## Gate N` entries in `docs/phases/revisions.md` | A candidate LO opens before the signature, quoting each round's feedback. The question it carries: did the packet change because of this product, or because the studio default was wrong? |
+| `./studio retro <p> --complete` | Every filled "went badly" / "improve" bullet becomes a candidate (once per sprint) |
+| `./studio approve-design --reject --reason <code>`, finish-gate HOLD, design feedback | Candidate with `assumed` = the rule stem, `signed` = the human's note |
+| `./studio reuse` | Unpromoted `packages/` / `ui/components/` → candidates |
+| 3rd gate fail | Candidate with `signal: gate-fail` (kind: tooling) |
+| `./studio learn "<rule>"` | Manual candidate |
 
-### Portability gate (required)
+The portability gate still runs first (product nouns, incident shape, rule cue). What fails it goes to `projects/<p>/docs/studio-learnings-local.md` and never opens an LO.
 
-Before an LO or train job is created:
+Every LO carries a `## Lesson` block:
 
-1. **Rewrite** product brands / project folder names out of the title (e.g. stock-media provider, not a single product’s tab name).
-2. **Portability test:** would another product still benefit from the *principle* alone? If the title still needs project nouns, or is incident-shaped → **do not** open an LO.
-3. **Project-local log:** dropped items go to `projects/<p>/docs/studio-learnings-local.md` (provenance only).
-4. **Train only on skill gaps:** LO frontmatter `train_skills: [...]`. Empty → playbook/process infusion only (no train queue).
-5. **Infusion:** HQ playbooks/skills must not contain product folder names or product ticket IDs, provenance lines included (`./studio verify-abstraction` reports hits).
+```markdown
+## Lesson
 
-**HQ LO vs project log (examples):**
-
-| Belongs in studio HQ | Stays in `projects/<p>/docs/studio-learnings-local.md` |
-|----------------------|--------------------------------------------------------|
-| Guard must not queue HITL “approved” / review approve | Do not sprint ticket <ticket> until vendor X signs off |
-| Close UI sprints (review → reuse → retro) when the last ticket is done | This sprint still had vendor ingest tickets with no publisher site |
-| Shared CSS must be in the host stylesheet scan so chrome cannot ship unstyled | Keep magazine `@source` in this app’s public host DoD |
-| Public chrome must not list destinations that 404 (portable nav DoD) | Named section labels that 404 in this brand’s masthead |
-| Public document route must serve operator Save; no silent fixture when a live id exists | This brand’s article still shows fixture copy after Save |
-| Reuse harvest: generalize `packages/auth` | Copy this product’s first-brand token kit into the library |
-
-A five-word incident is **not** a principle. Retro bullets that name a ticket, sprint, vendor, host, or surface go local. `when` / `before` / `after` / `chrome` / `inbox` alone are **not** enough to enter HQ. Rewrite into a must/should/never/prefer rule that the *next* product would still need, or do not open an LO.
-
-```
-raw observation → generalize title → portable?
-  ├─ no  → projects/<p>/docs/studio-learnings-local.md
-  ├─ yes, playbook-only → LO (train_skills: [])
-  └─ yes, skill gap → LO + ./studio train <skill-id> --from lo --topic "<principle>" --lo LO-NNNN
+- **assumed:** what the studio process, template, or default said
+- **signed:** what the human finally accepted
+- **verdict:** project | studio — one sentence why
+- **next:** the rule, written as the bullet that goes into the studio file
+- **target:** `process/… | knowledge-base/….md | teams/…/skills/….md | studio-templates/… | studio-tools/…`
 ```
 
-Each portable harvest:
-
-1. **Classifies** into a domain/topic (`knowledge-base/learnings/<domain>/<topic>.md`) plus the matching playbook/skill
-2. **Appends** the **open** queue `.quinsy-studio/knowledge-base/learnings/inbox.md` (generic observation; the `--source` product stays in the local LO, never in inbox.md)
-3. **Writes** the principle into the topic file and refreshes `learnings/index.md`
-4. **Opens** a compact LO-* with `infusion_kind`, `infusion_path` (topic file), and `train_skills`
-
-`inbox.md` is not the long-term store. Infused/stale rows are archived to `learnings/archive/inbox-YYYY-MM.md`. Find rules with `./studio learn-find "<topic>"` or the CARD's domain README. IMPLEMENT must not Read `inbox.md`.
-
-Then `./studio execute <project>` **continues the current phase**. Open LOs with `train_skills` queue `./studio train` in a **HQ session**. **INFORM** the open HQ LO count on the execute CARD; do **not** infuse playbooks from the product chat. `STUDIO_LO` only when the product loop is idle (`implementation_in_flight` is false). HITL gate 0, the batch `approve-design --phase` / `approve-arch --phase`, and cadence review still win. `./studio train --purge-empty` closes jobs written without an LO observation.
-
-Do **not** copy project UI/tokens into `studio-library/`. Promote reusable assets via `./studio library promote` — learnings are principles/skills, not product dumps.
+A candidate has `needs_verdict: true` and placeholders. **`retro --complete` refuses while any candidate has no verdict.** The product agent answers:
 
 ```bash
-./studio learn "<portable principle>" --signal <signal> --source <project>
-./studio execute <project>   # ACTION IMPLEMENT (train sidecar only if train_skills set)
-./studio train BE-001 --from lo --topic "<portable principle>" --lo LO-NNNN
+./studio learn LO-NNNN --verdict studio  --reason "…" --assumed "…" --signed "…" --next "<rule>" [--target <file>]
+./studio learn LO-NNNN --verdict project --reason "…" --assumed "…" --signed "…"
 ```
+
+- `verdict: project` → the line goes to `projects/<p>/docs/studio-learnings-local.md` with its reason; the LO is removed. The human can overrule from the TRAIN_DUE list (`./studio train --promote <p> --topic "<title>"`).
+- `verdict: studio` → `next` must pass the portability gate; `target` must be a real file under `.quinsy-studio/` and never under `knowledge-base/learnings/`. The default target comes from the kind (`KIND_MAP` playbook: design → `design_playbook.md`, tooling → `process/gates.md`, process → `process/learning-loop.md`, …).
+
+## 2. Inform — the product agent tells the human a training session is due
+
+`retro --complete` ends with a **TRAIN_DUE** block; the execute CARD (`INFORM:` line, also on HITL cards), `./studio status <p>`, `./studio settings`, `./studio learn-list`, and `./studio infusion` print it:
+
+```
+TRAIN_DUE — 2 studio lesson(s) wait for a training chat. Say "run training" in a studio chat.
+  Deferred (you said wait): …                 ← first, with --reopen
+  Ready for training: LO-NNNN [high] next → target
+  Need a verdict: LO-NNNN …                   ← product agent still owes the answer
+  Judged project-specific (overrule with ./studio train --promote …): title — reason
+```
+
+`run training` in a chat is `STUDIO_META` for the guard: it never lands on a product sprint inbox. `STUDIO_LO` on the execute card appears only when the product loop is idle. The product chat never edits playbooks.
+
+## 3. Impact — the training chat decides how much the studio moves
+
+```bash
+./studio train LO-NNNN
+```
+
+1. Refuses without a verdict.
+2. Writes a `## Impact` block into the LO on first run; the agent fills it: **files** (and which gates/commands read them), **in-flight** (would a running sprint behave differently on the next execute), **compliance** (do signed packets, templates, or library assets become non-compliant), **pro**, **contra**, **severity**.
+3. The **severity floor** comes from the target path: `process/`, `studio-tools/`, `studio-templates/`, `teams/**/skills/` → **high**; a `knowledge-base/*.md` playbook → **low**. The agent may raise, never lower.
+4. **Low** → infuse now (INFORM). **High** → the card prints pro/contra and stops: `./studio train LO-NNNN --approve` or `./studio train LO-NNNN --defer --reason "…"`. Deferred LOs move to `backlog/deferred/`, stay first in every TRAIN_DUE list, and come back with `--reopen`.
+
+## 4. Close — the lesson is in the file or the LO stays open
+
+```bash
+./studio infusion-delta --lo LO-NNNN --path <target> --op add --body "assumed: … signed: … next: …"
+# CHANGELOG.md line naming the PB- id
+./studio verify-abstraction
+./studio train --done LO-NNNN
+```
+
+- `infusion-delta --lo` refuses a body without `assumed:` / `signed:` / `next:`, a path that differs from the LO target, and a high-impact LO that is not approved. It records the PB- id on the LO.
+- `train --done LO-NNNN` refuses unless the target file contains that PB- id, `CHANGELOG.md` names it, and `verify-abstraction` is clean. Only then does the LO move to `backlog/done/`.
+- Find infused rules later: `./studio learn-find "<topic>"` searches PB- bullets in `knowledge-base/*.md`, `process/*.md`, `teams/**/skills/*.md`. Design specs and milestone reviews cite those PB- ids in `## Catalog applied`; LO- ids do not count.
+
+**Not in git:** `backlog/`, `retros/`, `sprints/`, `.train-queue.json`, and the retired `knowledge-base/learnings/` folder. The HQ pre-commit hook refuses them.
+
+Do **not** copy project UI/tokens into `studio-library/`. Promote reusable assets via `./studio library promote` — lessons are rules, not product dumps.
 
 ### Signals
 
@@ -87,136 +108,29 @@ Do **not** copy project UI/tokens into `studio-library/`. Promote reusable asset
 | `sloppy-code` | AI slop detected | tighten anti-slop rules |
 | `slow-gate` | gate check took too long | optimize the gate |
 
-### Learning item format
+### Studio Infusion Gate
 
-```markdown
----
-id: LO-NNNN
-title: <title>
-status: open | in-progress | done
-signal: <signal>
-source: <source>
-infusion_kind: layout | ui-component | package | process | tooling | …
-infusion_path: knowledge-base/design_playbook.md
-train_skills: [UX-003, FE-002]   # empty [] = playbook-only, no train queue
-priority: P0-P3
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
----
-
-# LO-NNNN — <title>
-
-## Observation
-What happened / what is missing?
-
-## Impact
-What was the consequence (rework, uncertainty, quality risk)?
-
-## Proposal
-How should process / skill / tooling be improved?
-
-## Status
-- [ ] Discussed in the meta-retro
-- [ ] Implemented (CHANGELOG.md entry, version updated)
-```
-
----
-
-## List learning items
-
-```bash
-./studio learn-list
-```
-
-Shows all open learning items.
-
----
-
-## Meta-retrospective
-
-```bash
-./studio retro <project>              # scaffold project retro (status: pending)
-./studio retro <project> --complete   # validate filled retro → status: done
-./studio infusion                     # verify open LO-* tickets before next project ticket
-```
-
-### Studio Infusion Gate (mandatory)
-
-Project sprint planning is **not** blocked by open LO-* tickets. Harvest is immediate; `./studio train` infuses in a HQ session while product execute continues IMPLEMENT.
-
-```
-Project work identifies a learning
-    → harvest (inbox + classified LO) in the same session
-    → ./studio execute  → ACTION IMPLEMENT  (TRAIN sidecar)
-    → ./studio infusion-delta --op add …   (never rewrite the whole playbook)
-    → ./studio train --done TR-NNNN
-    → continue project tickets / next sprint
-```
+Project sprint planning is **not** blocked by open LO-* tickets. `./studio infusion` lists them with the TRAIN_DUE block; `./studio learn-list` shows which still need a verdict.
 
 **Infusion targets** (generalize — never copy client project names into studio docs):
 
-| Kind | Durable store | Also infuse |
-|------|----------------|-------------|
-| `ui-component` / `package` | `knowledge-base/learnings/library/` | studio-library + atomic-design / registry |
-| `design` / `layout` / `ux` / `ia` | `knowledge-base/learnings/design/` | matching design playbooks / UX skills |
-| `frontend` / `backend` / `database` / `security` | `knowledge-base/learnings/frontend/` or `backend/` | matching playbooks / PE–BE skills |
-| `process` / `tooling` | `knowledge-base/learnings/process/` | `process/` + studio-tools / SO skills |
+| Kind | Default target | Severity floor |
+|------|----------------|----------------|
+| `ui-component` | `knowledge-base/atomic-design-playbook.md` | low |
+| `package` | `studio-library/library_registry.md` | low |
+| `design` / `layout` | `knowledge-base/design_playbook.md` | low |
+| `ux` / `usability` | `knowledge-base/design-science-playbook.md` | low |
+| `ia` | `knowledge-base/contextual-ia-playbook.md` | low |
+| `frontend` / `backend` / `database` | matching playbook | low |
+| `security` | `knowledge-base/skill-extensions/frontend-security-auditor.md` | low |
+| `process` | `process/learning-loop.md` | high |
+| `tooling` | `process/gates.md` | high |
 
-Signals still map to these kinds (`design-gap` → design, `library-gap` → package or ui-component, `gate-fail` → tooling).
+The agent may name another target (a skill file, a template, a tool); the floor follows the path.
 
-Signals still map to these kinds (`design-gap` → design, `library-gap` → package or ui-component, `gate-fail` → tooling).
+See [studio-abstraction.md](studio-abstraction.md) — LOs cite `--source <project>`; bullets use `<project>` placeholders.
 
-See [studio-abstraction.md](studio-abstraction.md) — learnings cite `--source <project>`; fixes use `<project>` placeholders.
-
-**LO titles & proposals (LO-0040):** Write the **general rule** (reuse ladder, pattern name, archetype option). Use the originating sprint only as `--source` / Observation context — not as the ticket title or the primary DoD (“fix surface A to match surface B”).
-
-### Flow
-
-1. **Harvest immediately** (not a later Phase 6 batch)
-   - Inbox: `knowledge-base/learnings/inbox.md`
-   - Open LOs from `./studio learn-list`
-   - Retro `--complete`, reuse scan, 3rd gate fail
-   - **Route kinds:** design / ux / ia / layout / package / tooling → matching infusion path **in this session**
-
-2. **Skill review**
-   - Every team skill is reviewed
-   - Collect quality signals
-   - Identify improvements
-
-3. **Decisions**
-   - What will be changed?
-   - What will be kept?
-   - Prioritization
-
-4. **Action items**
-   - Concrete changes
-   - Assign owner
-   - Set deadline
-
-5. **CHANGELOG**
-   - Every change is documented
-   - Update the version
-
-### Retro template
-
-```markdown
-# Meta-Retro — YYYY-MM-DD
-
-## Incoming learning items
-- LO-0000: ...
-
-## Skill review
-| Skill | Quality signal | Action |
-|-------|----------------|--------|
-| ... | ... | ... |
-
-## Decisions
-- ... (every change → CHANGELOG.md entry)
-
-## Action items
-- [ ] ... (owner: ...)
-- [ ] ... (owner: ...)
-```
+**LO titles & `next` (LO-0040):** write the **general rule** (reuse ladder, pattern name, archetype option). The originating sprint is `--source` / Scope context — never the title or the rule.
 
 ---
 
@@ -266,31 +180,21 @@ Every change to the studio is documented in the CHANGELOG:
 
 ## Integration
 
-The learning loop is a **continuous process**:
-
 ```
-┌─────────────────────────────────────────────────────────┐
-│                 LEARNING LOOP                           │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  1. Work                                                │
-│     └─▶ mistakes happen                                 │
-│                                                         │
-│  2. Create a learning item                              │
-│     └─▶ `./studio learn "..." --signal ...`            │
-│                                                         │
-│  3. Meta-retro                                          │
-│     └─▶ `./studio retro <project>`                     │
-│                                                         │
-│  4. Implement the improvement                           │
-│     └─▶ adjust process/tool/skill                      │
-│                                                         │
-│  5. Update the CHANGELOG                                │
-│     └─▶ version bump                                    │
-│                                                         │
-│  6. Back to 1                                           │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                      LEARNING LOOP                           │
+├──────────────────────────────────────────────────────────────┤
+│  product chat                                                │
+│  1. deviation: gate round ≥2, retro line, reject, gate fail  │
+│  2. candidate LO (## Lesson placeholders)                    │
+│  3. verdict: project (local log) | studio (next + target)    │
+│  4. TRAIN_DUE on retro / card / status / settings            │
+│                                                              │
+│  training chat ("run training")                              │
+│  5. ./studio train LO → ## Impact → low | high (HITL)        │
+│  6. infusion-delta --lo → PB- bullet in the real file        │
+│  7. CHANGELOG line → verify-abstraction → train --done       │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---

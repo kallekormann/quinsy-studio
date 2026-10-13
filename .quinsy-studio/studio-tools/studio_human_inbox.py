@@ -47,6 +47,8 @@ STUDIO_HQ_RE = re.compile(
     r"\bstudio[- ]hq\b|"
     r"\bstudio-meta\b|"
     r"\bback to (?:the )?quinsy[- ]studio process\b|"
+    r"\brun (?:the )?training\b|"
+    r"\btraining (?:session|chat)\b|"
     r"\bquinsy[- ]studio\b"
     r")"
 )

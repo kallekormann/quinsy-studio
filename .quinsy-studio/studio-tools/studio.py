@@ -23,6 +23,10 @@ Commands:
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
   ./studio veto <project> --decision ADR-…
+  ./studio train LO-NNNN                         Training chat: Impact block; low infuses, high waits
+  ./studio train LO-NNNN --approve | --defer --reason "…" | --reopen
+  ./studio train --done LO-NNNN                  Close a lesson (PB- id in target + CHANGELOG required)
+  ./studio train --promote <p> --topic "…"       Human overrules a project verdict
   ./studio train <skill-id> --from lo --topic "…" --lo LO-NNNN
   ./studio train --done TR-NNNN                  Mark train job infused
   ./studio train --purge-empty                 Close open jobs with blank observation
@@ -97,13 +101,14 @@ Commands:
   ./studio gate <project> [--level N]            Run QA gate
 
   # Phase 6: Learning
-  ./studio learn "Title" --signal <s>            Create learning item (portable only)
-  ./studio learn-list                            Show open LO items
-  ./studio learn-find "<topic>"                  Search durable learnings catalog
-  ./studio learn-compact                          Archive infused inbox rows
+  ./studio learn "Title" --signal <s>            Open a lesson candidate (portable only)
+  ./studio learn LO-NNNN --verdict studio|project --reason "…" --assumed "…" --signed "…" --next "…" [--target FILE]
+  ./studio learn-list                            Show open LO items (TRAIN_DUE)
+  ./studio learn-find "<topic>"                  Search infused PB- bullets in playbooks, process, skills
   ./studio infusion                              Open LO status (does not block IMPLEMENT)
+  ./studio train LO-NNNN                         Training chat (see above)
   ./studio train --done TR-NNNN                  Close a train job after infusion
-  ./studio infusion-delta --path FILE --op add  Deterministic playbook bullet
+  ./studio infusion-delta --path FILE --op add --body "assumed: … signed: … next: …" [--lo LO-NNNN]
   ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio retro <project> [--complete]          Sprint retrospective
   ./studio sync <project>                        Sync global assets
@@ -967,6 +972,7 @@ class StudioOrchestrator:
             reset_usage(project, usage_path)
             print("  Usage reset.\n")
         print(format_settings_report(load_settings(project=project, ledger=ledger), load_usage(usage_path)))
+        self._print_train_due(project)
         return True
 
     def cmd_note(self, project: str, text: str = "", drain: bool = False):
@@ -1053,6 +1059,135 @@ class StudioOrchestrator:
         print(f"  Loop: ./studio execute {project}  → HITL tech-veto before the next ticket")
         return True
 
+    def cmd_train_lesson(
+        self,
+        lo_id: str,
+        *,
+        approve: bool = False,
+        defer: bool = False,
+        reopen: bool = False,
+        done: bool = False,
+        reason: str = "",
+    ) -> bool:
+        """Training chat on one studio lesson: impact → (HITL on high) → infuse → close."""
+        from studio_lesson import (
+            approve_lesson,
+            assess,
+            close_issues,
+            defer_lesson,
+            ensure_impact_template,
+            lo_path,
+            move_lo_done,
+            parse_frontmatter,
+            parse_lesson,
+            reopen_lesson,
+        )
+
+        lo_id = lo_id.strip().upper()
+        print_header(f"TRAIN — {lo_id}")
+        try:
+            if reopen:
+                dest = reopen_lesson(lo_id)
+                print(f"  Reopened → {dest.relative_to(QUINSY_STUDIO.parent)}")
+                print(f"  Next: ./studio train {lo_id}")
+                return True
+            if defer:
+                dest = defer_lesson(lo_id, reason)
+                print(f"  Deferred → {dest.relative_to(QUINSY_STUDIO.parent)}")
+                print("  It stays first in every TRAIN_DUE list. Bring it back: ./studio train " + lo_id + " --reopen")
+                return True
+            if approve:
+                approve_lesson(lo_id)
+                print(f"  Approved by the human. Infuse now:")
+                self._print_infuse_hint(lo_id)
+                return True
+            if done:
+                issues = close_issues(lo_id)
+                if issues:
+                    print(f"  ❌ {lo_id} cannot close:")
+                    for issue in issues:
+                        print(f"    • {issue}")
+                    return False
+                dest = move_lo_done(lo_id)
+                print(f"  ✅ {lo_id} done → {dest.relative_to(QUINSY_STUDIO.parent)}")
+                print("  Commit the target file and CHANGELOG.md in studio HQ. The LO stays local.")
+                return True
+        except (ValueError, FileNotFoundError) as exc:
+            print(f"  ❌ {exc}")
+            return False
+
+        path = lo_path(lo_id)
+        if path is None:
+            print(f"  ❌ {lo_id} not found under backlog/")
+            return False
+        state = assess(lo_id)
+        kind = state.get("state")
+        if kind == "needs_verdict":
+            print(f"  ❌ No verdict yet ({', '.join(state.get('missing') or [])}). The product agent answers first:")
+            print(f"    ./studio learn {lo_id} --verdict studio|project --reason \"…\" --assumed \"…\" --signed \"…\" --next \"…\" [--target <file>]")
+            return False
+        if kind == "needs_impact":
+            ensure_impact_template(lo_id)
+            print(f"  Wrote the ## Impact block into {path.name}. Fill every line, then run this command again.")
+            print("  files / in-flight / compliance / pro / contra / severity. The floor comes from the target path; raise it, never lower it.")
+            return False
+        if kind == "impact_stub":
+            print(f"  ❌ Impact block still has placeholders: {', '.join(state.get('missing') or [])}")
+            print(f"  Edit {path.relative_to(QUINSY_STUDIO.parent)} and run again.")
+            return False
+        lesson = state.get("lesson") or parse_lesson(path.read_text(encoding="utf-8"))
+        impact = state.get("impact") or {}
+        print(f"  next:   {lesson.get('next')}")
+        print(f"  target: {lesson.get('target')}")
+        print(f"  severity: {state.get('severity')}")
+        if kind == "hitl":
+            print("\n  HIGH IMPACT — the human decides before anything is written:")
+            print(f"    files:      {impact.get('files')}")
+            print(f"    in-flight:  {impact.get('in-flight')}")
+            print(f"    compliance: {impact.get('compliance')}")
+            print(f"    pro:        {impact.get('pro')}")
+            print(f"    contra:     {impact.get('contra')}")
+            print(f"\n    ./studio train {lo_id} --approve")
+            print(f"    ./studio train {lo_id} --defer --reason \"…\"")
+            return False
+        meta = parse_frontmatter(path.read_text(encoding="utf-8"))
+        if meta.get("infused_id"):
+            print(f"\n  Already infused as {meta['infused_id']}. Close: ./studio train --done {lo_id}")
+            return True
+        print("\n  Low impact — infuse now (INFORM, no signature):")
+        self._print_infuse_hint(lo_id)
+        return True
+
+    def _print_infuse_hint(self, lo_id: str) -> None:
+        from studio_lesson import lo_path, parse_lesson
+
+        path = lo_path(lo_id)
+        lesson = parse_lesson(path.read_text(encoding="utf-8")) if path else {}
+        target = lesson.get("target") or "<target>"
+        print(f"    ./studio infusion-delta --lo {lo_id} --path {target} --op add --section Deltas \\")
+        print(f"      --body \"assumed: {lesson.get('assumed', '…')[:60]} signed: {lesson.get('signed', '…')[:60]} next: {lesson.get('next', '…')[:80]}\"")
+        print("    then a CHANGELOG.md line naming the PB- id, ./studio verify-abstraction, and")
+        print(f"    ./studio train --done {lo_id}")
+
+    def cmd_train_promote(self, project: str, topic: str) -> bool:
+        """Human overrules a project verdict: the line becomes a studio lesson candidate."""
+        from studio_harvest import harvest_identified_learning
+        from studio_lesson import project_verdict_lines
+
+        print_header(f"TRAIN — promote from {project}")
+        rows = project_verdict_lines(project, limit=50)
+        match = next((r for r in rows if topic.strip().lower() in r["title"].lower()), None)
+        if not match:
+            print(f"  ❌ No project-verdict line in projects/{project}/docs/studio-learnings-local.md matches {topic!r}")
+            return False
+        result = harvest_identified_learning(match["title"], source=f"{project}/promoted", observation=match["title"])
+        if result.get("dropped"):
+            print(f"  ❌ Still not portable as written: {result.get('reason')}. Rewrite the title as a must/should/never rule and run again.")
+            return False
+        print(f"  Candidate {result.get('lo_id')} opened (human overruled: {match['reason'] or 'no reason recorded'}).")
+        print(f"  Fill the verdict as studio: ./studio learn {result.get('lo_id')} --verdict studio --reason \"human overrule\" --assumed \"…\" --signed \"…\" --next \"…\"")
+        return True
+
     def cmd_train(self, skill_id: str, topic: str, source: str = "mistake", done: str = "", lo_id: str = "", close_mode: bool = False, purge_empty: bool = False):
         """Queue a parallel skill-training job. Does not block product IMPLEMENT."""
         from studio_train import (
@@ -1074,6 +1209,15 @@ class StudioOrchestrator:
         synced = sync_train_with_done_los()
         if synced:
             print(f"  Synced {len(synced)} job(s) whose LO is already in backlog/done/")
+        if close_mode and lo_id and re.fullmatch(r"LO-\d{4}", lo_id.upper()):
+            from studio_lesson import close_issues
+
+            issues = close_issues(lo_id.upper())
+            if issues:
+                print(f"  ❌ {lo_id.upper()} cannot close — the lesson is not in the studio yet:")
+                for issue in issues:
+                    print(f"    • {issue}")
+                return False
         if close_mode:
             closed = close_jobs_for_lo(lo_id) if lo_id else []
             if done:
@@ -1128,18 +1272,58 @@ class StudioOrchestrator:
             return False
         return True
 
-    def cmd_infusion_delta(self, rel_path: str, op: str, section: str = "Deltas", body: str = "", bullet_id: str = ""):
-        """Apply one ADD/UPDATE/REMOVE bullet to a studio HQ playbook."""
+    def cmd_infusion_delta(self, rel_path: str, op: str, section: str = "Deltas", body: str = "", bullet_id: str = "", lo_id: str = ""):
+        """Apply one ADD/UPDATE/REMOVE bullet to a studio HQ file. With --lo the bullet closes that lesson."""
         from studio_infusion_delta import apply_delta
 
         print_header("INFUSION DELTA")
+        lo_id = (lo_id or "").strip().upper()
+        if lo_id:
+            from studio_lesson import (
+                assess,
+                effective_severity,
+                infusion_body_issues,
+                lo_path,
+                normalize_target,
+                parse_frontmatter,
+                parse_lesson,
+            )
+
+            path = lo_path(lo_id)
+            if path is None:
+                print(f"  ❌ {lo_id} not found under backlog/")
+                return False
+            text = path.read_text(encoding="utf-8")
+            if op == "add":
+                issues = infusion_body_issues(body)
+                if issues:
+                    print(f"  ❌ A bullet that closes {lo_id} carries the lesson, not a title: {'; '.join(issues)}")
+                    print("  --body \"assumed: <studio default> signed: <what the human accepted> next: <the rule>\"")
+                    return False
+            lesson = parse_lesson(text)
+            target = normalize_target(lesson.get("target") or parse_frontmatter(text).get("infusion_path") or "")
+            if target and normalize_target(rel_path) != target:
+                print(f"  ❌ {lo_id} targets `{target}`, not `{rel_path}`. Change the LO target first if that is wrong.")
+                return False
+            state = assess(lo_id)
+            if state.get("state") != "infuse":
+                if state.get("state") == "hitl":
+                    print(f"  ❌ {lo_id} is high impact and not approved. ./studio train {lo_id} --approve, or --defer --reason \"…\"")
+                else:
+                    print(f"  ❌ {lo_id} is not ready to infuse ({state.get('state')}). Run ./studio train {lo_id} first.")
+                return False
         try:
             result = apply_delta(rel_path, op, section=section, body=body, bullet_id=bullet_id)
         except (ValueError, FileNotFoundError) as exc:
             print(f"  ⚠️  {exc}")
-            print("  Usage: ./studio infusion-delta --path knowledge-base/foo.md --op add --section Deltas --body \"…\"")
+            print("  Usage: ./studio infusion-delta --path knowledge-base/foo.md --op add --section Deltas --body \"assumed: … signed: … next: …\" [--lo LO-NNNN]")
             return False
         print(f"  {result['op']} {result['id']} → {result['path']}")
+        if lo_id:
+            from studio_lesson import record_infusion
+
+            record_infusion(lo_id, bullet_id=result["id"], target=result["path"])
+            print(f"  Recorded on {lo_id}. Add a CHANGELOG.md line naming {result['id']}, run ./studio verify-abstraction, then ./studio train --done {lo_id}")
         return True
 
     def cmd_bind(self, project: str, session: str = "", show: bool = False, clear: bool = False) -> bool:
@@ -1537,6 +1721,7 @@ class StudioOrchestrator:
                 print(f"\n  Open tickets: {len(open_tickets)}")
                 for t in sorted(open_tickets)[:5]:
                     print(f"    - {t.stem}")
+        self._print_train_due(project)
     
     # -------------------------------------------------------------------------
     # PHASE 1: INTAKE
@@ -1750,6 +1935,37 @@ class StudioOrchestrator:
         print(f"  Update artifacts, then ./studio approve {project} --gate {gate_id}")
         return True
     
+    def _harvest_gate_rounds(self, project: str, gate_id: str) -> None:
+        """A gate signed after ≥2 send-backs opens a lesson candidate. The verdict comes later."""
+        try:
+            from studio_harvest import GATE_ROUND_THRESHOLD, gate_revision_rounds, harvest_gate_rounds
+        except ImportError:
+            return
+        rounds = gate_revision_rounds(PROJECTS_DIR / project, gate_id)
+        if len(rounds) < GATE_ROUND_THRESHOLD:
+            return
+        result = harvest_gate_rounds(project, PROJECTS_DIR / project, gate_id) or {}
+        print(f"\n  Gate {gate_id} needed {len(rounds)} revision rounds before this signature.")
+        if result.get("created"):
+            print(f"  Lesson candidate opened: {result.get('lo_id')} → {result.get('infusion_path')}")
+            print("  Answer before the next retro closes: did this change because of this product, or because the studio default was wrong?")
+            print(f"    ./studio learn {result.get('lo_id')} --verdict studio|project --reason \"…\" --assumed \"…\" --signed \"…\" --next \"…\" [--target <file>]")
+        elif result.get("lo_id"):
+            print(f"  Lesson candidate already open: {result.get('lo_id')}")
+        elif result.get("dropped"):
+            print(f"  Candidate kept project-local: {result.get('reason')}")
+
+    def _print_train_due(self, project: str = "", *, compact: bool = False) -> None:
+        try:
+            from studio_lesson import train_due_lines
+        except ImportError:
+            return
+        lines = train_due_lines(project, compact=compact)
+        if lines:
+            print()
+            for line in lines:
+                print(f"  {line}")
+
     def cmd_approve(self, project: str, gate):
         """Approve a human gate (0, 1, 2a direction, 2b project kit)."""
         status = load_status(project)
@@ -1777,6 +1993,8 @@ class StudioOrchestrator:
             print_header(f"GATE {gate_id} BLOCKED — {project}")
             print(f"\n  {blocked}")
             return False
+
+        self._harvest_gate_rounds(project, gate_id)
 
         if gate_id == "0":
             print_header(f"HUMAN GATE 0 APPROVED: {project}")
@@ -3626,13 +3844,68 @@ class StudioOrchestrator:
     # PHASE 6: LEARNING
     # -------------------------------------------------------------------------
     
-    def cmd_learn(self, title: str, signal: str, source: str = "Studio Development"):
-        """Capture a learning immediately (classified LO + inbox). Execute will STUDIO_LO next."""
+    def cmd_learn(
+        self,
+        title: str,
+        signal: str,
+        source: str = "Studio Development",
+        *,
+        verdict: str = "",
+        reason: str = "",
+        assumed: str = "",
+        signed: str = "",
+        next_rule: str = "",
+        target: str = "",
+    ):
+        """Capture a learning as a local LO, or fill the verdict on an existing LO-NNNN."""
         from studio_harvest import harvest_identified_learning
 
+        if re.fullmatch(r"LO-\d{4}", title.strip().upper()):
+            from studio_lesson import set_lesson_verdict
+
+            lo_id = title.strip().upper()
+            if not verdict:
+                print(f"\n  {lo_id}: give the verdict — --verdict studio|project --reason \"…\" --assumed \"…\" --signed \"…\" [--next \"…\" --target <file>]")
+                return ""
+            try:
+                result = set_lesson_verdict(
+                    lo_id,
+                    verdict=verdict,
+                    reason=reason,
+                    assumed=assumed,
+                    signed=signed,
+                    next_rule=next_rule,
+                    target=target,
+                )
+            except (ValueError, FileNotFoundError) as exc:
+                print(f"\n  ❌ {lo_id}: {exc}")
+                return ""
+            if result["verdict"] == "project":
+                print(f"\n  {lo_id} judged project-specific — {reason}")
+                print(f"  Logged: {result.get('local_log') or '(no project folder resolved from source)'}; LO removed.")
+                print("  The human can overrule from the TRAIN_DUE list: ./studio train --promote <project> --topic \"<title>\"")
+                return ""
+            print(f"\n  {lo_id} verdict: studio — {reason}")
+            print(f"  Target: {result['target']}  (severity floor {result['severity_floor']})")
+            print("  Training chat: ./studio train " + lo_id)
+            return lo_id
+
         result = harvest_identified_learning(
-            title, source=source, signal=signal, observation=title
+            title,
+            source=source,
+            signal=signal,
+            observation=title,
+            assumed=assumed,
+            signed=signed,
+            verdict=verdict,
+            reason=reason,
+            next_rule=next_rule,
+            target=target,
         )
+        if result.get("project_verdict"):
+            print(f"\n  Judged project-specific — {reason}")
+            print(f"  Logged: {result.get('local_log') or '(no project folder resolved from --source)'}. No studio LO.")
+            return ""
         if result.get("dropped"):
             print(f"\n  Learning dropped (not studio-portable): {title[:80]}")
             print(f"  Reason: {result.get('reason')}")
@@ -3646,14 +3919,14 @@ class StudioOrchestrator:
             print(f"\n  Learning captured: {lo_id}")
         else:
             print(f"\n  Learning already open: {lo_id} (deduped)")
-        print(f"  Kind: {result.get('kind')} → {result.get('infusion_path')}")
+        print(f"  Kind: {result.get('kind')} → target {result.get('infusion_path')}")
         print(f"  Signal: {result.get('signal')}")
-        if result.get("inbox"):
-            print(f"  Inbox (open queue only): .quinsy-studio/{result['inbox']}")
-        print("  Durable store: knowledge-base/learnings/<domain>/<topic>.md  (see index.md)")
-        print("  Harvested. Product execute continues IMPLEMENT; train agent infuses the matching playbook/skill:")
-        print("    ./studio train SO-001 --from mistake --topic \"<gap>\"")
-        print("    ./studio execute <project>  → ACTION IMPLEMENT (open LOs do not block)")
+        if result.get("needs_verdict"):
+            print("  Candidate only. Fill the verdict before the retro can close:")
+            print(f"    ./studio learn {lo_id} --verdict studio|project --reason \"…\" --assumed \"…\" --signed \"…\" --next \"…\" [--target <file>]")
+        else:
+            print(f"  Ready for a training chat: ./studio train {lo_id}")
+        print("  Product execute continues IMPLEMENT; open LOs do not block.")
         return lo_id
 
     def cmd_learn_list(self):
@@ -3671,6 +3944,8 @@ class StudioOrchestrator:
             print("  No learning items found")
             return
 
+        from studio_lesson import needs_verdict
+
         print(f"\n  Total: {len(los)}")
         for lo in sorted(los):
             content = lo.read_text()
@@ -3682,34 +3957,24 @@ class StudioOrchestrator:
             path = path_match.group(1).strip() if path_match else ""
             extra = f" kind={kind}" if kind else ""
             extra += f" → {path}" if path else ""
+            extra += " needs-verdict" if needs_verdict(content) else ""
             print(f"  - {lo.stem} [Signal: {signal}{extra}]")
-        print("\n  Next: ./studio execute <project> continues IMPLEMENT; TRAIN sidecar infuses LOs")
-        print("  Find durable principles: ./studio learn-find \"<topic>\"  (not inbox.md)")
+        self._print_train_due()
+        print("\n  Next: ./studio execute <project> continues IMPLEMENT; a training chat runs ./studio train <LO>")
+        print("  Find infused rules: ./studio learn-find \"<topic>\"")
 
     def cmd_learn_find(self, query: str):
-        """Search the durable learnings catalog (domain/topic files)."""
-        from studio_learnings_store import INDEX_PATH, search_learnings
+        """Search infused PB- bullets where the agent reads them: playbooks, process files, skills."""
+        from studio_lesson import SEARCH_GLOBS, search_pb_bullets
 
-        print_header("LEARNINGS CATALOG")
-        hits = search_learnings(query)
+        print_header("INFUSED RULES")
+        hits = search_pb_bullets(query)
         if not hits:
-            print(f"\n  No matches for {query!r}. See {INDEX_PATH.relative_to(QUINSY_STUDIO.parent)}")
+            print(f"\n  No PB- bullet matches {query!r} in {', '.join(SEARCH_GLOBS)}")
             return False
         for hit in hits:
             print(f"  {hit['path']}")
             print(f"    {hit['line']}")
-        return True
-
-    def cmd_learn_compact(self):
-        """Archive infused/stale inbox rows; keep only open LOs in inbox.md."""
-        from studio_learnings_store import compact_inbox, rebuild_index
-
-        print_header("LEARNING INBOX COMPACT")
-        result = compact_inbox()
-        rebuild_index()
-        print(f"\n  Kept {result['kept']} open inbox rows; archived {result['archived']}")
-        print("  Durable store: knowledge-base/learnings/<domain>/<topic>.md")
-        print("  Index: knowledge-base/learnings/index.md")
         return True
 
     def cmd_retro(self, project: str, complete: bool = False):
@@ -3732,33 +3997,48 @@ class StudioOrchestrator:
                 print(f"\n  ⚠️  {message}")
                 print(f"  Fill: projects/{project}/sprints/{sprint}/retro.md")
                 return False
-            hitl["retro_status"] = RETRO_DONE
-            hitl["retro_completed_at"] = datetime.now().isoformat()
-            save_status(project, status)
-            print(f"\n  ✅ Retro complete: {message}")
-            retro_path = PROJECTS_DIR / project / "sprints" / sprint / "retro.md"
-            if retro_path.exists():
-                from studio_harvest import harvest_retro_text
+            from studio_harvest import harvest_retro_text, open_candidates
 
+            retro_path = PROJECTS_DIR / project / "sprints" / sprint / "retro.md"
+            harvest_key = f"retro_harvested_{sprint}"
+            if retro_path.exists() and not hitl.get(harvest_key):
                 harvested = harvest_retro_text(
                     retro_path.read_text(encoding="utf-8", errors="ignore"), project
                 )
+                hitl[harvest_key] = True
+                save_status(project, status)
                 created = [h for h in harvested if h.get("created")]
                 dropped = [h for h in harvested if h.get("dropped")]
                 skipped = [h for h in harvested if not h.get("created") and not h.get("dropped")]
                 if created or skipped or dropped:
-                    print("\n  Retro harvest (portable principles only):")
+                    print("\n  Retro harvest — lesson candidates (portable lines only):")
                     for h in created:
-                        print(
-                            f"    {h.get('lo_id')} [{h.get('kind')}] → {h.get('infusion_path')}"
-                        )
+                        print(f"    {h.get('lo_id')} [{h.get('kind')}] → {h.get('infusion_path')}")
                     for h in skipped:
                         print(f"    {h.get('lo_id')} already open (deduped)")
                     for h in dropped:
                         print(f"    dropped (project-local): {h.get('reason')}")
-            print("  Harvested. Product loop continues; spawn train beside it:")
-            print(f"    ./studio execute {project}  → IMPLEMENT (not STUDIO_LO)")
-            print(f"    ./studio train SO-001 --from mistake --topic \"retro gap\"")
+
+            candidates = open_candidates()
+            if candidates:
+                print(f"\n  ❌ Retro stays open: {len(candidates)} lesson candidate(s) have no verdict.")
+                print("  For each one answer: did the definition change because of this product, or because the studio default was wrong?")
+                for path in candidates:
+                    lo_id = re.search(r"(LO-\d{4})", path.name)
+                    lid = lo_id.group(1) if lo_id else path.stem
+                    print(f"    {lid}  {path.name}")
+                    print(f"      ./studio learn {lid} --verdict studio --reason \"…\" --assumed \"…\" --signed \"…\" --next \"<rule as a bullet>\" [--target <studio file>]")
+                    print(f"      ./studio learn {lid} --verdict project --reason \"…\" --assumed \"…\" --signed \"…\"")
+                print(f"  Then: ./studio retro {project} --complete")
+                return False
+
+            hitl["retro_status"] = RETRO_DONE
+            hitl["retro_completed_at"] = datetime.now().isoformat()
+            save_status(project, status)
+            print(f"\n  ✅ Retro complete: {message}")
+            self._print_train_due(project)
+            print(f"\n  Product loop continues: ./studio execute {project}  → IMPLEMENT (not STUDIO_LO)")
+            print("  Studio lessons wait for a training chat; they do not run inside the product sprint.")
             return True
 
         retro_file = prepare_retro(project, sprint)
@@ -3812,7 +4092,8 @@ class StudioOrchestrator:
         if not items and not hq_hits:
             print("\n  ✅ No open LO tickets — safe to plan the next project sprint.")
             print("  Portability: no project folder names found in HQ playbooks/skills (excl. CHANGELOG).")
-            print("  Generalize learnings into: knowledge-base/learnings/<domain>/<topic>.md (+ matching playbook/skill)")
+            print("  A lesson lands as a PB- bullet in the playbook, process file, skill, template, or tool it changes.")
+            self._print_train_due()
             return True
         if items:
             print(f"\n  {len(items)} open studio learning item(s) — train skill gaps in parallel; product IMPLEMENT is not blocked.")
@@ -3827,12 +4108,14 @@ class StudioOrchestrator:
             for h in hq_hits[:10]:
                 print(f"    • {h['path']}:{h['line']} ({h['noun']}) {h['snippet'][:70]}")
             print("    Replace product names and ticket IDs with <project> / <ticket>; HQ has no provenance exception.")
-        print("\n  Infusion targets:")
-        print("    knowledge-base/learnings/<domain>/ · process/ · teams/*/skills/ · playbooks · studio-library/")
+        print("\n  Infusion targets (the file the next project follows):")
+        print("    knowledge-base/*.md playbooks · process/ · teams/*/skills/ · studio-templates/ · studio-tools/ · studio-library/")
+        self._print_train_due()
         print("\n  Product: ./studio execute <project>  → IMPLEMENT")
         if items:
-            skills = items[0].get("train_skills") or "SO-001"
-            print(f"  Train:   ./studio train <skill-id> --topic \"<principle>\"  then infusion-delta, then --done")
+            print("  Train:   ./studio train <LO>  → Impact block; low infuses, high waits for --approve / --defer")
+            print("           ./studio infusion-delta --lo <LO> --path <target> --op add --body \"assumed: … signed: … next: …\"")
+            print("           CHANGELOG line → ./studio train --done <LO>")
             queued = sidecar_commands(4)
             if queued:
                 print("  Open train jobs (oldest first):")
@@ -4462,6 +4745,10 @@ Commands:
   ./studio note <project> "…"                    Queue mid-execute input (ACK; drain after MOVE_DONE)
   ./studio inform <project> --gate 1             Architecture is HITL — use approve, not inform
   ./studio veto <project> --decision ADR-…
+  ./studio train LO-NNNN                         Training chat: Impact block; low infuses, high waits
+  ./studio train LO-NNNN --approve | --defer --reason "…" | --reopen
+  ./studio train --done LO-NNNN                  Close a lesson (PB- id in target + CHANGELOG required)
+  ./studio train --promote <p> --topic "…"       Human overrules a project verdict
   ./studio train <skill-id> --from lo --topic "…" --lo LO-NNNN
   ./studio train --done TR-NNNN                  Mark train job infused
   ./studio train --purge-empty                 Close open jobs with blank observation
@@ -4536,13 +4823,14 @@ Commands:
   ./studio gate <project> [--level N]            Run QA gate
 
   # Phase 6: Learning
-  ./studio learn "Title" --signal <s>            Create learning item (portable only)
-  ./studio learn-list                            Show open LO items
-  ./studio learn-find "<topic>"                  Search durable learnings catalog
-  ./studio learn-compact                          Archive infused inbox rows
+  ./studio learn "Title" --signal <s>            Open a lesson candidate (portable only)
+  ./studio learn LO-NNNN --verdict studio|project --reason "…" --assumed "…" --signed "…" --next "…" [--target FILE]
+  ./studio learn-list                            Show open LO items (TRAIN_DUE)
+  ./studio learn-find "<topic>"                  Search infused PB- bullets in playbooks, process, skills
   ./studio infusion                              Open LO status (does not block IMPLEMENT)
+  ./studio train LO-NNNN                         Training chat (see above)
   ./studio train --done TR-NNNN                  Close a train job after infusion
-  ./studio infusion-delta --path FILE --op add  Deterministic playbook bullet
+  ./studio infusion-delta --path FILE --op add --body "assumed: … signed: … next: …" [--lo LO-NNNN]
   ./studio cite knowledge-base/foo.md --helpful PB-YYYYMMDD-001
   ./studio retro <project> [--complete]          Sprint retrospective
   ./studio sync <project>                        Sync global assets
@@ -4715,6 +5003,40 @@ def main():
                 reason = args[i + 1]
         orchestrator.cmd_veto(args[0], decision=decision, reason=reason, ack=ack)
 
+    elif command == "train" and len(args) >= 1 and (
+        re.fullmatch(r"LO-\d{4}", args[0].upper())
+        or (args[0] == "--done" and len(args) >= 2 and re.fullmatch(r"LO-\d{4}", args[1].upper()))
+        or args[0] == "--promote"
+    ):
+        # Lesson training: ./studio train LO-NNNN [--approve | --defer --reason "…" | --reopen]
+        #                  ./studio train --done LO-NNNN
+        #                  ./studio train --promote <project> --topic "<title>"
+        reason = ""
+        topic = ""
+        for i, arg in enumerate(args):
+            if arg == "--reason" and i + 1 < len(args):
+                reason = args[i + 1]
+            if arg == "--topic" and i + 1 < len(args):
+                topic = args[i + 1]
+        if args[0] == "--promote":
+            project = args[1] if len(args) >= 2 and not args[1].startswith("--") else ""
+            if not project or not topic:
+                print("  Usage: ./studio train --promote <project> --topic \"<title from the project-verdict list>\"")
+                sys.exit(2)
+            ok = orchestrator.cmd_train_promote(project, topic)
+        elif args[0] == "--done":
+            ok = orchestrator.cmd_train_lesson(args[1], done=True)
+        else:
+            ok = orchestrator.cmd_train_lesson(
+                args[0],
+                approve="--approve" in args,
+                defer="--defer" in args,
+                reopen="--reopen" in args,
+                reason=reason,
+            )
+        if ok is False:
+            sys.exit(2)
+
     elif command == "train" and len(args) >= 1:
         done_id = ""
         lo_id = ""
@@ -4759,6 +5081,7 @@ def main():
         section = "Deltas"
         body = ""
         bullet_id = ""
+        lo_ref = ""
         for i, arg in enumerate(args):
             if arg == "--path" and i + 1 < len(args):
                 rel_path = args[i + 1]
@@ -4770,7 +5093,11 @@ def main():
                 body = args[i + 1]
             elif arg == "--id" and i + 1 < len(args):
                 bullet_id = args[i + 1]
-        orchestrator.cmd_infusion_delta(rel_path, op, section=section, body=body, bullet_id=bullet_id)
+            elif arg == "--lo" and i + 1 < len(args):
+                lo_ref = args[i + 1]
+        ok = orchestrator.cmd_infusion_delta(rel_path, op, section=section, body=body, bullet_id=bullet_id, lo_id=lo_ref)
+        if ok is False:
+            sys.exit(2)
 
     elif command == "cite":
         rel_path = args[0] if args and not args[0].startswith("--") else ""
@@ -5211,21 +5538,31 @@ def main():
         title = args[0]
         signal = "process-gap"
         source = "Studio Development"
+        opts = {"verdict": "", "reason": "", "assumed": "", "signed": "", "next": "", "target": ""}
         for i, arg in enumerate(args):
             if arg == "--signal" and i + 1 < len(args):
                 signal = args[i + 1]
             elif arg == "--source" and i + 1 < len(args):
                 source = args[i + 1]
-        orchestrator.cmd_learn(title, signal, source)
+            elif arg.startswith("--") and arg[2:] in opts and i + 1 < len(args):
+                opts[arg[2:]] = args[i + 1]
+        orchestrator.cmd_learn(
+            title,
+            signal,
+            source,
+            verdict=opts["verdict"],
+            reason=opts["reason"],
+            assumed=opts["assumed"],
+            signed=opts["signed"],
+            next_rule=opts["next"],
+            target=opts["target"],
+        )
     
     elif command == "learn-list":
         orchestrator.cmd_learn_list()
 
     elif command == "learn-find" and args:
         orchestrator.cmd_learn_find(" ".join(args))
-
-    elif command == "learn-compact":
-        orchestrator.cmd_learn_compact()
 
     elif command == "infusion":
         orchestrator.cmd_infusion()

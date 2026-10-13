@@ -424,6 +424,12 @@ When integrating multiple stock-media providers for **Suggested** / discovery ra
 
 ## Deltas
 
+- **PB-20261013-006** helpful=0 harmful=0 :: Verify the provider signature on every vendor webhook before any write. A reachable endpoint is normal. An unsigned request must leave stored data unchanged. (carried over from the retired learnings catalog, was PB-20260927-001)
+- **PB-20261013-005** helpful=0 harmful=0 :: Subscription checkout must use hosted billing while the price id stays empty and must refuse checkout until that id exists. (carried over from the retired learnings catalog, was PB-20260927-001)
+- **PB-20261013-004** helpful=0 harmful=0 :: When a requirement needs a fact the schema cannot store, architecture must add that column instead of shipping the schema alone. (carried over from the retired learnings catalog, was PB-20260927-001)
+- **PB-20261013-003** helpful=0 harmful=0 :: Folder filters that join work rows to pages by page_id must also resolve the page via the linked brief, or persist page_id as soon as the page exists. (carried over from the retired learnings catalog, was PB-20260923-001)
+- **PB-20261013-002** helpful=0 harmful=0 :: Keep public host routing on the original Host header without a path-prefix rewrite. Do not restyle a live public site from a docs-only ticket. (carried over from the retired learnings catalog, was PB-20260926-003)
+- **PB-20261013-001** helpful=0 harmful=0 :: Register regular, bold, italic, and bold-italic for every custom PDF face before writing HTML. A missing style aborts the file. Host SIL webfonts in the product tree, load them locally, and reuse those files in PDF export so a public page does not call a font CDN. (carried over from the retired learnings catalog, was PB-20261008-002)
 - **PB-20260925-001** helpful=0 harmful=0 :: Do not enqueue HQ skill-catalog work on the product sprint inbox. Route it to the studio LO and train queue. Product execute INFORM the open HQ LO count. Infuse those jobs in a HQ session; STUDIO_LO only when the product loop is idle.
 - **PB-20260922-001** helpful=0 harmful=0 :: When a persisted image URL fails reachability, queue public-photo research on the same gold path as persist. Do not wait for a generation vendor.
 - **PB-20260916-005** helpful=0 harmful=0 :: Per-tenant third-party API credentials are encrypted rows in the database, scoped to the tenant. An admin surface must not read them from process .env.

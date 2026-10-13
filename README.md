@@ -6,17 +6,17 @@ The reference is the [manual](.quinsy-studio/docs/README.md). Start with [the co
 
 ## What is in this repo
 
-Studio git holds the method: process, teams, skills, the learnings catalog, the library, and the templates. A clone does not contain your products, your research notes, or the tickets that produced a lesson.
+Studio git holds the method: process, teams, skills, playbooks, the library, and the templates. A lesson from a product lands as a PB- bullet in the file the next product follows. A clone does not contain your products, your research notes, or the tickets that produced a lesson.
 
 | Layer | Path | In studio git? |
 |-------|------|----------------|
 | Studio HQ | `.quinsy-studio/`, `studio`, `AGENTS.md` | Yes |
 | This manual | `.quinsy-studio/docs/` | Yes |
-| Learnings catalog | `knowledge-base/learnings/<domain>/` | Yes — the principle |
+| Infused lessons | PB- bullets in `knowledge-base/*.md`, `process/*.md`, `teams/*/skills/*.md` | Yes — the rule |
 | Ideation notes | `ideation/` | No |
 | Products | `projects/<name>/` | No — each product has its own git repo |
 | Product definition before bootstrap | `intake/` | No |
-| Tickets, retros, train queue | `.quinsy-studio/backlog/`, `retros/`, `sprints/`, `learnings/` | No |
+| Tickets, retros, train queue | `.quinsy-studio/backlog/`, `retros/`, `sprints/`, `.train-queue.json` | No |
 
 ## After you clone
 

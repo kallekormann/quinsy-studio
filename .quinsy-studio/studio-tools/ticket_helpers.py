@@ -210,11 +210,11 @@ SKILL_EXTRA_PLAYBOOKS = {
     ],
     "UX-008": [
         "knowledge-base/anti-slop-design-ux.md",
-        "knowledge-base/learnings/design/craft.md",
+        "knowledge-base/design_playbook.md",
     ],
     "UX-009": [
         "knowledge-base/design-system-compliance-checklist.md",
-        "knowledge-base/learnings/design/interaction.md",
+        "knowledge-base/design-science-playbook.md",
     ],
     "UX-007": [
         "knowledge-base/visual-storytelling-playbook.md",
@@ -238,9 +238,6 @@ SKILL_EXTRA_PLAYBOOKS = {
 }
 
 
-from studio_learnings_store import TEAM_LEARNING_CATALOG
-
-
 def playbooks_for_skills(skills: List[str]) -> List[str]:
     """Playbook paths the implementer must read for these skill IDs."""
     seen: List[str] = []
@@ -251,9 +248,6 @@ def playbooks_for_skills(skills: List[str]) -> List[str]:
             path = playbook_for_team(team)
             if path not in seen:
                 seen.append(path)
-            catalog = TEAM_LEARNING_CATALOG.get(team)
-            if catalog and catalog not in seen:
-                seen.append(catalog)
         for extra in SKILL_EXTRA_PLAYBOOKS.get(str(skill), []):
             if extra not in seen:
                 seen.append(extra)

@@ -88,8 +88,13 @@ You rarely type these. The agent does. This page says what each one does so you 
 | `./studio library list` | What the studio can pull. |
 | `./studio library suggest <project> "button"` | Finds a match before anyone writes a new component. |
 | `./studio library pull <project> button` | Copies that asset into the product. The product adapts it. |
-| `./studio learn "Title"` | Opens a studio lesson, only if the wording is reusable. |
-| `./studio train …` | Infuses a lesson into a skill or playbook. A studio chat, not the product chat. |
+| `./studio learn "Title"` | Opens a studio lesson candidate, only if the wording is reusable. |
+| `./studio learn LO-NNNN --verdict studio\|project --reason … --assumed … --signed … --next … [--target …]` | The product agent's answer: was this about the product or about the studio? A retro cannot close without it. |
+| `./studio train LO-NNNN` | The training chat. Writes the Impact block; low impact infuses, high impact stops for you. |
+| `./studio train LO-NNNN --approve` / `--defer --reason "…"` / `--reopen` | Your decision on a high-impact lesson. Deferred ones wait in `backlog/deferred/`. |
+| `./studio infusion-delta --lo LO-NNNN --path <target> --op add --body "assumed: … signed: … next: …"` | Writes the PB- bullet into the file the next product follows. |
+| `./studio train --done LO-NNNN` | Closes the lesson. Refuses until the bullet is in the target, the CHANGELOG names it, and verify-abstraction is clean. |
+| `./studio train --promote <project> --topic "…"` | You overrule a `project` verdict; the line becomes a studio candidate. |
 | `./studio settings` | Shows the studio load caps. Not your model bill. |
 | `./studio settings <project>` | The same caps for that product's execute loop. |
 
@@ -113,9 +118,9 @@ On `INFORM cost-cap`, raise the named key in the local settings file. Do not kee
 | `./studio env <project> down` | Stops the local Docker stack. |
 | `./studio env <project> status` | Whether that stack is up. |
 | `./studio repo <project> create\|status` | The product's own git remote. |
-| `./studio learn-list` | Open studio lessons. |
-| `./studio learn-find "topic"` | Finds a rule already in the catalog. |
-| `./studio infusion` | Lists lessons waiting to be infused. Does not stop the product. |
+| `./studio learn-list` | Open studio lessons and the TRAIN_DUE block. |
+| `./studio learn-find "topic"` | Finds a PB- rule already in a playbook, process file, or skill. |
+| `./studio infusion` | Lists lessons waiting for a training chat. Does not stop the product. |
 | `./studio train --purge-empty` | Closes training jobs that have no observation. |
 | `./studio lint-skills` | Checks skill lists and templates still match. |
 | `./studio update-skills` | Refreshes an imported skill package. Internal skills stay in charge. |

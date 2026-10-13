@@ -13,4 +13,4 @@ How frontend knowledge enters Quinsy: **cite a source → distill into Do / Don�
 
 **Sources (distill, don’t reprint):** WCAG 2.2 POUR; W3C / MDN semantics; testing trophy (many fast tests, few e2e); Core Web Vitals; studio-library kit + Headless/Radix (not OS chrome). Team 10 still owns *what* it should look like.
 
-**CARD:** READ only listed playbooks. Never `learnings/inbox.md` on IMPLEMENT.
+**CARD:** READ only listed playbooks. Open LO tickets are not reading material on IMPLEMENT.

@@ -259,7 +259,7 @@ _LOCAL_ONLY_PREFIXES = (
     ".quinsy-studio/backlog/",
     ".quinsy-studio/retros/",
     ".quinsy-studio/sprints/",
-    ".quinsy-studio/knowledge-base/learnings/archive/",
+    ".quinsy-studio/knowledge-base/learnings/",
 )
 
 
@@ -274,7 +274,7 @@ def hq_commit_blocked(staged: List[str]) -> Optional[str]:
                 f"quinsy HQ: refuse staging product path {raw}. "
                 "Product git lives inside projects/<name>/ — never the studio index."
             )
-        if norm == ".quinsy-studio/knowledge-base/learnings/train-queue.json":
+        if norm in (".quinsy-studio/.train-queue.json", ".quinsy-studio/knowledge-base/learnings/train-queue.json"):
             return f"quinsy HQ: refuse staging the train queue {raw}."
         for prefix in _LOCAL_ONLY_PREFIXES:
             if norm == prefix.rstrip("/") or norm.startswith(prefix):

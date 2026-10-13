@@ -16,13 +16,14 @@ intake/
 # The seed templates live in .quinsy-studio/studio-templates/ideation/ and are committed.
 /ideation/
 
-# Working notes stay local. The skilled result stays in process, teams,
-# knowledge-base (the learnings catalog), and studio-library.
+# Working notes stay local. The skilled result is the PB- bullet a lesson leaves
+# in a playbook, process file, skill, template, or tool — committed in place.
+# There is no learnings catalog folder in the repo; the old one stays local only.
 .quinsy-studio/backlog/
 .quinsy-studio/retros/
 .quinsy-studio/sprints/
-.quinsy-studio/knowledge-base/learnings/archive/
-.quinsy-studio/knowledge-base/learnings/train-queue.json
+.quinsy-studio/knowledge-base/learnings/
+.quinsy-studio/.train-queue.json
 
 # Externe Skills: geklonte Repos (65MB+, regenerierbar via `./studio update-skills`)
 # Nur die skill-dependencies.json ist die Source of Truth.

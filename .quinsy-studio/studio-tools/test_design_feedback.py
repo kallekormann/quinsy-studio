@@ -68,11 +68,12 @@ class CatalogAppliedTests(unittest.TestCase):
 
     def test_no_ids(self):
         err = design_spec_catalog_error("## 7b. Catalog applied\n- read things\n\n## 8. Handoff\n")
-        self.assertIn("names no PB-/LO- id", err or "")
+        self.assertIn("names no PB- id", err or "")
 
     def test_ids_pass(self):
         self.assertIsNone(design_spec_catalog_error("## 7b. Catalog applied\n- PB-20260916-004 — applied in §4\n\n## 8. Handoff\n"))
-        self.assertIsNone(design_spec_catalog_error("## 7b. Catalog applied (required)\n- LO-0172 — scrollbar gutter in §4\n"))
+        lo_only = design_spec_catalog_error("## 7b. Catalog applied (required)\n- LO-0172 — scrollbar gutter in §4\n")
+        self.assertIn("only LO- ids", lo_only or "")
 
     def test_none_with_reason_passes(self):
         self.assertIsNone(design_spec_catalog_error("## 7b. Catalog applied\ncatalog: none — no entry in the design catalog covers a first-run tour surface yet.\n"))

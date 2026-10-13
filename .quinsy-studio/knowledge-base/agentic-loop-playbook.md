@@ -50,14 +50,14 @@ Team **07** owns loop integrity; Team 09 owns harvest process.
 
 ```
 ./studio learn "…" --signal … --source <project>
-  → portable? LO + open inbox + learnings/<domain>/<topic>.md : docs/studio-learnings-local.md
+  → portable? LO candidate (## Lesson: assumed / signed / verdict / next / target) : docs/studio-learnings-local.md
 ./studio learn-find "queue"           # catalog search — not inbox.md
 ./studio train <skill> --topic "…" --lo LO-NNNN   # sidecar; observation required for --from lo
 ./studio infusion-delta --path knowledge-base/….md --op add --section Deltas --body "…"
 ./studio train --done TR-NNNN           # or --lo LO-NNNN; auto-sync when LO is in backlog/done/
 ./studio cite knowledge-base/….md --helpful PB-YYYYMMDD-001 [--harmful PB-…]
 Receipt ## Playbook citations (helpful/harmful) bump ACE counters on MOVE_DONE.
-CARD injects ≤6 ranked playbooks plus the domain learnings README. Do not Read learnings/inbox.md on IMPLEMENT.
+CARD injects ≤6 ranked playbooks. Open LO tickets are not reading material on IMPLEMENT.
 ```
 
 `STUDIO_LO` only when the product loop is idle. Open LOs never block `./studio sprint`. See `process/learning-loop.md`.

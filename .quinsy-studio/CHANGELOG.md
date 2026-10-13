@@ -1,3 +1,23 @@
+## 2026-10-13 — A lesson is done when the file the next project follows has changed
+
+The learnings catalog under `knowledge-base/learnings/` is retired, gitignored, and removed from the repo. A lesson is now one `PB-` bullet in the playbook, process file, skill, template, or tool it changes. The LO ticket stays a local work order.
+
+### Added
+
+- **Capture with a verdict** (`studio_lesson.py`, `studio_harvest.py`). Every LO carries a `## Lesson` block: `assumed`, `signed`, `verdict: project | studio` with a reason, `next`, `target`. `./studio approve <p> --gate N` opens a candidate when `docs/phases/revisions.md` holds two or more `## Gate N` rounds. `./studio retro --complete` opens candidates from the retro bullets and refuses to close while one has no verdict. `./studio learn LO-NNNN --verdict …` fills the block; `project` writes the product's local log and removes the LO.
+- **TRAIN_DUE.** `retro --complete`, the execute card `INFORM:` line (also on HITL), `./studio status <p>`, `./studio settings`, `learn-list`, and `infusion` print the open lessons with `next` and target, the deferred ones first, the candidates still owing a verdict, and the lines judged project-specific with their reason. `run training` in a chat is `STUDIO_META`. `./studio train --promote <p> --topic "…"` lets the human overrule a `project` verdict.
+- **Impact and severity.** `./studio train LO-NNNN` writes a `## Impact` block (files and readers, in-flight sprints, compliance, pro, contra, severity). The floor comes from the target path: `process/`, `studio-tools/`, `studio-templates/`, `teams/**/skills/` are high; a `knowledge-base/*.md` playbook is low. The agent may raise, never lower. Low infuses and informs. High stops for `--approve` or `--defer --reason`; deferred LOs live in `backlog/deferred/` and return with `--reopen`.
+- **Close gate.** `./studio infusion-delta --lo LO-NNNN` refuses a body without `assumed:` / `signed:` / `next:`, a path that differs from the LO target, and an unapproved high-impact LO; it records the `PB-` id on the LO. `./studio train --done LO-NNNN` refuses unless the target contains that id, `CHANGELOG.md` names it, and `verify-abstraction` is clean.
+- **`learn-find`** searches `PB-` bullets in `knowledge-base/*.md`, `process/*.md`, `teams/**/skills/*.md`. Design spec §7b and milestone `## Catalog applied` accept `PB-` ids only; an `LO-` id is refused with a hint.
+- Tests: `test_studio_lesson.py`; `test_studio_harvest.py` rewritten for candidates, verdicts, and gate rounds.
+
+### Changed
+
+- `KIND_MAP` kinds point at their real playbook (`target_for_kind`); the catalog topic paths are gone. `TEAM_LEARNING_CATALOG`, `studio_learnings_store.py`, `learn-compact`, and the inbox are removed. UX-008/UX-009 extra playbooks, the milestone PM card, and the design-spec template cite playbooks and skills instead of catalog READMEs.
+- Rules that lived only in the catalog were carried into their files today: `knowledge-base/backend_playbook.md` PB-20261013-001…006, `knowledge-base/design_playbook.md` PB-20261013-001…005, `knowledge-base/frontend_playbook.md` PB-20261013-001, `process/gates.md` PB-20261013-001…003, `process/ticket-workflow.md` PB-20261013-001…004, `process/agent-context.md` PB-20261013-001, `studio-library/library_registry.md` PB-20261013-001, `teams/09-studio-operations-evolution/skills/ideation-desk.md` PB-20261013-001…003.
+- The train queue moved to `.quinsy-studio/.train-queue.json` (gitignored). `.gitignore`, the HQ pre-commit hook, `verify-worlds`, and `hq_commit_blocked` refuse the whole `knowledge-base/learnings/` folder.
+- `process/learning-loop.md`, `docs/09-hq-learning.md`, `docs/02-three-loops.md`, `docs/05-commands.md`, `docs/07-concept.md`, `process/worlds.md`, `process/studio-overview.md`, SO dual-loop-learning, and the Team 10 skills describe the new loop.
+
 ## 2026-10-13 — The manual is the reference
 
 `.quinsy-studio/docs/` now covers the concept, the three loops (reason, input, output), the product loop and its gates, studio learning and why a training chat exists, every command, and all eleven teams with their skills. The repo README, `.quinsy-studio/README.md`, and Getting Started point at those chapters. The process specs stay where the agent reads them.

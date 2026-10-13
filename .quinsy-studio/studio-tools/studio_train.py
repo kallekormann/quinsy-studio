@@ -12,7 +12,7 @@ from typing import Dict, List, Optional
 from studio_hq_lock import hq_write_lock
 
 QUINSY_STUDIO = Path(__file__).parent.parent
-QUEUE_PATH = QUINSY_STUDIO / "knowledge-base" / "learnings" / "train-queue.json"
+QUEUE_PATH = QUINSY_STUDIO / ".train-queue.json"
 TEAMS_DIR = QUINSY_STUDIO / "teams"
 BACKLOG_DONE = QUINSY_STUDIO / "backlog" / "done"
 DEFAULT_OPEN_MAX = 12

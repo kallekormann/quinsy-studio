@@ -54,18 +54,18 @@ How you work this loop, gate by gate, is [The product loop](08-product-loop.md).
 
 **Use it when** a ticket taught something that would help a different product. A rule, a trap, a better default.
 
-**What it does.** The lesson is written in generic language (no client name, no one-off ticket id) and infused into a playbook, a skill, or the learnings catalog. That infusion is committed in the studio repo. The learning ticket itself stays local.
+**What it does.** The product agent first answers one question: did this change because of this product, or because the studio default was wrong? A studio lesson is then written in generic language (no client name, no one-off ticket id) and infused as a `PB-` bullet into the playbook, process file, skill, template, or tool the next product follows. That file is committed in the studio repo. The learning ticket itself stays local.
 
 **What it does not do.** It does not pause the product. The product chat keeps building. Learning runs in a **separate** chat, or the product chat only records the lesson and tells you the count.
 
-**Where the files go.** The durable text is under `.quinsy-studio/knowledge-base/`. The open learning tickets are under `.quinsy-studio/backlog/` and are not pushed as the lesson itself.
+**Where the files go.** The durable text is the bullet in `knowledge-base/*.md`, `process/*.md`, or `teams/*/skills/*.md`. The open learning tickets are under `.quinsy-studio/backlog/` and are not pushed; there is no learnings catalog folder in the repo.
 
 Why this loop exists, and why a training chat is worth opening, is [Studio learning](09-hq-learning.md).
 
 | | |
 |--|--|
 | **Input** | A portable rule: something the next product would still need, with the client name taken out. |
-| **Output** | A change to a playbook, a skill, or the learnings catalog, committed in the studio repo. |
+| **Output** | A `PB-` bullet in a playbook, a process file, a skill, a template, or a tool, committed in the studio repo and named in the CHANGELOG. |
 
 ## Which chat am I in?
 

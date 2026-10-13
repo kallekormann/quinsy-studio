@@ -380,6 +380,11 @@ When a ticket removes an operator control, update gold-path tests in the **same*
 
 ## Deltas
 
+- **PB-20261013-005** helpful=0 harmful=0 :: Keep operator nav and inbox work on the shipped chrome. Do not invent a second shell or an in-thread preview frame. (carried over from the retired learnings catalog, was PB-20260926-002)
+- **PB-20261013-004** helpful=0 harmful=0 :: A SaaS blueprint must include a public marketing route group: home, use-case content files, and legal routes when copy comes later. (carried over from the retired learnings catalog, was PB-20260927-001)
+- **PB-20261013-003** helpful=0 harmful=0 :: Layout and composition sprints must not restyle a tenant's public site, generate content, merge records, or auto-publish. Those actions need their own operator tickets. (carried over from the retired learnings catalog, was PB-20260925-002)
+- **PB-20261013-002** helpful=0 harmful=0 :: When collapsing stacked mocks into one composition, keep the feature inventory section. A single narrative frame is not permission to delete the inventory. (carried over from the retired learnings catalog, was PB-20260926-005)
+- **PB-20261013-001** helpful=0 harmful=0 :: Design-spec iframe catalogs need the product app listening. Connection refused on the mock origin is a stopped dev server, not a broken spec. (carried over from the retired learnings catalog, was PB-20260930-001)
 - **PB-20260922-002** helpful=0 harmful=0 :: Font-token cards show an eyebrow family name, then an ABC specimen, then a sentence in that face. Name-only cards are not a type preview.
 - **PB-20260922-001** helpful=0 harmful=0 :: A Tokens library lists typefaces declared on the kit, not only fonts discovered on the current board. Board collection is a filter, not the inventory source.
 - **PB-20260916-006** helpful=1 harmful=0 :: Canvas or other non-DOM paint must use the same dark/light ink as html.dark CSS, never a hardcoded light-theme hex. CSS variables do not reach canvas/Konva fills unless resolved to hex first.

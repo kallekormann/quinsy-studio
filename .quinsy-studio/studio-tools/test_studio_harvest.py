@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Immediate harvest: classify, inbox + LO, exact-title dedupe."""
+"""Immediate harvest: classify, LO candidate with ## Lesson block, exact-title dedupe, gate rounds."""
 
 from __future__ import annotations
 
@@ -10,12 +10,17 @@ from pathlib import Path
 from unittest.mock import patch
 
 import studio_harvest
+import studio_lesson
 import studio_train
 from studio_harvest import (
     classify_learning,
+    gate_revision_rounds,
+    harvest_gate_rounds,
     harvest_identified_learning,
     harvest_retro_text,
     harvest_reuse_items,
+    open_candidates,
+    target_for_kind,
 )
 from ticket_helpers import render_ticket_markdown
 
@@ -25,20 +30,22 @@ def _patch_harvest_dirs(tmp: Path):
     open_dir = tmp / "open"
     done_dir = tmp / "done"
     blocked = tmp / "blocked"
-    learnings = tmp / "learnings"
-    open_dir.mkdir()
-    done_dir.mkdir()
-    blocked.mkdir()
-    learnings.mkdir()
-    inbox = learnings / "inbox.md"
+    deferred = tmp / "deferred"
+    for d in (open_dir, done_dir, blocked, deferred):
+        d.mkdir(exist_ok=True)
     queue = tmp / "train-queue.json"
     harvest = patch.multiple(
         studio_harvest,
         BACKLOG_OPEN=open_dir,
         BACKLOG_DONE=done_dir,
         BACKLOG_BLOCKED=blocked,
-        LEARNINGS_DIR=learnings,
-        INBOX_PATH=inbox,
+    )
+    lesson = patch.multiple(
+        studio_lesson,
+        BACKLOG_OPEN=open_dir,
+        BACKLOG_DONE=done_dir,
+        BACKLOG_DEFERRED=deferred,
+        PROJECTS_DIR=tmp / "projects",
     )
     train = patch.multiple(
         studio_train,
@@ -46,7 +53,7 @@ def _patch_harvest_dirs(tmp: Path):
         BACKLOG_OPEN=open_dir,
         BACKLOG_DONE=done_dir,
     )
-    with harvest, train:
+    with harvest, lesson, train:
         yield
 
 
@@ -60,9 +67,15 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(classify_learning("CSP and XSS headers", signal="knowledge-gap"), "security")
         self.assertEqual(classify_learning("unclear groom step", signal="process-gap"), "process")
 
+    def test_target_is_a_real_studio_file_never_the_catalog(self):
+        for kind in studio_harvest.KIND_MAP:
+            target = target_for_kind(kind)
+            self.assertFalse(target.startswith("knowledge-base/learnings/"), kind)
+            self.assertTrue((studio_harvest.QUINSY_STUDIO / target).exists(), f"{kind} → {target}")
+
 
 class HarvestWriteTests(unittest.TestCase):
-    def test_creates_lo_inbox_and_frontmatter(self):
+    def test_creates_candidate_lo_with_lesson_block(self):
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw)
             with _patch_harvest_dirs(tmp):
@@ -72,19 +85,72 @@ class HarvestWriteTests(unittest.TestCase):
                     observation="inner scroll clipped",
                 )
                 self.assertTrue(result["created"])
+                self.assertTrue(result["needs_verdict"])
                 self.assertEqual(result["kind"], "layout")
+                self.assertEqual(result["infusion_path"], "knowledge-base/design_playbook.md")
                 lo_files = list((tmp / "open").glob("LO-*.md"))
                 self.assertEqual(len(lo_files), 1)
                 text = lo_files[0].read_text(encoding="utf-8")
                 self.assertIn("infusion_kind: layout", text)
-                self.assertIn("infusion_path: knowledge-base/learnings/design/layout.md", text)
-                inbox = (tmp / "learnings" / "inbox.md").read_text(encoding="utf-8")
-                self.assertIn(result["lo_id"], inbox)
-                self.assertIn("Nested board overflow", inbox)
-                if result.get("train_skills"):
-                    jobs = studio_train.load_queue().get("jobs") or []
-                    self.assertTrue(jobs)
-                    self.assertTrue(all(j.get("observation") == result["lo_id"] for j in jobs))
+                self.assertIn("infusion_path: knowledge-base/design_playbook.md", text)
+                self.assertIn("needs_verdict: true", text)
+                self.assertIn("## Lesson", text)
+                for key in ("assumed", "signed", "verdict", "next", "target"):
+                    self.assertIn(f"**{key}:**", text)
+                self.assertNotIn("knowledge-base/learnings", text)
+                self.assertEqual(len(open_candidates()), 1)
+                # candidates do not queue skill training until the verdict is studio
+                self.assertEqual(studio_train.open_jobs(), [])
+
+    def test_complete_studio_verdict_is_not_a_candidate(self):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            with _patch_harvest_dirs(tmp):
+                result = harvest_identified_learning(
+                    "Gate smoke must use the project cache",
+                    source="demo",
+                    signal="tooling-gap",
+                    observation="temp cache lost browsers",
+                    assumed="gate smoke could use a temp cache",
+                    signed="gate smoke must use the project cache",
+                    verdict="studio",
+                    reason="the default gate template chose the cache",
+                    next_rule="Gate smoke must use the project cache, never a temp directory",
+                )
+                self.assertTrue(result["created"])
+                self.assertFalse(result["needs_verdict"])
+                text = next((tmp / "open").glob("LO-*.md")).read_text(encoding="utf-8")
+                self.assertIn("verdict: studio", text)
+                self.assertIn("severity_floor: high", text)  # process/gates.md
+                self.assertEqual(open_candidates(), [])
+
+    def test_project_verdict_writes_local_log_and_no_lo(self):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            (tmp / "projects" / "demo").mkdir(parents=True)
+            with _patch_harvest_dirs(tmp), patch.object(
+                studio_harvest, "resolve_project_from_source", lambda s: "demo"
+            ):
+                result = harvest_identified_learning(
+                    "Board needs a second rail",
+                    source="demo/SPRINT-02",
+                    assumed="one rail",
+                    signed="two rails",
+                    verdict="project",
+                    reason="only this product has two board kinds",
+                )
+                self.assertTrue(result["project_verdict"])
+                self.assertFalse(result["created"])
+                self.assertEqual(list((tmp / "open").glob("LO-*.md")), [])
+                local = tmp / "projects" / "demo" / "docs" / "studio-learnings-local.md"
+                self.assertTrue(local.exists())
+                self.assertIn("verdict:** project — only this product", local.read_text(encoding="utf-8"))
+
+    def test_verdict_needs_reason(self):
+        with tempfile.TemporaryDirectory() as raw:
+            with _patch_harvest_dirs(Path(raw)):
+                with self.assertRaises(ValueError):
+                    harvest_identified_learning("x rule", source="demo", verdict="studio")
 
     def test_dedupe_exact_title_only(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -126,8 +192,34 @@ class HarvestWriteTests(unittest.TestCase):
                 results = harvest_retro_text(retro, "demo")
                 self.assertEqual(len(results), 1)
                 self.assertTrue(results[0]["created"])
+                self.assertTrue(results[0]["needs_verdict"])
                 titles = [p.read_text() for p in (tmp / "open").glob("LO-*.md")]
                 self.assertTrue(any("temp cache" in t for t in titles))
+
+    def test_gate_rounds_open_candidate_at_two(self):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            proj = tmp / "projects" / "demo"
+            (proj / "docs" / "phases").mkdir(parents=True)
+            rev = proj / "docs" / "phases" / "revisions.md"
+            rev.write_text("# Revisions\n\n## Gate 1 — 2026-10-01\nStack must be the one named in the PRD\n", encoding="utf-8")
+            with _patch_harvest_dirs(tmp):
+                self.assertEqual(len(gate_revision_rounds(proj, "1")), 1)
+                self.assertIsNone(harvest_gate_rounds("demo", proj, "1"))
+                rev.write_text(
+                    rev.read_text(encoding="utf-8") + "\n## Gate 1 — 2026-10-02\nHost named in the PRD must win over the archetype default\n",
+                    encoding="utf-8",
+                )
+                self.assertEqual(len(gate_revision_rounds(proj, "1")), 2)
+                self.assertEqual(len(gate_revision_rounds(proj, "2a")), 0)
+                result = harvest_gate_rounds("demo", proj, "1")
+                self.assertIsNotNone(result)
+                self.assertTrue(result["created"])
+                self.assertTrue(result["needs_verdict"])
+                text = next((tmp / "open").glob("LO-*.md")).read_text(encoding="utf-8")
+                self.assertIn("round 1:", text)
+                self.assertIn("round 2:", text)
+                self.assertIn("2 revision rounds", text)
 
     def test_reuse_two_paths_do_not_collide(self):
         items = [
@@ -165,7 +257,7 @@ class HarvestWriteTests(unittest.TestCase):
                 "title": "Classify harvest",
                 "infusion_kind": "frontend",
                 "infusion_path": "knowledge-base/frontend_playbook.md",
-                "acceptance_criteria": ["inbox then playbook"],
+                "acceptance_criteria": ["bullet then CHANGELOG"],
             }
         )
         self.assertIn("infusion_kind: frontend", md)

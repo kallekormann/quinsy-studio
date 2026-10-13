@@ -26,7 +26,7 @@ while IFS= read -r f; do
       ;;
     .quinsy-studio/backlog|.quinsy-studio/backlog/*)
       echo "quinsy HQ: refuse staging backlog ticket $f" >&2
-      echo "Infuse the lesson into knowledge-base/learnings/. The ticket stays local." >&2
+      echo "Infuse the lesson as a PB- bullet into the playbook, process file, or skill it changes. The ticket stays local." >&2
       exit 1
       ;;
     .quinsy-studio/retros|.quinsy-studio/retros/*)
@@ -39,12 +39,12 @@ while IFS= read -r f; do
       echo "Product sprints live in that product's own git repo." >&2
       exit 1
       ;;
-    .quinsy-studio/knowledge-base/learnings/archive|.quinsy-studio/knowledge-base/learnings/archive/*)
-      echo "quinsy HQ: refuse staging learning archive $f" >&2
-      echo "The catalog in knowledge-base/learnings/ is the shared result." >&2
+    .quinsy-studio/knowledge-base/learnings|.quinsy-studio/knowledge-base/learnings/*)
+      echo "quinsy HQ: refuse staging the retired learnings catalog $f" >&2
+      echo "A lesson is a PB- bullet in the file it changes. The catalog folder stays local." >&2
       exit 1
       ;;
-    .quinsy-studio/knowledge-base/learnings/train-queue.json)
+    .quinsy-studio/.train-queue.json|.quinsy-studio/knowledge-base/learnings/train-queue.json)
       echo "quinsy HQ: refuse staging the train queue $f" >&2
       echo "Closed train jobs stay local." >&2
       exit 1

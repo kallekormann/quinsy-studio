@@ -150,3 +150,9 @@ Append source notes to `ideation/sources.md` and duplicate notes to `ideation/le
 `./studio ideate apply-rubric --note "..."` is only for a proposal the human already approved.
 
 A portable method rule can later go through `./studio learn` in a studio session. It does not enter a product sprint and it does not call `execute`.
+
+## Deltas
+
+- **PB-20261013-003** helpful=0 harmful=0 :: Ideation records the problem space, the solution space, and the architecture and experience for that audience before the shortlist. The solution space says how the person's existing tool connects and which steps run, including a letter or a collection-firm hand-off when the audience needs them. The app stays attached to the tool they already use. A collection firm receives a file. The app does not become the collector. (carried over from the retired learnings catalog, was PB-20261002-001)
+- **PB-20261013-002** helpful=0 harmful=0 :: Ideation builder time is not a ceiling. One solo builder, with AI agents for coding and design, ships in chunks of about two months. Each chunk is a full web app, big enough for that builder and those agents. The first chunk is the MVP. Later chunks stay in the idea. A longer full solution is not scored as too slow. (carried over from the retired learnings catalog, was PB-20261002-002)
+- **PB-20261013-001** helpful=0 harmful=0 :: An ideation PRD states the full solution: user tasks, system tasks, backend, infrastructure, and scope modules. The first module is what bootstrap builds. Later modules stay in the PRD. Promote refuses a thin brief. (carried over from the retired learnings catalog, was PB-20261002-003)

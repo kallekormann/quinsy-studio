@@ -54,9 +54,9 @@ What belongs here:
   - Reusable components
 
 Storage location:
-  .quinsy-studio/knowledge-base/learnings/<domain>/<topic>.md  → durable principles
-  .quinsy-studio/knowledge-base/learnings/index.md              → catalog (learn-find)
-  .quinsy-studio/knowledge-base/learnings/inbox.md           → open queue only
+  .quinsy-studio/knowledge-base/*.md, process/*.md, teams/*/skills/*.md → PB- bullets (learn-find)
+  .quinsy-studio/backlog/open/LO-*.md                        → local work orders with the ## Lesson block
+  .quinsy-studio/backlog/deferred/LO-*.md                    → high-impact lessons the human said wait on
   .quinsy-studio/knowledge-base/  → Playbooks (ACE deltas on train)
   .quinsy-studio/teams/*/skills/ → Skill deltas
   .quinsy-studio/studio-tools/    → Python Scripts
@@ -70,15 +70,20 @@ Promotion via:
 ### 3. Immediate harvest (do not batch until next sprint)
 
 ```markdown
-When a learning is identified (gate, retro bullet, reuse path, explicit learn):
+When a deviation is identified (gate signed after ≥2 rounds, retro bullet, design reject, 3rd gate fail, reuse path, explicit learn):
   1. Portability gate (must/should/never/prefer — not host/ticket incidents)
-  2. Classify domain/topic
-  3. Append open queue inbox.md (generic — no client names)
-  4. Write principle to knowledge-base/learnings/<domain>/<topic>.md + index.md
-  5. Open LO-* with infusion_kind + infusion_path (topic file)
-  6. ./studio train (parallel) — product execute keeps IMPLEMENT
-  7. Delta matching playbook/skill + CHANGELOG; move LO to done; inbox compact archives the row
-Project-specific only → projects/[name]/docs/studio-learnings-local.md
+  2. Classify kind → default target (the real playbook / process file / skill)
+  3. Open LO-* candidate with a ## Lesson block (assumed / signed / verdict / next / target)
+  4. Verdict (product agent, before retro --complete can close):
+       project → projects/[name]/docs/studio-learnings-local.md with reason, LO removed
+       studio  → next rule + target; TRAIN_DUE on retro, execute card, status, settings
+  5. Training chat: ./studio train <LO> → ## Impact (files, in-flight, compliance, pro, contra, severity)
+       floor by target path: process/ studio-tools/ studio-templates/ teams/**/skills/ = high; playbook = low
+       low → infuse (INFORM); high → human --approve or --defer --reason (backlog/deferred/, --reopen)
+  6. ./studio infusion-delta --lo <LO> --path <target> --op add --body "assumed: … signed: … next: …"
+  7. CHANGELOG line names the PB- id; ./studio verify-abstraction; ./studio train --done <LO>
+       (refuses until the bullet is in the target and the CHANGELOG names it)
+No catalog folder: the bullet in the file is the record; ./studio learn-find searches it.
 Do not copy project UI/tokens into studio-library.
 ```
 

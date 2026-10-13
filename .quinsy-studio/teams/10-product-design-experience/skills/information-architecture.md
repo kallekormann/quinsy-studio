@@ -53,7 +53,7 @@ When a canvas zone owns a kit or inspector rail, the rail follows the **current*
 
 ### 6. Read the catalog
 
-`learnings/design/information-architecture.md`, `contextual-ia-playbook.md`, and the push-back log for the surface; cite in §7b. The `flow` code often has a placement cause.
+the PB- bullets in `contextual-ia-playbook.md` and `design_playbook.md`, and the push-back log for the surface; cite in §7b. The `flow` code often has a placement cause.
 
 ## Workflow
 
@@ -99,5 +99,4 @@ When a canvas zone owns a kit or inspector rail, the rail follows the **current*
 ## References
 
 - [contextual-ia-playbook.md](../../../knowledge-base/contextual-ia-playbook.md) · [workflow-definition-playbook.md](../../../knowledge-base/workflow-definition-playbook.md)
-- [learnings/design/information-architecture.md](../../../knowledge-base/learnings/design/information-architecture.md)
 - External: `ux-information-architecture`

@@ -93,10 +93,10 @@ PM_CARD = {
         "knowledge-base/milestone-coverage-checklist.md",
         "process/milestone-planning.md",
         "process/human-in-the-loop.md",
-        "knowledge-base/learnings/process/README.md",
-        "knowledge-base/learnings/backend/README.md",
-        "knowledge-base/learnings/frontend/README.md",
-        "knowledge-base/learnings/design/README.md",
+        "process/learning-loop.md",
+        "knowledge-base/backend_playbook.md",
+        "knowledge-base/frontend_playbook.md",
+        "knowledge-base/design_playbook.md",
     ],
 }
 
@@ -327,8 +327,8 @@ def pm_card_lines(action: str) -> List[str]:
     lines.append(f"    skill files: {', '.join(skill_files_for(PM_CARD['skills']))}")
     lines.append(f"    playbooks: {', '.join(PM_CARD['playbooks'])}")
     lines.append(
-        "    READ the skill files and the playbooks before writing. Cite PB-ids from the learnings "
-        "catalog in the review (## Catalog applied). Do not open learnings/inbox.md."
+        "    READ the skill files and the playbooks before writing. Cite the PB-ids from those "
+        "playbooks and skills in the review (## Catalog applied). LO- ids are local tickets, not proof."
     )
     return lines
 
@@ -452,7 +452,7 @@ def write_review(project: str, status: Dict[str, Any], mid: str) -> Path:
         "",
         "## Catalog applied",
         "",
-        "_PM fills: PB-ids from `knowledge-base/learnings/**` that shaped the recommendations, one line each._",
+        "_PM fills: PB-ids from the playbooks, process files, and skills that shaped the recommendations, one line each. LO- ids do not count._",
         "",
         "## Decision for the human",
         "",

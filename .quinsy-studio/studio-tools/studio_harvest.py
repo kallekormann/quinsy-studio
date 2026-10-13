@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 """
-Immediate studio harvest — classify a learning the moment it is identified,
-write it into studio HQ (inbox + LO-*) when **portable**, else project-local log.
+Immediate studio harvest — classify a learning the moment it is identified and
+open a local LO-* work order when the line is **portable**, else write the
+project-local log.
 
-Does not copy project code or client names into playbooks/library.
+The LO points at the real studio file (playbook, process file, skill, template,
+tool) and carries a `## Lesson` block: assumed / signed / verdict / next / target.
+There is no catalog folder; the committed result is the PB- bullet in the target.
 Train only when LO declares train_skills (ability gap).
 """
 
 from __future__ import annotations
 
 import re
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from ticket_helpers import render_ticket_markdown
-from studio_hq_lock import hq_write_lock
 
 try:
     from studio_portability import (
@@ -25,14 +26,7 @@ try:
         sanitize_observation,
         train_skills_for_kind,
     )
-    from studio_learnings_store import (
-        INBOX_PATH as STORE_INBOX,
-        LEARNINGS_ROOT,
-        commit_principle,
-        compact_inbox,
-        ensure_inbox_header,
-        topic_relpath,
-    )
+    from studio_lesson import lesson_block, severity_floor, write_project_verdict
 except ImportError:  # pragma: no cover
     from studio_tools.studio_portability import (  # type: ignore
         append_project_local_learning,
@@ -41,28 +35,18 @@ except ImportError:  # pragma: no cover
         sanitize_observation,
         train_skills_for_kind,
     )
-    from studio_tools.studio_learnings_store import (  # type: ignore
-        INBOX_PATH as STORE_INBOX,
-        LEARNINGS_ROOT,
-        commit_principle,
-        compact_inbox,
-        ensure_inbox_header,
-        topic_relpath,
-    )
+    from studio_tools.studio_lesson import lesson_block, severity_floor, write_project_verdict  # type: ignore
 
 TOOLS_DIR = Path(__file__).parent
 QUINSY_STUDIO = TOOLS_DIR.parent
 BACKLOG_OPEN = QUINSY_STUDIO / "backlog" / "open"
 BACKLOG_DONE = QUINSY_STUDIO / "backlog" / "done"
 BACKLOG_BLOCKED = QUINSY_STUDIO / "backlog" / "blocked"
-LEARNINGS_DIR = LEARNINGS_ROOT
-INBOX_PATH = STORE_INBOX
 
-# kind → (signal, infusion_path, skills, role, team)
+# kind → signal, skills, role, team, playbook (the real target file a lesson changes)
 KIND_MAP: Dict[str, Dict[str, object]] = {
     "ui-component": {
         "signal": "library-gap",
-        "path": "knowledge-base/learnings/library/components.md",
         "skills": ["UX-005", "FE-002", "SO-001"],
         "role": "UI/Interaction Designer (Director)",
         "team": "10-product-design-experience",
@@ -70,7 +54,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "package": {
         "signal": "library-gap",
-        "path": "knowledge-base/learnings/library/packages.md",
         "skills": ["SO-001", "BE-001"],
         "role": "Studio Automation Engineer (Director)",
         "team": "09-studio-operations-evolution",
@@ -78,7 +61,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "design": {
         "signal": "design-gap",
-        "path": "knowledge-base/learnings/design/visual.md",
         "skills": ["UX-005", "UX-001"],
         "role": "Product Designer (Director)",
         "team": "10-product-design-experience",
@@ -86,7 +68,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "ux": {
         "signal": "design-gap",
-        "path": "knowledge-base/learnings/design/interaction.md",
         "skills": ["UX-002", "UX-004"],
         "role": "UX Designer (Director)",
         "team": "10-product-design-experience",
@@ -94,7 +75,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "ia": {
         "signal": "design-gap",
-        "path": "knowledge-base/learnings/design/information-architecture.md",
         "skills": ["UX-003"],
         "role": "Information Architect (Director)",
         "team": "10-product-design-experience",
@@ -102,7 +82,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "layout": {
         "signal": "design-gap",
-        "path": "knowledge-base/learnings/design/layout.md",
         "skills": ["UX-003", "FE-002"],
         "role": "UX Designer (Director)",
         "team": "10-product-design-experience",
@@ -110,7 +89,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "usability": {
         "signal": "design-gap",
-        "path": "knowledge-base/learnings/design/interaction.md",
         "skills": ["UX-002", "FE-004"],
         "role": "UX Designer (Director)",
         "team": "10-product-design-experience",
@@ -118,7 +96,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "craft": {
         "signal": "design-gap",
-        "path": "knowledge-base/learnings/design/craft.md",
         "skills": ["UX-008", "UX-006"],
         "role": "UI/Visual Designer (Director)",
         "team": "10-product-design-experience",
@@ -126,7 +103,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "frontend": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/learnings/frontend/runtime.md",
         "skills": ["FE-001", "FE-003"],
         "role": "Frontend Architect (Director)",
         "team": "01-frontend-experience",
@@ -134,7 +110,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "backend": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/learnings/backend/services.md",
         "skills": ["BE-001", "BE-004"],
         "role": "Backend Architect (Director)",
         "team": "02-backend-systems",
@@ -142,7 +117,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "database": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/learnings/backend/data.md",
         "skills": ["BE-002"],
         "role": "Database Specialist (Director)",
         "team": "02-backend-systems",
@@ -150,7 +124,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "security": {
         "signal": "knowledge-gap",
-        "path": "knowledge-base/learnings/backend/security.md",
         "skills": ["PE-003", "BE-001"],
         "role": "Backend Security Specialist (Director)",
         "team": "08-platform-enterprise-engineering",
@@ -158,7 +131,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "process": {
         "signal": "process-gap",
-        "path": "knowledge-base/learnings/process/workflow.md",
         "skills": ["SO-002"],
         "role": "Process Guard (Director)",
         "team": "09-studio-operations-evolution",
@@ -166,7 +138,6 @@ KIND_MAP: Dict[str, Dict[str, object]] = {
     },
     "tooling": {
         "signal": "tooling-gap",
-        "path": "knowledge-base/learnings/process/tooling.md",
         "skills": ["SO-001"],
         "role": "Studio Automation Engineer (Director)",
         "team": "09-studio-operations-evolution",
@@ -261,27 +232,10 @@ def _existing_lo_match(norm: str) -> Optional[str]:
     return None
 
 
-def _ensure_inbox_header() -> None:
-    ensure_inbox_header(inbox_path=INBOX_PATH)
-
-
-def append_inbox(entry: Dict[str, str]) -> Path:
-    with hq_write_lock("hq"):
-        _ensure_inbox_header()
-        observation = sanitize_observation(entry.get("observation") or entry.get("title") or "")
-        block = (
-            f"## {entry['id']} — {entry['title']}\n"
-            f"- **When:** {entry['when']}\n"
-            f"- **Kind:** {entry['kind']}\n"
-            f"- **Infuse into:** `{entry['infusion_path']}`\n"
-            f"- **Playbook:** `{entry['playbook']}`\n"
-            f"- **Signal:** {entry['signal']}\n"
-            f"- **Observation:** {observation}\n"
-            f"- **Status:** inbox — generalize into topic file + playbook, CHANGELOG, close LO\n\n"
-        )
-        INBOX_PATH.write_text(INBOX_PATH.read_text(encoding="utf-8") + block, encoding="utf-8")
-        compact_inbox(open_dir=BACKLOG_OPEN, inbox_path=INBOX_PATH, archive_dir=LEARNINGS_DIR / "archive")
-        return INBOX_PATH
+def target_for_kind(kind: str) -> str:
+    """The real studio file a lesson of this kind changes (never the old catalog)."""
+    meta = kind_meta(kind)
+    return str(meta.get("playbook") or "knowledge-base/agentic-loop-playbook.md")
 
 
 def harvest_identified_learning(
@@ -293,9 +247,20 @@ def harvest_identified_learning(
     path: str = "",
     kind: str = "",
     priority: str = "P1",
+    assumed: str = "",
+    signed: str = "",
+    verdict: str = "",
+    reason: str = "",
+    next_rule: str = "",
+    target: str = "",
 ) -> Dict[str, object]:
     """
-    Capture immediately into studio HQ when portable.
+    Capture immediately as a local LO work order when portable.
+
+    Without a verdict the LO is a **candidate**: `needs_verdict: true`, and
+    `./studio retro --complete` refuses until `./studio learn <LO> --verdict …`
+    fills assumed / signed / project-or-studio / next / target.
+    `verdict=project` writes the product's local log and opens no LO.
 
     Returns lo_id, kind, created. If not portable: created=False, dropped=True,
     and a project-local note may be written under projects/<p>/docs/.
@@ -304,9 +269,36 @@ def harvest_identified_learning(
     if not title:
         raise ValueError("learning title required")
     observation = (observation or title).strip()
+    verdict = (verdict or "").strip().lower()
+    if verdict and verdict not in ("project", "studio"):
+        raise ValueError("verdict must be project or studio")
+    if verdict and not reason.strip():
+        raise ValueError("a verdict needs a one-sentence reason")
 
-    verdict = portability_verdict(title, observation)
-    if not verdict["portable"]:
+    if verdict == "project":
+        project = resolve_project_from_source(source)
+        local = write_project_verdict(
+            project,
+            title=title,
+            assumed=assumed or "(not recorded)",
+            signed=signed or "(not recorded)",
+            reason=reason,
+            observation=observation,
+        ) if project else None
+        return {
+            "created": False,
+            "dropped": False,
+            "project_verdict": True,
+            "lo_id": "",
+            "kind": kind or classify_learning(f"{title} {observation}", path=path, signal=signal),
+            "signal": signal,
+            "infusion_path": "",
+            "reason": reason,
+            "local_log": str(local) if local else "",
+        }
+
+    pv = portability_verdict(title, observation)
+    if not pv["portable"]:
         project = resolve_project_from_source(source)
         local_path = ""
         if project:
@@ -314,7 +306,7 @@ def harvest_identified_learning(
                 project,
                 observation=observation,
                 title=title,
-                reason=str(verdict.get("reason") or "not portable"),
+                reason=str(pv.get("reason") or "not portable"),
             )
             local_path = str(written) if written else ""
         return {
@@ -324,19 +316,22 @@ def harvest_identified_learning(
             "kind": kind or classify_learning(f"{title} {observation}", path=path, signal=signal),
             "signal": signal,
             "infusion_path": "",
-            "reason": verdict.get("reason"),
+            "reason": pv.get("reason"),
             "local_log": local_path,
-            "inbox": "",
         }
 
-    title = str(verdict["title"])
+    title = str(pv["title"])
     kind = kind or classify_learning(f"{title} {observation}", path=path, signal=signal)
     meta = kind_meta(kind)
     signal = signal or str(meta["signal"])
     skills = list(meta["skills"])  # type: ignore[arg-type]
     train_skills = train_skills_for_kind(kind, skills)
-    infusion_path = topic_relpath(kind, title, observation)
-    playbook = str(meta["playbook"])
+    infusion_path = (target or "").strip() or target_for_kind(kind)
+    for prefix in (".quinsy-studio/", "./"):
+        if infusion_path.startswith(prefix):
+            infusion_path = infusion_path[len(prefix):]
+    if infusion_path.startswith("knowledge-base/learnings/"):
+        infusion_path = target_for_kind(kind)
     observation = sanitize_observation(observation)
     norm = _norm_title(title)
     existing = _existing_lo_match(norm)
@@ -349,9 +344,9 @@ def harvest_identified_learning(
             "signal": signal,
             "infusion_path": infusion_path,
             "train_skills": train_skills,
-            "inbox": _rel(INBOX_PATH) if INBOX_PATH.exists() else "",
         }
 
+    complete = verdict == "studio" and bool(assumed.strip() and signed.strip() and next_rule.strip())
     BACKLOG_OPEN.mkdir(parents=True, exist_ok=True)
     lo_id = next_lo_id()
     ticket = {
@@ -366,9 +361,9 @@ def harvest_identified_learning(
         "skills": skills,
         "assignee_role": meta["role"],
         "soll_zustand": (
-            f"General rule lives in `{infusion_path}` so the next project cannot repeat this. "
-            "No product names or product ticket IDs anywhere in studio HQ, CHANGELOG included; "
-            "the source stays in this local LO."
+            f"`{infusion_path}` carries a PB- bullet with assumed / signed / next so the next project "
+            "cannot repeat this. No product names or product ticket IDs anywhere in studio HQ, "
+            "CHANGELOG included; the source stays in this local LO."
         ),
         "value": "Immediate harvest — portable principle only.",
         "signal": signal,
@@ -378,46 +373,39 @@ def harvest_identified_learning(
         "train_skills": train_skills,
         "modification_files": [f".quinsy-studio/{infusion_path}", ".quinsy-studio/CHANGELOG.md"],
         "acceptance_criteria": [
-            f"Inbox item {lo_id} generalized into `{infusion_path}` (or matching playbook/skill/package)",
-            "Infused text and CHANGELOG line pass ./studio verify-abstraction (no product names or ticket IDs)",
-            "CHANGELOG.md updated",
-            "LO moved to backlog/done/",
+            "`## Lesson` block filled: assumed, signed, verdict with reason, next, target",
+            f"`./studio train {lo_id}` Impact block filled; high impact approved or deferred by the human",
+            f"`./studio infusion-delta --lo {lo_id} --path {infusion_path} --op add --body \"assumed: … signed: … next: …\"` wrote the PB- bullet",
+            "Bullet and CHANGELOG line pass ./studio verify-abstraction (no product names or ticket IDs)",
+            f"`./studio train --done {lo_id}` moved the LO to backlog/done/",
         ],
         "scope": (
-            f"Kind `{kind}`. Promote or author in `{infusion_path}` using `{playbook}`. "
-            f"Principle title must stay product-agnostic. "
+            f"Kind `{kind}`. Target `{infusion_path}`. "
             f"Train skills: {train_skills or 'none (playbook-only)'}. "
             f"Observation (provenance): {observation[:350]}"
         ),
     }
+    text = render_ticket_markdown(ticket)
+    if not complete:
+        text = text.replace("---\n\n## Target", "needs_verdict: true\n---\n\n## Target", 1)
+    else:
+        text = text.replace("---\n\n## Target", f"verdict: studio\nseverity_floor: {severity_floor(infusion_path)}\n---\n\n## Target", 1)
+    text = text.rstrip() + "\n\n## Lesson\n\n" + lesson_block(
+        assumed=assumed,
+        signed=signed,
+        verdict="studio" if complete else "",
+        reason=reason if complete else "",
+        next_rule=next_rule,
+        target=infusion_path,
+    )
     lo_file = BACKLOG_OPEN / f"{lo_id}-{_slugify(title)}.md"
-    lo_file.write_text(render_ticket_markdown(ticket), encoding="utf-8")
-    commit_principle(
-        kind=kind,
-        lo_id=lo_id,
-        title=title[:120],
-        observation=observation,
-        root=LEARNINGS_DIR,
-    )
-    append_inbox(
-        {
-            "id": lo_id,
-            "title": title[:120],
-            "when": datetime.now().isoformat(timespec="seconds"),
-            "source": source,
-            "kind": kind,
-            "infusion_path": infusion_path,
-            "playbook": playbook,
-            "signal": signal,
-            "observation": observation[:600],
-        }
-    )
-    if train_skills:
+    lo_file.write_text(text, encoding="utf-8")
+    if train_skills and complete:
         try:
             from studio_train import enqueue_train
 
             for skill in train_skills[:2]:
-                enqueue_train(str(skill), title, source="lo", observation=lo_id)
+                enqueue_train(str(skill), next_rule[:120] or title, source="lo", observation=lo_id)
         except Exception:
             pass
     return {
@@ -428,14 +416,13 @@ def harvest_identified_learning(
         "signal": signal,
         "infusion_path": infusion_path,
         "train_skills": train_skills,
-        "inbox": _rel(INBOX_PATH),
+        "needs_verdict": not complete,
         "lo_path": _rel(lo_file),
     }
 
 
-
 def harvest_retro_text(retro_text: str, source: str) -> List[Dict[str, object]]:
-    """Auto-create LOs from filled retro bullets (badly / improve)."""
+    """Open candidate LOs from filled retro bullets (badly / improve). Each needs a verdict."""
     results: List[Dict[str, object]] = []
     for section in (
         r"## What went badly\?\s*\n(.*?)(?=\n## |\Z)",
@@ -454,6 +441,61 @@ def harvest_retro_text(retro_text: str, source: str) -> List[Dict[str, object]]:
                 harvest_identified_learning(line[:80].rstrip("."), source=source, observation=line)
             )
     return results
+
+
+GATE_ROUND_THRESHOLD = 2
+
+
+def gate_revision_rounds(project_dir: Path, gate_id: str) -> List[str]:
+    """Each `## Gate <id> — <date>` entry in docs/phases/revisions.md is one round the human sent back."""
+    path = project_dir / "docs" / "phases" / "revisions.md"
+    if not path.is_file():
+        return []
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    rounds: List[str] = []
+    for match in re.finditer(rf"^## Gate {re.escape(str(gate_id))}\b[^\n]*\n(.*?)(?=^## Gate |\Z)", text, re.M | re.S):
+        rounds.append(match.group(1).strip())
+    return rounds
+
+
+def harvest_gate_rounds(project: str, project_dir: Path, gate_id: str, *, signed_statement: str = "") -> Optional[Dict[str, object]]:
+    """
+    A definition signed only after ≥2 send-backs is a lesson candidate.
+
+    Opens one LO quoting the rounds; the agent must answer: did the human push
+    back because of this product, or because the studio's default was wrong?
+    """
+    rounds = gate_revision_rounds(project_dir, gate_id)
+    if len(rounds) < GATE_ROUND_THRESHOLD:
+        return None
+    gate_kind = {"0": "process", "1": "backend", "2a": "design", "2b": "design"}.get(str(gate_id), "process")
+    title = f"Gate {gate_id} packet must be right before the human sees it — signed after {len(rounds)} revision rounds"
+    quoted = "\n".join(f"  round {i + 1}: {r.splitlines()[0][:160] if r else '(empty)'}" for i, r in enumerate(rounds))
+    observation = (
+        f"Gate {gate_id} needed {len(rounds)} send-backs before sign-off. "
+        f"Revision feedback:\n{quoted}\n"
+        f"Signed statement: {signed_statement[:300] or '(see the approved packet)'}"
+    )
+    return harvest_identified_learning(
+        title,
+        source=f"{project}/gate-{gate_id}",
+        signal="process-gap",
+        observation=observation,
+        kind=gate_kind,
+    )
+
+
+def open_candidates() -> List[Path]:
+    """LOs that still need the project-or-studio verdict."""
+    from studio_lesson import needs_verdict
+
+    out: List[Path] = []
+    if not BACKLOG_OPEN.is_dir():
+        return out
+    for path in sorted(BACKLOG_OPEN.glob("LO-*.md")):
+        if needs_verdict(path.read_text(encoding="utf-8", errors="ignore")):
+            out.append(path)
+    return out
 
 
 # First-brand / client token trees stay in the project. Auto-opening HQ LOs for
