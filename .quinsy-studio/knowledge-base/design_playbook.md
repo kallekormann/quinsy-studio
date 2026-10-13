@@ -380,6 +380,7 @@ When a ticket removes an operator control, update gold-path tests in the **same*
 
 ## Deltas
 
+- **PB-20261013-006** helpful=0 harmful=0 :: assumed: Equal visual weight across actions is acceptable if the copy is clear. signed: A surface must put the primary action where the eye lands first; levels must stay distinct. next: A surface must put the primary action where the eye lands first; levels must stay distinct.
 - **PB-20261013-005** helpful=0 harmful=0 :: Keep operator nav and inbox work on the shipped chrome. Do not invent a second shell or an in-thread preview frame. (carried over from the retired learnings catalog, was PB-20260926-002)
 - **PB-20261013-004** helpful=0 harmful=0 :: A SaaS blueprint must include a public marketing route group: home, use-case content files, and legal routes when copy comes later. (carried over from the retired learnings catalog, was PB-20260927-001)
 - **PB-20261013-003** helpful=0 harmful=0 :: Layout and composition sprints must not restyle a tenant's public site, generate content, merge records, or auto-publish. Those actions need their own operator tickets. (carried over from the retired learnings catalog, was PB-20260925-002)

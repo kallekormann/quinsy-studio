@@ -77,3 +77,7 @@ Name the chosen model in §2c of the design spec; do not invent a second model d
 **Appear / throw-on DoD (LO-0123):** Design specs for scroll-enter illustrations must name **start state** (blur, opacity, scale) and **end tilt degrees** (and side rule) before IMPLEMENT — not “add a little tilt” alone.
 
 **Sticky motion smoke (LO-0125):** Before marking sticky-stage motion tickets done, prototype cover progress on **one** section (current sharp → next blur-in → previous fade) and record the cover-range px in the design spec.
+
+## Deltas
+
+- **PB-20261013-001** helpful=0 harmful=0 :: assumed: A spec or mock can skip intermediate steps if rest and error frames exist. signed: A flow must cover every step and state the job needs; the path must match the user's goal. next: A flow must cover every step and state the job needs; the path must match the user's goal.

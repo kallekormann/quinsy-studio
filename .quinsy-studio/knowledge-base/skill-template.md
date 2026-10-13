@@ -58,6 +58,8 @@ What the receipt shows on a ticket that carried this skill. Every path must exis
 
 ## Deltas
 
+- **PB-20261013-001** helpful=0 harmful=0 :: assumed: Skill markdown could keep ad-hoc headings as long as the id line was present. signed: Every skill file follows knowledge-base/skill-template.md so lint-skills --strict passes. next: Every skill file uses the skill-template headings; lint-skills --strict must pass before a team ships a skill change.
+
 Optional. What this studio changed from the source the skill came from, and why.
 
 ## References

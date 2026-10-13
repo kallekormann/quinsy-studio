@@ -1,3 +1,9 @@
+## 2026-10-13 — Skill template headings; flow and hierarchy on the next spec
+
+- `knowledge-base/skill-template.md` **PB-20261013-001**: every skill file uses the template headings; `lint-skills --strict` must pass before a team ships a skill change.
+- `knowledge-base/design-science-playbook.md` **PB-20261013-001**: a flow must cover every step and state the job needs; the path must match the user's goal.
+- `knowledge-base/design_playbook.md` **PB-20261013-006**: a surface must put the primary action where the eye lands first; levels must stay distinct.
+
 ## 2026-10-13 — One mock page plus mock-scenario-panel
 
 Design mocks have one legal shape: a ticket-root `'use client'` `page.tsx` with `MockScenarioPanel` mounted. Nested `design-mocks/<TICKET>/<state>/page.tsx` folders fail `./studio mock` and `approve-design`. HITL clicks every related state on the running route (`?state=`).
