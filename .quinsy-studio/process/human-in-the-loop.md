@@ -33,6 +33,7 @@ The human stops on **product decisions** and **design decisions**, plus the few 
 | **Production migration, destructive data steps** | `./studio ops <p> migrate --prod --approve`, `db --reset --approve`, `cleanup --prune-volumes --approve` | Data cannot be un-dropped |
 | **Tech-veto** | `./studio veto <p> --decision … --reason …` | Budget, legal, security exceptions; stops at the next IMPLEMENT boundary |
 | **Abort** | "stop this ticket" | Only the human ends work in flight |
+| **Clarify feedback** | one question per FB; `./studio clarify <p> FB-NNN --answer "…"` | A fact only the human knows (surface, expected vs today). Do not implement. |
 | **Every remaining ticket blocked** | `./studio board <p>` | Escalation packets after 3 failures |
 
 ### Agent-run with INFORM (execute prints `VERIFY` / `INFORM` and continues)
@@ -41,7 +42,7 @@ The human stops on **product decisions** and **design decisions**, plus the few 
 |------|---------|---------------------|
 | Local Docker: up, migrate, dev | `./studio env <p> up\|migrate\|dev` (`--approve` accepted, not required) | One INFORM line; values never printed |
 | Architecture phase and per-ticket packets | `./studio approve-arch <p> --phase` | INFORM with the tech-veto window; `--reject` still returns an infeasible design |
-| Cadence review | `./studio review <p> --inform` | Brief written; feedback arrives asynchronously via `./studio feedback` / `clarify` / `ticket --from-feedback`; design feedback waits for the next design phase |
+| Cadence review | `./studio review <p> --inform` | Brief written; `./studio feedback` any time; execute drains to tickets. Design tickets wait for the next design phase |
 | Production ops: readiness, deploy, logs, status, db read, cleanup | `./studio ops <p> …` | One line each in `docs/ops/ops-log.md`; names from `.env.local` (`./studio env <p> prod --explain`) |
 | Reality check | `./studio reality-check <p>` | FAILED / NEEDS WORK file bug tickets instead of asking |
 | Backend-only sprint, reuse brief, sprint scope, groom | `./studio retro`, `./studio reuse`, `./studio sprint --approve-scope`, `./studio groom` | Inform; human may override |
@@ -113,9 +114,10 @@ Gate 2b approved
 
 ```
 Sprint review feedback (once per theme)
-  → ./studio feedback (deduped)
-  → ./studio clarify --approve
-  → ./studio ticket --from-feedback  → product backlog (backlog/*.md, no sprint tag)
+  → ./studio feedback (deduped) or a drained inbox note
+  → execute `feedback-drain` drafts title/scope/AC
+  → HITL `clarify-feedback` if a fact is missing (one question per FB)
+  → backlog ticket (no sprint tag); do not implement now
   → ./studio review --approve → **reuse review** → retro
   → ./studio sprint  → scope proposal (mature tickets proposed; immature flagged)
   → ./studio sprint --approve-scope  → human approves sprint scope
@@ -186,16 +188,16 @@ Sprint review feedback (once per theme)
 
 **Rule (LO-0144):** Review is for **this sprint’s shipped tickets**, not for work that is still only feedback (amendments, console, unwritten skills). Do not linger in review waiting for that work to become a ticket in the same close. Ticket it, then plan the next sprint.
 | **Reuse review** | **Agent** | `./studio reuse <p>` → promote / LO ticket / `--record local`. Completes when unresolved paths are 0 (LO-0169) — no `--approve` |
-| **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` — **not a ticket**. Drop accidental CLI noise (`--help`) before retro (LO-0173) |
-| **Clarify** | Agent + **human** | `./studio clarify <p> FB-001 --title ... --acceptance ... --severity blocker\|major\|minor\|polish --approve`. The human's words stay verbatim; earlier sprints that raised the same point are listed as recurring; severity sets the ticket priority (P0–P3) |
-| **Ticket** | Agent (after clarify) | `./studio ticket <p> "..." --from-feedback FB-001` |
+| **Raw feedback** | **Human** | `./studio feedback <p> "I want X"` or a mid-sprint note drained after MOVE_DONE. Drop accidental CLI noise (`--help`) before retro (LO-0173) |
+| **Clarify** | Agent, HITL only when a fact is missing | Execute drafts title/scope/AC. One question per FB if the note is too thin. `--answer` is the HITL reply, not a new inbox note. Verbatim stays; severity sets P0–P3 |
+| **Ticket** | Agent | `feedback-drain` writes a backlog ticket (no `sprint:`). Next `./studio sprint` assigns it |
 | **Grooming** | **Human** + agent | `./studio groom <p>` — reprioritize backlog for next sprint |
 | **Retro** | **Agent** fills content, **human** reviews | `./studio retro <p>` → fill `retro.md` → `./studio retro <p> --complete` (auto-harvest) → `./studio execute` `STUDIO_LO` |
 | **Next sprint** | **Human** + agent | `./studio sprint <p>` → `./studio groom <p> --approve` |
 
-**Rule:** Ideas from sprint review never become tickets directly. Flow is always **feedback → clarify → ticket**.
+**Rule:** Ideas from sprint review never become implementation in the current sprint. Flow is always **feedback → execute clarify/ticket → backlog**.
 
-**Rule:** During sprint review, the agent **never implements** feedback in project code — only `./studio feedback` → clarify → ticket for the **next** sprint.
+**Rule:** During sprint review, the agent **never implements** feedback in project code — only capture + `feedback-drain` for the **next** sprint or design phase.
 
 **Rule (LO-0033):** Large / strategic review feedback must be **clarified and sliced** into multiple phase-aligned tickets (and optionally a short sprint roadmap under `docs/phases/`) **before** the next `./studio sprint`. Do not leave one mega-ticket that mixes IA, research, Figma, and experience work. Prefer 3–6 ticket sprints mapped to active milestones; keep deep companion / billing tracks deferred until product DNA is ready.
 

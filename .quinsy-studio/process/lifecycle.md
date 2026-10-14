@@ -282,7 +282,7 @@ See [milestone-planning.md](milestone-planning.md) for templates and ticket rule
 1. Human tries shipped work (`./studio review <project>`)
 2. Approve or reject sprint (`./studio review --approve` / `--reject`) — do not linger for work that is still only feedback (LO-0144)
 3. Capture feedback (`./studio feedback`) — not direct tickets
-4. Clarify + ticket from feedback (`./studio clarify` → `./studio ticket --from-feedback`)
+4. Execute tickets feedback (`./studio execute` / `feedback-drain`; HITL one question per FB if needed)
 5. Run the sprint retrospective (`./studio retro <project>`)
 6. Collect learning items (`./studio learn`)
 7. **Local loop:** project-specific learnings → `projects/<name>/docs/studio-learnings-local.md`

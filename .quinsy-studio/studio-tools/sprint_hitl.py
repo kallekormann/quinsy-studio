@@ -3,7 +3,7 @@
 Sprint human-in-the-loop: review, feedback, clarification, retrospective.
 
 Raw feedback from sprint review never becomes a ticket directly —
-it flows: raw → clarify → ready → ticket (via ./studio ticket --from-feedback).
+it flows: raw → execute draft → HITL if a fact is missing → ready → backlog ticket.
 """
 
 from __future__ import annotations
@@ -315,9 +315,8 @@ def feedback_only_message(project: str) -> str:
     return (
         f"Sprint review pending — product feedback must NOT be implemented in code now.\n"
         f"  1. ./studio feedback {project} \"...\"  (raw — not a ticket)\n"
-        f"  2. ./studio clarify {project} FB-NNN ... --approve\n"
-        f"  3. ./studio ticket {project} \"...\" --from-feedback FB-NNN\n"
-        f"  4. ./studio review {project} --approve → reuse → retro → ./studio sprint {project}\n"
+        f"  2. ./studio execute {project}  (feedback-drain; HITL one question per FB if needed)\n"
+        f"  3. ./studio review {project} --approve → reuse → retro → ./studio sprint {project}\n"
         f"  Work lands in the **next** sprint backlog — never mid-review."
     )
 
@@ -534,7 +533,7 @@ See [plan.md](plan.md)
 - [ ] I reviewed all **done** tickets above
 - [ ] I ran **Per-ticket smoke** steps where listed
 - [ ] The project state matches my expectations
-- [ ] I captured new ideas via `./studio feedback {project} "..."` (not direct tickets)
+- [ ] I captured new ideas via `./studio feedback {project} "..."` (execute tickets them; not direct implement)
 - [ ] When satisfied: `./studio review {project} --approve`
 - [ ] If not satisfied: `./studio review {project} --reject "..."`
 
@@ -542,11 +541,10 @@ See [plan.md](plan.md)
 
 ## After approval
 1. **Reuse review (inform):** `./studio reuse {project}` → promote / LO ticket / `--record local`. Completes when paths are resolved — no `--approve`.
-2. Clarify feedback: `./studio clarify {project} FB-001` (one item per theme — duplicates rejected)
-3. Ticket from feedback: `./studio ticket {project} "..." --from-feedback FB-001` → **backlog** (no sprint tag)
-4. Groom backlog: `./studio groom {project}` (reprioritize for next sprint)
-5. Retro: `./studio retro {project}`
-6. Next sprint: `./studio sprint {project}` pulls mature backlog tickets → `./studio groom {project} --approve`
+2. Execute drains FB: `./studio feedback-drain {project}` (HITL one question per item if a fact is missing, then backlog tickets)
+3. Groom backlog: `./studio groom {project}` (reprioritize for next sprint)
+4. Retro: `./studio retro {project}`
+5. Next sprint: `./studio sprint {project}` pulls mature backlog tickets → `./studio groom {project} --approve`
 {fb_section}
 """
     review_file.write_text(content, encoding="utf-8")
@@ -727,10 +725,9 @@ def add_feedback(
 {text.strip()}
 
 ## Next steps
-1. Agent + human clarify: `./studio clarify {project} {fb_id} --title "..." --scope "..." --acceptance "..." --severity blocker|major|minor|polish`
-2. Human approves draft: `./studio clarify {project} {fb_id} --approve`
-3. Create ticket: `./studio ticket {project} "<title>" --from-feedback {fb_id}`
-   (ticket lands in **backlog** — sprint assigned at `./studio sprint`)
+1. `./studio execute {project}` (or `./studio feedback-drain {project}`) drafts and tickets this item.
+2. If a fact only the human knows is missing, execute HITL asks one question. Answer with `./studio clarify {project} {fb_id} --answer "…"`.
+3. The ticket lands in **backlog** (no sprint tag) — assigned at `./studio sprint`. Do not implement during review.
 """,
         encoding="utf-8",
     )
@@ -801,7 +798,7 @@ def clarify_feedback(
         updates["draft_out_of_scope"] = out_of_scope.strip()
     if acceptance:
         updates["draft_acceptance"] = acceptance
-    if questions:
+    if questions is not None:
         updates["open_questions"] = questions
 
     merged = {**item, **updates}
@@ -850,13 +847,13 @@ def clarify_feedback(
 ## Acceptance criteria
 {ac_lines}
 
-## Open questions (resolve before --approve)
+## Open questions (HITL: one per FB)
 {q_lines}
 
 ## Commands
 ```bash
-./studio clarify {project} {fb_id} --title "..." --scope "..." --acceptance "Criterion 1" --severity minor --approve
-./studio ticket {project} "<title>" --from-feedback {fb_id}
+./studio clarify {project} {fb_id} --answer "surface and expected vs today"
+./studio execute {project}
 ```
 """,
         encoding="utf-8",

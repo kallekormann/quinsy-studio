@@ -74,8 +74,9 @@ You rarely type these. The agent does. This page says what each one does so you 
 
 | Command | What it does |
 |---------|----------------|
-| `./studio feedback <project> "…"` | Saves a raw note. Not a ticket yet. |
-| `./studio clarify <project> FB-001 --approve` | Turns the note into something that can become a ticket. |
+| `./studio feedback <project> "…"` | Saves a raw note. Execute tickets it. |
+| `./studio feedback-drain <project>` | Drain notes → FB → HITL questions or a backlog ticket. |
+| `./studio clarify <project> FB-001 --answer "…"` | Answers one HITL question. Empty “looks good” is not a ticket. |
 | `./studio review <project> --inform` | Writes the cadence brief and continues. You answer later. |
 | `./studio amend <project> <brief>` | A change of direction. Analysis only, until you approve the amendment. |
 | `./studio groom <project>` | Checks the sprint is staffed and sized. Refuses gaps. |

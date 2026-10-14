@@ -284,14 +284,14 @@ Artifact: `projects/<p>/sprints/SPRINT-NN/review.md`
 
 ---
 
-## Feedback → clarify → ticket
+## Feedback → execute → ticket
 
-**Never** create tickets directly from sprint-review conversation.
+Capture is still FB. Execute drafts and tickets. HITL only when a fact is missing.
 
 ```bash
 ./studio feedback <project> "raw idea from human"
-./studio clarify <project> FB-001 --title "..." --scope "..." --acceptance "..." --approve
-./studio ticket <project> "..." --from-feedback FB-001
+./studio execute <project>            # feedback-drain; HITL one question per FB if needed
+./studio clarify <project> FB-001 --answer "the empty list on /commands"
 ./studio feedback-list <project>
 ```
 

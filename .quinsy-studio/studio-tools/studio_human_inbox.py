@@ -82,7 +82,12 @@ def is_studio_hq_request(text: str) -> bool:
     return bool(STUDIO_HQ_RE.search(text or ""))
 
 
-def should_queue_as_note(text: str, *, named_hitl_waiting: bool = True) -> bool:
+def should_queue_as_note(
+    text: str,
+    *,
+    named_hitl_waiting: bool = True,
+    clarify_feedback_waiting: bool = False,
+) -> bool:
     """True when a chat bubble must be ./studio note'd and the current ACTION resumed.
 
     Bare “looks good” / “approved” is a HITL reply only when execute is already STOP
@@ -93,6 +98,8 @@ def should_queue_as_note(text: str, *, named_hitl_waiting: bool = True) -> bool:
         return False
     if ABORT_RE.match(t):
         return True
+    if clarify_feedback_waiting:
+        return False
     if HITL_REPLY_RE.search(t):
         return False
     if is_studio_hq_request(t):

@@ -176,6 +176,15 @@ def named_hitl_waiting(status: Dict, project: str = "") -> bool:
     veto = status.get("tech_veto") or {}
     if veto.get("status") == "open" and veto.get("decision"):
         return True
+    sprint_name = status.get("current_sprint") or ""
+    if project and sprint_name:
+        try:
+            from studio_feedback_loop import has_open_feedback_questions
+
+            if has_open_feedback_questions(project, sprint_name):
+                return True
+        except Exception:
+            pass
     if project and not status.get("active_ticket"):
         sprint = status.get("current_sprint") or ""
         if sprint:
@@ -263,6 +272,15 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
 
     in_flight = implementation_in_flight(project, status)
     hitl_live = named_hitl_waiting(status, project)
+    clarify_waiting = False
+    sprint_name = status.get("current_sprint") or ""
+    if project and sprint_name:
+        try:
+            from studio_feedback_loop import has_open_feedback_questions
+
+            clarify_waiting = has_open_feedback_questions(project, sprint_name)
+        except Exception:
+            clarify_waiting = False
     if in_flight and ABORT_RE.match(request or ""):
         return _ack_inbox(project, status, request, abort=True)
 
@@ -321,7 +339,11 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
             "Do not wait for looks good.",
         )
 
-    if in_flight and should_queue_as_note(request, named_hitl_waiting=hitl_live):
+    if in_flight and should_queue_as_note(
+        request,
+        named_hitl_waiting=hitl_live,
+        clarify_feedback_waiting=clarify_waiting,
+    ):
         return _ack_inbox(project, status, request, abort=False)
 
     impl_signals = {
@@ -424,7 +446,7 @@ def guard_request(project: str, request: str, status: Dict) -> Tuple[str, str]:
             )
         return "needs_ticket", (
             "No matching sprint/backlog ticket. For sprint-review ideas use: "
-            f'./studio feedback {project} "<idea>" → ./studio clarify → ticket --from-feedback. '
+            f'./studio feedback {project} "<idea>" then execute (feedback-drain). '
             f'For scoped work: ./studio ticket {project} "<title>".'
         )
 

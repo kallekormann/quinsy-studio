@@ -81,8 +81,9 @@ Commands:
   ./studio sprint <project> [--kind design|architecture|implementation|hygiene]
   ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
-  ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
-  ./studio clarify <project> FB-001 [--severity blocker|major|minor|polish] [--verbatim "..."] [--approve]  Clarify feedback → executable draft
+  ./studio feedback <project> "..."              Capture raw feedback (execute will ticket)
+  ./studio feedback-drain <project>              Drain notes → FB → HITL questions or backlog tickets
+  ./studio clarify <project> FB-001 [--answer "…"] [--severity blocker|major|minor|polish] [--approve]
   ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
@@ -776,7 +777,7 @@ class StudioOrchestrator:
             actions.append(f"⏸ HUMAN: sprint review pending — ./studio review {project}")
             actions.append(f"Human: try shipped work, then ./studio review {project} --approve")
             actions.append(f"Product feedback: ./studio feedback {project} \"...\" (NOT implementation)")
-            actions.append(f"Flow: feedback → clarify → ticket --from-feedback → next sprint")
+            actions.append(f"Flow: execute feedback-drain → HITL one question per FB if needed → backlog ticket")
             actions.append("Agent: do NOT edit projects/{p}/ for review feedback — backlog only".format(p=project))
         elif is_sprint_closed(status, project):
             hitl = get_sprint_hitl(status)
@@ -791,8 +792,7 @@ class StudioOrchestrator:
                 actions.append(f"./studio sprint {project} --approve-scope")
                 actions.append(f"./studio groom {project} --approve")
             actions.append(f"./studio feedback {project} \"...\"  (ideas for next sprint)")
-            actions.append(f"./studio clarify {project} FB-001 ... --approve")
-            actions.append(f"./studio ticket {project} \"...\" --from-feedback FB-001")
+            actions.append(f"./studio feedback-drain {project}")
         else:
             sprint = status.get("current_sprint", "")
             hitl = get_sprint_hitl(status)
@@ -817,12 +817,8 @@ class StudioOrchestrator:
             elif hitl.get("groom_status") != "approved":
                 actions.append(f"./studio groom {project}")
                 actions.append(f"./studio groom {project} --approve")
-            if has_raw_feedback(project, sprint):
-                actions.append(f"Queue only (act after review): ./studio feedback-list {project}")
-            if has_ready_feedback(project, sprint):
-                actions.append(
-                    f"Ticket from feedback after review: ./studio ticket {project} \"...\" --from-feedback FB-NNN"
-                )
+            if has_raw_feedback(project, sprint) or has_ready_feedback(project, sprint):
+                actions.append(f"./studio feedback-drain {project}  (clarify + ticket; HITL if a fact is missing)")
             actions.append(f"./studio board {project}")
             actions.append(f"./studio move {project} <TICKET-ID> done --reason \"DoD met\"")
             actions.append(f"When all sprint tickets done: ./studio review {project} → human --approve")
@@ -992,8 +988,8 @@ class StudioOrchestrator:
             for note in drained:
                 kind = classify_note(note.get("text") or "")
                 print(f"    {note.get('id')} [{kind}] {note.get('text')}")
-                if kind == "feedback":
-                    print(f"      → ./studio feedback {project} \"...\" if this is a product idea")
+                if kind in ("feedback", "design", "note"):
+                    print(f"      → ./studio feedback-drain {project} (execute will ticket; do not implement)")
                 if kind == "tech-veto":
                     print(f"      → ./studio veto {project} --decision \"...\" --reason \"...\"")
             print(f"  Resume: ./studio execute {project}")
@@ -2596,7 +2592,7 @@ class StudioOrchestrator:
             approve_review(
                 project, sprint, status,
                 "Cadence review closed by the agent (HQ autonomy). Human feedback is asynchronous: "
-                "./studio feedback / clarify / ticket --from-feedback. Design feedback waits for the next design phase.",
+                "./studio feedback then execute feedback-drain. Design tickets wait for the next design phase.",
             )
             hitl = get_sprint_hitl(status)
             hitl["review_mode"] = "inform"
@@ -2628,9 +2624,8 @@ class StudioOrchestrator:
             print(f"    ./studio reuse {project}  (inform brief — not a gate)")
             print(f"    ./studio retro {project}")
             print(f"  Then:")
-            print(f"    ./studio feedback {project} \"...\"  (capture new ideas)")
-            print(f"    ./studio clarify {project} FB-001 ... --approve")
-            print(f"    ./studio ticket {project} \"...\" --from-feedback FB-001")
+            print(f"    ./studio feedback {project} \"...\"  (capture; execute tickets)")
+            print(f"    ./studio feedback-drain {project}")
             print(f"    ./studio groom {project}")
             print(f"    ./studio retro {project}")
             print(f"    ./studio sprint {project}  (plan next sprint)")
@@ -2800,14 +2795,12 @@ class StudioOrchestrator:
             print(f"  Or force a separate item: ./studio feedback {project} \"...\" --force")
             return True
 
-        print(f"\n  Captured {fb_id} (status: raw — NOT a ticket)")
+        print(f"\n  Captured {fb_id} (status: raw — NOT a ticket yet)")
         print(f"  File: {md_file}")
-        print(f"\n  ⛔ DO NOT implement this in project code during sprint review.")
-        print(f"     Flow: clarify → ticket --from-feedback → **backlog** → ./studio sprint assigns.")
-        print(f"\n  Next:")
-        print(f"    ./studio clarify {project} {fb_id} --title \"...\" --scope \"...\" --acceptance \"...\"")
-        print(f"    ./studio clarify {project} {fb_id} --approve")
-        print(f"    ./studio ticket {project} \"<title>\" --from-feedback {fb_id}")
+        print(f"\n  ⛔ DO NOT implement this in project code.")
+        print(f"     Execute will clarify and ticket it into the backlog (no sprint tag).")
+        print(f"     If a fact is missing, HITL asks one question per FB.")
+        print(f"\n  Next: ./studio execute {project}")
         return True
 
     def cmd_feedback_list(self, project: str):
@@ -2819,7 +2812,30 @@ class StudioOrchestrator:
             return False
         print_header(f"FEEDBACK QUEUE — {project} ({sprint})")
         print(format_feedback_list(project, sprint))
-        print(f"\n  Flow: feedback → clarify → --approve → ticket --from-feedback")
+        print(f"\n  Flow: execute feedback-drain → HITL questions if needed → backlog ticket")
+        return True
+
+    def cmd_feedback_drain(self, project: str) -> bool:
+        """Drain inbox notes to FB, draft, ticket ready items, or print HITL questions."""
+        from studio_feedback_loop import process_feedback_queue
+
+        status = load_status(project)
+        sprint = status.get("current_sprint") or ""
+        print_header(f"FEEDBACK DRAIN — {project} ({sprint or 'no sprint'})")
+        result = process_feedback_queue(project, sprint)
+        if result.get("drained"):
+            print(f"  Drained notes: {', '.join(result['drained'])}")
+        if result.get("promoted"):
+            print(f"  New FB: {', '.join(result['promoted'])}")
+        if result.get("ticketed"):
+            print(f"  Tickets: {', '.join(result['ticketed'])} (backlog, no sprint tag)")
+        if result.get("action") == "hitl":
+            print(f"\n  HITL — do not implement:\n{result.get('reason')}")
+            print(f"  Next: {result.get('command')}")
+            return False
+        if result.get("action") == "idle":
+            print("  Queue idle.")
+        print(f"  Resume: ./studio execute {project}")
         return True
 
     def cmd_clarify(
@@ -2834,6 +2850,7 @@ class StudioOrchestrator:
         severity: str = "",
         verbatim: Optional[List[str]] = None,
         design_reason: str = "",
+        answer: str = "",
     ):
         """Clarify raw feedback into an executable ticket draft."""
         if design_reason:
@@ -2849,6 +2866,24 @@ class StudioOrchestrator:
         if not sprint:
             print(f"  ⚠️  No active sprint")
             return False
+
+        if answer.strip():
+            from studio_feedback_loop import apply_answer, create_ticket_from_ready_feedback
+
+            print_header(f"CLARIFY FEEDBACK — {fb_id}")
+            try:
+                item = apply_answer(project, sprint, fb_id, answer)
+            except ValueError as e:
+                print(f"  ⚠️  {e}")
+                return False
+            print(f"  Status: {item.get('status')}")
+            if item.get("status") == "ready":
+                tid = create_ticket_from_ready_feedback(project, sprint, fb_id)
+                print(f"  Ticket {tid} (backlog, no sprint tag). Do not implement now.")
+            elif item.get("open_questions"):
+                print(f"  Still need: {item['open_questions'][0]}")
+            print(f"  Resume: ./studio execute {project}")
+            return True
 
         print_header(f"CLARIFY FEEDBACK — {fb_id}")
         try:
@@ -2876,12 +2911,11 @@ class StudioOrchestrator:
             print(f"  Recurring: raised before in {', '.join(item['recurring'])}")
         print(f"  Draft: {clarify_file}")
         if item["status"] == "ready":
-            print(f"\n  ✅ Ready for ticket:")
-            print(f"    ./studio ticket {project} \"{item.get('draft_title')}\" --from-feedback {fb_id}")
+            print(f"\n  ✅ Ready — execute will ticket (or ./studio feedback-drain {project})")
         elif approve:
             print(f"  ⚠️  Could not approve — check draft_title and acceptance criteria")
         else:
-            print(f"\n  Add fields, then: ./studio clarify {project} {fb_id} --approve")
+            print(f"\n  Next: ./studio execute {project}  (or ./studio feedback-drain {project})")
         return True
 
     def cmd_ticket(self, project: str, title: str, phase: int = 4, 
@@ -4803,8 +4837,9 @@ Commands:
   ./studio sprint <project> [--kind design|architecture|implementation|hygiene]
   ./studio review <project> [--approve|--reject] Cadence review (every N implementation sprints)
   ./studio reuse <project> [--record path action] Reuse inform brief after sprint (not a HITL gate)
-  ./studio feedback <project> "..."              Capture raw feedback (not a ticket)
-  ./studio clarify <project> FB-001 [--severity blocker|major|minor|polish] [--verbatim "..."] [--approve]  Clarify feedback → executable draft
+  ./studio feedback <project> "..."              Capture raw feedback (execute will ticket)
+  ./studio feedback-drain <project>              Drain notes → FB → HITL questions or backlog tickets
+  ./studio clarify <project> FB-001 [--answer "…"] [--severity blocker|major|minor|polish] [--approve]
   ./studio feedback-list <project>               Show feedback queue
   ./studio ticket <project> "Title"              Create ticket
   ./studio move <project> <id> <status>          Move ticket
@@ -5398,6 +5433,11 @@ def main():
     elif command == "feedback-list" and len(args) >= 1:
         orchestrator.cmd_feedback_list(args[0])
 
+    elif command == "feedback-drain" and len(args) >= 1:
+        ok = orchestrator.cmd_feedback_drain(args[0])
+        if ok is False:
+            sys.exit(2)
+
     elif command == "clarify" and len(args) >= 2:
         project = args[0]
         fb_id = args[1]
@@ -5408,6 +5448,7 @@ def main():
         severity = ""
         verbatim: List[str] = []
         design_reason = ""
+        answer = ""
         approve = "--approve" in args
         i = 2
         while i < len(args):
@@ -5433,12 +5474,16 @@ def main():
             elif arg == "--design-reason" and i + 1 < len(args):
                 design_reason = args[i + 1]
                 i += 2
+            elif arg == "--answer" and i + 1 < len(args):
+                answer = args[i + 1]
+                i += 2
             else:
                 i += 1
         orchestrator.cmd_clarify(
             project, fb_id, title=title, scope=scope,
             out_of_scope=out_of_scope, acceptance=acceptance, approve=approve,
             severity=severity, verbatim=verbatim, design_reason=design_reason,
+            answer=answer,
         )
     
     elif command == "ticket" and len(args) >= 2:

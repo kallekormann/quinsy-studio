@@ -44,7 +44,7 @@ Then the train repeats. An empty phase is skipped. One unsigned ticket does not 
 2. **Architecture.** The agent writes the note and signs the phase. You can veto if it cannot be built, or if you will not accept the approach. An infeasible design goes back to the next design cycle and stays out of implementation.
 3. **Implementation.** The agent builds from the mock code. It does not wait for you to approve each ticket. Library first, then the project's tokens. Local migrations run as sprint work. You are told they ran.
 
-Every few implementation phases the agent writes a cadence brief and keeps going. You reply later with `./studio feedback`. That note is not a ticket until it is clarified. Design feedback waits for the next design phase. It is not patched in the middle of a build.
+Every few implementation phases the agent writes a cadence brief and keeps going. You reply later with `./studio feedback` or a note. Execute turns that into a backlog ticket (and asks one question per item if the note is too thin). Design tickets wait for the next design phase. They are not patched in the middle of a build.
 
 Hygiene (lint, debt) is a sprint that sits outside this train. It does not count toward the cadence.
 
@@ -75,7 +75,7 @@ Three red gates, QA fails, or finish holds, and the ticket goes `blocked` with a
 
 ## Two kinds of change after the gates
 
-**A small note.** *"Feedback: …"* Then clarify, then a ticket. It waits for the right phase.
+**A small note.** *"Feedback: …"* Execute clarifies and tickets it. It waits for the right phase. If a fact is missing, you answer one question per item.
 
 **A change of direction.** Drop a brief in `intake/amendments/<project>/` and ask the agent to run amendment intake. You get an analysis (vision, requirements, architecture, a roadmap, ticket drafts). Nothing is built until you approve the amendment. If the roadmap changed, you sign milestones again. The spec is [amendment-intake.md](../process/amendment-intake.md).
 

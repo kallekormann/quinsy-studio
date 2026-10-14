@@ -28,6 +28,7 @@ from design_ticket_helpers import (
 from sprint_hitl import (
     get_sprint_hitl,
     list_sprint_tickets,
+    load_feedback_queue,
     needs_sprint_review,
     sprint_directory,
 )
@@ -57,6 +58,7 @@ HITL_KINDS = (
     "blocked-retries",
     "intake",
     "amendment",
+    "clarify-feedback",
 )
 
 def qa_gate_level(status: Dict[str, Any]) -> int:
@@ -811,6 +813,44 @@ def _reality_step(project: str, sprint: str, status: Dict, open_work: List[Dict]
     )
 
 
+def _feedback_execute_step(
+    project: str,
+    sprint: str,
+    inbox_open: List[Dict],
+    feedback_queue: Optional[List[Dict]],
+) -> Optional[ExecuteStep]:
+    """When no ticket is in implement: drain notes, then HITL questions or ticket ready FBs."""
+    queue = list(feedback_queue or [])
+    open_q = [
+        item
+        for item in queue
+        if item.get("status") in ("raw", "clarifying")
+        and any(str(q).strip() for q in (item.get("open_questions") or []))
+    ]
+    pending = [
+        item
+        for item in queue
+        if item.get("status") in ("raw", "clarifying", "ready")
+    ]
+    if not inbox_open and not pending and not open_q:
+        return None
+    if open_q:
+        from studio_feedback_loop import format_clarify_hitl
+
+        command, reason = format_clarify_hitl(project, open_q)
+        return _hitl(
+            "clarify-feedback",
+            project,
+            command,
+            reason,
+        )
+    return _inform(
+        project,
+        f"./studio feedback-drain {project}",
+        "INBOX / feedback queue — drain notes to FB, clarify, ticket ready items (do not implement)",
+    )
+
+
 def _inform(project: str, command: str, reason: str, *, ticket_id: Optional[str] = None) -> ExecuteStep:
     return ExecuteStep(
         kind="INFORM",
@@ -1154,6 +1194,7 @@ def decide_from_state(
     phase_sign: Optional[str] = None,
     design_command: Optional[str] = None,
     milestone: Optional[Dict[str, Any]] = None,
+    feedback_queue: Optional[List[Dict]] = None,
 ) -> ExecuteStep:
     """Pure next-step machine. Disk I/O lives in decide_next_action."""
     step = _decide_from_state_body(
@@ -1180,6 +1221,7 @@ def decide_from_state(
         phase_sign=phase_sign,
         design_command=design_command,
         milestone=milestone,
+        feedback_queue=feedback_queue,
     )
     return _attach_lo_inform(step, open_los if open_los is not None else [])
 
@@ -1209,6 +1251,7 @@ def _decide_from_state_body(
     phase_sign: Optional[str] = None,
     design_command: Optional[str] = None,
     milestone: Optional[Dict[str, Any]] = None,
+    feedback_queue: Optional[List[Dict]] = None,
 ) -> ExecuteStep:
     from pre_impl_workflow import design_system_approved, direction_approved
 
@@ -1398,6 +1441,11 @@ def _decide_from_state_body(
             ticket_id=None,
         )
 
+    if not in_progress:
+        fb_step = _feedback_execute_step(project, sprint, inbox_open, feedback_queue)
+        if fb_step:
+            return fb_step
+
     ui_review = needs_sprint_review(status) and not backend_only
     open_sprint_work = [
         t for t in sprint_tickets if t.get("status") not in ("done", "cancelled", "blocked")
@@ -1560,13 +1608,6 @@ def _decide_from_state_body(
     read_path = current.get("path") or current.get("file")
 
     if current.get("status") in ("backlog", "open"):
-        if inbox_open and not in_progress:
-            return _inform(
-                project,
-                f"./studio note {project} --drain",
-                f"INBOX: {len(inbox_open)} note(s) — classify after MOVE_DONE, then continue",
-                ticket_id=tid,
-            )
         if pending_veto:
             return _hitl(
                 "tech-veto",
@@ -1950,6 +1991,7 @@ def decide_next_action(project: str) -> ExecuteStep:
         phase_sign=phase_sign,
         design_command=design_command,
         milestone=_milestone_signal(project, status),
+        feedback_queue=load_feedback_queue(project, sprint) if sprint else [],
     )
     if step.kind == "IMPLEMENT" and step.parallel_train:
         for job in step.parallel_train:

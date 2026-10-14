@@ -1,3 +1,16 @@
+## 2026-10-14 — Execute tickets HITL feedback
+
+Feedback still lands as FB. Execute drains inbox notes into the queue, drafts each item, asks one HITL question per FB when a fact is missing, then writes a backlog ticket (no sprint tag). Do not implement in the current sprint. Abort and tech-veto never become tickets.
+
+### Added
+
+- **`./studio feedback-drain`** and `studio_feedback_loop.py`. Promote drained notes to FB (one theme per bullet), draft title/scope/AC, `clarify --answer`, ticket ready items.
+- Execute `INFORM` `feedback-drain` when no ticket is in `implement`; `HITL clarify-feedback` when `open_questions` remain. Guard does not inbox-queue those answers.
+
+### Changed
+
+- `./studio feedback` tells the agent to execute, not to run clarify/ticket by hand. Resume, review.md, HITL docs, AGENTS.
+
 ## 2026-10-13 — Skill template headings; flow and hierarchy on the next spec
 
 - `knowledge-base/skill-template.md` **PB-20261013-001**: every skill file uses the template headings; `lint-skills --strict` must pass before a team ships a skill change.

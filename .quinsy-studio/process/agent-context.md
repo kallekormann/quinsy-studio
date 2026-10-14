@@ -104,7 +104,7 @@ After gate 2b:
 - **Wire the prototype.** After gate 2b, `app/` is the copy and `design/prototype/` stays the visual baseline. Implementation makes that copy work, then may enhance behavior, UI, interaction, and information architecture. See `docs/design/baseline.md`.
 - **Separation of concerns.** A page or route handler does not embed the query, the storage call, or the business rule. Those live in a service. Infrastructure sits behind that service. See the backend playbook.
 - **Harvest generic work.** Realtime, collaboration, object storage, and authentication leave a `./studio library promote` or a `./studio learn` on the receipt. Project look stays in the project. See the learning loop.
-- Sprint-review ideas: `./studio feedback` → `clarify` → `ticket --from-feedback` (never direct ticket)
+- Sprint-review ideas: `./studio feedback` then execute `feedback-drain` (HITL one question per FB if needed; never implement now)
 - Scoped new work: `./studio ticket <project> "..."` → groom → sprint
 - Emergency scope change: user explicitly approves; log in `docs/phases/revisions.md` or the active milestone doc
 
@@ -166,8 +166,7 @@ Gate 2b does **not** merge project UI into studio-library. Headless primitives s
 ```bash
 ./studio review <project>
 ./studio feedback <project> "..."
-./studio clarify <project> FB-001 --approve
-./studio ticket <project> "..." --from-feedback FB-001
+./studio execute <project>   # feedback-drain; HITL one question per FB if needed
 ./studio review <project> --approve
 ./studio groom <project> && ./studio retro <project> && ./studio sprint <project>
 ```
