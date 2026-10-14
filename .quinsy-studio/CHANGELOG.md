@@ -1,3 +1,7 @@
+## 2026-10-14 — Host-missing NEEDS WORK stays off the closing sprint
+
+- `teams/09-studio-operations-evolution/skills/release-reality-check.md` **PB-20261014-001**: when a reality check is NEEDS WORK because the host is missing, file the follow-up with `sprint: none`. Do not add it to the sprint that just shipped.
+
 ## 2026-10-14 — Execute tickets HITL feedback
 
 Feedback still lands as FB. Execute drains inbox notes into the queue, drafts each item, asks one HITL question per FB when a fact is missing, then writes a backlog ticket (no sprint tag). Do not implement in the current sprint. Abort and tech-veto never become tickets.

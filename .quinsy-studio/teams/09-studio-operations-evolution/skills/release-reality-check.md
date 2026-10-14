@@ -75,7 +75,7 @@ Report only reproducible gaps against the PRD, the signed specs or the ticket AC
 
 ### 8. FAILED files debug tickets, not a sign-off request
 
-On FAILED, write one bug ticket per trigger with `./studio ticket <p> "..."` in Issue / Expected / Actual / Evidence / Fix / Files form. Do not open the cadence review. Fix in the next implementation work, ship to dev again, then rerun this check. Execute continues; this is not a new human stop.
+On FAILED, write one bug ticket per trigger with `./studio ticket <p> "..."` in Issue / Expected / Actual / Evidence / Fix / Files form. Do not open the cadence review. Fix in the next implementation work, ship to dev again, then rerun this check. Execute continues; this is not a new human stop. When the verdict is NEEDS WORK because the host is missing (dev not reachable, or no runbook URL), file that follow-up with `sprint: none` — do not tag it onto the sprint that just shipped (`PB-20261014-001`).
 
 ### 9. Stay independent
 
@@ -146,7 +146,7 @@ This check has no ticket receipt. The review packet is its receipt:
 ## Handoff
 
 - **To the human (cadence review):** READY or NEEDS WORK, with `reality-check.md` linked at the top of `review.md`.
-- **To implementation:** FAILED bug tickets in the product backlog, tagged into the current sprint.
+- **To implementation:** FAILED bug tickets in the product backlog, tagged into the current sprint. Host-missing NEEDS WORK tickets stay unscheduled (`sprint: none`).
 - **To SO-002:** recurring trigger types for the retro.
 - **To SO-003:** a rule that failed twice across sprints becomes an LO candidate in a HQ session.
 
@@ -157,3 +157,7 @@ This check has no ticket receipt. The review packet is its receipt:
 - [hq-agency-agents-integration.md](../../../process/hq-agency-agents-integration.md) — L1, L2, L11
 - FE-006 Frontend testing · FE-004 Accessibility · UX-009 UI finish gate
 - Source: msitarzewski/agency-agents `testing/testing-reality-checker.md`, `specialized/agents-orchestrator.md` (MIT), rewritten for the studio loop
+
+## Deltas
+
+- **PB-20261014-001** helpful=0 harmful=0 :: assumed: NEEDS WORK files a bug ticket into the current sprint and keeps cadence closed until READY. signed: A host-missing ticket in the closing sprint blocked implement (review pending) and blocked review (tickets not all done). next: When the reality check is NEEDS WORK because the host is missing, file the follow-up with sprint none; do not add it to the sprint that just shipped.
